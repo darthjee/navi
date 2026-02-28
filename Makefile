@@ -18,7 +18,7 @@ help:
 	@echo "  make build      Build production image from $(DOCKERFILE_PROD)"
 
 setup: .env
-	$(COMPOSE) build $(APP_SERVICE)
+	$(COMPOSE) build base_build
 
 dev: .env
 	$(COMPOSE) run --rm $(APP_SERVICE) $(DEV_SHELL)
