@@ -37,7 +37,8 @@
     "globals": "^16.5.0",
     "jasmine": "^5.0.0",
     "nyc": "^15.0.0",
-    "jscpd": "4.0.8"
+    "jscpd": "4.0.8",
+    "c8": "11.0.0"
   },
   "jasmine": {
     "spec_dir": "spec",
