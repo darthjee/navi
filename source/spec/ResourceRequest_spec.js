@@ -1,11 +1,11 @@
 const { ResourceRequest } = require('../lib/models/ResourceRequest');
-const RequestFailed = require('../lib/exceptions/RequestFailed');
 const axios = require('axios');
 
 describe('ResourceRequest', () => {
   const url = 'http://example.com';
   const status = 200;
   let resourceRequest;
+  let expectedError;
 
   beforeEach(() => {
     resourceRequest = new ResourceRequest({ url, status });
