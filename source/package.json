@@ -21,10 +21,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.0.0",
+    "eslint": "^8.0.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^9.39.1",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-complexity": "^1.0.2",
     "eslint-plugin-import": "^2.26.0",
