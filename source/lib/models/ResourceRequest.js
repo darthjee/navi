@@ -1,5 +1,5 @@
 const axios = require('axios');
-const RequestFailed = require('./exceptions/RequestFailed');
+const RequestFailed = require('../exceptions/RequestFailed');
 
 class ResourceRequest {
   constructor({ url, status }) {
