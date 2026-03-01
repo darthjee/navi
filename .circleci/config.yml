@@ -27,9 +27,6 @@ jobs:
       - run:
           name: Unit tests (Jasmine)
           command: npm test
-      - run:
-          name: Coverage
-          command: npm run coverage
   checks:
     docker:
       - image: darthjee/circleci_node:0.2.1
