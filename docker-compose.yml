@@ -5,6 +5,7 @@ services:
     volumes:
       - ./source:/home/node/app
       - ./docker_volumes/config:/home/node/config
+      - ./docker_volumes/node_modules:/home/node/node_modules
 
   base_build:
     <<: *base
