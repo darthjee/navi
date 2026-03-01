@@ -4,7 +4,7 @@
   "description": "Navi cache warmer CLI",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine",
+    "test": "nyc npx jasmine spec/**/*.js",
     "lint": "eslint .",
     "lint_fix": "eslint . --fix",
     "lint_report": "eslint . --format html --output-file report/eslint-report.html",
