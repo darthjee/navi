@@ -1,5 +1,5 @@
-const axios = require('axios');
-const RequestFailed = require('../exceptions/RequestFailed');
+import axios from 'axios';
+import { RequestFailed } from '../exceptions/RequestFailed.js';
 
 class ResourceRequest {
   constructor({ url, status }) {
@@ -28,4 +28,4 @@ class ResourceRequest {
   }
 }
 
-module.exports = { ResourceRequest };
+export { ResourceRequest };

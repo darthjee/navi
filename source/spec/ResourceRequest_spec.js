@@ -1,5 +1,5 @@
-const { ResourceRequest } = require('../lib/models/ResourceRequest');
-const axios = require('axios');
+import { ResourceRequest } from '../lib/models/ResourceRequest.js';
+import axios from 'axios';
 
 describe('ResourceRequest', () => {
   const url = 'http://example.com';

@@ -7,4 +7,4 @@ class RequestFailed extends Error {
   }
 }
 
-module.exports = RequestFailed;
+export { RequestFailed };

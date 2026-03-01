@@ -1,5 +1,6 @@
 {
   "name": "navi",
+  "type": "module",
   "version": "0.1.0",
   "description": "Navi cache warmer CLI",
   "main": "index.js",
