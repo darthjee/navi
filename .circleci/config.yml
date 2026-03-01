@@ -23,7 +23,7 @@ jobs:
           command: mv source/* ./; rm -rf source/
       - run:
           name: Install dependencies
-          command: npm install
+          command: yarn install
       - run:
           name: Unit tests (Jasmine)
           command: npm test
@@ -40,7 +40,7 @@ jobs:
           command: mv source/* ./; rm -rf source/
       - run:
           name: Install dependencies
-          command: npm install
+          command: yarn install
       - run:
           name: Lint
           command: npm run lint
