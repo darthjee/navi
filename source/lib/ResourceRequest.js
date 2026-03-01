@@ -7,19 +7,23 @@ class ResourceRequest {
     this.status = status;
   }
 
-  async request() {
+  async check() {
     try {
-      const response = await axios.get(this.url);
-      if (response.status === this.status) {
-        return true;
-      } else {
-        throw new RequestFailed(response.status);
-      }
+      return await this.#request();
     } catch (error) {
       if (error.response) {
         throw new RequestFailed(error.response.status);
       }
       throw error;
+    }
+  }
+
+  async #request() {
+    const response = await axios.get(this.url);
+    if (response.status === this.status) {
+      return true;
+    } else {
+      throw new RequestFailed(response.status);
     }
   }
 }
