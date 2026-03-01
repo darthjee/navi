@@ -1,0 +1,28 @@
+services:
+  base: &base
+    image: navi:dev
+    env_file: .env
+    volumes:
+      - ./source:/home/node/app
+      - ./docker_volumes/config:/home/node/config
+      - ./docker_volumes/node_modules:/home/node/node_modules
+
+  base_build:
+    <<: *base
+    container_name: navi_build
+    build:
+      context: .
+      dockerfile: dockerfiles/dev_navy/Dockerfile
+    command: echo done
+
+  navi_app:
+    <<: *base
+    container_name: navi_app
+    depends_on: [base_build]
+    command: /bin/bash
+
+  navi_tests:
+    <<: *base
+    container_name: navi_tests
+    depends_on: [base_build]
+    command: /bin/bash

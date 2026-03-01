@@ -1,0 +1,34 @@
+version: 2.1
+
+workflows:
+  test:
+    jobs:
+      - node-tests:
+          filters:
+            tags:
+              only: /.*/
+
+jobs:
+  node-tests:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Set folder
+          command: mv source/* ./; rm -rf source/
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Unit tests (Jasmine)
+          command: npm test
+      - run:
+          name: Coverage
+          command: npm run coverage
+      - run:
+          name: Duplication report (JSCPD)
+          command: npm run report

@@ -1,0 +1,37 @@
+{
+  "name": "navi",
+  "version": "0.1.0",
+  "description": "Navi cache warmer CLI",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc npx jasmine spec/**/*.js",
+    "lint": "eslint .",
+    "lint_fix": "eslint . --fix",
+    "lint_report": "eslint . --format html --output-file report/eslint-report.html",
+    "coverage": "nyc jasmine",
+    "report": "jscpd . --reporters console,html --output ./report/jscpd"
+  },
+  "author": "darthjee",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-complexity": "^1.0.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jasmine": "^4.2.2",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
+    "jasmine": "^5.12.0",
+    "jscpd": "^4.0.5",
+    "nyc": "^17.1.0"
+  },
+  "jasmine": {
+    "spec_dir": "spec",
+    "spec_files": [
+      "**/*[sS]pec.js"
+    ]
+  }
+}
