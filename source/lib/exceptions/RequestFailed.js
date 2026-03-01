@@ -1,8 +1,9 @@
 class RequestFailed extends Error {
-  constructor(statusCode, message = 'Request failed') {
-    super(`${message}: ${statusCode}`);
+  constructor(statusCode, url, message = 'Request failed') {
+    super(`${message}: ${statusCode} for ${url}`);
     this.name = 'RequestFailed';
     this.statusCode = statusCode;
+    this.url = url;
   }
 }
 

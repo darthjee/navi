@@ -12,7 +12,7 @@ class ResourceRequest {
       return await this.#request();
     } catch (error) {
       if (error.response) {
-        throw new RequestFailed(error.response.status);
+        throw new RequestFailed(error.response.status, this.url);
       }
       throw error;
     }
@@ -23,7 +23,7 @@ class ResourceRequest {
     if (response.status === this.status) {
       return true;
     } else {
-      throw new RequestFailed(response.status);
+      throw new RequestFailed(response.status, this.url);
     }
   }
 }
