@@ -26,7 +26,7 @@ jobs:
           command: yarn install
       - run:
           name: Unit tests (Jasmine)
-          command: npm test
+          command: npm run coverage
   checks:
     docker:
       - image: darthjee/circleci_node:0.2.1
