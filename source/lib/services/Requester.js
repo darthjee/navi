@@ -1,11 +1,23 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
 
+/**
+ * @author darthjee
+ * Requester is responsible for performing HTTP requests to a specified URL
+ *
+ * After the request is performed, it checks if the response
+ * status matches the expected status defined in the resourceRequest.
+ */
 class Requester {
   constructor(resourceRequest) {
     this.resourceRequest = resourceRequest;
   }
 
+  /**
+   * Performs the HTTP request and checks the response status.
+   * @returns {Promise<boolean>} Returns true if the response status matches the expected status.
+   * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
+   */
   async perform() {
     try {
       return await this.#request();
@@ -17,6 +29,11 @@ class Requester {
     }
   }
 
+  /**
+   * Performs the HTTP request and checks the response status.
+   * @returns {Promise<boolean>} Returns true if the response status matches the expected status.
+   * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
+   */
   async #request() {
     const response = await axios.get(this.resourceRequest.url);
     if (response.status === this.resourceRequest.status) {
