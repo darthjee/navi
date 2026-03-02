@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "lint_fix": "eslint . --fix",
     "lint_report": "eslint . --format html --output-file report/eslint-report.html",
-    "report": "jscpd lib spec --reporters console,html --output ./report/jscpd"
+    "report": "jscpd lib spec --reporters console,html --output ./report/jscpd",
+    "docs": "jsdoc -c jsdoc.json",
+    "check_docs": "jsdoc -c jsdoc.json --pedantic"
   },
   "author": "darthjee",
   "license": "MIT",
@@ -35,10 +37,12 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-jsdoc": "^62.7.1",
     "globals": "^16.5.0",
     "jasmine": "^5.0.0",
     "jscpd": "4.0.8",
-    "c8": "11.0.0"
+    "c8": "11.0.0",
+    "jsdoc": "4.0.5"
   },
   "jasmine": {
     "spec_dir": "spec",

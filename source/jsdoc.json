@@ -1,0 +1,17 @@
+{
+  "source": {
+    "include": ["lib"],
+    "exclude": ["node_modules", "coverage", "report"],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\\\|/)_(?!_)"
+  },
+  "opts": {
+    "destination": "./docs",
+    "recurse": true
+  },
+  "templates": {
+    "default": {
+      "includeDate": false
+    }
+  }
+}
