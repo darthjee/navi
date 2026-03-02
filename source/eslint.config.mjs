@@ -7,7 +7,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['node_modules/**/*.js', 'dist/**/*.js', 'report/**'],
+    ignores: ['node_modules/**/*.js', 'dist/**/*.js', 'report/**', 'docs/**'],
   },
   js.configs.recommended,
   {
