@@ -27,6 +27,9 @@ jobs:
       - run:
           name: Unit tests (Jasmine)
           command: npm run coverage
+      - run:
+          name: Upload coverage to Codacy
+          command: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
   checks:
     docker:
       - image: darthjee/circleci_node:0.2.1

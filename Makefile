@@ -19,6 +19,7 @@ help:
 
 setup: .env
 	$(COMPOSE) build base_build
+	$(COMPOSE) run --rm $(APP_SERVICE) yarn install
 
 dev: .env
 	$(COMPOSE) run --rm $(APP_SERVICE) $(DEV_SHELL)
