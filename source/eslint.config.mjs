@@ -3,6 +3,7 @@ import complexity from 'eslint-plugin-complexity';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jasmine from 'eslint-plugin-jasmine';
+import jsdoc from 'eslint-plugin-jsdoc';
 import globals from 'globals';
 
 export default [
@@ -16,6 +17,7 @@ export default [
       complexity,
       react,
       'react-hooks': reactHooks,
+      jsdoc,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -64,6 +66,15 @@ export default [
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+
+      // JSDoc rules
+      'jsdoc/check-alignment': 'warn',
+      'jsdoc/check-indentation': 'warn',
+      'jsdoc/check-param-names': 'error',
+      'jsdoc/check-tag-names': 'error',
+      'jsdoc/check-types': 'warn',
+      'jsdoc/require-param-description': 'warn',
+      'jsdoc/require-returns-description': 'warn',
     },
   },
   // Jasmine spec files configuration
