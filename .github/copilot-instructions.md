@@ -138,3 +138,4 @@ When generating or modifying code:
 3. Treat resource chaining as a first-class concern.
 4. Keep worker logic deterministic and testable.
 5. Prioritize CI-oriented execution paths while avoiding assumptions that block future frontend integration.
+6. Add or update JSDoc documentation when creating or modifying classes and methods.
