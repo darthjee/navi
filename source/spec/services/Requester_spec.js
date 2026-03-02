@@ -1,19 +1,20 @@
-import { ResourceRequest } from '../lib/models/ResourceRequest.js';
+import { Requester } from '../../lib/services/Requester.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import axios from 'axios';
 
-describe('ResourceRequest', () => {
+describe('Requester', () => {
   const url = 'http://example.com';
   const status = 200;
-  let resourceRequest;
+  let requester;
   let expectedError;
 
   beforeEach(() => {
-    resourceRequest = new ResourceRequest({ url, status });
+    requester = new Requester(new ResourceRequest({ url, status }));
   });
 
   it('returns true when status matches', async () => {
     spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
-    await expectAsync(resourceRequest.check()).toBeResolvedTo(true);
+    await expectAsync(requester.perform()).toBeResolvedTo(true);
   });
 
   describe('when request status is not a match', () => {
@@ -27,7 +28,7 @@ describe('ResourceRequest', () => {
     
     it('throws RequestFailed when status does not match', async () => {
       spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 404 }));
-      await expectAsync(resourceRequest.check()).toBeRejectedWith(expectedError);
+      await expectAsync(requester.perform()).toBeRejectedWith(expectedError);
     });
   });
 
@@ -42,7 +43,7 @@ describe('ResourceRequest', () => {
 
     it('throws RequestFailed with correct status and url on error.response', async () => {
       spyOn(axios, 'get').and.returnValue(Promise.reject({ response: { status: 500 } }));
-      await expectAsync(resourceRequest.check()).toBeRejectedWith(expectedError);
+      await expectAsync(requester.perform()).toBeRejectedWith(expectedError);
     });
   });
 });
