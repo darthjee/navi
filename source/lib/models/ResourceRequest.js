@@ -4,8 +4,9 @@
  */
 class ResourceRequest {
   /**
-   * @param {string} url The URL to request
-   * @param {number} status The expected status code of the response
+   * @param {object} attributes ResourceRequest attributes
+   * @param {string} attributes.url The URL to request.
+   * @param {string} attributes.status The expected status code of the response.
    */
   constructor({ url, status }) {
     this.url = url;

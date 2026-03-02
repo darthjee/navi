@@ -12,7 +12,7 @@ import { RequestFailed } from '../exceptions/RequestFailed.js';
 class Requester {
   /**
    * @param {ResourceRequest} resourceRequest Information about the URL to request
-   *   and the expected status code.
+   * and the expected status code.
    */
   constructor(resourceRequest) {
     this.resourceRequest = resourceRequest;
