@@ -14,3 +14,5 @@ class Resource {
     this.resourceRequests = resourceRequests;
   }
 }
+
+export { Resource };
