@@ -5,7 +5,7 @@ import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 describe('Client', () => {
   const domain = 'http://example.com';
   const url = '/categories.json';
-  const fullUrl = `${domain}${url}`;
+  const fullUrl = 'http://example.com/categories.json';
   const status = 200;
   let client;
   let expectedError;
