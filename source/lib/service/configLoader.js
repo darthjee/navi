@@ -32,7 +32,7 @@ class ConfigLoader {
       })
     );
 
-    return mapped_resources;
+    return { resources: mapped_resources };
   }
 }
 

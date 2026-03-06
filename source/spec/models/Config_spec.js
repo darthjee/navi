@@ -55,13 +55,14 @@ describe('Config', () => {
           name: 'categories', resourceRequests: expectedResourceRequests
         }),
       };
+      let expectedConfig = { resources: expectedResources };
 
       const file = '../fixtures/config/sample_config.yml';
       const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
       const resources = ConfigLoader.fromFile(configFilePath);
 
-      expect(resources).toEqual(expectedResources);
+      expect(resources).toEqual(expectedConfig);
     });
   });
 });
