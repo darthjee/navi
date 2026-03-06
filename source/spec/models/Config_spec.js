@@ -22,7 +22,8 @@ describe('Config', () => {
       });
 
       it('returns a Config instance with resources from yaml file', () => {
-        const configFilePath = fileURLToPath(new URL('../fixtures/config/sample_config.yml', import.meta.url));
+        const file = '../fixtures/config/sample_config.yml'
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = Config.fromFile(configFilePath);
 
@@ -33,9 +34,8 @@ describe('Config', () => {
 
     describe('when the yaml file does not contain resources key', () => {
       it('throws an error', () => {
-        const configFilePath = fileURLToPath(
-          new URL('../fixtures/config/missing_resources_sample_config.yml', import.meta.url),
-        );
+        const file = '../fixtures/config/missing_resources_sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         expect(() => Config.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',
