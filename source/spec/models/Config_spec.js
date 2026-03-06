@@ -1,29 +1,46 @@
 import { fileURLToPath } from 'node:url';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { Resource } from '../../lib/models/Resource.js';
 
 import { Config } from '../../lib/models/Config.js';
 
 describe('Config', () => {
+  let expectedResources;
+  let expectedResourceRequests;
+
   describe('.fromFile', () => {
-    it('returns a Config instance with resources from yaml file', () => {
-      const resources = {
-        categories: [{ url: '/categories.json', status: 200 }],
-      };
-      const configFilePath = fileURLToPath(new URL('../fixtures/config/sample_config.yml', import.meta.url));
+    describe('when the yaml file is valid', () => {
+      beforeEach(() => {
+        expectedResourceRequests = [
+          new ResourceRequest({ url: '/categories.json', status: 200 })
+        ];
+        expectedResources = {
+          categories: new Resource({
+            name: 'categories', resourceRequests: expectedResourceRequests
+          }),
+        };
+      });
 
-      const config = Config.fromFile(configFilePath);
+      it('returns a Config instance with resources from yaml file', () => {
+        const configFilePath = fileURLToPath(new URL('../fixtures/config/sample_config.yml', import.meta.url));
 
-      expect(config instanceof Config).toBeTrue();
-      expect(config.resources).toEqual(resources);
+        const config = Config.fromFile(configFilePath);
+
+        expect(config instanceof Config).toBeTrue();
+        expect(config.resources).toEqual(expectedResources);
+      });
     });
 
-    it('throws when yaml file does not contain resources key', () => {
-      const configFilePath = fileURLToPath(
-        new URL('../fixtures/config/missing_resources_sample_confg.yml', import.meta.url),
-      );
+    describe('when the yaml file does not contain resources key', () => {
+      it('throws an error', () => {
+        const configFilePath = fileURLToPath(
+          new URL('../fixtures/config/missing_resources_sample_config.yml', import.meta.url),
+        );
 
-      expect(() => Config.fromFile(configFilePath)).toThrowError(
-        'Invalid config file: expected a top-level "resources" key.',
-      );
+        expect(() => Config.fromFile(configFilePath)).toThrowError(
+          'Invalid config file: expected a top-level "resources" key.',
+        );
+      });
     });
   });
 });

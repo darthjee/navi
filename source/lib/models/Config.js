@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
+import { ResourceRequest } from './ResourceRequest.js';
+import { Resource } from './Resource.js';
 
 /**
  * Config is a class that represents the configuration for the application.
@@ -32,7 +34,15 @@ class Config {
       throw new Error('Invalid config file: expected a top-level "resources" key.');
     }
 
-    return new Config({ resources: parsedConfig.resources });
+    let mapped_resources = {};
+    
+    for (let resourceName in parsedConfig.resources) {
+      let resourceRequests =  ResourceRequest.fromList(parsedConfig.resources[resourceName]);
+      let resource = new Resource({ name: resourceName, resourceRequests: resourceRequests });
+      mapped_resources[resourceName] = resource;
+    }
+
+    return new Config({ resources: mapped_resources });
   }
 }
 

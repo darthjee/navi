@@ -12,6 +12,10 @@ class ResourceRequest {
     this.url = url;
     this.status = status;
   }
+
+  static fromList(array) {
+    return array.map((resource) => new ResourceRequest(resource)); 
+  }
 }
 
 export { ResourceRequest };
