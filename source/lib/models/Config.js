@@ -21,7 +21,7 @@ class Config {
    * @returns {Config} A new Config instance.
    */
   static fromFile(filePath) {
-    return new Config( ConfigLoader.fromFile(filePath) );
+    return new Config({ resources: ConfigLoader.fromFile(filePath) });
   }
 }
 
