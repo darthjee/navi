@@ -34,11 +34,11 @@ class Config {
       throw new Error('Invalid config file: expected a top-level "resources" key.');
     }
 
-    let mapped_resources = {};
+    const mapped_resources = {};
     
-    for (let resourceName in parsedConfig.resources) {
-      let resourceRequests =  ResourceRequest.fromList(parsedConfig.resources[resourceName]);
-      let resource = new Resource({ name: resourceName, resourceRequests: resourceRequests });
+    for (const resourceName in parsedConfig.resources) {
+      const resourceRequests =  ResourceRequest.fromList(parsedConfig.resources[resourceName]);
+      const resource = new Resource({ name: resourceName, resourceRequests: resourceRequests });
       mapped_resources[resourceName] = resource;
     }
 

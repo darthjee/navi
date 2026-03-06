@@ -22,7 +22,7 @@ describe('Config', () => {
       });
 
       it('returns a Config instance with resources from yaml file', () => {
-        const file = '../fixtures/config/sample_config.yml'
+        const file = '../fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = Config.fromFile(configFilePath);
