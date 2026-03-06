@@ -13,6 +13,11 @@ class ResourceRequest {
     this.status = status;
   }
 
+  /**
+   * Creates a list of ResourceRequest instances from an array of objects.
+   * @param {array} array list of objects with attributes to create a new ResourceRequest
+   * @returns {array} list of ResourceRequest instances
+   */
   static fromList(array) {
     return array.map((resource) => new ResourceRequest(resource)); 
   }
