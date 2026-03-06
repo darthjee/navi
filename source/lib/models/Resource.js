@@ -1,3 +1,5 @@
+import { ResourceRequest } from './ResourceRequest.js';
+
 /**
  * Resource class represents a resource with a name and associated resource requests.
  * @author darthjee
@@ -12,6 +14,13 @@ class Resource {
   constructor({ name, resourceRequests }) {
     this.name = name;
     this.resourceRequests = resourceRequests;
+  }
+
+  static fromObject(obj) {
+    return new Resource({
+      name: obj.name,
+      resourceRequests: ResourceRequest.fromList(obj.resourceRequests)
+    });
   }
 }
 

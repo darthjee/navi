@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
-import { ResourceRequest } from './ResourceRequest.js';
 import { Resource } from './Resource.js';
 
 /**
@@ -36,8 +35,7 @@ class Config {
 
     const mapped_resources = Object.fromEntries(
       Object.entries(parsedConfig.resources).map(([resourceName, requests]) => {
-        const resourceRequests = ResourceRequest.fromList(requests);
-        const resource = new Resource({ name: resourceName, resourceRequests });
+        const resource = Resource.fromObject({ name: resourceName, resourceRequests: requests});
 
         return [resourceName, resource];
       })
