@@ -16,6 +16,13 @@ class Resource {
     this.resourceRequests = resourceRequests;
   }
 
+  /**
+   * Creates a Resource instance from a plain object.
+   * @param {object} obj - The plain object representing a resource.
+   * @param {string} obj.name - The name of the resource.
+   * @param {Array<{url: string, status: number}>} obj.resourceRequests - The resource requests associated with the resource.
+   * @returns {Resource} A new Resource instance.
+   */
   static fromObject(obj) {
     return new Resource({
       name: obj.name,
