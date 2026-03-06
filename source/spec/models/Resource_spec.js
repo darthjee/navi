@@ -27,4 +27,41 @@ describe('Resource', () => {
       }));
     });
   });
+
+  describe('.fromListObject', () => {
+    const resources = {
+      categories: [
+        { url: '/categories.json', status: 200 },
+      ],
+      category: [
+        { url: '/categories/{:id}.json', status: 200 },
+      ],
+    };
+
+    it('returns a list of Resource instances', () => {
+      const mappedResources = Resource.fromListObject(resources);
+
+      expect(Array.isArray(mappedResources)).toBeTrue();
+      expect(mappedResources.every((resource) => resource instanceof Resource)).toBeTrue();
+    });
+
+    it('maps each object key and requests to Resource instances', () => {
+      const mappedResources = Resource.fromListObject(resources);
+
+      expect(mappedResources).toEqual([
+        new Resource({
+          name: 'categories',
+          resourceRequests: [
+            new ResourceRequest({ url: '/categories.json', status: 200 }),
+          ],
+        }),
+        new Resource({
+          name: 'category',
+          resourceRequests: [
+            new ResourceRequest({ url: '/categories/{:id}.json', status: 200 }),
+          ],
+        }),
+      ]);
+    });
+  });
 });
