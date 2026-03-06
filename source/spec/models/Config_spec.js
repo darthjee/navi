@@ -22,7 +22,7 @@ describe('Config', () => {
       };
       const configFilePath = join(tempDir, 'config.yml');
 
-      writeFileSync(configFilePath, `resources:\n  categories:\n    - url: /categories.json\n      status: 200\n`);
+      writeFileSync(configFilePath, 'resources:\n  categories:\n    - url: /categories.json\n      status: 200\n');
 
       const config = Config.fromFile(configFilePath);
 
