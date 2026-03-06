@@ -31,8 +31,13 @@ class Resource {
     });
   }
 
+  /**
+   * Creates a list of Resource instances from a plain object.
+   * @param {object} object - The plain object representing multiple resources.
+   * @returns {Array<Resource>} A list of Resource instances.
+   */
   static fromListObject(object) {
-    Object.entries(object).map(([resourceName, requests]) => {
+    return Object.entries(object).map(([resourceName, requests]) => {
       return Resource.fromObject({ name: resourceName, resourceRequests: requests});
     });
   }
