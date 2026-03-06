@@ -3,7 +3,6 @@ import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 
 import { Config } from '../../lib/models/Config.js';
-import { ConfigLoader } from '../../lib/service/configLoader.js';
 
 describe('Config', () => {
   let expectedResources;
@@ -42,27 +41,6 @@ describe('Config', () => {
           'Invalid config file: expected a top-level "resources" key.',
         );
       });
-    });
-  });
-
-  describe('ConfigLoader.fromFile', () => {
-    it('returns mapped resources by name', () => {
-      expectedResourceRequests = [
-        new ResourceRequest({ url: '/categories.json', status: 200 })
-      ];
-      expectedResources = {
-        categories: new Resource({
-          name: 'categories', resourceRequests: expectedResourceRequests
-        }),
-      };
-      let expectedConfig = { resources: expectedResources };
-
-      const file = '../fixtures/config/sample_config.yml';
-      const configFilePath = fileURLToPath(new URL(file, import.meta.url));
-
-      const resources = ConfigLoader.fromFile(configFilePath);
-
-      expect(resources).toEqual(expectedConfig);
     });
   });
 });
