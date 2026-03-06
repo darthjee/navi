@@ -22,6 +22,12 @@ class Resource {
       resourceRequests: ResourceRequest.fromList(obj.resourceRequests)
     });
   }
+
+  static fromListObject(object) {
+    Object.entries(object).map(([resourceName, requests]) => {
+      return Resource.fromObject({ name: resourceName, resourceRequests: requests});
+    });
+  }
 }
 
 export { Resource };
