@@ -38,6 +38,17 @@ describe('Config', () => {
       });
     });
 
+    describe('when the yaml file does not contain clients key', () => {
+      it('throws an error', () => {
+        const file = '../fixtures/config/missing_clients_sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        expect(() => Config.fromFile(configFilePath)).toThrowError(
+          'Invalid config file: expected a top-level "clients" key.',
+        );
+      });
+    });
+
     describe('when the yaml file does not contain resources key', () => {
       it('throws an error', () => {
         const file = '../fixtures/config/missing_resources_sample_config.yml';
