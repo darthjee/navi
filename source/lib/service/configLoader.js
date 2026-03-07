@@ -80,8 +80,8 @@ class ConfigLoader {
   #loadClients() {
     const parsedConfig = this.#parseConfig();
 
-    if (!parsedConfig.clients) {
-      return [];
+    if (!parsedConfig || typeof parsedConfig !== 'object' || !('clients' in parsedConfig)) {
+      throw new Error('Invalid config file: expected a top-level "clients" key.');
     }
 
     return Client.fromListObject(parsedConfig.clients);
