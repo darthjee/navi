@@ -1,11 +1,12 @@
 import { fileURLToPath } from 'node:url';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
+import { Client } from '../../lib/services/Client.js';
 import { ConfigLoader } from '../../lib/service/configLoader.js';
 
 describe('ConfigLoader', () => {
-  let expectedConfig;
   let expectedResources;
+  let expectedClients;
   let expectedResourceRequests;
 
   describe('.fromFile', () => {
@@ -19,16 +20,38 @@ describe('ConfigLoader', () => {
             name: 'categories', resourceRequests: expectedResourceRequests
           }),
         };
-        expectedConfig = { resources: expectedResources };
+        expectedClients = {
+          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+        };
       });
 
       it('returns mapped resources by name', () => {
         const file = '../fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
-        const resources = ConfigLoader.fromFile(configFilePath);
+        const config = ConfigLoader.fromFile(configFilePath);
 
-        expect(resources).toEqual(expectedConfig);
+        expect(config.resources).toEqual(expectedResources);
+      });
+
+      it('returns mapped clients by name', () => {
+        const file = '../fixtures/config/sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.clients).toEqual(expectedClients);
+      });
+    });
+
+    describe('when the yaml file does not contain clients key', () => {
+      it('throws an error', () => {
+        const file = '../fixtures/config/missing_clients_sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
+          'Invalid config file: expected a top-level "clients" key.',
+        );
       });
     });
 
