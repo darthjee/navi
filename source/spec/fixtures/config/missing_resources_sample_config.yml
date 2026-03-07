@@ -1,2 +1,3 @@
-client:
-  domain: https://example.com
+clients:
+  default:
+    base_url: https://example.com

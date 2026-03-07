@@ -2,7 +2,7 @@ import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
 
 /**
- * Client performs HTTP requests for resource paths using a configured domain.
+ * Client performs HTTP requests for resource paths using a configured base URL.
  *
  * It validates response status against the expected status from the resource request.
  *
@@ -11,10 +11,34 @@ import { RequestFailed } from '../exceptions/RequestFailed.js';
 class Client {
   /**
    * @param {object} attributes Client attributes.
-   * @param {string} attributes.domain Domain used as base URL.
+   * @param {string} attributes.name Name identifying this client.
+   * @param {string} attributes.baseUrl Base URL used to build full request URLs.
    */
   constructor(attributes) {
-    this.domain = attributes.domain;
+    this.name = attributes.name;
+    this.baseUrl = attributes.baseUrl;
+  }
+
+  /**
+   * Creates a Client instance from a plain configuration object.
+   *
+   * @param {string} name The name identifying the client.
+   * @param {object} config Client configuration object.
+   * @param {string} config.base_url Base URL for the client.
+   * @returns {Client} A new Client instance.
+   */
+  static fromObject(name, config) {
+    return new Client({ name, baseUrl: config.base_url });
+  }
+
+  /**
+   * Creates an array of Client instances from a map of client configurations.
+   *
+   * @param {object} object Map of client names to client configuration objects.
+   * @returns {Array<Client>} List of Client instances.
+   */
+  static fromListObject(object) {
+    return Object.entries(object).map(([name, config]) => Client.fromObject(name, config));
   }
 
   /**
@@ -54,12 +78,12 @@ class Client {
   }
 
   /**
-   * Builds the complete URL by combining domain and resource URL path.
+   * Builds the complete URL by combining base URL and resource URL path.
    * @param {string} resourceUrl URL path from the resource request.
    * @returns {string} The full URL.
    */
   #buildUrl(resourceUrl) {
-    return `${this.domain}${resourceUrl}`;
+    return `${this.baseUrl}${resourceUrl}`;
   }
 }
 
