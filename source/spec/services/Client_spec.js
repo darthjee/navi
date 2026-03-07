@@ -3,7 +3,7 @@ import { Client } from '../../lib/services/Client.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 
 describe('Client', () => {
-  const domain = 'http://example.com';
+  const baseUrl = 'http://example.com';
   const url = '/categories.json';
   const fullUrl = 'http://example.com/categories.json';
   const status = 200;
@@ -11,10 +11,10 @@ describe('Client', () => {
   let expectedError;
 
   beforeEach(() => {
-    client = new Client({ domain });
+    client = new Client({ name: 'default', baseUrl });
   });
 
-  it('returns true when status matches and requests using domain + url', async () => {
+  it('returns true when status matches and requests using baseUrl + url', async () => {
     spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
 
     await expectAsync(client.perform(new ResourceRequest({ url, status }))).toBeResolvedTo(true);

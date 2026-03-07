@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
 import { Resource } from '../models/Resource.js';
+import { Client } from '../services/Client.js';
 
 /**
  * ConfigLoader loads configuration files and maps them to resource objects.
@@ -20,7 +21,7 @@ class ConfigLoader {
    * The YAML must contain a top-level `resources` key.
    *
    * @param {string} filePath Path to the YAML configuration file.
-   * @returns {{resources: Record<string, Resource>}} Mapped resources by name.
+   * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
    * @throws {Error} Throws when the file is invalid or does not contain a `resources` key.
    */
   static fromFile(filePath) {
@@ -28,25 +29,39 @@ class ConfigLoader {
   }
 
   /**
-   * Loads the configuration file and maps the resources to Resource instances.
-   * @returns {{resources: Record<string, Resource>}} Mapped resources by name.
+   * Loads the configuration file and maps the resources and clients to model instances.
+   * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
    */
   load() {
     const mappedResources = Object.fromEntries(
       this.#resourcesEntries()
     );
 
-    return { resources: mappedResources };
+    const mappedClients = Object.fromEntries(
+      this.#clientsEntries()
+    );
+
+    return { resources: mappedResources, clients: mappedClients };
   }
 
   /**
    * Maps the resources to entries suitable for Object.fromEntries.
-   * @returns {Array<string, Resource>} Entries of resource name and Resource instance.
+   * @returns {Array<[string, Resource]>} Entries of resource name and Resource instance.
    */
   #resourcesEntries() {
     const resources = this.#loadResources();
 
     return resources.map((resource) => { return [resource.name, resource]; });
+  }
+
+  /**
+   * Maps the clients to entries suitable for Object.fromEntries.
+   * @returns {Array<[string, Client]>} Entries of client name and Client instance.
+   */
+  #clientsEntries() {
+    const clients = this.#loadClients();
+
+    return clients.map((client) => { return [client.name, client]; });
   }
 
   /**
@@ -56,6 +71,20 @@ class ConfigLoader {
   #loadResources() {
     const parsedConfig = this.#parseConfig();
     return Resource.fromListObject(parsedConfig.resources);
+  }
+
+  /**
+   * Loads the clients from the YAML configuration file and maps them to Client instances.
+   * @returns {Array<Client>} List of Client instances.
+   */
+  #loadClients() {
+    const parsedConfig = this.#parseConfig();
+
+    if (!parsedConfig.clients) {
+      return [];
+    }
+
+    return Client.fromListObject(parsedConfig.clients);
   }
 
   /**
