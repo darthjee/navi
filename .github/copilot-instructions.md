@@ -8,50 +8,54 @@ Its primary purpose is to warm caches by performing HTTP requests based on a use
 
 ## Runtime and Configuration Model
 
-The application must read a `.yml` configuration file that defines:
+The application must read a `.yml` configuration file with a top-level `resources` key.
+
+The configuration file may also define:
 
 - **Execution settings**
   - Example: number of workers and runtime behavior.
 - **Client settings**
   - Example: target domain/base URL and optional additional headers.
 - **Resource settings**
+  - Defined under the top-level `resources` key.
   - Example: resources such as `categories` or `category`.
   - Each resource item can define fields like `url`, expected `status`, and optional `resource` for chaining.
 
 Each resource defines one or more request entries to fetch data, for example:
 
 ```yaml
-categories:
-  - url: /categories.html
-    status: 302
-  - url: /categories.html?ajax=true
-    status: 200
-  - url: /categories.json
-    status: 200
-    resource: category
-category:
-  - url: /categories/{:id}.html
-    status: 302
-  - url: /categories/{:id}.html?ajax=true
-    status: 200
-  - url: /categories/{:id}.json
-    status: 200
-    resource: category_items
-category_items:
-  - url: /categories/{:category_id}/items.html
-    status: 302
-  - url: /categories/{:category_id}/items.html?ajax=true
-    status: 200
-  - url: /categories/{:category_id}/items.json
-    status: 200
-    resource: category_item
-category_item:
-  - url: /categories/{:category_id}/items/{:id}.html
-    status: 302
-  - url: /categories/{:category_id}/items/{:id}.html?ajax=true
-    status: 200
-  - url: /categories/{:category_id}/items/{:id}.json
-    status: 200
+resources:
+  categories:
+    - url: /categories.html
+      status: 302
+    - url: /categories.html?ajax=true
+      status: 200
+    - url: /categories.json
+      status: 200
+      resource: category
+  category:
+    - url: /categories/{:id}.html
+      status: 302
+    - url: /categories/{:id}.html?ajax=true
+      status: 200
+    - url: /categories/{:id}.json
+      status: 200
+      resource: category_items
+  category_items:
+    - url: /categories/{:category_id}/items.html
+      status: 302
+    - url: /categories/{:category_id}/items.html?ajax=true
+      status: 200
+    - url: /categories/{:category_id}/items.json
+      status: 200
+      resource: category_item
+  category_item:
+    - url: /categories/{:category_id}/items/{:id}.html
+      status: 302
+    - url: /categories/{:category_id}/items/{:id}.html?ajax=true
+      status: 200
+    - url: /categories/{:category_id}/items/{:id}.json
+      status: 200
 ```
 
 Some URLs may produce data that links to other resources. For example:
