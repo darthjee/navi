@@ -27,13 +27,22 @@ describe('ConfigLoader', () => {
         expectedConfig = { resources: expectedResources, clients: expectedClients };
       });
 
-      it('returns mapped resources and clients by name', () => {
+      it('returns mapped resources by name', () => {
         const file = '../fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
-        const resources = ConfigLoader.fromFile(configFilePath);
+        const config = ConfigLoader.fromFile(configFilePath);
 
-        expect(resources).toEqual(expectedConfig);
+        expect(config.resources).toEqual(expectedResources);
+      });
+
+      it('returns mapped clients by name', () => {
+        const file = '../fixtures/config/sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.clients).toEqual(expectedClients);
       });
     });
 
