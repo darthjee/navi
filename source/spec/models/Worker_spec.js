@@ -7,12 +7,16 @@ describe('Worker', () => {
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
-    worker = new Worker({ jobRegistry });
+    worker = new Worker({ id: 1, jobRegistry });
   });
 
   describe('#constructor', () => {
     it('stores the job registry', () => {
       expect(worker.jobRegistry).toEqual(jobRegistry);
+    });
+
+    it('stores the id', () => {
+      expect(worker.id).toEqual(1);
     });
   });
 });

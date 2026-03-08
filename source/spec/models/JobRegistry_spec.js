@@ -1,5 +1,7 @@
 import { Job } from '../../lib/models/Job.js';
 import { JobRegistry } from '../../lib/models/JobRegistry.js';
+import { LockedByOtherWorker } from '../../lib/exceptions/LockedByOtherWorker.js';
+import { Worker } from '../../lib/models/Worker.js';
 
 describe('JobRegistry', () => {
   let registry;
@@ -71,6 +73,70 @@ describe('JobRegistry', () => {
         registry.pick();
 
         expect(registry.hasJob()).toBeFalse();
+      });
+    });
+  });
+
+  describe('#lock', () => {
+    let worker;
+
+    beforeEach(() => {
+      worker = new Worker({ id: 1, jobRegistry: registry });
+    });
+
+    describe('when the registry is not locked', () => {
+      it('sets lockedBy to the worker id', () => {
+        registry.lock(worker);
+
+        expect(registry.lockedBy).toEqual(worker.id);
+      });
+    });
+
+    describe('when the registry is already locked', () => {
+      beforeEach(() => {
+        registry.lock(worker);
+      });
+
+      it('throws LockedByOtherWorker', () => {
+        const otherWorker = new Worker({ id: 2, jobRegistry: registry });
+
+        expect(() => registry.lock(otherWorker)).toThrowError(LockedByOtherWorker);
+      });
+    });
+  });
+
+  describe('#hasLock', () => {
+    let worker;
+
+    beforeEach(() => {
+      worker = new Worker({ id: 1, jobRegistry: registry });
+    });
+
+    describe('when the worker holds the lock', () => {
+      beforeEach(() => {
+        registry.lock(worker);
+      });
+
+      it('returns true', () => {
+        expect(registry.hasLock(worker)).toBeTrue();
+      });
+    });
+
+    describe('when another worker holds the lock', () => {
+      beforeEach(() => {
+        registry.lock(worker);
+      });
+
+      it('returns false', () => {
+        const otherWorker = new Worker({ id: 2, jobRegistry: registry });
+
+        expect(registry.hasLock(otherWorker)).toBeFalse();
+      });
+    });
+
+    describe('when the registry is not locked', () => {
+      it('returns false', () => {
+        expect(registry.hasLock(worker)).toBeFalse();
       });
     });
   });
