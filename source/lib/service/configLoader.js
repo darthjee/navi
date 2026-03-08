@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
-import { Resource } from '../models/Resource.js';
-import { Client } from '../services/Client.js';
+import { ConfigParser } from '../services/configParser.js';
 
 /**
- * ConfigLoader loads configuration files and maps them to resource objects.
+ * ConfigLoader loads a YAML configuration file and delegates parsing to ConfigParser.
  * @author darthjee
  */
 class ConfigLoader {
@@ -22,84 +21,26 @@ class ConfigLoader {
    *
    * @param {string} filePath Path to the YAML configuration file.
    * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
-   * @throws {Error} Throws when the file is invalid or does not contain a `resources` key.
+   * @throws {Error} Throws when the file is invalid or does not contain required keys.
    */
   static fromFile(filePath) {
     return new ConfigLoader(filePath).load();
   }
 
   /**
-   * Loads the configuration file and maps the resources and clients to model instances.
+   * Reads and parses the YAML configuration file, then delegates to ConfigParser.
    * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
    */
   load() {
-    const mappedResources = Object.fromEntries(
-      this.#resourcesEntries()
-    );
-
-    const mappedClients = Object.fromEntries(
-      this.#clientsEntries()
-    );
-
-    return { resources: mappedResources, clients: mappedClients };
+    return ConfigParser.fromObject(this.#parseYaml());
   }
 
   /**
-   * Maps the resources to entries suitable for Object.fromEntries.
-   * @returns {Array<[string, Resource]>} Entries of resource name and Resource instance.
+   * Reads and parses the raw YAML file content into a plain object.
+   * @returns {object} The raw parsed YAML object.
    */
-  #resourcesEntries() {
-    const resources = this.#loadResources();
-
-    return resources.map((resource) => { return [resource.name, resource]; });
-  }
-
-  /**
-   * Maps the clients to entries suitable for Object.fromEntries.
-   * @returns {Array<[string, Client]>} Entries of client name and Client instance.
-   */
-  #clientsEntries() {
-    const clients = this.#loadClients();
-
-    return clients.map((client) => { return [client.name, client]; });
-  }
-
-  /**
-   * Loads the resources from the YAML configuration file and maps them to Resource instances.
-   * @returns {Array<Resource>} List of Resource instances.
-   */
-  #loadResources() {
-    const parsedConfig = this.#parseConfig();
-    return Resource.fromListObject(parsedConfig.resources);
-  }
-
-  /**
-   * Loads the clients from the YAML configuration file and maps them to Client instances.
-   * @returns {Array<Client>} List of Client instances.
-   */
-  #loadClients() {
-    const parsedConfig = this.#parseConfig();
-
-    if (!parsedConfig || typeof parsedConfig !== 'object' || !('clients' in parsedConfig)) {
-      throw new Error('Invalid config file: expected a top-level "clients" key.');
-    }
-
-    return Client.fromListObject(parsedConfig.clients);
-  }
-
-  /**
-   * Parses the YAML configuration file and validates its structure.
-   * @returns {object} Parsed configuration object.
-   * @throws {Error} Throws when the configuration is invalid.
-   */
-  #parseConfig() {
-    const parsedConfig = YAML.parse(this.#yamlContent());
-
-    if (!parsedConfig || typeof parsedConfig !== 'object' || !('resources' in parsedConfig)) {
-      throw new Error('Invalid config file: expected a top-level "resources" key.');
-    }
-
-    return parsedConfig;
+  #parseYaml() {
+    return YAML.parse(this.#yamlContent());
   }
 
   /**
