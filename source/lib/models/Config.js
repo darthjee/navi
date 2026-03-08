@@ -17,6 +17,55 @@ class Config {
   }
 
   /**
+   * Returns the resource identified by the given name.
+   *
+   * @param {string} name The name of the resource to retrieve.
+   * @returns {Resource} The matching Resource instance.
+   * @throws {Error} Throws when no resource with the given name exists.
+   */
+  getResource(name) {
+    if (!(name in this.resources)) {
+      throw new Error(`Resource "${name}" not found.`);
+    }
+    return this.resources[name];
+  }
+
+  /**
+   * Returns the client identified by the given name.
+   *
+   * When `name` is `"default"` or not provided, the method first tries to
+   * return the client registered under the `"default"` key.  If no such
+   * client exists but exactly one client is registered (under any name),
+   * that single client is returned instead.
+   *
+   * @param {string} [name] The name of the client to retrieve.
+   * @returns {Client} The matching Client instance.
+   * @throws {Error} Throws when the client cannot be resolved.
+   */
+  getClient(name) {
+    const isDefaultRequest = !name || name === 'default';
+
+    if (!isDefaultRequest) {
+      if (name in this.clients) {
+        return this.clients[name];
+      }
+      throw new Error(`Client "${name}" not found.`);
+    }
+
+    if ('default' in this.clients) {
+      return this.clients.default;
+    }
+
+    const clientValues = Object.values(this.clients);
+
+    if (clientValues.length === 1) {
+      return clientValues[0];
+    }
+
+    throw new Error('Client "default" not found.');
+  }
+
+  /**
    * Creates a Config instance from a YAML file.
    *
    * @param {string} filePath Path to the YAML configuration file.
