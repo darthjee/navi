@@ -10,6 +10,149 @@ describe('Config', () => {
   let expectedClients;
   let expectedResourceRequests;
 
+  describe('#getResource', () => {
+    let config;
+    let resource;
+
+    beforeEach(() => {
+      resource = new Resource({
+        name: 'categories',
+        resourceRequests: [new ResourceRequest({ url: '/categories.json', status: 200 })],
+      });
+      config = new Config({
+        resources: { categories: resource },
+        clients: {},
+      });
+    });
+
+    describe('when the resource exists', () => {
+      it('returns the resource', () => {
+        expect(config.getResource('categories')).toBe(resource);
+      });
+    });
+
+    describe('when the resource does not exist', () => {
+      it('throws an error', () => {
+        expect(() => config.getResource('unknown')).toThrowError('Resource "unknown" not found.');
+      });
+    });
+  });
+
+  describe('#getClient', () => {
+    let config;
+    let defaultClient;
+    let otherClient;
+
+    beforeEach(() => {
+      defaultClient = new Client({ name: 'default', baseUrl: 'https://example.com' });
+      otherClient = new Client({ name: 'other', baseUrl: 'https://other.com' });
+    });
+
+    describe('when a client with the given name exists', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { default: defaultClient, other: otherClient },
+        });
+      });
+
+      it('returns the client by name', () => {
+        expect(config.getClient('other')).toBe(otherClient);
+      });
+    });
+
+    describe('when name is "default" and a default client exists', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { default: defaultClient, other: otherClient },
+        });
+      });
+
+      it('returns the default client', () => {
+        expect(config.getClient('default')).toBe(defaultClient);
+      });
+    });
+
+    describe('when no name is given and a default client exists', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { default: defaultClient, other: otherClient },
+        });
+      });
+
+      it('returns the default client', () => {
+        expect(config.getClient()).toBe(defaultClient);
+      });
+    });
+
+    describe('when no name is given and no default client exists but only one client', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { other: otherClient },
+        });
+      });
+
+      it('returns the single client', () => {
+        expect(config.getClient()).toBe(otherClient);
+      });
+    });
+
+    describe('when name is "default", no default client exists, and only one client exists', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { other: otherClient },
+        });
+      });
+
+      it('returns the single client', () => {
+        expect(config.getClient('default')).toBe(otherClient);
+      });
+    });
+
+    describe('when the named client does not exist', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { default: defaultClient },
+        });
+      });
+
+      it('throws an error', () => {
+        expect(() => config.getClient('unknown')).toThrowError('Client "unknown" not found.');
+      });
+    });
+
+    describe('when no name is given, no default client, and multiple clients exist', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { other: otherClient, another: new Client({ name: 'another', baseUrl: 'https://another.com' }) },
+        });
+      });
+
+      it('throws an error', () => {
+        expect(() => config.getClient()).toThrowError('Client "default" not found.');
+      });
+    });
+
+    describe('when name is "default", no default client, and multiple clients exist', () => {
+      beforeEach(() => {
+        config = new Config({
+          resources: {},
+          clients: { other: otherClient, another: new Client({ name: 'another', baseUrl: 'https://another.com' }) },
+        });
+      });
+
+      it('throws an error', () => {
+        expect(() => config.getClient('default')).toThrowError('Client "default" not found.');
+      });
+    });
+  });
+
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
