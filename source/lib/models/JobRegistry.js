@@ -1,3 +1,5 @@
+import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
+
 /**
  * JobRegistry manages a queue of jobs for Workers to consume.
  * @author darthjee
@@ -8,6 +10,7 @@ class JobRegistry {
    */
   constructor() {
     this.jobs = [];
+    this.lockedBy = null;
   }
 
   /**
@@ -33,6 +36,30 @@ class JobRegistry {
    */
   hasJob() {
     return this.jobs.length > 0;
+  }
+
+  /**
+   * Locks the registry for the given worker.
+   * If the registry is already locked by another worker, throws LockedByOtherWorker.
+   * @param {Worker} worker - The worker attempting to acquire the lock.
+   * @returns {void}
+   * @throws {LockedByOtherWorker} When the registry is already locked by another worker.
+   */
+  lock(worker) {
+    if (this.lockedBy === null) {
+      this.lockedBy = worker.id;
+    } else {
+      throw new LockedByOtherWorker();
+    }
+  }
+
+  /**
+   * Returns whether the given worker holds the lock on this registry.
+   * @param {Worker} worker - The worker to check.
+   * @returns {boolean} True if the worker holds the lock, false otherwise.
+   */
+  hasLock(worker) {
+    return this.lockedBy === worker.id;
   }
 }
 
