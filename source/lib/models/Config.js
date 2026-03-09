@@ -1,5 +1,4 @@
 import { ConfigLoader } from '../service/configLoader.js';
-import { ClientNotFound } from '../exceptions/ClientNotFound.js';
 import { ClientRegistry } from './ClientRegistry.js';
 
 /**
@@ -15,8 +14,7 @@ class Config {
    */
   constructor(attributes) {
     this.resources = attributes.resources;
-    this.clients = attributes.clients;
-    this.clientRegistry = new ClientRegistry(this.clients);
+    this.clientRegistry = new ClientRegistry(attributes.clients);
   }
 
   /**
