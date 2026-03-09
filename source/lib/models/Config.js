@@ -44,15 +44,14 @@ class Config {
    * @throws {ClientNotFound} Throws when the named or default client is not found.
    */
   getClient(name) {
-    if (name in this.clients) {
-      return this.clients[name];
+    try {
+      return this.#fetchClient(name);
+    } catch (error) {
+      if (name === 'default' || !name) {
+        return this.#getDefaultClient();
+      }
+      throw error;
     }
-
-    if (name && name !== 'default') {
-      throw new ClientNotFound(name);
-    }
-
-    return this.#getDefaultClient();
   }
 
   #getDefaultClient() {
@@ -67,6 +66,13 @@ class Config {
     }
 
     throw new ClientNotFound('default');
+  }
+
+  #fetchClient(name) {
+    if (name in this.clients) {
+      return this.clients[name];
+    }
+    throw new ClientNotFound(name);
   }
 
   /**
