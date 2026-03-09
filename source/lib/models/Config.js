@@ -43,15 +43,18 @@ class Config {
    * @throws {Error} Throws when the client cannot be resolved.
    */
   getClient(name) {
-    const isDefaultRequest = !name || name === 'default';
+    if (name in this.clients) {
+      return this.clients[name];
+    }
 
-    if (!isDefaultRequest) {
-      if (name in this.clients) {
-        return this.clients[name];
-      }
+    if (name && name !== 'default') {
       throw new Error(`Client "${name}" not found.`);
     }
 
+    return this.getDefaultClient();
+  }
+
+  getDefaultClient() {
     if ('default' in this.clients) {
       return this.clients.default;
     }
