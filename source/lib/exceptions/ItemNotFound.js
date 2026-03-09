@@ -1,12 +1,13 @@
+import { AppError } from './AppError.js';
+
 /**
- * ClientNotFound is a custom error class thrown when a requested client
- * cannot be found in config.
+ * ItemNotFound is a custom error class thrown when a requested item
+ * cannot be found.
  * @author darthjee
  */
-class ItemNotFound extends Error {
+class ItemNotFound extends AppError {
   constructor(itemName, { itemType = 'Item' } = {}) {
     super(`${itemType} "${itemName}" not found.`);
-    this.name = 'ItemNotFound';
     this.itemName = itemName;
     this.itemType = itemType;
   }

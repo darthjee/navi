@@ -8,8 +8,7 @@ import { ItemNotFound } from '../exceptions/ItemNotFound.js';
 class ClientNotFound extends ItemNotFound {
   constructor(clientName) {
     super(clientName, { itemType: 'Client' });
-    
-    this.name = 'ClientNotFound';
+
     this.clientName = clientName;
   }
 }
