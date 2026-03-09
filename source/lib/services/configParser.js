@@ -1,5 +1,5 @@
 import { Resource } from '../models/Resource.js';
-import { Client } from '../services/Client.js';
+import { Client } from './Client.js';
 
 /**
  * ConfigParser receives a parsed YAML configuration object and maps it to
