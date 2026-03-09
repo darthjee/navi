@@ -64,7 +64,7 @@ class ClientRegistry {
    * @throws {ClientNotFound} If no default client exists.
    */
   #getDefaultClient() {
-    return this.#fetchDefaultClient() || this.#fetchClient('default') || this.#clientNotFound('default');
+    return this.#fetchDefaultClient() || this.#fetchClient('default') || this.#notFound('default');
   }
 
   /**
@@ -78,7 +78,7 @@ class ClientRegistry {
     }
 
     if (name && name !== 'default') {
-      this.#clientNotFound(name);
+      this.#notFound(name);
     }
   }
 
@@ -87,7 +87,7 @@ class ClientRegistry {
    * @param {string} name The name of the client that was not found.
    * @throws {ClientNotFound} Always throws a ClientNotFound error.
    */
-  #clientNotFound(name) {
+  #notFound(name) {
     throw new ClientNotFound(name);
   }
 
