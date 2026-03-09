@@ -48,10 +48,7 @@ class Config {
   }
 
   #getDefaultClient() {
-    if ('default' in this.clients) {
-      return this.clients.default;
-    }
-    return this.#fetchDefaultClient();
+    return this.#fetchDefaultClient() || this.#fetchClient('default') || this.#clientNotFound('default');
   }
 
   #fetchClient(name) {
@@ -60,8 +57,12 @@ class Config {
     }
 
     if (name && name !== 'default') {
-      throw new ClientNotFound(name);
+      this.#clientNotFound(name);
     }
+  }
+
+  #clientNotFound(name) {
+    throw new ClientNotFound(name);
   }
 
   #fetchDefaultClient() {
@@ -70,8 +71,6 @@ class Config {
     if (clientValues.length === 1) {
       return clientValues[0];
     }
-
-    throw new ClientNotFound('default');
   }
 
   /**
