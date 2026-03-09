@@ -44,7 +44,7 @@ class ClientRegistry {
    * client exists but exactly one client is registered (under any name),
    * that single client is returned instead.
    * 
-  * @param {string} [name] The name of the client to retrieve.
+   * @param {string} [name] The name of the client to retrieve.
    * @returns {Client} The requested client instance.
    * @throws {ClientNotFound} If the client with the specified name does not exist.
    */
