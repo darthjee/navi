@@ -1,0 +1,40 @@
+import { randomUUID } from 'crypto';
+import { Worker } from './Worker.js';
+
+/**
+ * WorkerRegistry manages the creation and tracking of Worker instances.
+ * @author darthjee
+ */
+class WorkerRegistry {
+  /**
+   * Creates a new WorkerRegistry instance.
+   * @param {object} params - The parameters for creating a WorkerRegistry instance.
+   * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
+   * @param {number} params.workers - The number of workers to be built.
+   */
+  constructor({ jobRegistry, workers }) {
+    this.jobRegistry = jobRegistry;
+    this.workersCount = workers;
+    this.workers = [];
+  }
+
+  /**
+   * Builds a new Worker with a unique UUID and adds it to the internal workers list.
+   * @returns {Worker} The newly created Worker instance.
+   */
+  buildWorker() {
+    let id;
+
+    do {
+      id = randomUUID();
+    } while (this.workers.some(worker => worker.id === id));
+
+    const worker = new Worker({ id, jobRegistry: this.jobRegistry });
+
+    this.workers.push(worker);
+
+    return worker;
+  }
+}
+
+export { WorkerRegistry };
