@@ -47,6 +47,16 @@ class Config {
     return this.#fetchClient(name) || this.#getDefaultClient();
   }
 
+  /**
+   * Creates a Config instance from a YAML file.
+   *
+   * @param {string} filePath Path to the YAML configuration file.
+   * @returns {Config} A new Config instance.
+   */
+  static fromFile(filePath) {
+    return new Config( ConfigLoader.fromFile(filePath) );
+  }
+
   #getDefaultClient() {
     return this.#fetchDefaultClient() || this.#fetchClient('default') || this.#clientNotFound('default');
   }
@@ -71,16 +81,6 @@ class Config {
     if (clientValues.length === 1) {
       return clientValues[0];
     }
-  }
-
-  /**
-   * Creates a Config instance from a YAML file.
-   *
-   * @param {string} filePath Path to the YAML configuration file.
-   * @returns {Config} A new Config instance.
-   */
-  static fromFile(filePath) {
-    return new Config( ConfigLoader.fromFile(filePath) );
   }
 }
 
