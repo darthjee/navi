@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
+import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
+import { ClientRegistry } from '../../lib/models/ClientRegistry.js';
 
 import { Config } from '../../lib/models/Config.js';
 
@@ -9,6 +11,7 @@ describe('Config', () => {
   let expectedResources;
   let expectedClients;
   let expectedResourceRequests;
+  let expectedClientRegistry;
 
   describe('#getResource', () => {
     let config;
@@ -121,8 +124,8 @@ describe('Config', () => {
         });
       });
 
-      it('throws an error', () => {
-        expect(() => config.getClient('unknown')).toThrowError('Client "unknown" not found.');
+      it('throws ClientNotFound', () => {
+        expect(() => config.getClient('unknown')).toThrowError(ClientNotFound, 'Client "unknown" not found.');
       });
     });
 
@@ -134,8 +137,8 @@ describe('Config', () => {
         });
       });
 
-      it('throws an error', () => {
-        expect(() => config.getClient()).toThrowError('Client "default" not found.');
+      it('throws ClientNotFound', () => {
+        expect(() => config.getClient()).toThrowError(ClientNotFound, 'Client "default" not found.');
       });
     });
 
@@ -147,8 +150,8 @@ describe('Config', () => {
         });
       });
 
-      it('throws an error', () => {
-        expect(() => config.getClient('default')).toThrowError('Client "default" not found.');
+      it('throws ClientNotFound', () => {
+        expect(() => config.getClient('default')).toThrowError(ClientNotFound, 'Client "default" not found.');
       });
     });
   });
@@ -167,6 +170,7 @@ describe('Config', () => {
         expectedClients = {
           default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
         };
+        expectedClientRegistry = new ClientRegistry(expectedClients);
       });
 
       it('returns a Config instance with resources from yaml file', () => {
@@ -177,7 +181,7 @@ describe('Config', () => {
 
         expect(config instanceof Config).toBeTrue();
         expect(config.resources).toEqual(expectedResources);
-        expect(config.clients).toEqual(expectedClients);
+        expect(config.clientRegistry).toEqual(expectedClientRegistry);
       });
     });
 

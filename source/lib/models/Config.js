@@ -1,4 +1,5 @@
 import { ConfigLoader } from '../service/configLoader.js';
+import { ClientRegistry } from './ClientRegistry.js';
 
 /**
  * Config is a class that represents the configuration for the application.
@@ -13,7 +14,7 @@ class Config {
    */
   constructor(attributes) {
     this.resources = attributes.resources;
-    this.clients = attributes.clients;
+    this.clientRegistry = new ClientRegistry(attributes.clients);
   }
 
   /**
@@ -40,29 +41,10 @@ class Config {
    *
    * @param {string} [name] The name of the client to retrieve.
    * @returns {Client} The matching Client instance.
-   * @throws {Error} Throws when the client cannot be resolved.
+   * @throws {ClientNotFound} Throws when the named or default client is not found.
    */
   getClient(name) {
-    const isDefaultRequest = !name || name === 'default';
-
-    if (!isDefaultRequest) {
-      if (name in this.clients) {
-        return this.clients[name];
-      }
-      throw new Error(`Client "${name}" not found.`);
-    }
-
-    if ('default' in this.clients) {
-      return this.clients.default;
-    }
-
-    const clientValues = Object.values(this.clients);
-
-    if (clientValues.length === 1) {
-      return clientValues[0];
-    }
-
-    throw new Error('Client "default" not found.');
+    return this.clientRegistry.getClient(name);
   }
 
   /**
