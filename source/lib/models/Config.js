@@ -52,10 +52,10 @@ class Config {
       throw new ClientNotFound(name);
     }
 
-    return this.getDefaultClient();
+    return this.#getDefaultClient();
   }
 
-  getDefaultClient() {
+  #getDefaultClient() {
     if ('default' in this.clients) {
       return this.clients.default;
     }
