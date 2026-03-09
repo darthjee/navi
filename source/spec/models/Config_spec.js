@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
+import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 
 import { Config } from '../../lib/models/Config.js';
 
@@ -121,8 +122,8 @@ describe('Config', () => {
         });
       });
 
-      it('throws an error', () => {
-        expect(() => config.getClient('unknown')).toThrowError('Client "unknown" not found.');
+      it('throws ClientNotFound', () => {
+        expect(() => config.getClient('unknown')).toThrowError(ClientNotFound, 'Client "unknown" not found.');
       });
     });
 
@@ -134,8 +135,8 @@ describe('Config', () => {
         });
       });
 
-      it('throws an error', () => {
-        expect(() => config.getClient()).toThrowError('Client "default" not found.');
+      it('throws ClientNotFound', () => {
+        expect(() => config.getClient()).toThrowError(ClientNotFound, 'Client "default" not found.');
       });
     });
 
@@ -147,8 +148,8 @@ describe('Config', () => {
         });
       });
 
-      it('throws an error', () => {
-        expect(() => config.getClient('default')).toThrowError('Client "default" not found.');
+      it('throws ClientNotFound', () => {
+        expect(() => config.getClient('default')).toThrowError(ClientNotFound, 'Client "default" not found.');
       });
     });
   });
