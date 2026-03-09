@@ -4,10 +4,11 @@
  * @author darthjee
  */
 class ItemNotFound extends Error {
-  constructor(itemName) {
-    super(`Item "${itemName}" not found.`);
+  constructor(itemName, { itemType = 'Item' } = {}) {
+    super(`${itemType} "${itemName}" not found.`);
     this.name = 'ItemNotFound';
     this.itemName = itemName;
+    this.itemType = itemType;
   }
 }
 
