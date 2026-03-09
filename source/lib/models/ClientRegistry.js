@@ -33,7 +33,7 @@ class ClientRegistry {
    * @param {object} clients An object mapping client names to Client instances.
    */
   constructor(clients) {
-    this.clients = clients;
+    this.items = clients;
   }
   
   /**
@@ -73,8 +73,8 @@ class ClientRegistry {
    * @returns {Client|undefined} The client instance if found, otherwise undefined.
    */
   #fetchClient(name) {
-    if (name in this.clients) {
-      return this.clients[name];
+    if (name in this.items) {
+      return this.items[name];
     }
 
     if (name && name !== 'default') {
@@ -100,7 +100,7 @@ class ClientRegistry {
    * @returns {Client|undefined} The default client instance if found, otherwise undefined.
    */
   #fetchDefaultClient() {
-    const clientValues = Object.values(this.clients);
+    const clientValues = Object.values(this.items);
 
     if (clientValues.length === 1) {
       return clientValues[0];
