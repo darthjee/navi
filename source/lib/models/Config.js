@@ -1,4 +1,4 @@
-import { ConfigLoader } from '../service/configLoader.js';
+import { ConfigLoader } from '../services/configLoader.js';
 import { ClientRegistry } from './ClientRegistry.js';
 
 /**

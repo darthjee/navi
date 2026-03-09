@@ -1,5 +1,5 @@
 import { Resource } from '../models/Resource.js';
-import { Client } from '../services/Client.js';
+import { Client } from './Client.js';
 
 /**
  * ConfigParser receives a parsed YAML configuration object and maps it to
@@ -43,7 +43,7 @@ class ConfigParser {
 
   /**
    * Maps the resources to entries suitable for Object.fromEntries.
-   * @returns {Array<[string, Resource]>} Entries of resource name and Resource instance.
+   * @returns {Array<Array>} Entries of resource name and Resource instance.
    */
   #resourcesEntries() {
     return this.#loadResources().map((resource) => { return [resource.name, resource]; });
@@ -51,7 +51,7 @@ class ConfigParser {
 
   /**
    * Maps the clients to entries suitable for Object.fromEntries.
-   * @returns {Array<[string, Client]>} Entries of client name and Client instance.
+   * @returns {Array<Array>} Entries of client name and Client instance.
    */
   #clientsEntries() {
     return this.#loadClients().map((client) => { return [client.name, client]; });

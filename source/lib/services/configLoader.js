@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
-import { ConfigParser } from '../services/configParser.js';
+import { ConfigParser } from './configParser.js';
 
 /**
  * ConfigLoader loads a YAML configuration file and delegates parsing to ConfigParser.
