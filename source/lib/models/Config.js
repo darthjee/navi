@@ -39,6 +39,8 @@ class Config {
    * client exists but exactly one client is registered (under any name),
    * that single client is returned instead.
    *
+   * @see ClientRegistry#getClient for the client retrieval logic.
+   * 
    * @param {string} [name] The name of the client to retrieve.
    * @returns {Client} The matching Client instance.
    * @throws {ClientNotFound} Throws when the named or default client is not found.
