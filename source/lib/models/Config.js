@@ -1,4 +1,5 @@
 import { ConfigLoader } from '../service/configLoader.js';
+import { ClientNotFound } from '../exceptions/ClientNotFound.js';
 
 /**
  * Config is a class that represents the configuration for the application.
@@ -40,7 +41,7 @@ class Config {
    *
    * @param {string} [name] The name of the client to retrieve.
    * @returns {Client} The matching Client instance.
-   * @throws {Error} Throws when the client cannot be resolved.
+   * @throws {ClientNotFound} Throws when the named or default client is not found.
    */
   getClient(name) {
     if (name in this.clients) {
@@ -48,7 +49,7 @@ class Config {
     }
 
     if (name && name !== 'default') {
-      throw new Error(`Client "${name}" not found.`);
+      throw new ClientNotFound(name);
     }
 
     return this.getDefaultClient();
@@ -65,7 +66,7 @@ class Config {
       return clientValues[0];
     }
 
-    throw new Error('Client "default" not found.');
+    throw new ClientNotFound('default');
   }
 
   /**
