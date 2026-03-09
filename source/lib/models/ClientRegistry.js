@@ -1,3 +1,5 @@
+import { ClientNotFound } from '../exceptions/ClientNotFound.js';
+
 class ClientRegistry {
   constructor(clients) {
     this.clients = clients;
