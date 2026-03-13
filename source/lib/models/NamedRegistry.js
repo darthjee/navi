@@ -1,4 +1,4 @@
-import { ItemNotFound } from '../errors/ItemNotFound.js';
+import { ItemNotFound } from '../exceptions/ItemNotFound.js';
 
 class NamedRegistry {
   constructor(items) {
@@ -9,10 +9,10 @@ class NamedRegistry {
     if (name in this.items) {
       return this.items[name];
     }
-    this.#notFound(name);
+    this.notFound(name);
   }
 
-  #notFound(name) {
+  notFound(name) {
     throw new ItemNotFound(name);
   }
 }

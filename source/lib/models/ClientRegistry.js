@@ -42,7 +42,23 @@ class ClientRegistry extends NamedRegistry {
    * @throws {ClientNotFound} If the client with the specified name does not exist.
    */
   getClient(name) {
-    return this.#fetchClient(name) || this.#getDefaultClient();
+    try {
+      return this.getItem(name);
+    } catch (error) {
+      if (!(name && name !== 'default')) {
+        return this.#getDefaultClient();
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Throws a ClientNotFound error for the specified client name.
+   * @param {string} name The name of the client that was not found.
+   * @throws {ClientNotFound} Always throws a ClientNotFound error.
+   */
+  notFound(name) {
+    throw new ClientNotFound(name);
   }
 
   /**
@@ -57,31 +73,7 @@ class ClientRegistry extends NamedRegistry {
    * @throws {ClientNotFound} If no default client exists.
    */
   #getDefaultClient() {
-    return this.#fetchDefaultClient() || this.#fetchClient('default') || this.#notFound('default');
-  }
-
-  /**
-   * Fetches a client by name.
-   * @param {string} name The name of the client to fetch.
-   * @returns {Client|undefined} The client instance if found, otherwise undefined.
-   */
-  #fetchClient(name) {
-    if (name in this.items) {
-      return this.items[name];
-    }
-
-    if (name && name !== 'default') {
-      this.#notFound(name);
-    }
-  }
-
-  /**
-   * Throws a ClientNotFound error for the specified client name.
-   * @param {string} name The name of the client that was not found.
-   * @throws {ClientNotFound} Always throws a ClientNotFound error.
-   */
-  #notFound(name) {
-    throw new ClientNotFound(name);
+    return this.#fetchDefaultClient() || this.getItem('default');
   }
 
   /**
