@@ -1,4 +1,5 @@
 import { ClientNotFound } from '../exceptions/ClientNotFound.js';
+import { NamedRegistry } from './NamedRegistry.js';
 
 /**
  * ClientRegistry is a helper class that manages client retrieval logic for Config.
@@ -27,15 +28,7 @@ import { ClientNotFound } from '../exceptions/ClientNotFound.js';
  * 
  * @author darthjee
  */
-class ClientRegistry {
-  /**
-   * Creates a new ClientRegistry instance.
-   * @param {object} clients An object mapping client names to Client instances.
-   */
-  constructor(clients) {
-    this.items = clients;
-  }
-  
+class ClientRegistry extends NamedRegistry {
   /**
    * Retrieves a client by name or the default client if no name is provided.
    * 

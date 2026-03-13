@@ -1,3 +1,5 @@
+import { ItemNotFound } from '../errors/ItemNotFound.js';
+
 class NamedRegistry {
   constructor(items) {
     this.items = items;
@@ -14,3 +16,5 @@ class NamedRegistry {
     throw new ItemNotFound(name);
   }
 }
+
+export { NamedRegistry };
