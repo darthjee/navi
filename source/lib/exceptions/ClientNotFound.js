@@ -1,4 +1,4 @@
-import { ItemNotFound } from '../exceptions/ItemNotFound.js';
+import { ItemNotFound } from './ItemNotFound.js';
 
 /**
  * ClientNotFound is a custom error class thrown when a requested client
