@@ -15,7 +15,7 @@ class WorkerRegistry {
   constructor({ jobRegistry, workers }) {
     this.jobRegistry = jobRegistry;
     this.workersCount = workers;
-    this.workers = [];
+    this.workers = {};
   }
 
   /**
@@ -26,7 +26,7 @@ class WorkerRegistry {
     const id = this.#generateUUID();
     const worker = new Worker({ id, jobRegistry: this.jobRegistry });
 
-    this.workers.push(worker);
+    this.workers[id] = worker;
 
     return worker;
   }
@@ -40,7 +40,7 @@ class WorkerRegistry {
 
     do {
       id = randomUUID();
-    } while (this.workers.some(worker => worker.id === id));
+    } while (this.workers[id]);
 
     return id;
   }
