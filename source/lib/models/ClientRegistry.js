@@ -51,14 +51,10 @@ class ClientRegistry extends NamedRegistry {
    * @throws {ClientNotFound} If the client with the specified name does not exist.
    */
   getClient(name) {
-    try {
+    if (name && name !== 'default') {
       return this.getItem(name);
-    } catch (error) {
-      if (!(name && name !== 'default')) {
-        return this.#getDefaultClient();
-      }
-      throw error;
     }
+    return this.#getDefaultClient();
   }
 
   /**
