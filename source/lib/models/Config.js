@@ -1,5 +1,6 @@
 import { ConfigLoader } from '../services/configLoader.js';
 import { ClientRegistry } from './ClientRegistry.js';
+import { ResourceRegistry } from './ResourceRegistry.js';
 
 /**
  * Config is a class that represents the configuration for the application.
@@ -13,7 +14,7 @@ class Config {
    * @param {object} attributes.clients The clients to be included in the configuration.
    */
   constructor(attributes) {
-    this.resources = attributes.resources;
+    this.resources = new ResourceRegistry(attributes.resources);
     this.clientRegistry = new ClientRegistry(attributes.clients);
   }
 
@@ -25,10 +26,7 @@ class Config {
    * @throws {Error} Throws when no resource with the given name exists.
    */
   getResource(name) {
-    if (!(name in this.resources)) {
-      throw new Error(`Resource "${name}" not found.`);
-    }
-    return this.resources[name];
+    return this.resources.getItem(name);
   }
 
   /**
