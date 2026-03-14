@@ -19,7 +19,11 @@ class ConfigParser {
    * Creates a mapped configuration from a plain parsed YAML object.
    *
    * @param {object} config Parsed configuration object from a YAML file.
-   * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
+   * @returns {{
+   * resources: Record<string, Resource>,
+   * clients: Record<string, Client>,
+   * workers: WorkersConfig
+   * }} Mapped resources and clients by name. and workers configuration.
    * @throws {Error} Throws when the config is invalid or missing required keys.
    */
   static fromObject(config) {
@@ -28,7 +32,11 @@ class ConfigParser {
 
   /**
    * Parses the configuration object and maps resources and clients to model instances.
-   * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
+   * @returns {{
+   * resources: Record<string, Resource>,
+   * clients: Record<string, Client>,
+   * workers: WorkersConfig
+   * }} Mapped resources and clients by name. and workers configuration.
    */
   parse() {
     const mappedResources = Object.fromEntries(
