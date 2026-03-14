@@ -1,9 +1,9 @@
-import { ConfigLoader } from './ConfigLoader.js';
+import { Config } from '../models/Config.js';
 
 class Application {
   loadConfig(configPath) {
     // Load the configuration from the specified path.
-    this.config = ConfigLoader.fromFile(configPath);
+    this.config = Config.fromFile(configPath);
   }
 
 }
