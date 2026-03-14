@@ -14,7 +14,7 @@ class Config {
    * @param {object} attributes.clients The clients to be included in the configuration.
    */
   constructor(attributes) {
-    this.resources = new ResourceRegistry(attributes.resources);
+    this.resourceRegistry = new ResourceRegistry(attributes.resources);
     this.clientRegistry = new ClientRegistry(attributes.clients);
   }
 
@@ -26,7 +26,7 @@ class Config {
    * @throws {Error} Throws when no resource with the given name exists.
    */
   getResource(name) {
-    return this.resources.getItem(name);
+    return this.resourceRegistry.getItem(name);
   }
 
   /**
