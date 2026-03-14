@@ -2,11 +2,13 @@ import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 
 describe('ConfigParser', () => {
   let expectedResources;
   let expectedClients;
   let expectedResourceRequests;
+  let expectedWorkersConfig;
 
   describe('.fromObject', () => {
     describe('when the config object is valid', () => {
@@ -35,6 +37,7 @@ describe('ConfigParser', () => {
         expectedClients = {
           default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
         };
+        expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
       });
 
       it('returns mapped resources by name', () => {
@@ -47,6 +50,12 @@ describe('ConfigParser', () => {
         const result = ConfigParser.fromObject(config);
 
         expect(result.clients).toEqual(expectedClients);
+      });
+
+      it('returns workers configuration', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workers).toEqual(expectedWorkersConfig);
       });
     });
 

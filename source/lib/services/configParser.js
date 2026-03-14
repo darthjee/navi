@@ -1,5 +1,6 @@
 import { Resource } from '../models/Resource.js';
 import { Client } from './Client.js';
+import { WorkersConfig } from '../models/WorkersConfig.js';
 
 /**
  * ConfigParser receives a parsed YAML configuration object and maps it to
@@ -38,7 +39,15 @@ class ConfigParser {
       this.#clientsEntries()
     );
 
-    return { resources: mappedResources, clients: mappedClients };
+    return {
+      resources: mappedResources,
+      clients: mappedClients,
+      workers: this.#workersConfig()
+    };
+  }
+
+  #workersConfig() {
+    return new WorkersConfig(this.config.workers);
   }
 
   /**
