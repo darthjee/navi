@@ -16,6 +16,8 @@ class WorkerRegistry {
     this.jobRegistry = jobRegistry;
     this.workersCount = workers;
     this.workers = {};
+    this.busy = {};
+    this.idle = {};
   }
 
   /**
@@ -27,6 +29,7 @@ class WorkerRegistry {
     const worker = new Worker({ id, jobRegistry: this.jobRegistry });
 
     this.workers[id] = worker;
+    this.idle[id] = worker;
 
     return worker;
   }
