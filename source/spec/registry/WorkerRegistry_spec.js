@@ -9,10 +9,13 @@ describe('WorkerRegistry', () => {
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
-    workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 3 });
   });
 
   describe('#constructor', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 3 });
+    });
+
     it('stores the job registry', () => {
       expect(workerRegistry.jobRegistry).toEqual(jobRegistry);
     });
@@ -27,6 +30,10 @@ describe('WorkerRegistry', () => {
   });
 
   describe('#initWorkers', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 3 });
+    });
+
     it('builds the specified number of workers', () => {
       workerRegistry.initWorkers();
 
@@ -69,56 +76,12 @@ describe('WorkerRegistry', () => {
     });
   });
 
-  describe('#buildWorker', () => {
-    it('returns a worker', () => {
-      const worker = workerRegistry.buildWorker();
-
-      expect(worker).toBeDefined();
-    });
-
-    it('adds the worker to the list', () => {
-      workerRegistry.buildWorker();
-
-      expect(Object.keys(workerRegistry.workers).length).toEqual(1);
-    });
-
-    it('assigns the job registry to the worker', () => {
-      const worker = workerRegistry.buildWorker();
-
-      expect(worker.jobRegistry).toEqual(jobRegistry);
-    });
-
-    it('assigns a uuid id to the worker', () => {
-      const worker = workerRegistry.buildWorker();
-
-      expect(worker.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-      );
-    });
-
-    describe('when called multiple times', () => {
-      it('assigns unique ids to each worker', () => {
-        const worker1 = workerRegistry.buildWorker();
-        const worker2 = workerRegistry.buildWorker();
-
-        expect(workerRegistry.workers[worker1.id]).toEqual(worker1);
-        expect(workerRegistry.workers[worker2.id]).toEqual(worker2);
-      });
-
-      it('adds all workers to the list', () => {
-        workerRegistry.buildWorker();
-        workerRegistry.buildWorker();
-
-        expect(Object.keys(workerRegistry.workers).length).toEqual(2);
-      });
-    });
-
-  });
-
   describe('WorkerRegistry#setBusy', () => {
     beforeEach(() => {
-      worker = workerRegistry.buildWorker();
-      worker_id = worker.id;
+      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker = workerRegistry.workers[worker_id];
     });
 
     it('moves a worker from idle to busy when the worker exists', () => {
@@ -147,8 +110,10 @@ describe('WorkerRegistry', () => {
 
   describe('WorkerRegistry#setIdle', () => {
     beforeEach(() => {
-      worker = workerRegistry.buildWorker();
-      worker_id = worker.id;
+      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker = workerRegistry.workers[worker_id];
       workerRegistry.setBusy(worker_id);
     });
 

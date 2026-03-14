@@ -22,7 +22,7 @@ class WorkerRegistry {
 
   initWorkers() {
     for (let i = 0; i < this.quantity; i++) {
-      this.buildWorker();
+      this.#buildWorker();
     }
   }
 
@@ -56,7 +56,7 @@ class WorkerRegistry {
    * Builds a new Worker with a unique UUID and adds it to the internal workers list.
    * @returns {Worker} The newly created Worker instance.
    */
-  buildWorker() {
+  #buildWorker() {
     const id = this.#generateUUID();
     const worker = new Worker({ id, jobRegistry: this.jobRegistry, workerRegistry: this });
 
