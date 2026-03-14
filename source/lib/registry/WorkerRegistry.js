@@ -10,7 +10,7 @@ class WorkerRegistry {
    * Creates a new WorkerRegistry instance.
    * @param {object} params - The parameters for creating a WorkerRegistry instance.
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
-   * @param {number} params.workers - The number of workers to be built.
+   * @param {number} params.quantity - The number of workers to be built.
    */
   constructor({ jobRegistry, quantity }) {
     this.jobRegistry = jobRegistry;
@@ -20,6 +20,13 @@ class WorkerRegistry {
     this.idle = {};
   }
 
+  /**
+   * Initializes the specified number of workers
+   *
+   * This method creates the workers and adds them to the internal workers list,
+   * marking them as idle.
+   * @returns {void}
+   */
   initWorkers() {
     for (let i = 0; i < this.quantity; i++) {
       this.#buildWorker();
