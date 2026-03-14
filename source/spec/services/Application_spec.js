@@ -6,7 +6,7 @@ describe('Application', () => {
   let configPath;
 
   beforeEach(() => {
-    configPath = '../fixtures/config/sample_config.yml';
+    configPath = '../spec/fixtures/config/sample_config.yml';
     app = new Application();
   });
 
