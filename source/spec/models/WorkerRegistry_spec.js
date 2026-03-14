@@ -20,7 +20,7 @@ describe('WorkerRegistry', () => {
     });
 
     it('initializes an empty workers list', () => {
-      expect(workerRegistry.workers).toEqual([]);
+      expect(workerRegistry.workers).toEqual({});
     });
   });
 
@@ -34,7 +34,7 @@ describe('WorkerRegistry', () => {
     it('adds the worker to the list', () => {
       workerRegistry.buildWorker();
 
-      expect(workerRegistry.workers.length).toEqual(1);
+      expect(Object.keys(workerRegistry.workers).length).toEqual(1);
     });
 
     it('assigns the job registry to the worker', () => {
@@ -53,19 +53,18 @@ describe('WorkerRegistry', () => {
 
     describe('when called multiple times', () => {
       it('assigns unique ids to each worker', () => {
-        workerRegistry.buildWorker();
-        workerRegistry.buildWorker();
+        const worker1 = workerRegistry.buildWorker();
+        const worker2 = workerRegistry.buildWorker();
 
-        const ids = workerRegistry.workers.map(worker => worker.id);
-
-        expect(ids[0]).not.toEqual(ids[1]);
+        expect(workerRegistry.workers[worker1.id]).toEqual(worker1);
+        expect(workerRegistry.workers[worker2.id]).toEqual(worker2);
       });
 
       it('adds all workers to the list', () => {
         workerRegistry.buildWorker();
         workerRegistry.buildWorker();
 
-        expect(workerRegistry.workers.length).toEqual(2);
+        expect(Object.keys(workerRegistry.workers).length).toEqual(2);
       });
     });
 
