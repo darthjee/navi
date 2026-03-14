@@ -1,4 +1,4 @@
-import { ConfigLoader } from '../services/ConfigLoader.js';
+import { ConfigLoader } from './ConfigLoader.js';
 
 class Application {
   loadConfig(configPath) {
