@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Worker } from './Worker.js';
+import { Worker } from '../models/Worker.js';
 
 /**
  * WorkerRegistry manages the creation and tracking of Worker instances.
