@@ -8,10 +8,12 @@ class Worker {
    * @param {object} params - The parameters for creating a Worker instance.
    * @param {string|number} params.id - The unique identifier for this worker.
    * @param {JobRegistry} params.jobRegistry - The job registry to pull jobs from.
+   * @param {WorkerRegistry} params.workerRegistry - The worker registry that manages this worker.
    */
-  constructor({ id, jobRegistry }) {
+  constructor({ id, jobRegistry, workerRegistry }) {
     this.id = id;
     this.jobRegistry = jobRegistry;
+    this.workerRegistry = workerRegistry;
   }
 }
 

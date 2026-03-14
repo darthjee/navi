@@ -26,7 +26,7 @@ class WorkerRegistry {
    */
   buildWorker() {
     const id = this.#generateUUID();
-    const worker = new Worker({ id, jobRegistry: this.jobRegistry });
+    const worker = new Worker({ id, jobRegistry: this.jobRegistry, workerRegistry: this });
 
     this.workers[id] = worker;
     this.idle[id] = worker;
