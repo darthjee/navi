@@ -1,6 +1,6 @@
 import { ConfigLoader } from '../services/configLoader.js';
-import { ClientRegistry } from './ClientRegistry.js';
-import { ResourceRegistry } from './ResourceRegistry.js';
+import { ClientRegistry } from '../registry/ClientRegistry.js';
+import { ResourceRegistry } from '../registry/ResourceRegistry.js';
 
 /**
  * Config is a class that represents the configuration for the application.

@@ -1,4 +1,4 @@
-import { ResourceRegistry } from '../../lib/models/ResourceRegistry.js';
+import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { ResourceNotFound } from '../../lib/exceptions/ResourceNotFound.js';
 
 describe('ResourceRegistry', () => {
