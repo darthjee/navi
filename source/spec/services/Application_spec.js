@@ -1,12 +1,15 @@
 import { Application } from '../../lib/services/Application.js';
 import { Config } from '../../lib/models/Config.js';
+import { fileURLToPath } from 'node:url';
 
 describe('Application', () => {
   let app;
-  let configPath;
+  let configFilePath;
 
   beforeEach(() => {
-    configPath = '../spec/fixtures/config/sample_config.yml';
+    const configPath = '../fixtures/config/sample_config.yml';
+    
+    configFilePath = fileURLToPath(new URL(configPath, import.meta.url));
     app = new Application();
   });
 
@@ -14,7 +17,7 @@ describe('Application', () => {
     it('should initialize config', () => {
       expect(app.config).toBeUndefined();
 
-      app.loadConfig(configPath);
+      app.loadConfig(configFilePath);
 
       expect(app.config instanceof Config).toBeTrue();
     });
