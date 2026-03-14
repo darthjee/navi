@@ -101,4 +101,35 @@ describe('WorkerRegistry', () => {
       expect(workerRegistry.idle[worker_id]).toBeUndefined();
     });
   });
+
+  describe('WorkerRegistry#setIdle', () => {
+    beforeEach(() => {
+      worker = workerRegistry.buildWorker();
+      worker_id = worker.id;
+      workerRegistry.setBusy(worker_id);
+    });
+
+    it('moves a worker from busy to idle when the worker exists', () => {
+      expect(workerRegistry.busy[worker_id]).toBe(worker);
+
+      workerRegistry.setIdle(worker_id);
+
+      expect(workerRegistry.idle[worker_id]).toBe(worker);
+      expect(workerRegistry.busy[worker_id]).toBeUndefined();
+    });
+
+    it('does nothing when the worker id does not exist', () => {
+      workerRegistry.setIdle('non-existent-id');
+
+      expect(Object.keys(workerRegistry.idle).length).toBe(0);
+    });
+
+    it('is idempotent when called multiple times for the same worker', () => {
+      workerRegistry.setIdle(worker_id);
+      workerRegistry.setIdle(worker_id);
+
+      expect(workerRegistry.idle[worker_id]).toBe(worker);
+      expect(workerRegistry.busy[worker_id]).toBeUndefined();
+    });
+  });
 });
