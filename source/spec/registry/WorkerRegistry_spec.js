@@ -32,6 +32,41 @@ describe('WorkerRegistry', () => {
 
       expect(Object.keys(workerRegistry.workers).length).toEqual(3);
     });
+
+    it('assigns the job registry to the worker', () => {
+      workerRegistry.initWorkers();
+
+      const workers = Object.values(workerRegistry.workers);
+      const worker = workers[0];
+
+      expect(worker.jobRegistry).toEqual(jobRegistry);
+    });
+
+    it('creates the workers as idle', () => {
+      workerRegistry.initWorkers();
+
+      const workers = Object.values(workerRegistry.workers);
+      const idleWorkers = Object.values(workerRegistry.idle);
+
+      expect(idleWorkers).toEqual(workers);
+    });
+
+    it('does not creates the workers as busy', () => {
+      workerRegistry.initWorkers();
+
+      expect(workerRegistry.busy).toEqual({});
+    });
+
+    it('assigns a uuid id to the worker', () => {
+      workerRegistry.initWorkers();
+
+      const workers = Object.values(workerRegistry.workers);
+      const worker = workers[0];
+
+      expect(worker.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+      );
+    });
   });
 
   describe('#buildWorker', () => {
