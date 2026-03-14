@@ -26,6 +26,14 @@ describe('WorkerRegistry', () => {
     });
   });
 
+  describe('#initWorkers', () => {
+    it('builds the specified number of workers', () => {
+      workerRegistry.initWorkers();
+
+      expect(Object.keys(workerRegistry.workers).length).toEqual(3);
+    });
+  });
+
   describe('#buildWorker', () => {
     it('returns a worker', () => {
       const worker = workerRegistry.buildWorker();

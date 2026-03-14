@@ -20,6 +20,12 @@ class WorkerRegistry {
     this.idle = {};
   }
 
+  initWorkers() {
+    for (let i = 0; i < this.quantity; i++) {
+      this.buildWorker();
+    }
+  }
+
   /**
    * Sets a worker as busy.
    * @param {string} worker_id - The ID of the worker to set as busy.
