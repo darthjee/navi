@@ -1,4 +1,4 @@
-import { ClientRegistry } from '../../lib/models/ClientRegistry.js';
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { Client } from '../../lib/services/Client.js';
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 

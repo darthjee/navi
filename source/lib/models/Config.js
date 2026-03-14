@@ -1,5 +1,5 @@
 import { ConfigLoader } from '../services/configLoader.js';
-import { ClientRegistry } from './ClientRegistry.js';
+import { ClientRegistry } from '../registry/ClientRegistry.js';
 import { ResourceRegistry } from './ResourceRegistry.js';
 
 /**
