@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../lib/models/JobRegistry.js';
+import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { Worker } from '../../lib/models/Worker.js';
 
 describe('Worker', () => {
