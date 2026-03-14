@@ -1,7 +1,7 @@
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
-import { ConfigParser } from '../../lib/services/ConfigParser.js';
+import { ConfigParser } from '../../lib/services/ConfigParserr.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 
 describe('ConfigParser', () => {
