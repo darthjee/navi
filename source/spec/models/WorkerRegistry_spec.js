@@ -70,4 +70,39 @@ describe('WorkerRegistry', () => {
     });
 
   });
+
+  describe('WorkerRegistry#setBusy', () => {
+    it('moves a worker from idle to busy when the worker exists', () => {
+      const registry = new WorkerRegistry({ jobRegistry: {}, workers: 1 });
+      const worker = registry.buildWorker();
+      const id = worker.id;
+
+      expect(registry.idle[id]).toBe(worker);
+
+      registry.setBusy(id);
+
+      expect(registry.busy[id]).toBe(worker);
+      expect(registry.idle[id]).toBeUndefined();
+    });
+
+    it('does nothing when the worker id does not exist', () => {
+      const registry = new WorkerRegistry({ jobRegistry: {}, workers: 1 });
+
+      registry.setBusy('non-existent-id');
+
+      expect(Object.keys(registry.busy).length).toBe(0);
+    });
+
+    it('is idempotent when called multiple times for the same worker', () => {
+      const registry = new WorkerRegistry({ jobRegistry: {}, workers: 1 });
+      const worker = registry.buildWorker();
+      const id = worker.id;
+
+      registry.setBusy(id);
+      registry.setBusy(id);
+
+      expect(registry.busy[id]).toBe(worker);
+      expect(registry.idle[id]).toBeUndefined();
+    });
+  });
 });
