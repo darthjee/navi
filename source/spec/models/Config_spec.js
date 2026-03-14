@@ -4,7 +4,7 @@ import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
-import { ResourceRegistry } from '../../lib/models/ResourceRegistry.js';
+import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 
 import { Config } from '../../lib/models/Config.js';
 
