@@ -29,6 +29,13 @@ import { NamedRegistry } from './NamedRegistry.js';
  * @author darthjee
  */
 class ClientRegistry extends NamedRegistry {
+  /**
+   * The exception class to throw when a client is not found.
+   * @see ClientNotFound
+   * @type {class}
+   * @see #notFound
+   * @see NamedRegistry#notFoundException
+   */
   static notFoundException = ClientNotFound;
 
   /**
