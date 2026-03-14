@@ -12,9 +12,9 @@ class WorkerRegistry {
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
    * @param {number} params.workers - The number of workers to be built.
    */
-  constructor({ jobRegistry, workers }) {
+  constructor({ jobRegistry, quantity }) {
     this.jobRegistry = jobRegistry;
-    this.workersCount = workers;
+    this.quantity = quantity;
     this.workers = {};
     this.busy = {};
     this.idle = {};

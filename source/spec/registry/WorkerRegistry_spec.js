@@ -9,7 +9,7 @@ describe('WorkerRegistry', () => {
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
-    workerRegistry = new WorkerRegistry({ jobRegistry, workers: 3 });
+    workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 3 });
   });
 
   describe('#constructor', () => {
@@ -17,8 +17,8 @@ describe('WorkerRegistry', () => {
       expect(workerRegistry.jobRegistry).toEqual(jobRegistry);
     });
 
-    it('stores the workers count', () => {
-      expect(workerRegistry.workersCount).toEqual(3);
+    it('stores the workers quantity', () => {
+      expect(workerRegistry.quantity).toEqual(3);
     });
 
     it('initializes an empty workers list', () => {
