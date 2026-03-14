@@ -1,2 +1,5 @@
-client:
-  domain: https://example.com
+workers:
+  quantity: 5
+clients:
+  default:
+    base_url: https://example.com

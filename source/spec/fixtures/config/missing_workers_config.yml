@@ -1,5 +1,6 @@
-workers:
-  quantity: 5
+clients:
+  default:
+    base_url: https://example.com
 resources:
   categories:
     - url: /categories.json

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
-import { ConfigParser } from './configParser.js';
+import { ConfigParser } from './ConfigParserr.js';
 
 /**
  * ConfigLoader loads a YAML configuration file and delegates parsing to ConfigParser.
@@ -20,7 +20,11 @@ class ConfigLoader {
    * The YAML must contain a top-level `resources` key.
    *
    * @param {string} filePath Path to the YAML configuration file.
-   * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
+   * @returns {{
+   * resources: Record<string, Resource>,
+   * clients: Record<string, Client>,
+   * workers: WorkersConfig
+   * }} Mapped resources and clients by name. and workers configuration.
    * @throws {Error} Throws when the file is invalid or does not contain required keys.
    */
   static fromFile(filePath) {
@@ -29,7 +33,11 @@ class ConfigLoader {
 
   /**
    * Reads and parses the YAML configuration file, then delegates to ConfigParser.
-   * @returns {{resources: Record<string, Resource>, clients: Record<string, Client>}} Mapped resources and clients by name.
+   * @returns {{
+   * resources: Record<string, Resource>,
+   * clients: Record<string, Client>,
+   * workers: WorkersConfig
+   * }} Mapped resources and clients by name. and workers configuration.
    */
   load() {
     return ConfigParser.fromObject(this.#parseYaml());

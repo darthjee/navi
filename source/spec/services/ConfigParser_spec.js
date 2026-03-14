@@ -1,12 +1,14 @@
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
-import { ConfigParser } from '../../lib/services/configParser.js';
+import { ConfigParser } from '../../lib/services/ConfigParserr.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 
 describe('ConfigParser', () => {
   let expectedResources;
   let expectedClients;
   let expectedResourceRequests;
+  let expectedWorkersConfig;
 
   describe('.fromObject', () => {
     describe('when the config object is valid', () => {
@@ -14,6 +16,7 @@ describe('ConfigParser', () => {
 
       beforeEach(() => {
         config = {
+          workers: { quantity: 5 },
           clients: {
             default: { base_url: 'https://example.com' },
           },
@@ -35,6 +38,7 @@ describe('ConfigParser', () => {
         expectedClients = {
           default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
         };
+        expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
 
       it('returns mapped resources by name', () => {
@@ -48,11 +52,18 @@ describe('ConfigParser', () => {
 
         expect(result.clients).toEqual(expectedClients);
       });
+
+      it('returns workers configuration', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workers).toEqual(expectedWorkersConfig);
+      });
     });
 
     describe('when the config object does not contain a clients key', () => {
       it('throws an error', () => {
         const config = {
+          workers: { quantity: 5 },
           resources: {
             categories: [{ url: '/categories.json', status: 200 }],
           },
@@ -67,6 +78,7 @@ describe('ConfigParser', () => {
     describe('when the config object does not contain a resources key', () => {
       it('throws an error', () => {
         const config = {
+          workers: { quantity: 5 },
           clients: {
             default: { base_url: 'https://example.com' },
           },

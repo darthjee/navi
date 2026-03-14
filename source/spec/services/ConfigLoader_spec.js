@@ -2,12 +2,14 @@ import { fileURLToPath } from 'node:url';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
-import { ConfigLoader } from '../../lib/services/configLoader.js';
+import { ConfigLoader } from '../../lib/services/ConfigLoaderr.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 
 describe('ConfigLoader', () => {
   let expectedResources;
   let expectedClients;
   let expectedResourceRequests;
+  let expectedWorkersConfig;
 
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
@@ -23,6 +25,7 @@ describe('ConfigLoader', () => {
         expectedClients = {
           default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
         };
+        expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
 
       it('returns mapped resources by name', () => {
@@ -41,6 +44,59 @@ describe('ConfigLoader', () => {
         const config = ConfigLoader.fromFile(configFilePath);
 
         expect(config.clients).toEqual(expectedClients);
+      });
+
+      it('returns workers configuration', () => {
+        const file = '../fixtures/config/sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.workers).toEqual(expectedWorkersConfig);
+      });
+    });
+
+    describe('when the yaml misses workers definition', () => {
+      beforeEach(() => {
+        expectedResourceRequests = [
+          new ResourceRequest({ url: '/categories.json', status: 200 })
+        ];
+        expectedResources = {
+          categories: new Resource({
+            name: 'categories', resourceRequests: expectedResourceRequests
+          }),
+        };
+        expectedClients = {
+          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+        };
+        expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
+      });
+
+      it('returns mapped resources by name', () => {
+        const file = '../fixtures/config/missing_workers_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.resources).toEqual(expectedResources);
+      });
+
+      it('returns mapped clients by name', () => {
+        const file = '../fixtures/config/missing_workers_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.clients).toEqual(expectedClients);
+      });
+
+      it('returns workers configuration', () => {
+        const file = '../fixtures/config/missing_workers_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.workers).toEqual(expectedWorkersConfig);
       });
     });
 
