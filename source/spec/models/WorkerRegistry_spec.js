@@ -4,6 +4,8 @@ import { WorkerRegistry } from '../../lib/models/WorkerRegistry.js';
 describe('WorkerRegistry', () => {
   let jobRegistry;
   let workerRegistry;
+  let worker;
+  let worker_id;
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
@@ -71,37 +73,32 @@ describe('WorkerRegistry', () => {
   });
 
   describe('WorkerRegistry#setBusy', () => {
+    beforeEach(() => {
+      worker = workerRegistry.buildWorker();
+      worker_id = worker.id;
+    });
+
     it('moves a worker from idle to busy when the worker exists', () => {
-      const registry = new WorkerRegistry({ jobRegistry: {}, workers: 1 });
-      const worker = registry.buildWorker();
-      const id = worker.id;
+      expect(workerRegistry.idle[worker_id]).toBe(worker);
 
-      expect(registry.idle[id]).toBe(worker);
+      workerRegistry.setBusy(worker_id);
 
-      registry.setBusy(id);
-
-      expect(registry.busy[id]).toBe(worker);
-      expect(registry.idle[id]).toBeUndefined();
+      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.idle[worker_id]).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
-      const registry = new WorkerRegistry({ jobRegistry: {}, workers: 1 });
+      workerRegistry.setBusy('non-existent-id');
 
-      registry.setBusy('non-existent-id');
-
-      expect(Object.keys(registry.busy).length).toBe(0);
+      expect(Object.keys(workerRegistry.busy).length).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
-      const registry = new WorkerRegistry({ jobRegistry: {}, workers: 1 });
-      const worker = registry.buildWorker();
-      const id = worker.id;
+      workerRegistry.setBusy(worker_id);
+      workerRegistry.setBusy(worker_id);
 
-      registry.setBusy(id);
-      registry.setBusy(id);
-
-      expect(registry.busy[id]).toBe(worker);
-      expect(registry.idle[id]).toBeUndefined();
+      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.idle[worker_id]).toBeUndefined();
     });
   });
 });
