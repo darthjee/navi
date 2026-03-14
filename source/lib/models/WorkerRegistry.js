@@ -20,6 +20,10 @@ class WorkerRegistry {
     this.idle = {};
   }
 
+  /**
+   * Sets a worker as busy.
+   * @param {string} worker_id - The ID of the worker to set as busy.
+   */
   setBusy(worker_id) {
     const worker = this.workers[worker_id];
 
@@ -29,6 +33,10 @@ class WorkerRegistry {
     }
   }
 
+  /**
+   * Sets a worker as idle.
+   * @param {string} worker_id - The ID of the worker to set as idle.
+   */
   setIdle(worker_id) {
     const worker = this.workers[worker_id];
 
