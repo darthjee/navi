@@ -23,17 +23,26 @@ class WorkerRegistry {
    * @returns {Worker} The newly created Worker instance.
    */
   buildWorker() {
+    const id = this.#generateUUID();
+    const worker = new Worker({ id, jobRegistry: this.jobRegistry });
+
+    this.workers.push(worker);
+
+    return worker;
+  }
+
+  /**
+   * Generates a unique UUID that is not already assigned to any existing worker.
+   * @returns {string} A unique UUID string.
+   */
+  #generateUUID() {
     let id;
 
     do {
       id = randomUUID();
     } while (this.workers.some(worker => worker.id === id));
 
-    const worker = new Worker({ id, jobRegistry: this.jobRegistry });
-
-    this.workers.push(worker);
-
-    return worker;
+    return id;
   }
 }
 
