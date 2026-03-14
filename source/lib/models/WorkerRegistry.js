@@ -20,6 +20,24 @@ class WorkerRegistry {
     this.idle = {};
   }
 
+  setBusy(worker_id) {
+    const worker = this.workers[worker_id];
+
+    if (worker) {
+      delete this.idle[worker_id];
+      this.busy[worker_id] = worker;
+    }
+  }
+
+  setIdle(worker_id) {
+    const worker = this.workers[worker_id];
+
+    if (worker) {
+      delete this.busy[worker_id];
+      this.idle[worker_id] = worker;
+    }
+  }
+
   /**
    * Builds a new Worker with a unique UUID and adds it to the internal workers list.
    * @returns {Worker} The newly created Worker instance.
