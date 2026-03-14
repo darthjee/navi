@@ -1,6 +1,6 @@
 class WorkersConfig {
-  constructor(config) {
-    this.quantity = config ? config.quantity || 1 : 1;
+  constructor({ quantity = 1 } = {}) {
+    this.quantity = quantity;
   }
 }
 
