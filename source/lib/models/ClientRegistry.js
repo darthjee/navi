@@ -29,6 +29,8 @@ import { NamedRegistry } from './NamedRegistry.js';
  * @author darthjee
  */
 class ClientRegistry extends NamedRegistry {
+  static notFoundException = ClientNotFound;
+
   /**
    * Retrieves a client by name or the default client if no name is provided.
    * 
@@ -50,15 +52,6 @@ class ClientRegistry extends NamedRegistry {
       }
       throw error;
     }
-  }
-
-  /**
-   * Throws a ClientNotFound error for the specified client name.
-   * @param {string} name The name of the client that was not found.
-   * @throws {ClientNotFound} Always throws a ClientNotFound error.
-   */
-  notFound(name) {
-    throw new ClientNotFound(name);
   }
 
   /**
