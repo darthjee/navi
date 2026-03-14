@@ -1,4 +1,5 @@
 import { ClientNotFound } from '../exceptions/ClientNotFound.js';
+import { NamedRegistry } from './NamedRegistry.js';
 
 /**
  * ClientRegistry is a helper class that manages client retrieval logic for Config.
@@ -27,15 +28,16 @@ import { ClientNotFound } from '../exceptions/ClientNotFound.js';
  * 
  * @author darthjee
  */
-class ClientRegistry {
+class ClientRegistry extends NamedRegistry {
   /**
-   * Creates a new ClientRegistry instance.
-   * @param {object} clients An object mapping client names to Client instances.
+   * The exception class to throw when a client is not found.
+   * @see ClientNotFound
+   * @type {class}
+   * @see NamedRegistry#notFound
+   * @see NamedRegistry#notFoundException
    */
-  constructor(clients) {
-    this.clients = clients;
-  }
-  
+  static notFoundException = ClientNotFound;
+
   /**
    * Retrieves a client by name or the default client if no name is provided.
    * 
@@ -49,7 +51,10 @@ class ClientRegistry {
    * @throws {ClientNotFound} If the client with the specified name does not exist.
    */
   getClient(name) {
-    return this.#fetchClient(name) || this.#getDefaultClient();
+    if (name && name !== 'default') {
+      return this.getItem(name);
+    }
+    return this.#getDefaultClient();
   }
 
   /**
@@ -64,31 +69,7 @@ class ClientRegistry {
    * @throws {ClientNotFound} If no default client exists.
    */
   #getDefaultClient() {
-    return this.#fetchDefaultClient() || this.#fetchClient('default') || this.#clientNotFound('default');
-  }
-
-  /**
-   * Fetches a client by name.
-   * @param {string} name The name of the client to fetch.
-   * @returns {Client|undefined} The client instance if found, otherwise undefined.
-   */
-  #fetchClient(name) {
-    if (name in this.clients) {
-      return this.clients[name];
-    }
-
-    if (name && name !== 'default') {
-      this.#clientNotFound(name);
-    }
-  }
-
-  /**
-   * Throws a ClientNotFound error for the specified client name.
-   * @param {string} name The name of the client that was not found.
-   * @throws {ClientNotFound} Always throws a ClientNotFound error.
-   */
-  #clientNotFound(name) {
-    throw new ClientNotFound(name);
+    return this.#fetchDefaultClient() || this.getItem('default');
   }
 
   /**
@@ -100,7 +81,7 @@ class ClientRegistry {
    * @returns {Client|undefined} The default client instance if found, otherwise undefined.
    */
   #fetchDefaultClient() {
-    const clientValues = Object.values(this.clients);
+    const clientValues = Object.values(this.items);
 
     if (clientValues.length === 1) {
       return clientValues[0];

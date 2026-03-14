@@ -1,12 +1,14 @@
+import { ItemNotFound } from './ItemNotFound.js';
+
 /**
  * ClientNotFound is a custom error class thrown when a requested client
  * cannot be found in config.
  * @author darthjee
  */
-class ClientNotFound extends Error {
+class ClientNotFound extends ItemNotFound {
   constructor(clientName) {
-    super(`Client "${clientName}" not found.`);
-    this.name = 'ClientNotFound';
+    super(clientName, { itemType: 'Client' });
+
     this.clientName = clientName;
   }
 }
