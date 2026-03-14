@@ -16,6 +16,7 @@ describe('ConfigParser', () => {
 
       beforeEach(() => {
         config = {
+          workers: { quantity: 5 },
           clients: {
             default: { base_url: 'https://example.com' },
           },
@@ -37,7 +38,7 @@ describe('ConfigParser', () => {
         expectedClients = {
           default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
         };
-        expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
+        expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
 
       it('returns mapped resources by name', () => {
@@ -62,6 +63,7 @@ describe('ConfigParser', () => {
     describe('when the config object does not contain a clients key', () => {
       it('throws an error', () => {
         const config = {
+          workers: { quantity: 5 },
           resources: {
             categories: [{ url: '/categories.json', status: 200 }],
           },
@@ -76,6 +78,7 @@ describe('ConfigParser', () => {
     describe('when the config object does not contain a resources key', () => {
       it('throws an error', () => {
         const config = {
+          workers: { quantity: 5 },
           clients: {
             default: { base_url: 'https://example.com' },
           },
