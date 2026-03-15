@@ -29,7 +29,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped resources by name', () => {
-        const file = '../fixtures/config/sample_config.yml';
+        const file = '../support/fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = ConfigLoader.fromFile(configFilePath);
@@ -38,7 +38,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped clients by name', () => {
-        const file = '../fixtures/config/sample_config.yml';
+        const file = '../support/fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = ConfigLoader.fromFile(configFilePath);
@@ -47,7 +47,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns workers configuration', () => {
-        const file = '../fixtures/config/sample_config.yml';
+        const file = '../support/fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = ConfigLoader.fromFile(configFilePath);
@@ -73,7 +73,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped resources by name', () => {
-        const file = '../fixtures/config/missing_workers_config.yml';
+        const file = '../support/fixtures/config/missing_workers_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = ConfigLoader.fromFile(configFilePath);
@@ -82,7 +82,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped clients by name', () => {
-        const file = '../fixtures/config/missing_workers_config.yml';
+        const file = '../support/fixtures/config/missing_workers_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = ConfigLoader.fromFile(configFilePath);
@@ -91,7 +91,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns workers default configuration', () => {
-        const file = '../fixtures/config/missing_workers_config.yml';
+        const file = '../support/fixtures/config/missing_workers_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         const config = ConfigLoader.fromFile(configFilePath);
@@ -102,7 +102,7 @@ describe('ConfigLoader', () => {
 
     describe('when the yaml file does not contain clients key', () => {
       it('throws an error', () => {
-        const file = '../fixtures/config/missing_clients_sample_config.yml';
+        const file = '../support/fixtures/config/missing_clients_sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
@@ -113,7 +113,7 @@ describe('ConfigLoader', () => {
 
     describe('when the yaml file does not contain resources key', () => {
       it('throws an error', () => {
-        const file = '../fixtures/config/missing_resources_sample_config.yml';
+        const file = '../support/fixtures/config/missing_resources_sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 
         expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(

@@ -9,7 +9,7 @@ describe('Application', () => {
   let configFilePath;
 
   beforeEach(() => {
-    const configPath = '../fixtures/config/sample_config.yml';
+    const configPath = '../support/fixtures/config/sample_config.yml';
     
     configFilePath = fileURLToPath(new URL(configPath, import.meta.url));
     app = new Application();

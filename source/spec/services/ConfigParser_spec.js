@@ -17,7 +17,7 @@ describe('ConfigParser', () => {
   describe('.fromObject', () => {
     describe('when the config object is valid', () => {
       beforeEach(() => {
-        const file = '../fixtures/config/sample_config.yml';
+        const file = '../support/fixtures/config/sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
         const configFileContent = readFileSync(configFilePath, 'utf8');
         config = YAML.parse(configFileContent);
@@ -57,7 +57,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
-        const file = '../fixtures/config/missing_clients_sample_config.yml';
+        const file = '../support/fixtures/config/missing_clients_sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
         const configFileContent = readFileSync(configFilePath, 'utf8');
         config = YAML.parse(configFileContent);
@@ -72,7 +72,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a resources key', () => {
       beforeEach(() => {
-        const file = '../fixtures/config/missing_resources_sample_config.yml';
+        const file = '../support/fixtures/config/missing_resources_sample_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
         const configFileContent = readFileSync(configFilePath, 'utf8');
         config = YAML.parse(configFileContent);
@@ -87,7 +87,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a workers key', () => {
       beforeEach(() => {
-        const file = '../fixtures/config/missing_workers_config.yml';
+        const file = '../support/fixtures/config/missing_workers_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
         const configFileContent = readFileSync(configFilePath, 'utf8');
         config = YAML.parse(configFileContent);
