@@ -8,11 +8,13 @@ describe('WorkersAllocator', () => {
   let workersRegistry;
   let allocator;
   let job;
+  let worker;
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
     workersRegistry.initWorkers();
+    worker = Object.values(workersRegistry.workers)[0];
     job = new Job({ payload: { value: 1 } });
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
@@ -25,6 +27,7 @@ describe('WorkersAllocator', () => {
 
       allocator.allocate();
 
+      expect(worker.job).toBeUndefined();
       expect(workersRegistry.hasIdleWorker()).toBeTrue();
       expect(jobRegistry.hasJob()).toBeFalse();
     });
@@ -41,6 +44,7 @@ describe('WorkersAllocator', () => {
 
       allocator.allocate();
 
+      expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
     });
@@ -59,6 +63,7 @@ describe('WorkersAllocator', () => {
 
       allocator.allocate();
 
+      expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeTrue();
     });
@@ -68,6 +73,7 @@ describe('WorkersAllocator', () => {
     beforeEach(() => {
       workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
       workersRegistry.initWorkers();
+      worker = Object.values(workersRegistry.workers)[0];
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
       jobRegistry.push(job);
@@ -81,6 +87,7 @@ describe('WorkersAllocator', () => {
 
       allocator.allocate();
 
+      expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
     });

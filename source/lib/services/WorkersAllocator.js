@@ -11,8 +11,9 @@ class WorkersAllocator {
   }
 
   #allocateWorker() {
-    this.jobRegistry.pick();
-    this.workersRegistry.getIdleWorker();
+    const job = this.jobRegistry.pick();
+    const worker = this.workersRegistry.getIdleWorker();
+    worker.assing(job);
   }
 
   #canAllocate() {

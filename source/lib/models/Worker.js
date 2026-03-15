@@ -15,6 +15,10 @@ class Worker {
     this.jobRegistry = jobRegistry;
     this.workerRegistry = workerRegistry;
   }
+
+  assing(job) {
+    this.job = job;
+  }
 }
 
 export { Worker };
