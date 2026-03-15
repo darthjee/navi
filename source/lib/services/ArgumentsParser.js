@@ -1,10 +1,56 @@
 const DEFAULT_CONFIG_FILE = 'config/navi_config.yml';
 
+class ArgumentParser {
+  constructor(args, index) {
+    this.args = args;
+    this.index = index;
+  }
+
+  static parse(args, index) {
+    return (new ArgumentParser(args, index)).parse();
+  }
+
+  parse() {
+    if (this.args[this.index] === '-c') {
+      if (this.index + 1 >= this.args.length || this.args[this.index + 1].startsWith('-')) {
+        console.error('Error: -c option requires a config file path');
+        process.exit(1);
+      }
+      return { configFile: this.args[this.index + 1] };
+    }
+
+    if (this.args[this.index].startsWith('--config=')) {
+      const value = this.args[this.index].slice('--config='.length);
+      if (!value) {
+        console.error('Error: --config option requires a config file path');
+        process.exit(1);
+      }
+      return { configFile: value };
+    }
+  }
+}
+
 /**
  * Parses CLI arguments and returns a structured options object.
  * @author darthjee
  */
 class ArgumentsParser {
+
+  constructor(args) {
+    this.args = args;
+  }
+
+  parse() {
+    for (let index = 0; index < this.args.length; index++) {
+      const result = ArgumentParser.parse(this.args, index);
+      if (result) {
+        return result;
+      }
+    }
+
+    return { configFile: DEFAULT_CONFIG_FILE };
+  }
+
   /**
    * Parses command line arguments to extract CLI options.
    *
@@ -18,26 +64,7 @@ class ArgumentsParser {
    * @returns {{ configFile: string }} Parsed options object with the config file path.
    */
   static parse(args) {
-    for (let i = 0; i < args.length; i++) {
-      if (args[i] === '-c') {
-        if (i + 1 >= args.length || args[i + 1].startsWith('-')) {
-          console.error('Error: -c option requires a config file path');
-          process.exit(1);
-        }
-        return { configFile: args[i + 1] };
-      }
-
-      if (args[i].startsWith('--config=')) {
-        const value = args[i].slice('--config='.length);
-        if (!value) {
-          console.error('Error: --config option requires a config file path');
-          process.exit(1);
-        }
-        return { configFile: value };
-      }
-    }
-
-    return { configFile: DEFAULT_CONFIG_FILE };
+    return (new ArgumentsParser(args)).parse();
   }
 }
 
