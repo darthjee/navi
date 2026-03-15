@@ -59,6 +59,27 @@ class WorkersRegistry {
     }
   }
 
+  hasBusyWorker() {
+    return Object.keys(this.busy).length > 0;
+  }
+
+  hasIdleWorker() {
+    return Object.keys(this.idle).length > 0;
+  }
+
+  getIdleWorker() {
+    const idleWorkerIds = Object.keys(this.idle);
+
+    if (idleWorkerIds.length === 0) {
+      return null;
+    }
+
+    const workerId = idleWorkerIds[0];
+    this.setBusy(workerId);
+
+    return this.workers[workerId];
+  }
+
   /**
    * Builds a new Worker with a unique UUID and adds it to the internal workers list.
    * @returns {Worker} The newly created Worker instance.

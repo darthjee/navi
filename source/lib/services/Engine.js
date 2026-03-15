@@ -13,18 +13,20 @@ class Engine {
 
   #processJobs() {
     // Main job processing loop
-    const job = this.jobRegistry.pick();
 
-    if (job) {
+    while (this.#continueProcessing()) {
       const worker = this.workersRegistry.getIdleWorker();
 
       if (worker) {
+        const job = this.jobRegistry.pick();
         worker.execute(job);
-      } else {
-        // No available workers, requeue the job
-        this.jobRegistry.requeue(job);
       }
     }
+  }
+
+  #continueProcessing() {
+    return this.jobRegistry.hasJob()
+    || this.workersRegistry.hasBusyWorker();
   }
 }
 
