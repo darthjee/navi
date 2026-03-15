@@ -9,9 +9,10 @@ import { ResourceRegistry } from '../registry/ResourceRegistry.js';
  */
 class Config {
   /**
-   * @param {object} attributes The parameters for creating a Config instance.
-   * @param {object} attributes.resources The resources to be included in the configuration.
-   * @param {object} attributes.clients The clients to be included in the configuration.
+   * @param {object} params initialization parameters for the Config instance.
+   * @param {Record<string, Resource>} params.resources - A mapping of resource names to Resource instances.
+   * @param {Record<string, Client>} params.clients - A mapping of client names to Client instances.
+   * @param {WorkersConfig} params.workersConfig - The configuration for worker instances.
    */
   constructor({ resources, clients, workersConfig }) {
     this.resourceRegistry = new ResourceRegistry(resources);
