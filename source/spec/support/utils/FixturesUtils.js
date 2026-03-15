@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'url';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'url';
 import YAML from 'yaml';
 
 class FixturesUtils {

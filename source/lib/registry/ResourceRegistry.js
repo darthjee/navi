@@ -1,5 +1,5 @@
-import { ResourceNotFound } from '../exceptions/ResourceNotFound.js';
 import { NamedRegistry } from './NamedRegistry.js';
+import { ResourceNotFound } from '../exceptions/ResourceNotFound.js';
 
 class ResourceRegistry extends NamedRegistry {
   /**

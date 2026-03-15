@@ -1,8 +1,8 @@
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { Client } from '../../lib/services/Client.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
-import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigLoader', () => {

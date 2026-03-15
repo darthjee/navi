@@ -1,6 +1,6 @@
+import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { Client } from '../../lib/services/Client.js';
-import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 
 describe('ClientRegistry', () => {
   let defaultClient;

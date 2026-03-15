@@ -1,5 +1,5 @@
-import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { ResourceNotFound } from '../../lib/exceptions/ResourceNotFound.js';
+import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 
 describe('ResourceRegistry', () => {
   it('returns the resource when present', () => {

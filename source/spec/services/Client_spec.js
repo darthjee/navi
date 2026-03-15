@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Client } from '../../lib/services/Client.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { Client } from '../../lib/services/Client.js';
 
 describe('Client', () => {
   const baseUrl = 'http://example.com';

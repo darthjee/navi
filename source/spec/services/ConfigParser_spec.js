@@ -1,8 +1,8 @@
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { Client } from '../../lib/services/Client.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
-import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigParser', () => {

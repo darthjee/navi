@@ -1,13 +1,12 @@
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
-import { Resource } from '../../lib/models/Resource.js';
-import { Client } from '../../lib/services/Client.js';
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
+import { Config } from '../../lib/models/Config.js';
+import { Resource } from '../../lib/models/Resource.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
-import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
+import { Client } from '../../lib/services/Client.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
-
-import { Config } from '../../lib/models/Config.js';
 
 describe('Config', () => {
   let expectedResources;

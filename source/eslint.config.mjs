@@ -1,11 +1,11 @@
 import js from '@eslint/js';
 import complexity from 'eslint-plugin-complexity';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
+import importPlugin from 'eslint-plugin-import';
 import jasmine from 'eslint-plugin-jasmine';
 import jsdoc from 'eslint-plugin-jsdoc';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
-import importPlugin from 'eslint-plugin-import';
 
 export default [
   {
