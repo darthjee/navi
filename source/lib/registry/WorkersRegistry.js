@@ -80,13 +80,13 @@ class WorkersRegistry {
    * @returns {Worker|null} An idle worker if available, or null if no idle workers are present.
    */
   getIdleWorker() {
-    const idleWorkerIds = Object.keys(this.idle);
-
-    if (idleWorkerIds.length === 0) {
+    if (!this.hasIdleWorker()) {
       return null;
     }
 
+    const idleWorkerIds = Object.keys(this.idle);
     const workerId = idleWorkerIds[0];
+    
     this.setBusy(workerId);
 
     return this.workers[workerId];
