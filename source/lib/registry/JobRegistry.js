@@ -45,7 +45,7 @@ class JobRegistry {
    * @returns {boolean} True if there are jobs in the queue, false otherwise.
    */
   hasJob() {
-    return this.jobs.length > 0;
+    return this.jobs.length > 0 || this.failedJobs.length > 0;
   }
 
   /**

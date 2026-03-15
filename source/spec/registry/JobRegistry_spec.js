@@ -151,7 +151,7 @@ describe('JobRegistry', () => {
 
       registry.fail(picked);
 
-      expect(registry.hasJob()).toBeFalse();
+      expect(registry.hasJob()).toBeTrue();
       expect(registry.pick()).toBeUndefined();
     });
 
