@@ -160,22 +160,6 @@ describe('Config', () => {
     });
   });
 
-  describe('Config#getWorkersQuantity', () => {
-    it('returns the quantity from the provided WorkersConfig', () => {
-      const workersConfig = new WorkersConfig({ quantity: 3 });
-      const config = new Config({ resources: [], clients: [], workersConfig });
-
-      expect(config.getWorkersQuantity()).toEqual(3);
-    });
-
-    it('defaults to 1 when WorkersConfig has no explicit quantity', () => {
-      const workersConfig = new WorkersConfig();
-      const config = new Config({ resources: {}, clients: {}, workersConfig });
-
-      expect(config.getWorkersQuantity()).toEqual(1);
-    });
-  });
-
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
