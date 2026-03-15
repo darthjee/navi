@@ -16,7 +16,12 @@ class Worker {
     this.workerRegistry = workerRegistry;
   }
 
-  assing(job) {
+  /**
+   * Assigns a job to this worker.
+   * @param {Job} job - The job to assign.
+   * @returns {void}
+   */
+  assign(job) {
     this.job = job;
   }
 }
