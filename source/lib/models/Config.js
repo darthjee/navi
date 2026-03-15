@@ -54,6 +54,9 @@ class Config {
    *
    * @param {string} filePath Path to the YAML configuration file.
    * @returns {Config} A new Config instance.
+   * 
+   * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
+   * @throws {MissingTopLevelConfigKey} Throws when the file is invalid or does not contain required keys.
    */
   static fromFile(filePath) {
     return new Config( ConfigLoader.fromFile(filePath) );
