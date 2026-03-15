@@ -30,6 +30,9 @@ services:
   navi_proxy:
     image: darthjee/tent:0.5.0
     depends_on: [navi_httpd]
+    volumes:
+      - ./docker_volumes/proxy_configuration:/var/www/html/configuration/
+      - ./docker_volumes/proxy_cache:/var/www/html/cache/
     ports:
       - 0.0.0.0:3010:80
 
