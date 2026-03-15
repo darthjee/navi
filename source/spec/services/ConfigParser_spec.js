@@ -1,3 +1,6 @@
+import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+import YAML from 'yaml';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
@@ -9,23 +12,15 @@ describe('ConfigParser', () => {
   let expectedClients;
   let expectedResourceRequests;
   let expectedWorkersConfig;
+  let config;
 
   describe('.fromObject', () => {
     describe('when the config object is valid', () => {
-      let config;
-
       beforeEach(() => {
-        config = {
-          workers: { quantity: 5 },
-          clients: {
-            default: { base_url: 'https://example.com' },
-          },
-          resources: {
-            categories: [
-              { url: '/categories.json', status: 200 },
-            ],
-          },
-        };
+        const file = '../fixtures/config/sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFileContent = readFileSync(configFilePath, 'utf8');
+        config = YAML.parse(configFileContent);
 
         expectedResourceRequests = [
           new ResourceRequest({ url: '/categories.json', status: 200 })
@@ -61,14 +56,14 @@ describe('ConfigParser', () => {
     });
 
     describe('when the config object does not contain a clients key', () => {
-      it('throws an error', () => {
-        const config = {
-          workers: { quantity: 5 },
-          resources: {
-            categories: [{ url: '/categories.json', status: 200 }],
-          },
-        };
+      beforeEach(() => {
+        const file = '../fixtures/config/missing_clients_sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFileContent = readFileSync(configFilePath, 'utf8');
+        config = YAML.parse(configFileContent);
+      });
 
+      it('throws an error', () => {
         expect(() => ConfigParser.fromObject(config)).toThrowError(
           'Invalid config file: expected a top-level "clients" key.',
         );
@@ -76,14 +71,14 @@ describe('ConfigParser', () => {
     });
 
     describe('when the config object does not contain a resources key', () => {
+      beforeEach(() => {
+        const file = '../fixtures/config/missing_resources_sample_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFileContent = readFileSync(configFilePath, 'utf8');
+        config = YAML.parse(configFileContent);
+      });
+      
       it('throws an error', () => {
-        const config = {
-          workers: { quantity: 5 },
-          clients: {
-            default: { base_url: 'https://example.com' },
-          },
-        };
-
         expect(() => ConfigParser.fromObject(config)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',
         );
@@ -91,20 +86,14 @@ describe('ConfigParser', () => {
     });
 
     describe('when the config object does not contain a workers key', () => {
-      let config;
-
       beforeEach(() => {
-        config = {
-          clients: {
-            default: { base_url: 'https://example.com' },
-          },
-          resources: {
-            categories: [
-              { url: '/categories.json', status: 200 },
-            ],
-          },
-        };
-
+        const file = '../fixtures/config/missing_workers_config.yml';
+        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFileContent = readFileSync(configFilePath, 'utf8');
+        config = YAML.parse(configFileContent);
+      });
+      
+      beforeEach(() => {
         expectedResourceRequests = [
           new ResourceRequest({ url: '/categories.json', status: 200 })
         ];
