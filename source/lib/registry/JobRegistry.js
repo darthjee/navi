@@ -37,7 +37,7 @@ class JobRegistry {
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.jobs.shift();
+    return this.#pickRegularJob();
   }
 
   /**
@@ -70,6 +70,10 @@ class JobRegistry {
    */
   hasLock(worker) {
     return this.lockedBy === worker.id;
+  }
+
+  #pickRegularJob() {
+    return this.jobs.shift();
   }
 
   #hasRegularJob() {
