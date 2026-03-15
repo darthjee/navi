@@ -140,4 +140,22 @@ describe('WorkersRegistry', () => {
       expect(workerRegistry.busy[worker_id]).toBeUndefined();
     });
   });
+
+  describe('#hasBusyWorker', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+    });
+
+    it('returns true when there is a busy worker', () => {
+      workerRegistry.setBusy(worker_id);
+
+      expect(workerRegistry.hasBusyWorker()).toBe(true);
+    });
+
+    it('returns false when there are no busy workers', () => {
+      expect(workerRegistry.hasBusyWorker()).toBe(false);
+    });
+  });
 });
