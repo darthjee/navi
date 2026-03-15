@@ -1,3 +1,4 @@
+import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
@@ -110,6 +111,16 @@ describe('ConfigLoader', () => {
 
         expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',
+        );
+      });
+    });
+
+    describe('when the file is not found', () => {
+      it('throws an error', () => {
+        const configFilePath = FixturesUtils.getFixturePath('non-existing.yml');
+
+        expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
+          ConfigurationFileNotFound
         );
       });
     });

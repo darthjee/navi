@@ -46,7 +46,7 @@ describe('Application', () => {
 
     describe('when config file is invalid', () => {
       it('should throw an error', () => {
-        expect(() => app.loadConfig('invalid')).toThrow(ConfigurationFileNotFound);
+        expect(() => app.loadConfig('invalid')).toThrowError(ConfigurationFileNotFound);
       });
     });
   });

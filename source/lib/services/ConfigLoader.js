@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
 import { ConfigParser } from './ConfigParser.js';
+import { ConfigurationFileNotFound } from '../exceptions/ConfigurationFileNotFound.js';
 
 /**
  * ConfigLoader loads a YAML configuration file and delegates parsing to ConfigParser.
@@ -56,7 +57,11 @@ class ConfigLoader {
    * @returns {string} The content of the YAML file as a string.
    */
   #yamlContent() {
-    return readFileSync(this.filePath, 'utf8');
+    try {
+      return readFileSync(this.filePath, 'utf8');
+    } catch (err) {
+      throw new ConfigurationFileNotFound(this.filePath);
+    }
   }
 }
 
