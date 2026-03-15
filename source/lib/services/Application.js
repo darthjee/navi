@@ -8,8 +8,10 @@ class Application {
     this.config = Config.fromFile(configPath);
     this.jobRegistry = new JobRegistry();
     this.workersRegistry = new WorkersRegistry({
-      jobRegistry: this.jobRegistry, ...this.config.workerConfig
+      jobRegistry: this.jobRegistry, ...this.config.workersConfig
     });
+
+    this.workersRegistry.initWorkers();
   }
 }
 
