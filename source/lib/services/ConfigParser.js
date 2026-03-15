@@ -83,7 +83,7 @@ class ConfigParser {
    */
   #loadResources() {
     if (!this.config || typeof this.config !== 'object' || !('resources' in this.config)) {
-      throw new MissingResourceConfig('resources');
+      throw new MissingResourceConfig();
     }
 
     return Resource.fromListObject(this.config.resources);
@@ -96,7 +96,7 @@ class ConfigParser {
    */
   #loadClients() {
     if (!this.config || typeof this.config !== 'object' || !('clients' in this.config)) {
-      throw new MissingClientsConfig('clients');
+      throw new MissingClientsConfig();
     }
 
     return Client.fromListObject(this.config.clients);

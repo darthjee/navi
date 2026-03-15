@@ -1,14 +1,13 @@
-import { AppError } from './AppError.js';
+import { MissingTopLevelConfigKey } from './MissingTopLevelConfgKey.js';
 
 /**
  * ItemNotFound is a custom error class thrown when a requested item
  * cannot be found.
  * @author darthjee
  */
-class MissingResourceConfig extends AppError {
-  constructor(itemType) {
-    super(`Invalid config file: expected a top-level "${itemType}" key.`);
-    this.itemType = itemType;
+class MissingResourceConfig extends MissingTopLevelConfigKey {
+  constructor() {
+    super('resources');
   }
 }
 
