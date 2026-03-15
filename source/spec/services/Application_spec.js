@@ -1,17 +1,16 @@
 import { Application } from '../../lib/services/Application.js';
 import { Config } from '../../lib/models/Config.js';
-import { fileURLToPath } from 'node:url';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Application', () => {
   let app;
   let configFilePath;
 
   beforeEach(() => {
-    const configPath = '../support/fixtures/config/sample_config.yml';
-    
-    configFilePath = fileURLToPath(new URL(configPath, import.meta.url));
+    configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+
     app = new Application();
   });
 

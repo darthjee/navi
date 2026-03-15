@@ -1,9 +1,9 @@
-import { fileURLToPath } from 'node:url';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigLoader', () => {
   let expectedResources;
@@ -29,8 +29,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped resources by name', () => {
-        const file = '../support/fixtures/config/sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
         const config = ConfigLoader.fromFile(configFilePath);
 
@@ -38,8 +37,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped clients by name', () => {
-        const file = '../support/fixtures/config/sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
         const config = ConfigLoader.fromFile(configFilePath);
 
@@ -47,8 +45,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns workers configuration', () => {
-        const file = '../support/fixtures/config/sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
         const config = ConfigLoader.fromFile(configFilePath);
 
@@ -73,8 +70,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped resources by name', () => {
-        const file = '../support/fixtures/config/missing_workers_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_workers_config.yml');
 
         const config = ConfigLoader.fromFile(configFilePath);
 
@@ -82,8 +78,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped clients by name', () => {
-        const file = '../support/fixtures/config/missing_workers_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_workers_config.yml');
 
         const config = ConfigLoader.fromFile(configFilePath);
 
@@ -91,8 +86,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns workers default configuration', () => {
-        const file = '../support/fixtures/config/missing_workers_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_workers_config.yml');
 
         const config = ConfigLoader.fromFile(configFilePath);
 
@@ -102,8 +96,7 @@ describe('ConfigLoader', () => {
 
     describe('when the yaml file does not contain clients key', () => {
       it('throws an error', () => {
-        const file = '../support/fixtures/config/missing_clients_sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_clients_sample_config.yml');
 
         expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "clients" key.',
@@ -113,8 +106,7 @@ describe('ConfigLoader', () => {
 
     describe('when the yaml file does not contain resources key', () => {
       it('throws an error', () => {
-        const file = '../support/fixtures/config/missing_resources_sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_resources_sample_config.yml');
 
         expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',

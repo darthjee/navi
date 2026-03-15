@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
@@ -6,6 +5,7 @@ import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 import { Config } from '../../lib/models/Config.js';
 
@@ -180,8 +180,7 @@ describe('Config', () => {
       });
 
       it('returns a Config instance with resources from yaml file', () => {
-        const file = '../support/fixtures/config/sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
         const config = Config.fromFile(configFilePath);
 
@@ -194,8 +193,7 @@ describe('Config', () => {
 
     describe('when the yaml file does not contain clients key', () => {
       it('throws an error', () => {
-        const file = '../support/fixtures/config/missing_clients_sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_clients_sample_config.yml');
 
         expect(() => Config.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "clients" key.',
@@ -205,8 +203,7 @@ describe('Config', () => {
 
     describe('when the yaml file does not contain resources key', () => {
       it('throws an error', () => {
-        const file = '../support/fixtures/config/missing_resources_sample_config.yml';
-        const configFilePath = fileURLToPath(new URL(file, import.meta.url));
+        const configFilePath = FixturesUtils.getFixturePath('config/missing_resources_sample_config.yml');
 
         expect(() => Config.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',
