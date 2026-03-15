@@ -52,6 +52,10 @@ export default [
         groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
       }],
 
+      //'no-trailing-spaces': ['error', { skipBlankLines: false, ignoreComments: false }],
+      //'no-multi-spaces': ['error', { ignoreEOLComments: true }],
+
+
       // Complexity rules
       complexity: ['warn', { max: 10 }],
       'max-lines': ['warn', { max: 300 }],
