@@ -21,6 +21,14 @@ class Config {
   }
 
   /**
+   * Returns the quantity of workers to be used as defined in the configuration.
+   * @returns {number} The quantity of workers to be used.
+   */
+  getWorkersQuantity() {
+    return this.workersConfig.getWorkersQuantity;
+  }
+
+  /**
    * Returns the resource identified by the given name.
    *
    * @param {string} name The name of the resource to retrieve.
