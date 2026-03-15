@@ -1,6 +1,7 @@
 import { Worker } from '../../lib/models/Worker.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
+import { Job } from '../../lib/models/Job.js';
 
 describe('Worker', () => {
   let jobRegistry;
@@ -24,6 +25,14 @@ describe('Worker', () => {
 
     it('stores the worker registry', () => {
       expect(worker.workerRegistry).toEqual(workerRegistry);
+    });
+  });
+
+  describe('#assign', () => {
+    it('assigns a job to the worker', () => {
+      const job = new Job({ payload: { value: 1 } });
+      worker.assign(job);
+      expect(worker.job).toEqual(job);
     });
   });
 });
