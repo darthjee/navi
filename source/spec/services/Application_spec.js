@@ -2,7 +2,7 @@ import { Application } from '../../lib/services/Application.js';
 import { Config } from '../../lib/models/Config.js';
 import { fileURLToPath } from 'node:url';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
-import { WorkerRegistry } from '../../lib/registry/WorkerRegistry.js';
+import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 
 describe('Application', () => {
   let app;
@@ -37,7 +37,7 @@ describe('Application', () => {
 
       app.loadConfig(configFilePath);
 
-      expect(app.workersRegistry instanceof WorkerRegistry).toBeTrue();
+      expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
     });
   });
 });

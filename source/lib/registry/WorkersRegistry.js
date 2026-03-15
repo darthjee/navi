@@ -2,13 +2,13 @@ import { randomUUID } from 'crypto';
 import { Worker } from '../models/Worker.js';
 
 /**
- * WorkerRegistry manages the creation and tracking of Worker instances.
+ * WorkersRegistry manages the creation and tracking of Worker instances.
  * @author darthjee
  */
-class WorkerRegistry {
+class WorkersRegistry {
   /**
-   * Creates a new WorkerRegistry instance.
-   * @param {object} params - The parameters for creating a WorkerRegistry instance.
+   * Creates a new WorkersRegistry instance.
+   * @param {object} params - The parameters for creating a WorkersRegistry instance.
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
    * @param {number} params.quantity - The number of workers to be built.
    */
@@ -88,4 +88,4 @@ class WorkerRegistry {
   }
 }
 
-export { WorkerRegistry };
+export { WorkersRegistry };

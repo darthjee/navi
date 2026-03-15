@@ -1,7 +1,7 @@
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
-import { WorkerRegistry } from '../../lib/registry/WorkerRegistry.js';
+import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 
-describe('WorkerRegistry', () => {
+describe('WorkersRegistry', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
@@ -13,7 +13,7 @@ describe('WorkerRegistry', () => {
 
   describe('#constructor', () => {
     beforeEach(() => {
-      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 3 });
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
     });
 
     it('stores the job registry', () => {
@@ -31,7 +31,7 @@ describe('WorkerRegistry', () => {
 
   describe('#initWorkers', () => {
     beforeEach(() => {
-      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 3 });
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
     });
 
     it('builds the specified number of workers', () => {
@@ -76,9 +76,9 @@ describe('WorkerRegistry', () => {
     });
   });
 
-  describe('WorkerRegistry#setBusy', () => {
+  describe('WorkersRegistry#setBusy', () => {
     beforeEach(() => {
-      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
       worker_id = Object.keys(workerRegistry.workers)[0];
       worker = workerRegistry.workers[worker_id];
@@ -108,9 +108,9 @@ describe('WorkerRegistry', () => {
     });
   });
 
-  describe('WorkerRegistry#setIdle', () => {
+  describe('WorkersRegistry#setIdle', () => {
     beforeEach(() => {
-      workerRegistry = new WorkerRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
       worker_id = Object.keys(workerRegistry.workers)[0];
       worker = workerRegistry.workers[worker_id];
