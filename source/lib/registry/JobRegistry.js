@@ -10,6 +10,7 @@ class JobRegistry {
    */
   constructor() {
     this.jobs = [];
+    this.failedJobs = [];
     this.lockedBy = null;
   }
 
@@ -20,6 +21,15 @@ class JobRegistry {
    */
   push(job) {
     this.jobs.push(job);
+  }
+
+  /**
+   * Marks a job as failed.
+   * @param {Job} job - The job to mark as failed.
+   * @returns {void}
+   */
+  fail(job) {
+    this.failedJobs.push(job);
   }
 
   /**
