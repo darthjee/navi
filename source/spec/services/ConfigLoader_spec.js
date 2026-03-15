@@ -90,7 +90,7 @@ describe('ConfigLoader', () => {
         expect(config.clients).toEqual(expectedClients);
       });
 
-      it('returns workers configuration', () => {
+      it('returns workers default configuration', () => {
         const file = '../fixtures/config/missing_workers_config.yml';
         const configFilePath = fileURLToPath(new URL(file, import.meta.url));
 

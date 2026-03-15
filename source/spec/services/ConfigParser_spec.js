@@ -90,6 +90,54 @@ describe('ConfigParser', () => {
       });
     });
 
+    describe('when the config object does not contain a workers key', () => {
+      let config;
+
+      beforeEach(() => {
+        config = {
+          clients: {
+            default: { base_url: 'https://example.com' },
+          },
+          resources: {
+            categories: [
+              { url: '/categories.json', status: 200 },
+            ],
+          },
+        };
+
+        expectedResourceRequests = [
+          new ResourceRequest({ url: '/categories.json', status: 200 })
+        ];
+        expectedResources = {
+          categories: new Resource({
+            name: 'categories', resourceRequests: expectedResourceRequests
+          }),
+        };
+        expectedClients = {
+          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+        };
+        expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
+      });
+
+      it('returns mapped resources by name', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.resources).toEqual(expectedResources);
+      });
+
+      it('returns mapped clients by name', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.clients).toEqual(expectedClients);
+      });
+
+      it('returns default workers configuration', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workers).toEqual(expectedWorkersConfig);
+      });
+    });
+
     describe('when the config object is null', () => {
       it('throws an error for missing resources key', () => {
         expect(() => ConfigParser.fromObject(null)).toThrowError(
