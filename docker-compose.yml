@@ -4,8 +4,8 @@ services:
     env_file: .env
     volumes:
       - ./source:/home/node/app
-      - ./docker_volumes/config:/home/node/config
-      - ./docker_volumes/node_modules:/home/node/node_modules
+      - ./docker_volumes/config:/home/node/app/config
+      - ./docker_volumes/node_modules:/home/node/app/node_modules
 
   base_build:
     <<: *base
@@ -18,11 +18,31 @@ services:
   navi_app:
     <<: *base
     container_name: navi_app
-    depends_on: [base_build]
+    depends_on: [base_build, navi_proxy]
     command: /bin/bash
+    links:
+      - navi_proxy:remote_host
 
   navi_tests:
     <<: *base
     container_name: navi_tests
     depends_on: [base_build]
     command: /bin/bash
+
+  navi_proxy:
+    image: darthjee/tent:0.5.0
+    depends_on: [navi_httpd]
+    links:
+      - navi_httpd:backend
+    volumes:
+      - ./docker_volumes/proxy_configuration:/var/www/html/configuration/
+      - ./docker_volumes/proxy_cache:/var/www/html/cache/
+    ports:
+      - 0.0.0.0:3010:80
+
+  navi_httpd:
+    image: httpd
+    volumes:
+      - ./dev:/usr/local/apache2/htdocs
+    ports:
+      - 0.0.0.0:3020:80
