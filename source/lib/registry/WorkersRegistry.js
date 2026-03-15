@@ -60,6 +60,39 @@ class WorkersRegistry {
   }
 
   /**
+   * Checks if there is at least one busy worker.
+   * @returns {boolean} True if there is at least one busy worker, false otherwise.
+   */
+  hasBusyWorker() {
+    return Object.keys(this.busy).length > 0;
+  }
+
+  /**
+   * Checks if there is at least one idle worker.
+   * @returns {boolean} True if there is at least one idle worker, false otherwise.
+   */
+  hasIdleWorker() {
+    return Object.keys(this.idle).length > 0;
+  }
+
+  /**
+   * Gets an idle worker if available.
+   * @returns {Worker|null} An idle worker if available, or null if no idle workers are present.
+   */
+  getIdleWorker() {
+    if (!this.hasIdleWorker()) {
+      return null;
+    }
+
+    const idleWorkerIds = Object.keys(this.idle);
+    const workerId = idleWorkerIds[0];
+    
+    this.setBusy(workerId);
+
+    return this.workers[workerId];
+  }
+
+  /**
    * Builds a new Worker with a unique UUID and adds it to the internal workers list.
    * @returns {Worker} The newly created Worker instance.
    */
