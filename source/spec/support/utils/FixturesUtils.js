@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'node:fs';
+import YAML from 'yaml';
 
 class FixturesUtils {
   static getFixturePath(file) {
@@ -9,6 +10,11 @@ class FixturesUtils {
   static loadFixture(file) {
     const filePath = this.getFixturePath(file);
     return readFileSync(filePath, 'utf8');
+  }
+
+  static loadYamlFixture(file) {
+    const fileContent = this.loadFixture(file);
+    return YAML.parse(fileContent);
   }
 }
 export { FixturesUtils };

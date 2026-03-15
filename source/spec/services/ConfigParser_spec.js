@@ -1,4 +1,3 @@
-import YAML from 'yaml';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { Client } from '../../lib/services/Client.js';
@@ -16,8 +15,7 @@ describe('ConfigParser', () => {
   describe('.fromObject', () => {
     describe('when the config object is valid', () => {
       beforeEach(() => {
-        const configFileContent = FixturesUtils.loadFixture('config/sample_config.yml');
-        config = YAML.parse(configFileContent);
+        config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
 
         expectedResourceRequests = [
           new ResourceRequest({ url: '/categories.json', status: 200 })
@@ -54,8 +52,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
-        const configFileContent = FixturesUtils.loadFixture('config/missing_clients_sample_config.yml');
-        config = YAML.parse(configFileContent);
+        config = FixturesUtils.loadYamlFixture('config/missing_clients_sample_config.yml');
       });
 
       it('throws an error', () => {
@@ -67,8 +64,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a resources key', () => {
       beforeEach(() => {
-        const configFileContent = FixturesUtils.loadFixture('config/missing_resources_sample_config.yml');
-        config = YAML.parse(configFileContent);
+        config = FixturesUtils.loadYamlFixture('config/missing_resources_sample_config.yml');
       });
       
       it('throws an error', () => {
@@ -80,8 +76,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a workers key', () => {
       beforeEach(() => {
-        const configFileContent = FixturesUtils.loadFixture('config/missing_workers_config.yml');
-        config = YAML.parse(configFileContent);
+        config = FixturesUtils.loadYamlFixture('config/missing_workers_config.yml');
       });
       
       beforeEach(() => {
