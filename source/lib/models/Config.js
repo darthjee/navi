@@ -25,7 +25,7 @@ class Config {
    * @returns {number} The quantity of workers to be used.
    */
   getWorkersQuantity() {
-    return this.workersConfig.getWorkersQuantity;
+    return this.workersConfig.quantity;
   }
 
   /**
