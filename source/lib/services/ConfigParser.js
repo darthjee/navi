@@ -1,5 +1,5 @@
-import { Resource } from '../models/Resource.js';
 import { Client } from './Client.js';
+import { Resource } from '../models/Resource.js';
 import { WorkersConfig } from '../models/WorkersConfig.js';
 
 /**

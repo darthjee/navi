@@ -1,9 +1,10 @@
 import js from '@eslint/js';
 import complexity from 'eslint-plugin-complexity';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
+import importPlugin from 'eslint-plugin-import';
 import jasmine from 'eslint-plugin-jasmine';
 import jsdoc from 'eslint-plugin-jsdoc';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default [
@@ -18,6 +19,7 @@ export default [
       react,
       'react-hooks': reactHooks,
       jsdoc,
+      'import': importPlugin,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -37,8 +39,19 @@ export default [
       react: {
         version: 'detect',
       },
+      // recommended by eslint-plugin-import
+      'import/resolver': {
+        node: { extensions: ['.js', '.mjs', '.jsx'] },
+      },
     },
     rules: {
+      // Ensure import statements are alphabetized and grouped
+      'import/order': ['error', {
+        alphabetize: { order: 'asc', caseInsensitive: true },
+        'newlines-between': 'never',
+        groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
+      }],
+
       // Complexity rules
       complexity: ['warn', { max: 10 }],
       'max-lines': ['warn', { max: 300 }],
