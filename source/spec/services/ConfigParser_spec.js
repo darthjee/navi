@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Resource } from '../../lib/models/Resource.js';
@@ -17,8 +16,7 @@ describe('ConfigParser', () => {
   describe('.fromObject', () => {
     describe('when the config object is valid', () => {
       beforeEach(() => {
-        const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
-        const configFileContent = readFileSync(configFilePath, 'utf8');
+        const configFileContent = FixturesUtils.loadFixture('config/sample_config.yml');
         config = YAML.parse(configFileContent);
 
         expectedResourceRequests = [
@@ -56,8 +54,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
-        const configFilePath = FixturesUtils.getFixturePath('config/missing_clients_sample_config.yml');
-        const configFileContent = readFileSync(configFilePath, 'utf8');
+        const configFileContent = FixturesUtils.loadFixture('config/missing_clients_sample_config.yml');
         config = YAML.parse(configFileContent);
       });
 
@@ -70,8 +67,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a resources key', () => {
       beforeEach(() => {
-        const configFilePath = FixturesUtils.getFixturePath('config/missing_resources_sample_config.yml');
-        const configFileContent = readFileSync(configFilePath, 'utf8');
+        const configFileContent = FixturesUtils.loadFixture('config/missing_resources_sample_config.yml');
         config = YAML.parse(configFileContent);
       });
       
@@ -84,8 +80,7 @@ describe('ConfigParser', () => {
 
     describe('when the config object does not contain a workers key', () => {
       beforeEach(() => {
-        const configFilePath = FixturesUtils.getFixturePath('config/missing_workers_config.yml');
-        const configFileContent = readFileSync(configFilePath, 'utf8');
+        const configFileContent = FixturesUtils.loadFixture('config/missing_workers_config.yml');
         config = YAML.parse(configFileContent);
       });
       
