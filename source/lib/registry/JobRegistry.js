@@ -37,7 +37,7 @@ class JobRegistry {
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.#pickRegularJob();
+    return this.#pickRegularJob() || this.#pickFailedJob();
   }
 
   /**
@@ -74,6 +74,10 @@ class JobRegistry {
 
   #pickRegularJob() {
     return this.jobs.shift();
+  }
+
+  #pickFailedJob() {
+    return this.failedJobs.shift();
   }
 
   #hasRegularJob() {
