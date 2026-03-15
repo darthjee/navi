@@ -2,7 +2,7 @@ workers:
   quantity: 5
 clients:
   default:
-    base_url: https://example.com
+    base_url: http://remote_host:80
 resources:
   categories:
     - url: /categories.json
