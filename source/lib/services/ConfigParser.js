@@ -1,4 +1,5 @@
 import { Client } from './Client.js';
+import { MissingResourceConfig } from '../exceptions/MissingResourceConfig.js';
 import { Resource } from '../models/Resource.js';
 import { WorkersConfig } from '../models/WorkersConfig.js';
 
@@ -81,7 +82,7 @@ class ConfigParser {
    */
   #loadResources() {
     if (!this.config || typeof this.config !== 'object' || !('resources' in this.config)) {
-      throw new Error('Invalid config file: expected a top-level "resources" key.');
+      throw new MissingResourceConfig('resources');
     }
 
     return Resource.fromListObject(this.config.resources);

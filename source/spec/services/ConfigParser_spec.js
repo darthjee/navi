@@ -1,3 +1,4 @@
+import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
@@ -69,7 +70,7 @@ describe('ConfigParser', () => {
       
       it('throws an error', () => {
         expect(() => ConfigParser.fromObject(config)).toThrowError(
-          'Invalid config file: expected a top-level "resources" key.',
+          MissingResourceConfig, 'Invalid config file: expected a top-level "resources" key.',
         );
       });
     });
