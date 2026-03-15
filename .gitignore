@@ -140,3 +140,5 @@ vite.config.ts.timestamp-*
 
 source/report
 source/docs
+
+docker_volumes/proxy_cache
