@@ -40,7 +40,7 @@ class Config {
    * that single client is returned instead.
    *
    * @see ClientRegistry#getClient for the client retrieval logic.
-   * 
+   *
    * @param {string} [name] The name of the client to retrieve.
    * @returns {Client} The matching Client instance.
    * @throws {ClientNotFound} Throws when the named or default client is not found.
@@ -54,7 +54,7 @@ class Config {
    *
    * @param {string} filePath Path to the YAML configuration file.
    * @returns {Config} A new Config instance.
-   * 
+   *
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
    * @throws {MissingTopLevelConfigKey} Throws when the file is invalid or does not contain required keys.
    */

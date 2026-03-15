@@ -140,4 +140,60 @@ describe('WorkersRegistry', () => {
       expect(workerRegistry.busy[worker_id]).toBeUndefined();
     });
   });
+
+  describe('#hasBusyWorker', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+    });
+
+    it('returns true when there is a busy worker', () => {
+      workerRegistry.setBusy(worker_id);
+
+      expect(workerRegistry.hasBusyWorker()).toBe(true);
+    });
+
+    it('returns false when there are no busy workers', () => {
+      expect(workerRegistry.hasBusyWorker()).toBe(false);
+    });
+  });
+  describe('#hasIdleWorker', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+    });
+
+    it('returns true when there is a idle worker', () => {
+      expect(workerRegistry.hasIdleWorker()).toBe(true);
+    });
+
+    it('returns false when there are no idle workers', () => {
+      workerRegistry.setBusy(worker_id);
+      expect(workerRegistry.hasIdleWorker()).toBe(false);
+    });
+  });
+
+  describe('#getIdleWorker', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+    });
+
+    it('returns an idle worker when available', () => {
+      const worker = workerRegistry.getIdleWorker();
+
+      expect(worker).toBeDefined();
+      expect(worker.id).toBe(worker_id);
+    });
+
+    it('returns null when no idle workers are available', () => {
+      workerRegistry.setBusy(worker_id);
+      const worker = workerRegistry.getIdleWorker();
+
+      expect(worker).toBeNull();
+    });
+  });
 });
