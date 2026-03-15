@@ -82,7 +82,6 @@ export default [
 
       // JSDoc rules
       'jsdoc/check-alignment': 'warn',
-      'jsdoc/check-indentation': 'warn',
       'jsdoc/check-param-names': 'error',
       'jsdoc/check-tag-names': 'error',
       'jsdoc/check-types': 'warn',
