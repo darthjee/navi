@@ -1,4 +1,5 @@
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
+import { Queue } from '../utils/Queue.js';
 
 /**
  * JobRegistry manages a queue of jobs for Workers to consume.
@@ -9,8 +10,8 @@ class JobRegistry {
    * Creates a new JobRegistry instance with an empty job queue.
    */
   constructor() {
-    this.jobs = [];
-    this.failedJobs = [];
+    this.jobs = new Queue();
+    this.failedJobs = new Queue();
     this.lockedBy = null;
   }
 
@@ -37,7 +38,7 @@ class JobRegistry {
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.#pickRegularJob() || this.#pickFailedJob();
+    return this.jobs.pick() || this.failedJobs.pick();
   }
 
   /**
@@ -45,7 +46,7 @@ class JobRegistry {
    * @returns {boolean} True if there are jobs in the queue, false otherwise.
    */
   hasJob() {
-    return this.#hasRegularJob() || this.#hasFailedJob();
+    return this.jobs.hasItem() || this.failedJobs.hasItem();
   }
 
   /**
@@ -70,22 +71,6 @@ class JobRegistry {
    */
   hasLock(worker) {
     return this.lockedBy === worker.id;
-  }
-
-  #pickRegularJob() {
-    return this.jobs.shift();
-  }
-
-  #pickFailedJob() {
-    return this.failedJobs.shift();
-  }
-
-  #hasRegularJob() {
-    return this.jobs.length > 0;
-  }
-
-  #hasFailedJob() {
-    return this.failedJobs.length > 0;
   }
 }
 
