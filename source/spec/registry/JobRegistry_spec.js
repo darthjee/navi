@@ -140,4 +140,23 @@ describe('JobRegistry', () => {
       });
     });
   });
+  
+  describe('#fail', () => {
+    it('does not re-queue a picked job', () => {
+      const job = new Job({ payload: { id: 1 } });
+      registry.push(job);
+
+      const picked = registry.pick();
+      expect(picked).toBe(job);
+
+      registry.fail(picked);
+
+      expect(registry.hasJob()).toBeFalse();
+      expect(registry.pick()).toBeUndefined();
+    });
+
+    it('is safe to call with undefined', () => {
+      expect(() => registry.fail(undefined)).not.toThrow();
+    });
+  });
 });
