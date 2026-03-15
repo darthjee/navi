@@ -75,6 +75,68 @@ describe('JobRegistry', () => {
         expect(registry.hasJob()).toBeFalse();
       });
     });
+
+    describe('when the queue has a failed job', () => {
+      let job1, job2;
+
+      beforeEach(() => {
+        job1 = new Job({ payload: { id: 1 } });
+        job2 = new Job({ payload: { id: 2 } });
+        registry.fail(job1);
+        registry.fail(job2);
+      });
+
+      it('returns the first job', () => {
+        expect(registry.pick()).toEqual(job1);
+      });
+
+      it('removes the job from the queue', () => {
+        registry.pick();
+
+        expect(registry.pick()).toEqual(job2);
+      });
+
+      it('decreases the queue size', () => {
+        registry.pick();
+
+        expect(registry.hasJob()).toBeTrue();
+
+        registry.pick();
+
+        expect(registry.hasJob()).toBeFalse();
+      });
+    });
+
+    describe('when the queue has failed and not failed jobs', () => {
+      let job1, job2;
+
+      beforeEach(() => {
+        job1 = new Job({ payload: { id: 1 } });
+        job2 = new Job({ payload: { id: 2 } });
+        registry.fail(job1);
+        registry.push(job2);
+      });
+
+      it('returns the first not failed job', () => {
+        expect(registry.pick()).toEqual(job2);
+      });
+
+      it('removes the job from the queue', () => {
+        registry.pick();
+
+        expect(registry.pick()).toEqual(job1);
+      });
+
+      it('decreases the queue size', () => {
+        registry.pick();
+
+        expect(registry.hasJob()).toBeTrue();
+
+        registry.pick();
+
+        expect(registry.hasJob()).toBeFalse();
+      });
+    });
   });
 
   describe('#lock', () => {
