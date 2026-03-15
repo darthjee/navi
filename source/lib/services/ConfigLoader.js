@@ -36,7 +36,7 @@ class ConfigLoader {
    * @returns {{
    * resources: Record<string, Resource>,
    * clients: Record<string, Client>,
-   * workers: WorkersConfig
+   * workersConfig: WorkersConfig
    * }} Mapped resources and clients by name. and workers configuration.
    */
   load() {

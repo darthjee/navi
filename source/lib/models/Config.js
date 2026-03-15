@@ -13,10 +13,10 @@ class Config {
    * @param {object} attributes.resources The resources to be included in the configuration.
    * @param {object} attributes.clients The clients to be included in the configuration.
    */
-  constructor(attributes) {
-    this.resourceRegistry = new ResourceRegistry(attributes.resources);
-    this.clientRegistry = new ClientRegistry(attributes.clients);
-    this.workersConfig = attributes.workers;
+  constructor({ resources, clients, workersConfig }) {
+    this.resourceRegistry = new ResourceRegistry(resources);
+    this.clientRegistry = new ClientRegistry(clients);
+    this.workersConfig = workersConfig;
   }
 
   /**

@@ -51,7 +51,7 @@ describe('ConfigParser', () => {
       it('returns workers configuration', () => {
         const result = ConfigParser.fromObject(config);
 
-        expect(result.workers).toEqual(expectedWorkersConfig);
+        expect(result.workersConfig).toEqual(expectedWorkersConfig);
       });
     });
 
@@ -123,7 +123,7 @@ describe('ConfigParser', () => {
       it('returns default workers configuration', () => {
         const result = ConfigParser.fromObject(config);
 
-        expect(result.workers).toEqual(expectedWorkersConfig);
+        expect(result.workersConfig).toEqual(expectedWorkersConfig);
       });
     });
 

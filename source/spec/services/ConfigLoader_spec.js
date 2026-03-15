@@ -52,7 +52,7 @@ describe('ConfigLoader', () => {
 
         const config = ConfigLoader.fromFile(configFilePath);
 
-        expect(config.workers).toEqual(expectedWorkersConfig);
+        expect(config.workersConfig).toEqual(expectedWorkersConfig);
       });
     });
 
@@ -96,7 +96,7 @@ describe('ConfigLoader', () => {
 
         const config = ConfigLoader.fromFile(configFilePath);
 
-        expect(config.workers).toEqual(expectedWorkersConfig);
+        expect(config.workersConfig).toEqual(expectedWorkersConfig);
       });
     });
 
