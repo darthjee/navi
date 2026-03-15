@@ -2,22 +2,35 @@ import { randomUUID } from 'crypto';
 import { Worker } from '../models/Worker.js';
 
 /**
- * WorkerRegistry manages the creation and tracking of Worker instances.
+ * WorkersRegistry manages the creation and tracking of Worker instances.
  * @author darthjee
  */
-class WorkerRegistry {
+class WorkersRegistry {
   /**
-   * Creates a new WorkerRegistry instance.
-   * @param {object} params - The parameters for creating a WorkerRegistry instance.
+   * Creates a new WorkersRegistry instance.
+   * @param {object} params - The parameters for creating a WorkersRegistry instance.
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
-   * @param {number} params.workers - The number of workers to be built.
+   * @param {number} params.quantity - The number of workers to be built.
    */
-  constructor({ jobRegistry, workers }) {
+  constructor({ jobRegistry, quantity }) {
     this.jobRegistry = jobRegistry;
-    this.workersCount = workers;
+    this.quantity = quantity;
     this.workers = {};
     this.busy = {};
     this.idle = {};
+  }
+
+  /**
+   * Initializes the specified number of workers
+   *
+   * This method creates the workers and adds them to the internal workers list,
+   * marking them as idle.
+   * @returns {void}
+   */
+  initWorkers() {
+    for (let i = 0; i < this.quantity; i++) {
+      this.#buildWorker();
+    }
   }
 
   /**
@@ -50,7 +63,7 @@ class WorkerRegistry {
    * Builds a new Worker with a unique UUID and adds it to the internal workers list.
    * @returns {Worker} The newly created Worker instance.
    */
-  buildWorker() {
+  #buildWorker() {
     const id = this.#generateUUID();
     const worker = new Worker({ id, jobRegistry: this.jobRegistry, workerRegistry: this });
 
@@ -75,4 +88,4 @@ class WorkerRegistry {
   }
 }
 
-export { WorkerRegistry };
+export { WorkersRegistry };

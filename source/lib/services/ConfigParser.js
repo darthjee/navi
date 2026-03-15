@@ -22,7 +22,7 @@ class ConfigParser {
    * @returns {{
    * resources: Record<string, Resource>,
    * clients: Record<string, Client>,
-   * workers: WorkersConfig
+   * workersConfig: WorkersConfig
    * }} Mapped resources and clients by name. and workers configuration.
    * @throws {Error} Throws when the config is invalid or missing required keys.
    */
@@ -50,7 +50,7 @@ class ConfigParser {
     return {
       resources: mappedResources,
       clients: mappedClients,
-      workers: this.#workersConfig()
+      workersConfig: this.#workersConfig()
     };
   }
 

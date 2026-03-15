@@ -1,7 +1,7 @@
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
-import { WorkerRegistry } from '../../lib/registry/WorkerRegistry.js';
+import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 
-describe('WorkerRegistry', () => {
+describe('WorkersRegistry', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
@@ -9,16 +9,19 @@ describe('WorkerRegistry', () => {
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
-    workerRegistry = new WorkerRegistry({ jobRegistry, workers: 3 });
   });
 
   describe('#constructor', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
+    });
+
     it('stores the job registry', () => {
       expect(workerRegistry.jobRegistry).toEqual(jobRegistry);
     });
 
-    it('stores the workers count', () => {
-      expect(workerRegistry.workersCount).toEqual(3);
+    it('stores the workers quantity', () => {
+      expect(workerRegistry.quantity).toEqual(3);
     });
 
     it('initializes an empty workers list', () => {
@@ -26,56 +29,59 @@ describe('WorkerRegistry', () => {
     });
   });
 
-  describe('#buildWorker', () => {
-    it('returns a worker', () => {
-      const worker = workerRegistry.buildWorker();
-
-      expect(worker).toBeDefined();
+  describe('#initWorkers', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
     });
 
-    it('adds the worker to the list', () => {
-      workerRegistry.buildWorker();
+    it('builds the specified number of workers', () => {
+      workerRegistry.initWorkers();
 
-      expect(Object.keys(workerRegistry.workers).length).toEqual(1);
+      expect(Object.keys(workerRegistry.workers).length).toEqual(3);
     });
 
     it('assigns the job registry to the worker', () => {
-      const worker = workerRegistry.buildWorker();
+      workerRegistry.initWorkers();
+
+      const workers = Object.values(workerRegistry.workers);
+      const worker = workers[0];
 
       expect(worker.jobRegistry).toEqual(jobRegistry);
     });
 
+    it('creates the workers as idle', () => {
+      workerRegistry.initWorkers();
+
+      const workers = Object.values(workerRegistry.workers);
+      const idleWorkers = Object.values(workerRegistry.idle);
+
+      expect(idleWorkers).toEqual(workers);
+    });
+
+    it('does not creates the workers as busy', () => {
+      workerRegistry.initWorkers();
+
+      expect(workerRegistry.busy).toEqual({});
+    });
+
     it('assigns a uuid id to the worker', () => {
-      const worker = workerRegistry.buildWorker();
+      workerRegistry.initWorkers();
+
+      const workers = Object.values(workerRegistry.workers);
+      const worker = workers[0];
 
       expect(worker.id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
       );
     });
-
-    describe('when called multiple times', () => {
-      it('assigns unique ids to each worker', () => {
-        const worker1 = workerRegistry.buildWorker();
-        const worker2 = workerRegistry.buildWorker();
-
-        expect(workerRegistry.workers[worker1.id]).toEqual(worker1);
-        expect(workerRegistry.workers[worker2.id]).toEqual(worker2);
-      });
-
-      it('adds all workers to the list', () => {
-        workerRegistry.buildWorker();
-        workerRegistry.buildWorker();
-
-        expect(Object.keys(workerRegistry.workers).length).toEqual(2);
-      });
-    });
-
   });
 
-  describe('WorkerRegistry#setBusy', () => {
+  describe('WorkersRegistry#setBusy', () => {
     beforeEach(() => {
-      worker = workerRegistry.buildWorker();
-      worker_id = worker.id;
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker = workerRegistry.workers[worker_id];
     });
 
     it('moves a worker from idle to busy when the worker exists', () => {
@@ -102,10 +108,12 @@ describe('WorkerRegistry', () => {
     });
   });
 
-  describe('WorkerRegistry#setIdle', () => {
+  describe('WorkersRegistry#setIdle', () => {
     beforeEach(() => {
-      worker = workerRegistry.buildWorker();
-      worker_id = worker.id;
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker = workerRegistry.workers[worker_id];
       workerRegistry.setBusy(worker_id);
     });
 
