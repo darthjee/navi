@@ -45,7 +45,7 @@ class JobRegistry {
    * @returns {boolean} True if there are jobs in the queue, false otherwise.
    */
   hasJob() {
-    return this.jobs.length > 0 || this.failedJobs.length > 0;
+    return this.#hasRegularJob() || this.#hasFailedJob();
   }
 
   /**
@@ -70,6 +70,14 @@ class JobRegistry {
    */
   hasLock(worker) {
     return this.lockedBy === worker.id;
+  }
+
+  #hasRegularJob() {
+    return this.jobs.length > 0;
+  }
+
+  #hasFailedJob() {
+    return this.failedJobs.length > 0;
   }
 }
 
