@@ -1,22 +1,24 @@
-import { DEFAULT_CONFIG_PATH, parseConfigPath } from '../navi.js';
+import { ArgumentsParser, DEFAULT_CONFIG_FILE } from '../../lib/services/ArgumentsParser.js';
 
-describe('navi CLI', () => {
-  describe('parseConfigPath', () => {
+describe('ArgumentsParser', () => {
+  describe('.parse', () => {
     describe('when no arguments are provided', () => {
-      it('returns the default config path', () => {
-        expect(parseConfigPath([])).toEqual(DEFAULT_CONFIG_PATH);
+      it('returns the default config file', () => {
+        expect(ArgumentsParser.parse([])).toEqual({ configFile: DEFAULT_CONFIG_FILE });
       });
     });
 
     describe('when -c is provided with a path', () => {
-      it('returns the given config path', () => {
-        expect(parseConfigPath(['-c', 'custom/config.yml'])).toEqual('custom/config.yml');
+      it('returns the given config file', () => {
+        expect(ArgumentsParser.parse(['-c', 'custom/config.yml']))
+          .toEqual({ configFile: 'custom/config.yml' });
       });
     });
 
     describe('when --config= is provided with a path', () => {
-      it('returns the given config path', () => {
-        expect(parseConfigPath(['--config=custom/config.yml'])).toEqual('custom/config.yml');
+      it('returns the given config file', () => {
+        expect(ArgumentsParser.parse(['--config=custom/config.yml']))
+          .toEqual({ configFile: 'custom/config.yml' });
       });
     });
 
@@ -30,13 +32,13 @@ describe('navi CLI', () => {
       });
 
       it('logs an error message', () => {
-        parseConfigPath(['-c']);
+        ArgumentsParser.parse(['-c']);
 
         expect(errorSpy).toHaveBeenCalledWith('Error: -c option requires a config file path');
       });
 
       it('exits with a non-zero code', () => {
-        parseConfigPath(['-c']);
+        ArgumentsParser.parse(['-c']);
 
         expect(exitSpy).toHaveBeenCalledWith(1);
       });
@@ -52,13 +54,13 @@ describe('navi CLI', () => {
       });
 
       it('logs an error message', () => {
-        parseConfigPath(['-c', '--other-flag']);
+        ArgumentsParser.parse(['-c', '--other-flag']);
 
         expect(errorSpy).toHaveBeenCalledWith('Error: -c option requires a config file path');
       });
 
       it('exits with a non-zero code', () => {
-        parseConfigPath(['-c', '--other-flag']);
+        ArgumentsParser.parse(['-c', '--other-flag']);
 
         expect(exitSpy).toHaveBeenCalledWith(1);
       });
@@ -74,13 +76,13 @@ describe('navi CLI', () => {
       });
 
       it('logs an error message', () => {
-        parseConfigPath(['--config=']);
+        ArgumentsParser.parse(['--config=']);
 
         expect(errorSpy).toHaveBeenCalledWith('Error: --config option requires a config file path');
       });
 
       it('exits with a non-zero code', () => {
-        parseConfigPath(['--config=']);
+        ArgumentsParser.parse(['--config=']);
 
         expect(exitSpy).toHaveBeenCalledWith(1);
       });
