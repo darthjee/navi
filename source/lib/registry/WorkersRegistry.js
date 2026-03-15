@@ -86,7 +86,7 @@ class WorkersRegistry {
 
     const idleWorkerIds = Object.keys(this.idle);
     const workerId = idleWorkerIds[0];
-    
+
     this.setBusy(workerId);
 
     return this.workers[workerId];

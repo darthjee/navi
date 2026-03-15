@@ -2,7 +2,7 @@ import { Queue } from '../../lib/utils/Queue.js';
 
 describe('Queue', () => {
   let queue;
-    
+
   beforeEach(() => {
     queue = new Queue();
   });

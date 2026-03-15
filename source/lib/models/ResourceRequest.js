@@ -19,7 +19,7 @@ class ResourceRequest {
    * @returns {Array<ResourceRequest>} list of ResourceRequest instances
    */
   static fromList(array) {
-    return array.map((resource) => new ResourceRequest(resource)); 
+    return array.map((resource) => new ResourceRequest(resource));
   }
 }
 

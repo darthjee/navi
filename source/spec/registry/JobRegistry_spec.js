@@ -202,7 +202,7 @@ describe('JobRegistry', () => {
       });
     });
   });
-  
+
   describe('#fail', () => {
     it('does not re-queue a picked job', () => {
       const job = new Job({ payload: { id: 1 } });

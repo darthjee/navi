@@ -68,7 +68,7 @@ describe('ConfigParser', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/missing_resources_sample_config.yml');
       });
-      
+
       it('throws an error', () => {
         expect(() => ConfigParser.fromObject(config)).toThrowError(
           MissingResourceConfig, 'Invalid config file: expected a top-level "resources" key.',
@@ -80,7 +80,7 @@ describe('ConfigParser', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/missing_workers_config.yml');
       });
-      
+
       beforeEach(() => {
         expectedResourceRequests = [
           new ResourceRequest({ url: '/categories.json', status: 200 })
