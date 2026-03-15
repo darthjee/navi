@@ -1,56 +1,18 @@
 const DEFAULT_CONFIG_FILE = 'config/navi_config.yml';
+const ARGUMENTS_CONFIG = {
+  options: {
+    config: { type: 'string', short: 'c', default: DEFAULT_CONFIG_FILE },
+  },
+  allowPositionals: false,
+};
 
-class ArgumentParser {
-  constructor(args, index) {
-    this.args = args;
-    this.index = index;
-  }
-
-  static parse(args, index) {
-    return (new ArgumentParser(args, index)).parse();
-  }
-
-  parse() {
-    if (this.args[this.index] === '-c') {
-      if (this.index + 1 >= this.args.length || this.args[this.index + 1].startsWith('-')) {
-        console.error('Error: -c option requires a config file path');
-        process.exit(1);
-      }
-      return { configFile: this.args[this.index + 1] };
-    }
-
-    if (this.args[this.index].startsWith('--config=')) {
-      const value = this.args[this.index].slice('--config='.length);
-      if (!value) {
-        console.error('Error: --config option requires a config file path');
-        process.exit(1);
-      }
-      return { configFile: value };
-    }
-  }
-}
+import { parseArgs } from 'node:util';
 
 /**
  * Parses CLI arguments and returns a structured options object.
  * @author darthjee
  */
 class ArgumentsParser {
-
-  constructor(args) {
-    this.args = args;
-  }
-
-  parse() {
-    for (let index = 0; index < this.args.length; index++) {
-      const result = ArgumentParser.parse(this.args, index);
-      if (result) {
-        return result;
-      }
-    }
-
-    return { configFile: DEFAULT_CONFIG_FILE };
-  }
-
   /**
    * Parses command line arguments to extract CLI options.
    *
@@ -64,7 +26,10 @@ class ArgumentsParser {
    * @returns {{ configFile: string }} Parsed options object with the config file path.
    */
   static parse(args) {
-    return (new ArgumentsParser(args)).parse();
+    return parseArgs({
+      args: args,
+      ...ARGUMENTS_CONFIG
+    }).values;
   }
 }
 
