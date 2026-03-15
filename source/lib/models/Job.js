@@ -8,7 +8,8 @@ class Job {
    * @param {object} params - The parameters for creating a Job instance.
    * @param {*} params.payload - The data associated with this job.
    */
-  constructor({ payload }) {
+  constructor({ id, payload }) {
+    this.id = id;
     this.payload = payload;
   }
 }
