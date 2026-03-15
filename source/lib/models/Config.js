@@ -16,6 +16,7 @@ class Config {
   constructor(attributes) {
     this.resourceRegistry = new ResourceRegistry(attributes.resources);
     this.clientRegistry = new ClientRegistry(attributes.clients);
+    this.workersConfig = attributes.workers;
   }
 
   /**

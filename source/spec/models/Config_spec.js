@@ -5,6 +5,7 @@ import { Client } from '../../lib/services/Client.js';
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
+import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 
 import { Config } from '../../lib/models/Config.js';
 
@@ -14,6 +15,7 @@ describe('Config', () => {
   let expectedResourceRequests;
   let expectedClientRegistry;
   let expectedResourceRegistry;
+  let expectedWorkersConfig;
 
   describe('#getResource', () => {
     let config;
@@ -174,6 +176,7 @@ describe('Config', () => {
         };
         expectedClientRegistry = new ClientRegistry(expectedClients);
         expectedResourceRegistry = new ResourceRegistry(expectedResources);
+        expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
 
       it('returns a Config instance with resources from yaml file', () => {
@@ -185,6 +188,7 @@ describe('Config', () => {
         expect(config instanceof Config).toBeTrue();
         expect(config.resourceRegistry).toEqual(expectedResourceRegistry);
         expect(config.clientRegistry).toEqual(expectedClientRegistry);
+        expect(config.workersConfig).toEqual(expectedWorkersConfig);
       });
     });
 
