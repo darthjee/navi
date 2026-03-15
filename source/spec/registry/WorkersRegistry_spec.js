@@ -158,4 +158,20 @@ describe('WorkersRegistry', () => {
       expect(workerRegistry.hasBusyWorker()).toBe(false);
     });
   });
+  describe('#hasIdleWorker', () => {
+    beforeEach(() => {
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workerRegistry.initWorkers();
+      worker_id = Object.keys(workerRegistry.workers)[0];
+    });
+
+    it('returns true when there is a idle worker', () => {
+      expect(workerRegistry.hasIdleWorker()).toBe(true);
+    });
+
+    it('returns false when there are no idle workers', () => {
+      workerRegistry.setBusy(worker_id);
+      expect(workerRegistry.hasIdleWorker()).toBe(false);
+    });
+  })
 });
