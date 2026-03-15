@@ -1,4 +1,5 @@
 import { Client } from './Client.js';
+import { MissingClientsConfig } from '../exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../exceptions/MissingResourceConfig.js';
 import { Resource } from '../models/Resource.js';
 import { WorkersConfig } from '../models/WorkersConfig.js';
@@ -95,7 +96,7 @@ class ConfigParser {
    */
   #loadClients() {
     if (!this.config || typeof this.config !== 'object' || !('clients' in this.config)) {
-      throw new Error('Invalid config file: expected a top-level "clients" key.');
+      throw new MissingClientsConfig('clients');
     }
 
     return Client.fromListObject(this.config.clients);
