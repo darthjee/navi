@@ -18,7 +18,7 @@ services:
   navi_app:
     <<: *base
     container_name: navi_app
-    depends_on: [base_build]
+    depends_on: [base_build, navi_httpd]
     command: /bin/bash
 
   navi_tests:
@@ -26,3 +26,10 @@ services:
     container_name: navi_tests
     depends_on: [base_build]
     command: /bin/bash
+
+  navi_httpd:
+    image: httpd
+    volumes:
+      - ./dev:/usr/local/apache2/htdocs
+    ports:
+      - 0.0.0.0:3010:80
