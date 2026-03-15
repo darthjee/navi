@@ -2,6 +2,7 @@ import { Application } from '../../lib/services/Application.js';
 import { Config } from '../../lib/models/Config.js';
 import { fileURLToPath } from 'node:url';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
+import { WorkerRegistry } from '../../lib/registry/WorkerRegistry.js';
 
 describe('Application', () => {
   let app;
@@ -29,6 +30,14 @@ describe('Application', () => {
       app.loadConfig(configFilePath);
 
       expect(app.jobRegistry instanceof JobRegistry).toBeTrue();
+    });
+
+    it('initializes workers registry', () => {
+      expect(app.workersRegistry).toBeUndefined();
+
+      app.loadConfig(configFilePath);
+
+      expect(app.workersRegistry instanceof WorkerRegistry).toBeTrue();
     });
   });
 });
