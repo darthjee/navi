@@ -14,7 +14,7 @@ describe('WorkersAllocator', () => {
     jobRegistry = new JobRegistry();
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
     workersRegistry.initWorkers();
-    worker = Object.values(workersRegistry.workers)[0];
+    worker = workersRegistry.workers.byIndex(0);
     job = new Job({ payload: { value: 1 } });
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
@@ -73,7 +73,7 @@ describe('WorkersAllocator', () => {
     beforeEach(() => {
       workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
       workersRegistry.initWorkers();
-      worker = Object.values(workersRegistry.workers)[0];
+      worker = workersRegistry.workers.byIndex(0);
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
       jobRegistry.push(job);

@@ -1,5 +1,6 @@
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 
 describe('WorkersRegistry', () => {
   let jobRegistry;
@@ -25,7 +26,7 @@ describe('WorkersRegistry', () => {
     });
 
     it('initializes an empty workers list', () => {
-      expect(workerRegistry.workers).toEqual({});
+      expect(workerRegistry.workers).toEqual(new IdentifyableCollection());
     });
   });
 
@@ -37,14 +38,13 @@ describe('WorkersRegistry', () => {
     it('builds the specified number of workers', () => {
       workerRegistry.initWorkers();
 
-      expect(Object.keys(workerRegistry.workers).length).toEqual(3);
+      expect(workerRegistry.workers.size()).toEqual(3);
     });
 
     it('assigns the job registry to the worker', () => {
       workerRegistry.initWorkers();
 
-      const workers = Object.values(workerRegistry.workers);
-      const worker = workers[0];
+      const worker = workerRegistry.workers.byIndex(0);
 
       expect(worker.jobRegistry).toEqual(jobRegistry);
     });
@@ -52,8 +52,8 @@ describe('WorkersRegistry', () => {
     it('creates the workers as idle', () => {
       workerRegistry.initWorkers();
 
-      const workers = Object.values(workerRegistry.workers);
-      const idleWorkers = Object.values(workerRegistry.idle);
+      const workers = workerRegistry.workers;
+      const idleWorkers = workerRegistry.idle;
 
       expect(idleWorkers).toEqual(workers);
     });
@@ -61,13 +61,13 @@ describe('WorkersRegistry', () => {
     it('does not creates the workers as busy', () => {
       workerRegistry.initWorkers();
 
-      expect(workerRegistry.busy).toEqual({});
+      expect(workerRegistry.busy).toEqual(new IdentifyableCollection());
     });
 
     it('assigns a uuid id to the worker', () => {
       workerRegistry.initWorkers();
 
-      const workers = Object.values(workerRegistry.workers);
+      const workers = workerRegistry.workers.list();
       const worker = workers[0];
 
       expect(worker.id).toMatch(
@@ -80,30 +80,30 @@ describe('WorkersRegistry', () => {
     beforeEach(() => {
       workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
-      worker_id = Object.keys(workerRegistry.workers)[0];
-      worker = workerRegistry.workers[worker_id];
+      worker = workerRegistry.workers.byIndex(0);
+      worker_id = worker.id;
     });
 
     it('moves a worker from idle to busy when the worker exists', () => {
-      expect(workerRegistry.idle[worker_id]).toBe(worker);
+      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
 
       workerRegistry.setBusy(worker_id);
 
-      expect(workerRegistry.busy[worker_id]).toBe(worker);
-      expect(workerRegistry.idle[worker_id]).toBeUndefined();
+      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
+      expect(workerRegistry.idle.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
       workerRegistry.setBusy('non-existent-id');
 
-      expect(Object.keys(workerRegistry.busy).length).toBe(0);
+      expect(workerRegistry.busy.size()).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
       workerRegistry.setBusy(worker_id);
       workerRegistry.setBusy(worker_id);
 
-      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
       expect(workerRegistry.idle[worker_id]).toBeUndefined();
     });
   });
@@ -112,32 +112,32 @@ describe('WorkersRegistry', () => {
     beforeEach(() => {
       workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
-      worker_id = Object.keys(workerRegistry.workers)[0];
-      worker = workerRegistry.workers[worker_id];
+      worker = workerRegistry.workers.byIndex(0);
+      worker_id = worker.id;
       workerRegistry.setBusy(worker_id);
     });
 
     it('moves a worker from busy to idle when the worker exists', () => {
-      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
 
       workerRegistry.setIdle(worker_id);
 
-      expect(workerRegistry.idle[worker_id]).toBe(worker);
-      expect(workerRegistry.busy[worker_id]).toBeUndefined();
+      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
       workerRegistry.setIdle('non-existent-id');
 
-      expect(Object.keys(workerRegistry.idle).length).toBe(0);
+      expect(workerRegistry.idle.size()).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
       workerRegistry.setIdle(worker_id);
       workerRegistry.setIdle(worker_id);
 
-      expect(workerRegistry.idle[worker_id]).toBe(worker);
-      expect(workerRegistry.busy[worker_id]).toBeUndefined();
+      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
     });
   });
 
@@ -145,7 +145,8 @@ describe('WorkersRegistry', () => {
     beforeEach(() => {
       workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
-      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker = workerRegistry.workers.byIndex(0);
+      worker_id = worker.id;
     });
 
     it('returns true when there is a busy worker', () => {
@@ -162,7 +163,7 @@ describe('WorkersRegistry', () => {
     beforeEach(() => {
       workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
-      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker_id = workerRegistry.workers.byIndex(0).id;
     });
 
     it('returns true when there is a idle worker', () => {
@@ -179,7 +180,7 @@ describe('WorkersRegistry', () => {
     beforeEach(() => {
       workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
       workerRegistry.initWorkers();
-      worker_id = Object.keys(workerRegistry.workers)[0];
+      worker_id = workerRegistry.workers.byIndex(0).id;
     });
 
     it('returns an idle worker when available', () => {
