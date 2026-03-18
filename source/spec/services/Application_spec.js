@@ -40,7 +40,7 @@ describe('Application', () => {
         app.loadConfig(configFilePath);
 
         expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
-        expect(Object.keys(app.workersRegistry.workers).length).toEqual(5);
+        expect(app.workersRegistry.workers.size()).toEqual(5);
         expect(app.workersRegistry.busy).toEqual({});
       });
     });

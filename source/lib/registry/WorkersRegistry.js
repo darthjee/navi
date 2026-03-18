@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Worker } from '../models/Worker.js';
+import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 
 /**
  * WorkersRegistry manages the creation and tracking of Worker instances.
@@ -15,7 +16,7 @@ class WorkersRegistry {
   constructor({ jobRegistry, quantity }) {
     this.jobRegistry = jobRegistry;
     this.quantity = quantity;
-    this.workers = {};
+    this.workers = new IdentifyableCollection();
     this.busy = {};
     this.idle = {};
   }
@@ -38,7 +39,7 @@ class WorkersRegistry {
    * @param {string} worker_id - The ID of the worker to set as busy.
    */
   setBusy(worker_id) {
-    const worker = this.workers[worker_id];
+    const worker = this.workers.get(worker_id);
 
     if (worker) {
       delete this.idle[worker_id];
@@ -51,7 +52,7 @@ class WorkersRegistry {
    * @param {string} worker_id - The ID of the worker to set as idle.
    */
   setIdle(worker_id) {
-    const worker = this.workers[worker_id];
+    const worker = this.workers.get(worker_id);
 
     if (worker) {
       delete this.busy[worker_id];
@@ -89,7 +90,7 @@ class WorkersRegistry {
 
     this.setBusy(workerId);
 
-    return this.workers[workerId];
+    return this.workers.get(workerId);
   }
 
   /**
@@ -100,7 +101,7 @@ class WorkersRegistry {
     const id = this.#generateUUID();
     const worker = new Worker({ id, jobRegistry: this.jobRegistry, workerRegistry: this });
 
-    this.workers[id] = worker;
+    this.workers.push(worker);
     this.idle[id] = worker;
 
     return worker;
@@ -111,13 +112,7 @@ class WorkersRegistry {
    * @returns {string} A unique UUID string.
    */
   #generateUUID() {
-    let id;
-
-    do {
-      id = randomUUID();
-    } while (this.workers[id]);
-
-    return id;
+    return this.workers.generateUUID();
   }
 }
 

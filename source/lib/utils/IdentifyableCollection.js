@@ -9,6 +9,22 @@ class IdentifyableCollection {
     this.items[item.id] = item;
   }
 
+  get(id) {
+    return this.items[id];
+  }
+
+  byIndex(id) {
+    return this.list()[id];
+  }
+
+  list() {
+    return Object.values(this.items);
+  }
+
+  size() {
+    return this.list().length;
+  }
+
   generateUUID() {
     let id;
 
@@ -19,3 +35,5 @@ class IdentifyableCollection {
     return id;
   }
 }
+
+export { IdentifyableCollection };
