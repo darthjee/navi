@@ -1,20 +1,22 @@
 import { randomUUID } from 'crypto';
 
 class IdentifyableCollection {
+  #items;
+  
   constructor(items = {}) {
-    this.items = items;
+    this.#items = items;
   }
 
   push(item) {
-    this.items[item.id] = item;
+    this.#items[item.id] = item;
   }
 
   remove(id) {
-    delete this.items[id];
+    delete this.#items[id];
   }
 
   get(id) {
-    return this.items[id];
+    return this.#items[id];
   }
 
   byIndex(id) {
@@ -22,7 +24,7 @@ class IdentifyableCollection {
   }
 
   list() {
-    return Object.values(this.items);
+    return Object.values(this.#items);
   }
 
   size() {
@@ -38,7 +40,7 @@ class IdentifyableCollection {
 
     do {
       id = randomUUID();
-    } while (this.items[id]);
+    } while (this.#items[id]);
 
     return id;
   }
