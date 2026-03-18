@@ -9,6 +9,10 @@ class IdentifyableCollection {
     this.items[item.id] = item;
   }
 
+  remove(id) {
+    delete this.items[id];
+  }
+
   get(id) {
     return this.items[id];
   }
@@ -23,6 +27,10 @@ class IdentifyableCollection {
 
   size() {
     return this.list().length;
+  }
+
+  hasAny() {
+    return this.size() > 0;
   }
 
   generateUUID() {

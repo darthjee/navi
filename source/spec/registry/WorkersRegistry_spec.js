@@ -61,7 +61,7 @@ describe('WorkersRegistry', () => {
     it('does not creates the workers as busy', () => {
       workerRegistry.initWorkers();
 
-      expect(workerRegistry.busy).toEqual({});
+      expect(workerRegistry.busy).toEqual(new IdentifyableCollection());
     });
 
     it('assigns a uuid id to the worker', () => {
@@ -89,21 +89,21 @@ describe('WorkersRegistry', () => {
 
       workerRegistry.setBusy(worker_id);
 
-      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
       expect(workerRegistry.idle[worker_id]).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
       workerRegistry.setBusy('non-existent-id');
 
-      expect(Object.keys(workerRegistry.busy).length).toBe(0);
+      expect(workerRegistry.busy.size()).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
       workerRegistry.setBusy(worker_id);
       workerRegistry.setBusy(worker_id);
 
-      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
       expect(workerRegistry.idle[worker_id]).toBeUndefined();
     });
   });
@@ -118,12 +118,12 @@ describe('WorkersRegistry', () => {
     });
 
     it('moves a worker from busy to idle when the worker exists', () => {
-      expect(workerRegistry.busy[worker_id]).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
 
       workerRegistry.setIdle(worker_id);
 
       expect(workerRegistry.idle[worker_id]).toBe(worker);
-      expect(workerRegistry.busy[worker_id]).toBeUndefined();
+      expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {

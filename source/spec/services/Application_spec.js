@@ -5,6 +5,7 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 
 describe('Application', () => {
   let app;
@@ -41,7 +42,7 @@ describe('Application', () => {
 
         expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
         expect(app.workersRegistry.workers.size()).toEqual(5);
-        expect(app.workersRegistry.busy).toEqual({});
+        expect(app.workersRegistry.busy).toEqual(new IdentifyableCollection());
       });
     });
 
