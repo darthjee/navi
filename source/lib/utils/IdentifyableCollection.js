@@ -1,14 +1,21 @@
+import { randomUUID } from 'crypto';
+
 class IdentifyableCollection {
-  constructor(items = []) {
+  constructor(items = {}) {
     this.items = items;
   }
 
   push(item) {
-    this.items.push(item);
+    this.items[item.id] = item;
   }
 
-  shift() {
-    return this.items.shift();
+  generateUUID() {
+    let id;
+
+    do {
+      id = randomUUID();
+    } while (this.items[id]);
+
+    return id;
   }
-  
 }
