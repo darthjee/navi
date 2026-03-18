@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 class IdentifyableCollection {
   #items;
-  
+
   constructor(items = {}) {
     this.#items = items;
   }
