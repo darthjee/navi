@@ -6,6 +6,7 @@ class Job {
   /**
    * Creates a new Job instance.
    * @param {object} params - The parameters for creating a Job instance.
+   * @param {string} params.id - The unique identifier for this job.
    * @param {*} params.payload - The data associated with this job.
    */
   constructor({ id, payload }) {
