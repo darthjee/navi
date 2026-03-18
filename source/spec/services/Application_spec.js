@@ -4,8 +4,8 @@ import { Config } from '../../lib/models/Config.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Application', () => {
   let app;
