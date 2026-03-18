@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 
 class IdentifyableCollection {
   #items;
+  #size = null;
 
   /**
    * @param {object} items - Optional initial items, keyed by id.
@@ -15,6 +16,7 @@ class IdentifyableCollection {
    * @param {object} item - The item to add, must have a unique id.
    */
   push(item) {
+    this.#size = null;
     this.#items[item.id] = item;
   }
 
@@ -23,6 +25,7 @@ class IdentifyableCollection {
    * @param {string|number} id - The id of the item to remove.
    */
   remove(id) {
+    this.#size = null;
     delete this.#items[id];
   }
 
@@ -57,7 +60,10 @@ class IdentifyableCollection {
    * @returns {number} - The number of items in the collection.
    */
   size() {
-    return this.list().length;
+    if (this.#size === null) {
+      this.#size = this.list().length;
+    }
+    return this.#size;
   }
 
   /**
