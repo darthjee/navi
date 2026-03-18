@@ -52,8 +52,8 @@ describe('WorkersRegistry', () => {
     it('creates the workers as idle', () => {
       workerRegistry.initWorkers();
 
-      const workers = workerRegistry.workers.list();
-      const idleWorkers = Object.values(workerRegistry.idle);
+      const workers = workerRegistry.workers;
+      const idleWorkers = workerRegistry.idle;
 
       expect(idleWorkers).toEqual(workers);
     });
@@ -85,12 +85,12 @@ describe('WorkersRegistry', () => {
     });
 
     it('moves a worker from idle to busy when the worker exists', () => {
-      expect(workerRegistry.idle[worker_id]).toBe(worker);
+      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
 
       workerRegistry.setBusy(worker_id);
 
       expect(workerRegistry.busy.get(worker_id)).toBe(worker);
-      expect(workerRegistry.idle[worker_id]).toBeUndefined();
+      expect(workerRegistry.idle.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
@@ -122,22 +122,22 @@ describe('WorkersRegistry', () => {
 
       workerRegistry.setIdle(worker_id);
 
-      expect(workerRegistry.idle[worker_id]).toBe(worker);
+      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
       expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
       workerRegistry.setIdle('non-existent-id');
 
-      expect(Object.keys(workerRegistry.idle).length).toBe(0);
+      expect(workerRegistry.idle.size()).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
       workerRegistry.setIdle(worker_id);
       workerRegistry.setIdle(worker_id);
 
-      expect(workerRegistry.idle[worker_id]).toBe(worker);
-      expect(workerRegistry.busy[worker_id]).toBeUndefined();
+      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
+      expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
     });
   });
 

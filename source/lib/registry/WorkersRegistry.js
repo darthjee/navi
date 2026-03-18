@@ -18,7 +18,7 @@ class WorkersRegistry {
     this.quantity = quantity;
     this.workers = new IdentifyableCollection();
     this.busy = new IdentifyableCollection();
-    this.idle = {};
+    this.idle = new IdentifyableCollection();
   }
 
   /**
@@ -42,7 +42,7 @@ class WorkersRegistry {
     const worker = this.workers.get(worker_id);
 
     if (worker) {
-      delete this.idle[worker_id];
+      this.idle.remove(worker_id);
       this.busy.push(worker);
     }
   }
@@ -56,7 +56,7 @@ class WorkersRegistry {
 
     if (worker) {
       this.busy.remove(worker_id);
-      this.idle[worker_id] = worker;
+      this.idle.push(worker);
     }
   }
 
@@ -73,7 +73,7 @@ class WorkersRegistry {
    * @returns {boolean} True if there is at least one idle worker, false otherwise.
    */
   hasIdleWorker() {
-    return Object.keys(this.idle).length > 0;
+    return this.idle.hasAny();
   }
 
   /**
@@ -84,9 +84,7 @@ class WorkersRegistry {
     if (!this.hasIdleWorker()) {
       return null;
     }
-
-    const idleWorkerIds = Object.keys(this.idle);
-    const workerId = idleWorkerIds[0];
+    const workerId = this.idle.byIndex(0).id;
 
     this.setBusy(workerId);
 
@@ -102,7 +100,7 @@ class WorkersRegistry {
     const worker = new Worker({ id, jobRegistry: this.jobRegistry, workerRegistry: this });
 
     this.workers.push(worker);
-    this.idle[id] = worker;
+    this.idle.push(worker);
 
     return worker;
   }
