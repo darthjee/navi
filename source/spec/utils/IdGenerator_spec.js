@@ -34,5 +34,16 @@ describe('IdGenerator', () => {
         );
       });
     });
+
+    describe('when called with id argument', () => {
+      it('should generate a unique id', () => {
+        const generateId = idGenerator.generator();
+        const object1 = generateId({ id: 'test-id', key: 'value' });
+        expect(typeof object1).toEqual('object');
+        expect(object1.id).toBeDefined();
+        expect(object1.key).toEqual('value');
+        expect(object1.id).toEqual('test-id');
+      });
+    });
   });
 });
