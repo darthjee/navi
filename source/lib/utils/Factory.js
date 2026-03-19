@@ -1,14 +1,17 @@
 class Factory {
   #builder;
   #klass;
+  #attributesGenerator;
 
-  constructor({ builder = null, klass = null } = {}) {
+  constructor({ builder = null, klass = null, attributesGenerator = null } = {}) {
     this.#builder = builder;
     this.#klass = klass;
+    this.#attributesGenerator = attributesGenerator;
   }
 
   build(...args) {
-    return this.#builderFunction()(...args);
+    const attributes = this.#generateAttributes(...args);
+    return this.#builderFunction()(...attributes);
   }
 
   #builderFunction() {
@@ -23,6 +26,10 @@ class Factory {
       return (...args) => new this.#klass(...args);
     }
     return () => ({});
+  }
+
+  #generateAttributes(...args) {
+    return args;
   }
 }
 
