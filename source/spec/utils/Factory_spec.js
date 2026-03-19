@@ -1,4 +1,5 @@
 import { Factory } from '../../lib/utils/Factory.js';
+import { MyClass } from '../support/models/MyClass.js';
 
 describe('Factory', () => {
   let factory;
@@ -33,12 +34,6 @@ describe('Factory', () => {
     });
 
     describe('when a class is provided', () => {
-      class MyClass {
-        constructor({ value = 'value' } = {}) {
-          this.key = value;
-        }
-      }
-
       beforeEach(() => {
         factory = new Factory({ klass: MyClass });
       });
