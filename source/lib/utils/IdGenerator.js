@@ -9,8 +9,8 @@ class IdGenerator {
 
   generator() {
     const that = this;
-    return function() {
-      return { id: that.#uuidGenerator.generate() };
+    return function(attributes = {}) {
+      return { id: that.#uuidGenerator.generate(), ...attributes };
     };
   }
 }

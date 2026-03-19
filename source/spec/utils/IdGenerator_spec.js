@@ -7,15 +7,32 @@ describe('IdGenerator', () => {
     idGenerator = new IdGenerator();
   });
 
-  it('should generate a unique id', () => {
-    const generateId = idGenerator.generator();
-    const object1 = generateId();
-    const object2 = generateId();
-    expect(typeof object1).toEqual('object');
-    expect(object1.id).toBeDefined();
-    expect(object1.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-    );
-    expect(object1).not.toEqual(object2);
+  describe('generator', () => {
+    describe('when called without arguments', () => {
+      it('should generate a unique id', () => {
+        const generateId = idGenerator.generator();
+        const object1 = generateId();
+        const object2 = generateId();
+        expect(typeof object1).toEqual('object');
+        expect(object1.id).toBeDefined();
+        expect(object1.id).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+        );
+        expect(object1).not.toEqual(object2);
+      });
+    });
+
+    describe('when called with arguments', () => {
+      it('should generate a unique id', () => {
+        const generateId = idGenerator.generator();
+        const object1 = generateId({ key: 'value' });
+        expect(typeof object1).toEqual('object');
+        expect(object1.id).toBeDefined();
+        expect(object1.key).toEqual('value');
+        expect(object1.id).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+        );
+      });
+    });
   });
 });
