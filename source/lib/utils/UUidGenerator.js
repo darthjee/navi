@@ -8,6 +8,10 @@ class UUidGenerator {
     this.generator = generator;
   }
 
+  push(id) {
+    this.#generated.add(id);
+  }
+
   generate() {
     let id;
 

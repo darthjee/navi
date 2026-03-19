@@ -44,4 +44,18 @@ describe('UUidGenerator', () => {
       });
     });
   });
+
+  describe('push', () => {
+    it('stores the generated identifier', () => {
+      const ids = [1,1,1,1,2];
+      function customGenerator() {
+        return ids.shift();
+      }
+
+      generator = new UUidGenerator({ generator: customGenerator });
+
+      generator.push(1);
+      expect(generator.generate()).toEqual(2);
+    });
+  });
 });
