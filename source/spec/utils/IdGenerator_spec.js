@@ -1,7 +1,10 @@
 import { IdGenerator } from '../../lib/utils/IdGenerator.js';
+import { UUidGenerator } from '../../lib/utils/UUidGenerator.js';
 
 describe('IdGenerator', () => {
   let idGenerator;
+  let object;
+  let generateId;
 
   beforeEach(() => {
     idGenerator = new IdGenerator();
@@ -10,39 +13,61 @@ describe('IdGenerator', () => {
   describe('generator', () => {
     describe('when called without arguments', () => {
       it('should generate a unique id', () => {
-        const generateId = idGenerator.generator();
-        const object1 = generateId();
+        generateId = idGenerator.generator();
+        object = generateId();
         const object2 = generateId();
-        expect(typeof object1).toEqual('object');
-        expect(object1.id).toBeDefined();
-        expect(object1.id).toMatch(
+
+        expect(typeof object).toEqual('object');
+        expect(object.id).toBeDefined();
+        expect(object.id).toMatch(
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
         );
-        expect(object1).not.toEqual(object2);
+        expect(object).not.toEqual(object2);
       });
     });
 
     describe('when called with arguments', () => {
-      it('should generate a unique id', () => {
-        const generateId = idGenerator.generator();
-        const object1 = generateId({ key: 'value' });
-        expect(typeof object1).toEqual('object');
-        expect(object1.id).toBeDefined();
-        expect(object1.key).toEqual('value');
-        expect(object1.id).toMatch(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-        );
-      });
-    });
+      beforeEach(() => {
+        const ids = [1,1,1,1,2, 2, 3];
+        function customGenerator() {
+          return ids.shift();
+        }
+        const uuidGenerator = new UUidGenerator({ generator: customGenerator });
+        const idGenerator = new IdGenerator({ uuidGenerator });
 
-    describe('when called with id argument', () => {
-      it('should generate a unique id', () => {
-        const generateId = idGenerator.generator();
-        const object1 = generateId({ id: 'test-id', key: 'value' });
-        expect(typeof object1).toEqual('object');
-        expect(object1.id).toBeDefined();
-        expect(object1.key).toEqual('value');
-        expect(object1.id).toEqual('test-id');
+        generateId = idGenerator.generator();
+      });
+
+      describe('when called without id argument', () => {
+        it('should generate a unique id', () => {
+          object = generateId({ key: 'value' });
+
+          expect(typeof object).toEqual('object');
+          expect(object.id).toBeDefined();
+          expect(object.key).toEqual('value');
+          expect(object.id).toEqual(1);
+        });
+      });
+
+      describe('when called with id argument', () => {
+        it('should generate a unique id', () => {
+          object = generateId({ id: 2, key: 'value' });
+
+          expect(typeof object).toEqual('object');
+          expect(object.id).toBeDefined();
+          expect(object.key).toEqual('value');
+          expect(object.id).toEqual(2);
+        });
+
+        it('should store previous unique id', () => {
+          generateId({ id: 2, key: 'value' });
+          object = generateId({ key: 'other_value' });
+
+          expect(typeof object).toEqual('object');
+          expect(object.id).toBeDefined();
+          expect(object.key).toEqual('other_value');
+          expect(object.id).toEqual(1);
+        });
       });
     });
   });
