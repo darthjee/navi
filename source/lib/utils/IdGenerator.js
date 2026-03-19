@@ -10,7 +10,12 @@ class IdGenerator {
   generator() {
     const that = this;
     return function(attributes = {}) {
-      return { id: that.#uuidGenerator.generate(), ...attributes };
+      attributes = {
+        id: that.#uuidGenerator.generate(),
+        ...attributes
+      };
+
+      return attributes;
     };
   }
 }
