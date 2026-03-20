@@ -54,7 +54,7 @@ describe('Factory', () => {
     describe('when an attributes generator is provided', () => {
       beforeEach(() => {
         const generator = {
-          generate: (args) => ({ value: 'value', ...args})
+          generate: (args) => ({  value: 'value', ...args})
         };
         const builder = (attributes) => ({ ...attributes });
         factory = new Factory({ attributesGenerator: generator, builder });
@@ -69,6 +69,12 @@ describe('Factory', () => {
       describe('when building with arguments without override', () => {
         it('builds an object using the attributes generator with the provided arguments', () => {
           expect(factory.build({ other: 'custom' })).toEqual({ value: 'value', other: 'custom' });
+        });
+      });
+
+      describe('when building with arguments with override', () => {
+        it('builds an object using the attributes generator with the provided arguments', () => {
+          expect(factory.build({ value: 'custom' })).toEqual({ value: 'custom' });
         });
       });
     });
