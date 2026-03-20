@@ -1,3 +1,9 @@
+/**
+ * A flexible factory class that can be configured with a builder function, a class, and an attributes generator.
+ * 
+ * The factory can build objects using the provided builder or class,
+ * and can generate attributes using the attributes generator.
+ */
 class Factory {
   #builder;
   #klass;
