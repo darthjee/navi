@@ -38,15 +38,35 @@ describe('Factory', () => {
         factory = new Factory({ klass: MyClass });
       });
 
-      describe ('when building without arguments', () => {
+      describe('when building without arguments', () => {
         it('builds an object using the class', () => {
           expect(factory.build()).toEqual(new MyClass());
         });
       });
 
-      describe ('when building with arguments', () => {
+      describe('when building with arguments', () => {
         it('builds an object using the class with the provided arguments', () => {
           expect(factory.build({ value: 'custom' })).toEqual(new MyClass({ value: 'custom' }));
+        });
+      });
+    });
+
+    describe('when an attributes generator is provided', () => {
+      beforeEach(() => {
+        const generator = { generate: ({ value = 'value' } = {}) => ({ value }) };
+        const builder = (attributes) => ({ ...attributes });
+        factory = new Factory({ attributesGenerator: generator, builder });
+      });
+
+      describe('when building without arguments', () => {
+        it('builds an object using the attributes generator', () => {
+          expect(factory.build()).toEqual({ value: 'value' });
+        });
+      });
+
+      describe('when building with arguments without override', () => {
+        it('builds an object using the attributes generator with the provided arguments', () => {
+          expect(factory.build({ other: 'custom' })).toEqual({ value: 'value', other: 'custom' });
         });
       });
     });

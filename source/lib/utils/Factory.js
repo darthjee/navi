@@ -11,7 +11,8 @@ class Factory {
 
   build(...args) {
     const attributes = this.#generateAttributes(...args);
-    return this.#builderFunction()(...attributes);
+    const builder = this.#builderFunction();
+    return builder(...attributes);
   }
 
   #builderFunction() {
@@ -30,7 +31,7 @@ class Factory {
 
   #generateAttributes(...args) {
     if (this.#attributesGenerator) {
-      return this.#attributesGenerator.generate(...args);
+      return [this.#attributesGenerator.generate(...args)];
     }
     return args;
   }
