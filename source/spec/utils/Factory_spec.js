@@ -54,7 +54,7 @@ describe('Factory', () => {
     describe('when an attributes generator is provided', () => {
       beforeEach(() => {
         const generator = {
-          generate: (args) => ({  value: 'value', ...args})
+          generate: (args) => ({ value: 'value', ...args})
         };
         const builder = (attributes) => ({ ...attributes });
         factory = new Factory({ attributesGenerator: generator, builder });

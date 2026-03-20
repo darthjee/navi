@@ -15,7 +15,7 @@ class IdGenerator {
   }
 
   generate(attributes = {}) {
-    let id = this.#generateId(attributes.id);
+    const id = this.#generateId(attributes.id);
 
     attributes = { id, ...attributes };
 
