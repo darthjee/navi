@@ -29,6 +29,9 @@ class Factory {
   }
 
   #generateAttributes(...args) {
+    if (this.#attributesGenerator) {
+      return this.#attributesGenerator.generate(...args);
+    }
     return args;
   }
 }
