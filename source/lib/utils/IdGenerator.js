@@ -15,14 +15,14 @@ class IdGenerator {
   }
 
   generate(attributes = {}) {
-    let id = this.generateId(attributes.id);
+    let id = this.#generateId(attributes.id);
 
     attributes = { id, ...attributes };
 
     return attributes;
   }
 
-  generateId(id) {
+  #generateId(id) {
     if (id) {
       this.#uuidGenerator.push(id);
       return id;
