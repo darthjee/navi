@@ -2,6 +2,7 @@ import { Job } from '../../lib/models/Job.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 
 describe('WorkersAllocator', () => {
   let jobRegistry;
@@ -9,12 +10,14 @@ describe('WorkersAllocator', () => {
   let allocator;
   let job;
   let worker;
+  let workers;
 
   beforeEach(() => {
     jobRegistry = new JobRegistry();
-    workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+    workers = new IdentifyableCollection();
+    workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
     workersRegistry.initWorkers();
-    worker = workersRegistry.workers.byIndex(0);
+    worker = workers.byIndex(0);
     job = new Job({ payload: { value: 1 } });
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
@@ -71,9 +74,10 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there are several workers', () => {
     beforeEach(() => {
-      workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
+      workers = new IdentifyableCollection();
+      workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers });
       workersRegistry.initWorkers();
-      worker = workersRegistry.workers.byIndex(0);
+      worker = workers.byIndex(0);
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
       jobRegistry.push(job);

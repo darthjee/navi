@@ -36,13 +36,18 @@ describe('Application', () => {
       });
 
       it('initializes workers registry', () => {
+        const workers = new IdentifyableCollection();
+        const busy = new IdentifyableCollection();
+
+        app = new Application({ workers, busy });
+
         expect(app.workersRegistry).toBeUndefined();
 
         app.loadConfig(configFilePath);
 
         expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
-        expect(app.workersRegistry.workers.size()).toEqual(5);
-        expect(app.workersRegistry.busy).toEqual(new IdentifyableCollection());
+        expect(workers.size()).toEqual(5);
+        expect(busy).toEqual(new IdentifyableCollection());
       });
     });
 
