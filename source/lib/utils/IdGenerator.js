@@ -8,6 +8,20 @@ import { UUidGenerator } from './UUidGenerator.js';
  * a generator function suitable for use as an attributes generator in a {@link Factory}.
  * @author darthjee
  */
+
+/**
+ * A function returned by {@link IdGenerator#generator} that enriches an attributes
+ * object with a unique `id` field.
+ * @callback IdGeneratorFunction
+ * @param {object} [attributes={}] - The attributes object to enrich with a unique identifier.
+ * @param {*} [attributes.id] - An optional existing identifier. If provided, it is kept and registered to avoid future collisions.
+ * @returns {object} The attributes object with a guaranteed unique `id` field.
+ * @example
+ * const idGenerator = new IdGenerator();
+ * const generate = idGenerator.generator();
+ * generate({ name: 'foo' }); // => { id: '<uuid>', name: 'foo' }
+ * generate({ id: 42, name: 'bar' }); // => { id: 42, name: 'bar' }
+ */
 class IdGenerator {
   #uuidGenerator = null;
 
@@ -25,7 +39,7 @@ class IdGenerator {
    *
    * The returned function accepts an optional attributes object and delegates
    * to {@link IdGenerator#generate}.
-   * @returns {Function} A function that accepts an attributes object and returns it enriched with a unique `id`.
+   * @returns {IdGeneratorFunction} A function that accepts an attributes object and returns it enriched with a unique `id`.
    */
   generator() {
     const that = this;
