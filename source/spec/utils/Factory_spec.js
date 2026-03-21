@@ -5,7 +5,7 @@ describe('Factory', () => {
   let factory;
 
   describe('build', () => {
-    describe('when nothing is not provided', () => {
+    describe('when no options are provided', () => {
       beforeEach(() => {
         factory = new Factory();
       });
