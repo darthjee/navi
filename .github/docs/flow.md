@@ -101,11 +101,10 @@ After `loadConfig`, `Application` iterates over all `ResourceRequest` entries ac
 
 ### Outer loop — runs while there is remaining work
 
-Remaining work means: at least one busy worker **or** at least one job in the main queue or failed queue.
+Remaining work means: at least one busy worker **or** at least one job in the queue.
 
 - `WorkersRegistry.hasBusyWorker()` — returns `true` if any worker is currently processing.
-- `JobRegistry.hasJob()` — returns `true` if the main queue is non-empty.
-- `JobRegistry.hasFailedJob()` — returns `true` if the failed queue is non-empty.
+- `JobRegistry.hasJob()` — returns `true` if there are jobs to process (considers both the main queue and the failed queue).
 
 If no idle workers are available but work remains, the Engine **sleeps** for a configurable duration before retrying.
 
@@ -147,10 +146,10 @@ actions:
       category_id: id # job param "category_id" = response field "id"
 ```
 
-For each item in the response array, two sets of jobs are enqueued:
+For each item in the response array, two sets of jobs are enqueued — **4 jobs in total** (2 resources × 2 IDs):
 
-- All `ResourceRequest` entries under `category` with `params: { id: 1 }` and `{ id: 2 }`.
-- All `ResourceRequest` entries under `items` with `params: { category_id: 1 }` and `{ category_id: 2 }`.
+- All `ResourceRequest` entries under `category` with `params: { id: 1 }` and `{ id: 2 }` (2 jobs).
+- All `ResourceRequest` entries under `items` with `params: { category_id: 1 }` and `{ category_id: 2 }` (2 jobs).
 
 ---
 
