@@ -13,139 +13,167 @@ describe('WorkersRegistry', () => {
   });
 
   describe('#constructor', () => {
+    let workers;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
-    });
-
-    it('stores the job registry', () => {
-      expect(workerRegistry.jobRegistry).toEqual(jobRegistry);
-    });
-
-    it('stores the workers quantity', () => {
-      expect(workerRegistry.quantity).toEqual(3);
+      workers = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers });
     });
 
     it('initializes an empty workers list', () => {
-      expect(workerRegistry.workers).toEqual(new IdentifyableCollection());
+      expect(workers).toEqual(new IdentifyableCollection());
+    });
+
+    it('uses the job registry for created workers', () => {
+      workerRegistry.initWorkers();
+
+      expect(workers.byIndex(0).jobRegistry).toEqual(jobRegistry);
+    });
+
+    it('initializes with the specified quantity', () => {
+      workerRegistry.initWorkers();
+
+      expect(workers.size()).toEqual(3);
     });
   });
 
   describe('#initWorkers', () => {
+    let workers;
+    let busy;
+    let idle;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3 });
+      workers = new IdentifyableCollection();
+      busy = new IdentifyableCollection();
+      idle = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers, busy, idle });
     });
 
     it('builds the specified number of workers', () => {
       workerRegistry.initWorkers();
 
-      expect(workerRegistry.workers.size()).toEqual(3);
+      expect(workers.size()).toEqual(3);
     });
 
     it('assigns the job registry to the worker', () => {
       workerRegistry.initWorkers();
 
-      const worker = workerRegistry.workers.byIndex(0);
+      const createdWorker = workers.byIndex(0);
 
-      expect(worker.jobRegistry).toEqual(jobRegistry);
+      expect(createdWorker.jobRegistry).toEqual(jobRegistry);
     });
 
     it('creates the workers as idle', () => {
       workerRegistry.initWorkers();
 
-      const workers = workerRegistry.workers;
-      const idleWorkers = workerRegistry.idle;
-
-      expect(idleWorkers).toEqual(workers);
+      expect(idle).toEqual(workers);
     });
 
     it('does not creates the workers as busy', () => {
       workerRegistry.initWorkers();
 
-      expect(workerRegistry.busy).toEqual(new IdentifyableCollection());
+      expect(busy).toEqual(new IdentifyableCollection());
     });
 
     it('assigns a uuid id to the worker', () => {
       workerRegistry.initWorkers();
 
-      const workers = workerRegistry.workers.list();
-      const worker = workers[0];
+      const createdWorkers = workers.list();
+      const createdWorker = createdWorkers[0];
 
-      expect(worker.id).toMatch(
+      expect(createdWorker.id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
       );
     });
   });
 
   describe('WorkersRegistry#setBusy', () => {
+    let workers;
+    let busy;
+    let idle;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workers = new IdentifyableCollection();
+      busy = new IdentifyableCollection();
+      idle = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers, busy, idle });
       workerRegistry.initWorkers();
-      worker = workerRegistry.workers.byIndex(0);
+      worker = workers.byIndex(0);
       worker_id = worker.id;
     });
 
     it('moves a worker from idle to busy when the worker exists', () => {
-      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
+      expect(idle.get(worker_id)).toBe(worker);
 
       workerRegistry.setBusy(worker_id);
 
-      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
-      expect(workerRegistry.idle.get(worker_id)).toBeUndefined();
+      expect(busy.get(worker_id)).toBe(worker);
+      expect(idle.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
       workerRegistry.setBusy('non-existent-id');
 
-      expect(workerRegistry.busy.size()).toBe(0);
+      expect(busy.size()).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
       workerRegistry.setBusy(worker_id);
       workerRegistry.setBusy(worker_id);
 
-      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
-      expect(workerRegistry.idle[worker_id]).toBeUndefined();
+      expect(busy.get(worker_id)).toBe(worker);
+      expect(idle[worker_id]).toBeUndefined();
     });
   });
 
   describe('WorkersRegistry#setIdle', () => {
+    let workers;
+    let busy;
+    let idle;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workers = new IdentifyableCollection();
+      busy = new IdentifyableCollection();
+      idle = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers, busy, idle });
       workerRegistry.initWorkers();
-      worker = workerRegistry.workers.byIndex(0);
+      worker = workers.byIndex(0);
       worker_id = worker.id;
       workerRegistry.setBusy(worker_id);
     });
 
     it('moves a worker from busy to idle when the worker exists', () => {
-      expect(workerRegistry.busy.get(worker_id)).toBe(worker);
+      expect(busy.get(worker_id)).toBe(worker);
 
       workerRegistry.setIdle(worker_id);
 
-      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
-      expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
+      expect(idle.get(worker_id)).toBe(worker);
+      expect(busy.get(worker_id)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
       workerRegistry.setIdle('non-existent-id');
 
-      expect(workerRegistry.idle.size()).toBe(0);
+      expect(idle.size()).toBe(0);
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
       workerRegistry.setIdle(worker_id);
       workerRegistry.setIdle(worker_id);
 
-      expect(workerRegistry.idle.get(worker_id)).toBe(worker);
-      expect(workerRegistry.busy.get(worker_id)).toBeUndefined();
+      expect(idle.get(worker_id)).toBe(worker);
+      expect(busy.get(worker_id)).toBeUndefined();
     });
   });
 
   describe('#hasBusyWorker', () => {
+    let workers;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workers = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
       workerRegistry.initWorkers();
-      worker = workerRegistry.workers.byIndex(0);
+      worker = workers.byIndex(0);
       worker_id = worker.id;
     });
 
@@ -160,10 +188,13 @@ describe('WorkersRegistry', () => {
     });
   });
   describe('#hasIdleWorker', () => {
+    let workers;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workers = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
       workerRegistry.initWorkers();
-      worker_id = workerRegistry.workers.byIndex(0).id;
+      worker_id = workers.byIndex(0).id;
     });
 
     it('returns true when there is a idle worker', () => {
@@ -177,24 +208,27 @@ describe('WorkersRegistry', () => {
   });
 
   describe('#getIdleWorker', () => {
+    let workers;
+
     beforeEach(() => {
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1 });
+      workers = new IdentifyableCollection();
+      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
       workerRegistry.initWorkers();
-      worker_id = workerRegistry.workers.byIndex(0).id;
+      worker_id = workers.byIndex(0).id;
     });
 
     it('returns an idle worker when available', () => {
-      const worker = workerRegistry.getIdleWorker();
+      const idleWorker = workerRegistry.getIdleWorker();
 
-      expect(worker).toBeDefined();
-      expect(worker.id).toBe(worker_id);
+      expect(idleWorker).toBeDefined();
+      expect(idleWorker.id).toBe(worker_id);
     });
 
     it('returns null when no idle workers are available', () => {
       workerRegistry.setBusy(worker_id);
-      const worker = workerRegistry.getIdleWorker();
+      const idleWorker = workerRegistry.getIdleWorker();
 
-      expect(worker).toBeNull();
+      expect(idleWorker).toBeNull();
     });
   });
 });
