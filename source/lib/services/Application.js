@@ -5,20 +5,14 @@ import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 
 class Application {
   #workers;
-  #busy;
-  #idle;
 
   /**
    * Creates a new Application instance.
    * @param {object} [params={}] - Optional parameters for dependency injection.
    * @param {IdentifyableCollection} [params.workers] - Workers collection (injected for testing).
-   * @param {IdentifyableCollection} [params.busy] - Busy workers collection (injected for testing).
-   * @param {IdentifyableCollection} [params.idle] - Idle workers collection (injected for testing).
    */
-  constructor({ workers, busy, idle } = {}) {
+  constructor({ workers } = {}) {
     this.#workers = workers;
-    this.#busy = busy;
-    this.#idle = idle;
   }
 
   /**
@@ -39,9 +33,7 @@ class Application {
     this.workersRegistry = new WorkersRegistry({
       jobRegistry: this.jobRegistry,
       ...this.config.workersConfig,
-      workers: this.#workers,
-      busy: this.#busy,
-      idle: this.#idle
+      workers: this.#workers
     });
 
     this.workersRegistry.initWorkers();

@@ -37,9 +37,8 @@ describe('Application', () => {
 
       it('initializes workers registry', () => {
         const workers = new IdentifyableCollection();
-        const busy = new IdentifyableCollection();
 
-        app = new Application({ workers, busy });
+        app = new Application({ workers });
 
         expect(app.workersRegistry).toBeUndefined();
 
@@ -47,7 +46,6 @@ describe('Application', () => {
 
         expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
         expect(workers.size()).toEqual(5);
-        expect(busy).toEqual(new IdentifyableCollection());
       });
     });
 
