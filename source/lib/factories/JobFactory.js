@@ -25,7 +25,7 @@ class JobFactory extends Factory {
   /**
    * Builds a new Job instance with a unique identifier and the clients registry.
    * This method overrides the base Factory's build method to include the clients registry in the created Job instance.
-   * 
+   *
    * @param {object} params - The parameters for building a Job instance.
    * @param {ResourceRequest} params.resourceRequest - The resource request associated with the Job.
    * @param {object} params.parameters - Additional parameters for the Job.

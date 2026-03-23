@@ -1,9 +1,9 @@
+import axios from 'axios';
 import { Job } from '../../lib/models/Job.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { Client } from '../../lib/services/Client.js';
 
-import axios from 'axios';
 
 describe('Job', () => {
   let resourceRequest;

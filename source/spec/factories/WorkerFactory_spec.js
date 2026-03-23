@@ -1,8 +1,8 @@
 import { WorkerFactory } from '../../lib/factories/WorkerFactory.js';
 import { Worker } from '../../lib/models/Worker.js';
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 
 describe('WorkerFactory', () => {
   describe('#build', () => {

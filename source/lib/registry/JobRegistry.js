@@ -11,7 +11,7 @@ class JobRegistry {
 
   /**
    * Creates a new JobRegistry instance with an empty job queue.
-   * 
+   *
    * @param {object} options - The options for the JobRegistry.
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    */

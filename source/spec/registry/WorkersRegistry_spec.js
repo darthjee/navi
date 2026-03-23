@@ -1,7 +1,7 @@
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 
 describe('WorkersRegistry', () => {
   let jobRegistry;
