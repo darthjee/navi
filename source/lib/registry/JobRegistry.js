@@ -1,3 +1,4 @@
+import { JobFactory } from '../factories/JobFactory.js';
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
 import { Queue } from '../utils/Queue.js';
 
@@ -6,6 +7,8 @@ import { Queue } from '../utils/Queue.js';
  * @author darthjee
  */
 class JobRegistry {
+  #factory;
+  
   /**
    * Creates a new JobRegistry instance with an empty job queue.
    */
@@ -13,6 +16,20 @@ class JobRegistry {
     this.jobs = new Queue();
     this.failedJobs = new Queue();
     this.lockedBy = null;
+    this.#factory = new JobFactory();
+  }
+
+  /**
+   * Enqueues a new job using the JobFactory.
+   * @param {object} jobAttributes - The attributes for the job (resourceRequest, parameters, etc).
+   * @param {object} jobAttributes.resourceRequest - The resource request associated with the job.
+   * @param {object} jobAttributes.parameters - The parameters for the job execution.
+   * @returns {Job} The created and enqueued Job instance.
+   */
+  enqueue({ resourceRequest, parameters } = {}) {
+    const job = this.#factory.build({resourceRequest, parameters});
+    this.push(job);
+    return job;
   }
 
   /**
