@@ -22,6 +22,12 @@ class JobFactory extends Factory {
     this.#clients = clients;
   }
 
+  /**
+   * Builds a new Job instance with a unique identifier and the clients registry.
+   * This method overrides the base Factory's build method to include the clients registry in the created Job instance.
+   * @returns {Job} A new Job instance with a unique identifier and the clients registry.
+   * @override
+   */
   build() {
     return super.build({ clients: this.#clients });
   }
