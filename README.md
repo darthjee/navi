@@ -31,6 +31,7 @@ Navi is a queue-based cache-warmer written in Node.js and distributed as a Docke
 It reads a YAML configuration file, enqueues HTTP requests as jobs, and processes them concurrently using a configurable pool of workers.
 
 Key features:
+
 - Concurrent HTTP request execution via a worker pool.
 - URL templates with placeholder parameters (e.g. `{:id}`).
 - Resource chaining: downstream jobs are enqueued automatically based on the response of a parent request.
@@ -147,6 +148,7 @@ make setup
 ```
 
 This command:
+
 1. Copies `.env.sample` to `.env`.
 2. Builds the `base_build` Docker image.
 3. Installs Node.js dependencies inside the container via `yarn install`.
