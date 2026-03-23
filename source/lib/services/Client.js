@@ -14,9 +14,9 @@ class Client {
    * @param {string} attributes.name Name identifying this client.
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
    */
-  constructor(attributes) {
-    this.name = attributes.name;
-    this.baseUrl = attributes.baseUrl;
+  constructor({ name, baseUrl }) {
+    this.name = name;
+    this.baseUrl = baseUrl;
   }
 
   /**
