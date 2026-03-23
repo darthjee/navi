@@ -8,14 +8,32 @@ import { IdGenerator } from '../utils/IdGenerator.js';
  * @author darthjee
  */
 class JobFactory extends Factory {
+  #clients;
+
   /**
    * Creates a new JobFactory instance with default settings for Job creation.
    * @param {object} options - Configuration options for the factory.
    * @param {class} options.klass - The class to instantiate (default is Job).
    * @param {object} options.attributesGenerator - The generator for unique attributes (default is IdGenerator).
+   * @param {ClientRegistry} options.clients - The clients registry to be used in created Job instances.
    */
-  constructor({ klass = Job, attributesGenerator = new IdGenerator() } = {}) {
+  constructor({ klass = Job, attributesGenerator = new IdGenerator(), clients } = {}) {
     super({ klass, attributesGenerator });
+    this.#clients = clients;
+  }
+
+  /**
+   * Builds a new Job instance with a unique identifier and the clients registry.
+   * This method overrides the base Factory's build method to include the clients registry in the created Job instance.
+   *
+   * @param {object} params - The parameters for building a Job instance.
+   * @param {ResourceRequest} params.resourceRequest - The resource request associated with the Job.
+   * @param {object} params.parameters - Additional parameters for the Job.
+   * @returns {Job} A new Job instance with a unique identifier and the clients registry.
+   * @override
+   */
+  build({ resourceRequest, parameters }) {
+    return super.build({ clients: this.#clients, resourceRequest, parameters });
   }
 }
 

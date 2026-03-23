@@ -1,3 +1,4 @@
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
@@ -7,9 +8,11 @@ describe('WorkersRegistry', () => {
   let workerRegistry;
   let worker;
   let worker_id;
+  let clients;
 
   beforeEach(() => {
-    jobRegistry = new JobRegistry();
+    clients = new ClientRegistry({});
+    jobRegistry = new JobRegistry({ clients });
   });
 
   describe('#constructor', () => {

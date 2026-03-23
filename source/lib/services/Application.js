@@ -29,7 +29,11 @@ class Application {
 
     // Load the configuration from the specified path.
     this.config = Config.fromFile(configPath);
-    this.jobRegistry = new JobRegistry();
+    this.#initRegistries();
+  }
+
+  #initRegistries() {
+    this.jobRegistry = new JobRegistry({ clients: this.config.clients });
     this.workersRegistry = new WorkersRegistry({
       jobRegistry: this.jobRegistry,
       ...this.config.workersConfig,

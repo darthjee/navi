@@ -11,12 +11,15 @@ class JobRegistry {
 
   /**
    * Creates a new JobRegistry instance with an empty job queue.
+   *
+   * @param {object} options - The options for the JobRegistry.
+   * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    */
-  constructor() {
+  constructor({ clients }) {
     this.jobs = new Queue();
     this.failedJobs = new Queue();
     this.lockedBy = null;
-    this.#factory = new JobFactory();
+    this.#factory = new JobFactory({ clients });
   }
 
   /**

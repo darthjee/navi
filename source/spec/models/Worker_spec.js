@@ -1,5 +1,6 @@
 import { Job } from '../../lib/models/Job.js';
 import { Worker } from '../../lib/models/Worker.js';
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 
@@ -7,9 +8,11 @@ describe('Worker', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
+  let clients;
 
   beforeEach(() => {
-    jobRegistry = new JobRegistry();
+    clients = new ClientRegistry({});
+    jobRegistry = new JobRegistry({ clients });
     workerRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
     worker = new Worker({ id: 1, jobRegistry, workerRegistry });
   });
