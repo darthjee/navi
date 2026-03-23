@@ -21,6 +21,10 @@ class JobFactory extends Factory {
     super({ klass, attributesGenerator });
     this.#clients = clients;
   }
+
+  build() {
+    return super.build({ clients: this.#clients });
+  }
 }
 
 export { JobFactory };
