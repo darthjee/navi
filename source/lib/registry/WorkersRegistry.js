@@ -1,11 +1,13 @@
 import { Worker } from '../models/Worker.js';
 import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
+import { WorkerFactory } from '../factories/WorkerFactory.js';
 
 /**
  * WorkersRegistry manages the creation and tracking of Worker instances.
  * @author darthjee
  */
 class WorkersRegistry {
+  #factory;
   #jobRegistry;
   #quantity;
   #workers;
@@ -24,11 +26,13 @@ class WorkersRegistry {
   constructor({
     jobRegistry,
     quantity,
+    factory = new WorkerFactory({ jobRegistry, workerRegistry: this }),
     workers = new IdentifyableCollection(),
     busy = new IdentifyableCollection(),
     idle = new IdentifyableCollection()
   }) {
     this.#jobRegistry = jobRegistry;
+    this.#factory = factory;
     this.#quantity = quantity;
     this.#workers = workers;
     this.#busy = busy;
