@@ -3,6 +3,7 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 
 describe('WorkersAllocator', () => {
   let jobRegistry;
@@ -11,9 +12,11 @@ describe('WorkersAllocator', () => {
   let job;
   let worker;
   let workers;
+  let clients;
 
   beforeEach(() => {
-    jobRegistry = new JobRegistry();
+    clients = new ClientRegistry({});
+    jobRegistry = new JobRegistry({ clients });
     workers = new IdentifyableCollection();
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
     workersRegistry.initWorkers();

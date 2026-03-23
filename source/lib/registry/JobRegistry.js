@@ -15,7 +15,7 @@ class JobRegistry {
    * @param {object} options - The options for the JobRegistry.
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    */
-  constructor({ clients } = {}) {
+  constructor({ clients }) {
     this.jobs = new Queue();
     this.failedJobs = new Queue();
     this.lockedBy = null;
