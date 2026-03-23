@@ -23,10 +23,22 @@ class Job {
     this.#clients = clients;
   }
 
+  /**
+   * Performs the job.
+   *
+   * This method executes the job's resource request using the appropriate client from the clients registry.
+   * It returns a promise that resolves with the result of performing the resource request.
+   * @returns {Promise} A promise that resolves with the result of performing the job's resource request.
+   */
   async perform() {
     return this.#getClient().perform(this.#resourceRequest);
   }
 
+  /**
+   * Gets the client associated with this job's resource request.
+   * @returns {Client} The client associated with this job's resource request.
+   * @private
+   */
   #getClient() {
     if (!this.#client) {
       this.#client = this.#clients.getClient(this.#resourceRequest.clientName);
