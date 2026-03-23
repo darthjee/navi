@@ -18,10 +18,11 @@ describe('Client', () => {
   });
 
   it('returns true when status matches and requests using baseUrl + url', async () => {
-    let promise = Promise.resolve({ status: 200 })
+    let response = { status: 200 }
+    let promise = Promise.resolve(response)
     spyOn(axios, 'get').and.returnValue(promise);
 
-    await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(true);
+    await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     expect(axios.get).toHaveBeenCalledWith(fullUrl);
   });
 

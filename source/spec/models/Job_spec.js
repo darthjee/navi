@@ -17,6 +17,8 @@ describe('Job', () => {
   const fullUrl = 'http://example.com/categories.json';
   const status = 200;
 
+  let response;
+
   beforeEach(() => {
     resourceRequest = new ResourceRequest({ url, status });
     client = new Client({ name: 'default', baseUrl });
@@ -34,11 +36,14 @@ describe('Job', () => {
 
   describe('#process', () => {
     beforeEach(() => {
-      spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
+      response = { status: 200 }
+      let promise = Promise.resolve(response)
+
+      spyOn(axios, 'get').and.returnValue(promise);
     });
 
     it('performs the job', async () => {
-      await expectAsync(job.perform()).toBeResolvedTo(true);
+      await expectAsync(job.perform()).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(fullUrl);
     });
   });

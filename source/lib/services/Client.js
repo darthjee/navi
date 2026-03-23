@@ -70,11 +70,11 @@ class Client {
     const requestUrl = this.#buildUrl(resourceRequest.url);
     const response = await axios.get(requestUrl);
 
-    if (response.status === resourceRequest.status) {
-      return true;
+    if (response.status !== resourceRequest.status) {
+      throw new RequestFailed(response.status, requestUrl);
     }
-
-    throw new RequestFailed(response.status, requestUrl);
+    
+    return response;
   }
 
   /**
