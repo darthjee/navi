@@ -1,13 +1,28 @@
 import { LockedByOtherWorker } from '../../lib/exceptions/LockedByOtherWorker.js';
 import { Job } from '../../lib/models/Job.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 
 describe('JobRegistry', () => {
   let registry;
+  let resourceRequest;
 
   beforeEach(() => {
     registry = new JobRegistry();
+    resourceRequest = new ResourceRequest({ url: 'http://example.com', status: 200 });
+  });
+
+  describe('#enqueue', () => {
+    it('creates and enqueues a job', () => {
+      expect(registry.hasJob()).toBeFalse();
+
+      const jobAttributes = { resourceRequest, parameters: { id: 20 } };
+      const job = registry.enqueue(jobAttributes);
+
+      expect(job).toBeInstanceOf(Job);
+      expect(registry.hasJob()).toBeTrue();
+    });
   });
 
   describe('#hasJob', () => {

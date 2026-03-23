@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto';
-
 class IdentifyableCollection {
   #items;
   #size = null;
@@ -72,20 +70,6 @@ class IdentifyableCollection {
    */
   hasAny() {
     return this.size() > 0;
-  }
-
-  /**
-   * Generates a unique identifier.
-   * @returns {string} - A unique id not already present in the collection.
-   */
-  generateUUID() {
-    let id;
-
-    do {
-      id = randomUUID();
-    } while (this.#items[id]);
-
-    return id;
   }
 }
 

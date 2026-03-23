@@ -3,15 +3,20 @@
  * @author darthjee
  */
 class Job {
+  #resourceRequest;
+  #parameters;
+
   /**
    * Creates a new Job instance.
    * @param {object} params - The parameters for creating a Job instance.
    * @param {string} params.id - The unique identifier for this job.
-   * @param {*} params.payload - The data associated with this job.
+   * @param {ResourceRequest} params.resourceRequest - The resource request associated with this job.
+   * @param {object} params.parameters - Additional parameters for the request.
    */
-  constructor({ id, payload }) {
+  constructor({ id, resourceRequest, parameters }) {
     this.id = id;
-    this.payload = payload;
+    this.#resourceRequest = resourceRequest;
+    this.#parameters = parameters;
   }
 }
 

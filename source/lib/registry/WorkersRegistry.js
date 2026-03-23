@@ -1,4 +1,4 @@
-import { Worker } from '../models/Worker.js';
+import { WorkerFactory } from '../factories/WorkerFactory.js';
 import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 
 /**
@@ -6,6 +6,7 @@ import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
  * @author darthjee
  */
 class WorkersRegistry {
+  #factory;
   #jobRegistry;
   #quantity;
   #workers;
@@ -16,6 +17,7 @@ class WorkersRegistry {
    * Creates a new WorkersRegistry instance.
    * @param {object} params - The parameters for creating a WorkersRegistry instance.
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
+   * @param {WorkerFactory} [params.factory] - The factory for creating Worker instances (injected for testing).
    * @param {number} params.quantity - The number of workers to be built.
    * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
    * @param {IdentifyableCollection} [params.busy] - The collection of busy workers (injected for testing).
@@ -24,11 +26,13 @@ class WorkersRegistry {
   constructor({
     jobRegistry,
     quantity,
+    factory = new WorkerFactory({ jobRegistry, workerRegistry: this }),
     workers = new IdentifyableCollection(),
     busy = new IdentifyableCollection(),
     idle = new IdentifyableCollection()
   }) {
     this.#jobRegistry = jobRegistry;
+    this.#factory = factory;
     this.#quantity = quantity;
     this.#workers = workers;
     this.#busy = busy;
@@ -110,21 +114,12 @@ class WorkersRegistry {
    * @returns {Worker} The newly created Worker instance.
    */
   #buildWorker() {
-    const id = this.#generateUUID();
-    const worker = new Worker({ id, jobRegistry: this.#jobRegistry, workerRegistry: this });
+    const worker = this.#factory.build();
 
     this.#workers.push(worker);
     this.#idle.push(worker);
 
     return worker;
-  }
-
-  /**
-   * Generates a unique UUID that is not already assigned to any existing worker.
-   * @returns {string} A unique UUID string.
-   */
-  #generateUUID() {
-    return this.#workers.generateUUID();
   }
 }
 
