@@ -5,6 +5,7 @@
 class Job {
   #resourceRequest;
   #parameters;
+  #clients;
   #client;
 
   /**
@@ -19,15 +20,16 @@ class Job {
     this.id = id;
     this.#resourceRequest = resourceRequest;
     this.#parameters = parameters;
-    this.clients = clients;
+    this.#clients = clients;
   }
 
-  perform() {
+  async perform() {
+    return this.#getClient().perform(this.#resourceRequest);
   }
 
-  client() {
-    if (! this.#client) {
-      this.#client = this.clients.getClient(this.#resourceRequest.clientName);
+  #getClient() {
+    if (!this.#client) {
+      this.#client = this.#clients.getClient(this.#resourceRequest.clientName);
     }
 
     return this.#client;

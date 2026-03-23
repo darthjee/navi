@@ -3,20 +3,26 @@ import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { Client } from '../../lib/services/Client.js';
 
+import axios from 'axios';
+
 describe('Job', () => {
   let resourceRequest;
   let clients;
   let parameters;
   let job;
-  let clientsMap;
   let client;
 
+  const baseUrl = 'http://example.com';
+  const url = '/categories.json';
+  const fullUrl = 'http://example.com/categories.json';
+  const status = 200;
+
   beforeEach(() => {
-    resourceRequest = new ResourceRequest({ url: 'http://example.com', status: 200 });
-    client = new Client({ name: 'default' });
-    clientsMap = { default: client };
-    clients = new ClientRegistry(clientsMap);
+    resourceRequest = new ResourceRequest({ url, status });
+    client = new Client({ name: 'default', baseUrl });
+    clients = new ClientRegistry({ default: client });
     parameters = {};
+
     job = new Job({ id: 'id', resourceRequest, clients, parameters });
   });
 
@@ -27,8 +33,13 @@ describe('Job', () => {
   });
 
   describe('#process', () => {
-    xit('performs the job', () => {
-      expect(job.perform()).toBeUndefined();
+    beforeEach(() => {
+      spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
+    });
+
+    it('performs the job', () => {
+        expectAsync(job.perform()).toBeResolvedTo(true);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
     });
   });
 });
