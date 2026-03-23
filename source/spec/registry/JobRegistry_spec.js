@@ -3,13 +3,16 @@ import { Job } from '../../lib/models/Job.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 
 describe('JobRegistry', () => {
   let registry;
   let resourceRequest;
+  let clients;
 
   beforeEach(() => {
-    registry = new JobRegistry();
+    clients = new ClientRegistry();
+    registry = new JobRegistry({ clients });
     resourceRequest = new ResourceRequest({ url: 'http://example.com', status: 200 });
   });
 
