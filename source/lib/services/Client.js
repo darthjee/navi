@@ -73,7 +73,7 @@ class Client {
     if (response.status !== resourceRequest.status) {
       throw new RequestFailed(response.status, requestUrl);
     }
-    
+
     return response;
   }
 

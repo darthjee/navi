@@ -18,8 +18,8 @@ describe('Client', () => {
   });
 
   it('returns true when status matches and requests using baseUrl + url', async () => {
-    let response = { status: 200 }
-    let promise = Promise.resolve(response)
+    const response = { status: 200 };
+    const promise = Promise.resolve(response);
     spyOn(axios, 'get').and.returnValue(promise);
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
@@ -36,7 +36,7 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed when status does not match', async () => {
-      let promise = Promise.resolve({ status: 404 })
+      const promise = Promise.resolve({ status: 404 });
       spyOn(axios, 'get').and.returnValue(promise);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
@@ -53,7 +53,7 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed with correct status and full url on error.response', async () => {
-      let promise = Promise.reject({ response: { status: 500 } })
+      const promise = Promise.reject({ response: { status: 500 } });
       spyOn(axios, 'get').and.returnValue(promise);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);

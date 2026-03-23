@@ -36,8 +36,8 @@ describe('Job', () => {
 
   describe('#process', () => {
     beforeEach(() => {
-      response = { status: 200 }
-      let promise = Promise.resolve(response)
+      response = { status: 200 };
+      const promise = Promise.resolve(response);
 
       spyOn(axios, 'get').and.returnValue(promise);
     });
