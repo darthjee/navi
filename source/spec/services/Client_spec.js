@@ -43,6 +43,20 @@ describe('Client', () => {
     });
   });
 
+  describe('when request status is 404 but it is a match', () => {
+    beforeEach(() => {
+      resourceRequest = new ResourceRequest({ url, status: 404 });
+    });
+
+    it('throws RequestFailed when status does not match', async () => {
+      const response = { status: 404 };
+      const promise = Promise.resolve(response);
+      spyOn(axios, 'get').and.returnValue(promise);
+
+      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+    });
+  });
+
   describe('when request is 5xx', () => {
     beforeEach(() => {
       expectedError = jasmine.objectContaining({
