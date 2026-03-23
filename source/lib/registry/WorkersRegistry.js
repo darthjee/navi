@@ -114,21 +114,12 @@ class WorkersRegistry {
    * @returns {Worker} The newly created Worker instance.
    */
   #buildWorker() {
-    const id = this.#generateUUID();
-    const worker = new Worker({ id, jobRegistry: this.#jobRegistry, workerRegistry: this });
+    const worker = this.#factory.build();
 
     this.#workers.push(worker);
     this.#idle.push(worker);
 
     return worker;
-  }
-
-  /**
-   * Generates a unique UUID that is not already assigned to any existing worker.
-   * @returns {string} A unique UUID string.
-   */
-  #generateUUID() {
-    return this.#workers.generateUUID();
   }
 }
 
