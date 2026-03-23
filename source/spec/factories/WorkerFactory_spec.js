@@ -10,13 +10,13 @@ describe('Factory', () => {
     let workerRegistry;
 
     beforeEach(() => {
-      factory = new WorkerFactory();
       jobRegistry = new JobRegistry();
-      workerRegistry = new WorkersRegistry({ jobRegistry, workerRegistry });
+      workerRegistry = new WorkersRegistry({ jobRegistry });
+      factory = new WorkerFactory({ jobRegistry, workerRegistry });
     });
 
     it('builds an instance of Worker', () => {
-      const worker = factory.build({ jobRegistry, workerRegistry });
+      const worker = factory.build();
       expect(worker).toBeInstanceOf(Worker);
     });
   });
