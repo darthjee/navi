@@ -24,10 +24,6 @@ class Worker {
   assign(job) {
     this.job = job;
   }
-
-  perform() {
-    this.job.perform();
-  }
 }
 
 export { Worker };
