@@ -1,6 +1,6 @@
+import { WorkerFactory } from '../factories/WorkerFactory.js';
 import { Worker } from '../models/Worker.js';
 import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
-import { WorkerFactory } from '../factories/WorkerFactory.js';
 
 /**
  * WorkersRegistry manages the creation and tracking of Worker instances.
