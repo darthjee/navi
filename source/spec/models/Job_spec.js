@@ -2,11 +2,10 @@ import { Job } from '../../lib/models/Job.js';
 
 describe('Job', () => {
   describe('#constructor', () => {
-    it('stores the payload', () => {
-      const payload = { url: '/test' };
-      const job = new Job({ payload });
+    it('stores the id', () => {
+      const job = new Job({ id: 'id' });
 
-      expect(job.payload).toEqual(payload);
+      expect(job.id).toEqual('id');
     });
   });
 });
