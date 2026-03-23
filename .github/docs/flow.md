@@ -90,6 +90,7 @@ Each `ResourceRequest` entry may specify:
 After `loadConfig`, `Application` iterates over all `ResourceRequest` entries across all resources and enqueues those that **require no parameters** (i.e., their URL contains no `{:placeholder}` tokens).
 
 `JobRegistry.enqueue(resourceRequest, params)`:
+
 1. Delegates to **`JobFactory`** to create a new `Job` wrapping the `ResourceRequest` and parameter map.
 2. Calls `push(job)` to add the job to the tail of the main queue.
 
