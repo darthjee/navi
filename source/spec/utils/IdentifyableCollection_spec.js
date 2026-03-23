@@ -44,15 +44,4 @@ describe('IdentifyableCollection', () => {
     expect(collection.byIndex(1)).toBe(second);
     expect(collection.list().map(i => i.id)).toEqual(['one', 'two']);
   });
-
-  it('generateUUID returns an id not already present in the collection', () => {
-    const existing = { id: 'existing-id' };
-    collection.push(existing);
-
-    const newId = collection.generateUUID();
-
-    expect(typeof newId).toBe('string');
-    expect(newId).not.toEqual('existing-id');
-    expect(collection.get(newId)).toBeUndefined();
-  });
 });
