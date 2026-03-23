@@ -1,8 +1,8 @@
 import { LockedByOtherWorker } from '../../lib/exceptions/LockedByOtherWorker.js';
 import { Job } from '../../lib/models/Job.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 
 describe('JobRegistry', () => {
   let registry;

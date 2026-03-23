@@ -1,5 +1,4 @@
 import { WorkerFactory } from '../factories/WorkerFactory.js';
-import { Worker } from '../models/Worker.js';
 import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 
 /**
@@ -18,6 +17,7 @@ class WorkersRegistry {
    * Creates a new WorkersRegistry instance.
    * @param {object} params - The parameters for creating a WorkersRegistry instance.
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
+   * @param {WorkerFactory} [params.factory] - The factory for creating Worker instances (injected for testing).
    * @param {number} params.quantity - The number of workers to be built.
    * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
    * @param {IdentifyableCollection} [params.busy] - The collection of busy workers (injected for testing).

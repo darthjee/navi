@@ -1,5 +1,5 @@
-import { JobFactory } from '../factories/JobFactory.js';
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
+import { JobFactory } from '../factories/JobFactory.js';
 import { Queue } from '../utils/Queue.js';
 
 /**
@@ -8,7 +8,7 @@ import { Queue } from '../utils/Queue.js';
  */
 class JobRegistry {
   #factory;
-  
+
   /**
    * Creates a new JobRegistry instance with an empty job queue.
    */

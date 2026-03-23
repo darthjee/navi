@@ -27,7 +27,7 @@ class WorkerFactory extends Factory {
 
   /**
    * Builds a new Worker instance with references to the JobRegistry and WorkerRegistry.
-   * 
+   *
    * It builds the worker by calling the base Factory's build method, passing in the jobRegistry and workerRegistry as part of the attributes for the Worker instance.
    * @returns {Worker} The created Worker instance.
    */
