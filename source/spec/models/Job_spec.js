@@ -37,9 +37,9 @@ describe('Job', () => {
       spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
     });
 
-    it('performs the job', () => {
-        expectAsync(job.perform()).toBeResolvedTo(true);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+    it('performs the job', async () => {
+      await expectAsync(job.perform()).toBeResolvedTo(true);
+      expect(axios.get).toHaveBeenCalledWith(fullUrl);
     });
   });
 });
