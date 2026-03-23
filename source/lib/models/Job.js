@@ -13,10 +13,14 @@ class Job {
    * @param {ResourceRequest} params.resourceRequest - The resource request associated with this job.
    * @param {object} params.parameters - Additional parameters for the request.
    */
-  constructor({ id, resourceRequest, parameters }) {
+  constructor({ id, resourceRequest, parameters, clients }) {
     this.id = id;
     this.#resourceRequest = resourceRequest;
     this.#parameters = parameters;
+    this.clients = clients;
+  }
+
+  perform() {
   }
 }
 
