@@ -4,6 +4,7 @@ import { Config } from '../../lib/models/Config.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Application', () => {
@@ -35,13 +36,16 @@ describe('Application', () => {
       });
 
       it('initializes workers registry', () => {
+        const workers = new IdentifyableCollection();
+
+        app = new Application({ workers });
+
         expect(app.workersRegistry).toBeUndefined();
 
         app.loadConfig(configFilePath);
 
         expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
-        expect(Object.keys(app.workersRegistry.workers).length).toEqual(5);
-        expect(app.workersRegistry.busy).toEqual({});
+        expect(workers.size()).toEqual(5);
       });
     });
 

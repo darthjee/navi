@@ -1,4 +1,6 @@
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
+import { JobFactory } from '../factories/JobFactory.js';
+import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 import { Queue } from '../utils/Queue.js';
 
 /**
@@ -6,22 +8,41 @@ import { Queue } from '../utils/Queue.js';
  * @author darthjee
  */
 class JobRegistry {
-  /**
-   * Creates a new JobRegistry instance with an empty job queue.
-   */
-  constructor() {
-    this.jobs = new Queue();
-    this.failedJobs = new Queue();
-    this.lockedBy = null;
-  }
+  #enqueued;
+  #failed;
+  #finished;
+  #lockedBy;
+  #factory;
 
   /**
-   * Pushes a job onto the end of the queue.
-   * @param {Job} job - The job to add to the queue.
-   * @returns {void}
+   * Creates a new JobRegistry instance with an empty job queue.
+   *
+   * @param {object} options - The options for the JobRegistry.
+   * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
+   * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
+   * @param {Queue} [options.failed] - An optional queue to use for failed jobs. If not provided, a new Queue will be created.
+   * @param {Queue} [options.finished] - An optional queue to use for finished jobs. If not provided, a new Queue will be created.
    */
-  push(job) {
-    this.jobs.push(job);
+  constructor({ queue, failed, finished, clients }) {
+    this.#enqueued = queue || new Queue();
+    this.#failed = failed || new Queue();
+    this.#finished = finished || new IdentifyableCollection();
+    this.#lockedBy = null;
+    this.#factory = new JobFactory({ clients });
+  }
+
+
+  /**
+   * Enqueues a new job using the JobFactory.
+   * @param {object} jobAttributes - The attributes for the job (resourceRequest, parameters, etc).
+   * @param {object} jobAttributes.resourceRequest - The resource request associated with the job.
+   * @param {object} jobAttributes.parameters - The parameters for the job execution.
+   * @returns {Job} The created and enqueued Job instance.
+   */
+  enqueue({ resourceRequest, parameters } = {}) {
+    const job = this.#factory.build({resourceRequest, parameters});
+    this.#enqueued.push(job);
+    return job;
   }
 
   /**
@@ -30,7 +51,16 @@ class JobRegistry {
    * @returns {void}
    */
   fail(job) {
-    this.failedJobs.push(job);
+    this.#failed.push(job);
+  }
+
+  /**
+   * Marks a job as finished.
+   * @param {Job} job - The job to mark as finished.
+   * @returns {void}
+   */
+  finish(job) {
+    this.#finished.push(job);
   }
 
   /**
@@ -38,7 +68,7 @@ class JobRegistry {
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.jobs.pick() || this.failedJobs.pick();
+    return this.#enqueued.pick() || this.#failed.pick();
   }
 
   /**
@@ -46,7 +76,7 @@ class JobRegistry {
    * @returns {boolean} True if there are jobs in the queue, false otherwise.
    */
   hasJob() {
-    return this.jobs.hasItem() || this.failedJobs.hasItem();
+    return this.#enqueued.hasItem() || this.#failed.hasItem();
   }
 
   /**
@@ -57,8 +87,8 @@ class JobRegistry {
    * @throws {LockedByOtherWorker} When the registry is already locked by another worker.
    */
   lock(worker) {
-    if (this.lockedBy === null) {
-      this.lockedBy = worker.id;
+    if (this.#lockedBy === null) {
+      this.#lockedBy = worker.id;
     } else {
       throw new LockedByOtherWorker();
     }
@@ -70,7 +100,7 @@ class JobRegistry {
    * @returns {boolean} True if the worker holds the lock, false otherwise.
    */
   hasLock(worker) {
-    return this.lockedBy === worker.id;
+    return this.#lockedBy === worker.id;
   }
 }
 

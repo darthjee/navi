@@ -5,6 +5,7 @@
   "description": "Navi cache warmer CLI",
   "main": "index.js",
   "scripts": {
+    "spec": "npx jasmine spec/**/*.js",
     "test": "npx c8 jasmine spec/**/*.js",
     "coverage": "npx c8 --reporter=lcov jasmine spec/**/*.js",
     "lint": "eslint .",

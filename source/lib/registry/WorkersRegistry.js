@@ -1,23 +1,42 @@
-import { randomUUID } from 'crypto';
-import { Worker } from '../models/Worker.js';
+import { WorkerFactory } from '../factories/WorkerFactory.js';
+import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 
 /**
  * WorkersRegistry manages the creation and tracking of Worker instances.
  * @author darthjee
  */
 class WorkersRegistry {
+  #factory;
+  #jobRegistry;
+  #quantity;
+  #workers;
+  #busy;
+  #idle;
+
   /**
    * Creates a new WorkersRegistry instance.
    * @param {object} params - The parameters for creating a WorkersRegistry instance.
    * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
+   * @param {WorkerFactory} [params.factory] - The factory for creating Worker instances (injected for testing).
    * @param {number} params.quantity - The number of workers to be built.
+   * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
+   * @param {IdentifyableCollection} [params.busy] - The collection of busy workers (injected for testing).
+   * @param {IdentifyableCollection} [params.idle] - The collection of idle workers (injected for testing).
    */
-  constructor({ jobRegistry, quantity }) {
-    this.jobRegistry = jobRegistry;
-    this.quantity = quantity;
-    this.workers = {};
-    this.busy = {};
-    this.idle = {};
+  constructor({
+    jobRegistry,
+    quantity,
+    factory = new WorkerFactory({ jobRegistry, workerRegistry: this }),
+    workers = new IdentifyableCollection(),
+    busy = new IdentifyableCollection(),
+    idle = new IdentifyableCollection()
+  }) {
+    this.#jobRegistry = jobRegistry;
+    this.#factory = factory;
+    this.#quantity = quantity;
+    this.#workers = workers;
+    this.#busy = busy;
+    this.#idle = idle;
   }
 
   /**
@@ -28,7 +47,7 @@ class WorkersRegistry {
    * @returns {void}
    */
   initWorkers() {
-    for (let i = 0; i < this.quantity; i++) {
+    for (let i = 0; i < this.#quantity; i++) {
       this.#buildWorker();
     }
   }
@@ -38,11 +57,11 @@ class WorkersRegistry {
    * @param {string} worker_id - The ID of the worker to set as busy.
    */
   setBusy(worker_id) {
-    const worker = this.workers[worker_id];
+    const worker = this.#workers.get(worker_id);
 
     if (worker) {
-      delete this.idle[worker_id];
-      this.busy[worker_id] = worker;
+      this.#idle.remove(worker_id);
+      this.#busy.push(worker);
     }
   }
 
@@ -51,11 +70,11 @@ class WorkersRegistry {
    * @param {string} worker_id - The ID of the worker to set as idle.
    */
   setIdle(worker_id) {
-    const worker = this.workers[worker_id];
+    const worker = this.#workers.get(worker_id);
 
     if (worker) {
-      delete this.busy[worker_id];
-      this.idle[worker_id] = worker;
+      this.#busy.remove(worker_id);
+      this.#idle.push(worker);
     }
   }
 
@@ -64,7 +83,7 @@ class WorkersRegistry {
    * @returns {boolean} True if there is at least one busy worker, false otherwise.
    */
   hasBusyWorker() {
-    return Object.keys(this.busy).length > 0;
+    return this.#busy.hasAny();
   }
 
   /**
@@ -72,7 +91,7 @@ class WorkersRegistry {
    * @returns {boolean} True if there is at least one idle worker, false otherwise.
    */
   hasIdleWorker() {
-    return Object.keys(this.idle).length > 0;
+    return this.#idle.hasAny();
   }
 
   /**
@@ -83,13 +102,11 @@ class WorkersRegistry {
     if (!this.hasIdleWorker()) {
       return null;
     }
-
-    const idleWorkerIds = Object.keys(this.idle);
-    const workerId = idleWorkerIds[0];
+    const workerId = this.#idle.byIndex(0).id;
 
     this.setBusy(workerId);
 
-    return this.workers[workerId];
+    return this.#workers.get(workerId);
   }
 
   /**
@@ -97,27 +114,12 @@ class WorkersRegistry {
    * @returns {Worker} The newly created Worker instance.
    */
   #buildWorker() {
-    const id = this.#generateUUID();
-    const worker = new Worker({ id, jobRegistry: this.jobRegistry, workerRegistry: this });
+    const worker = this.#factory.build();
 
-    this.workers[id] = worker;
-    this.idle[id] = worker;
+    this.#workers.push(worker);
+    this.#idle.push(worker);
 
     return worker;
-  }
-
-  /**
-   * Generates a unique UUID that is not already assigned to any existing worker.
-   * @returns {string} A unique UUID string.
-   */
-  #generateUUID() {
-    let id;
-
-    do {
-      id = randomUUID();
-    } while (this.workers[id]);
-
-    return id;
   }
 }
 

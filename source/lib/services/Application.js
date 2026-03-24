@@ -4,6 +4,17 @@ import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 
 class Application {
+  #workers;
+
+  /**
+   * Creates a new Application instance.
+   * @param {object} [params={}] - Optional parameters for dependency injection.
+   * @param {IdentifyableCollection} [params.workers] - Workers collection (injected for testing).
+   */
+  constructor({ workers } = {}) {
+    this.#workers = workers;
+  }
+
   /**
    * Loads the configuration from the specified file path.
    * @param {string} configPath - The path to the configuration file.
@@ -18,9 +29,15 @@ class Application {
 
     // Load the configuration from the specified path.
     this.config = Config.fromFile(configPath);
-    this.jobRegistry = new JobRegistry();
+    this.#initRegistries();
+  }
+
+  #initRegistries() {
+    this.jobRegistry = new JobRegistry({ clients: this.config.clients });
     this.workersRegistry = new WorkersRegistry({
-      jobRegistry: this.jobRegistry, ...this.config.workersConfig
+      jobRegistry: this.jobRegistry,
+      ...this.config.workersConfig,
+      workers: this.#workers
     });
 
     this.workersRegistry.initWorkers();

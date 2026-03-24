@@ -14,9 +14,9 @@ class Client {
    * @param {string} attributes.name Name identifying this client.
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
    */
-  constructor(attributes) {
-    this.name = attributes.name;
-    this.baseUrl = attributes.baseUrl;
+  constructor({ name, baseUrl }) {
+    this.name = name;
+    this.baseUrl = baseUrl;
   }
 
   /**
@@ -70,11 +70,11 @@ class Client {
     const requestUrl = this.#buildUrl(resourceRequest.url);
     const response = await axios.get(requestUrl);
 
-    if (response.status === resourceRequest.status) {
-      return true;
+    if (response.status !== resourceRequest.status) {
+      throw new RequestFailed(response.status, requestUrl);
     }
 
-    throw new RequestFailed(response.status, requestUrl);
+    return response;
   }
 
   /**
