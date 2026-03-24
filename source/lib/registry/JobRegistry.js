@@ -1,5 +1,6 @@
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
 import { JobFactory } from '../factories/JobFactory.js';
+import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 import { Queue } from '../utils/Queue.js';
 
 /**
@@ -25,7 +26,7 @@ class JobRegistry {
   constructor({ queue, failed, finished, clients }) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new Queue();
-    this.#finished = finished || new Queue();
+    this.#finished = finished || new IdentifyableCollection();
     this.#lockedBy = null;
     this.#factory = new JobFactory({ clients });
   }
@@ -40,7 +41,7 @@ class JobRegistry {
    */
   enqueue({ resourceRequest, parameters } = {}) {
     const job = this.#factory.build({resourceRequest, parameters});
-    this.#push(job);
+    this.#enqueued.push(job);
     return job;
   }
 
@@ -100,15 +101,6 @@ class JobRegistry {
    */
   hasLock(worker) {
     return this.#lockedBy === worker.id;
-  }
-
-  /**
-   * Pushes a job onto the end of the queue.
-   * @param {Job} job - The job to add to the queue.
-   * @returns {void}
-   */
-  #push(job) {
-    this.#enqueued.push(job);
   }
 }
 

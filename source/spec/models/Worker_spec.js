@@ -7,12 +7,16 @@ import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Client } from '../../lib/services/Client.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { Queue } from '../../lib/utils/Queue.js';
 
 describe('Worker', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
   let clients;
+  let finished;
+  let failed;
 
   let resourceRequest;
   let client;
@@ -21,6 +25,8 @@ describe('Worker', () => {
   let response;
   let expectedError;
 
+  let idle;
+
   const baseUrl = 'http://example.com';
   const url = '/categories.json';
   const fullUrl = 'http://example.com/categories.json';
@@ -28,8 +34,13 @@ describe('Worker', () => {
 
   beforeEach(() => {
     clients = new ClientRegistry({});
-    jobRegistry = new JobRegistry({ clients });
-    workerRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
+    finished = new IdentifyableCollection();
+    failed = new Queue();
+    jobRegistry = new JobRegistry({ failed, finished, clients });
+
+    idle = new IdentifyableCollection();
+    workerRegistry = new WorkersRegistry({ quantity: 0, idle, jobRegistry });
+
     worker = new Worker({ id: 1, jobRegistry, workerRegistry });
   });
 
@@ -93,6 +104,18 @@ describe('Worker', () => {
         expect(job.lastError).toBeUndefined();
         expect(console.error).not.toHaveBeenCalled();
       });
+
+      it('finishes the job', async () => {
+        expect(finished.has(job.id)).toBeFalse();
+        await worker.perform();
+        expect(finished.has(job.id)).toBeTrue();
+      });
+
+      it('unassigns the job after finishing', async () => {
+        expect(worker.job).toEqual(job);
+        await worker.perform();
+        expect(worker.job).toBeUndefined();
+      });
     });
 
     describe('when the client request fails', () => {
@@ -114,6 +137,19 @@ describe('Worker', () => {
         expect(job.attempts).toEqual(1);
         expect(job.lastError).toEqual(expectedError);
         expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: ${expectedError}`);
+      });
+
+      it ('fails the job', async () => {
+        expect(failed.hasItem()).toBeFalse();
+        await worker.perform();
+        expect(failed.hasItem()).toBeTrue();
+        expect(failed.pick()).toEqual(job);
+      });
+
+      it('unassigns the job after finishing', async () => {
+        expect(worker.job).toEqual(job);
+        await worker.perform();
+        expect(worker.job).toBeUndefined();
       });
     });
   });
