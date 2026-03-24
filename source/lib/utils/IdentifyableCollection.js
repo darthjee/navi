@@ -36,6 +36,10 @@ class IdentifyableCollection {
     return this.#items[id];
   }
 
+  has(id) {
+    return this.#items[id] !== undefined;
+  }
+
   /**
    * Retrieves an item from the collection by index.
    * @param {number} index - The index of the item to retrieve.

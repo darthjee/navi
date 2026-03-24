@@ -96,6 +96,12 @@ describe('Worker', () => {
         expect(job.lastError).toBeUndefined();
         expect(console.error).not.toHaveBeenCalled();
       });
+
+      it('finishes the job', async () => {
+        expect(finished.has(job.id)).toBeFalse();
+        await worker.perform();
+        expect(finished.has(job.id)).toBeTrue();
+      });
     });
 
     describe('when the client request fails', () => {
