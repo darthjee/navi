@@ -7,8 +7,8 @@ import { Queue } from '../utils/Queue.js';
  * @author darthjee
  */
 class JobRegistry {
-  #jobs;
-  #failedJobs
+  #enqueued;
+  #failed;
   #finished;
   #lockedBy;
   #factory;
@@ -19,9 +19,9 @@ class JobRegistry {
    * @param {object} options - The options for the JobRegistry.
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    */
-  constructor({ jobs, failedJobs, finished, clients }) {
-    this.#jobs = jobs || new Queue();
-    this.#failedJobs = failedJobs || new Queue();
+  constructor({ queue, failed, finished, clients }) {
+    this.#enqueued = queue || new Queue();
+    this.#failed = failed || new Queue();
     this.#finished = finished || new Queue();
     this.#lockedBy = null;
     this.#factory = new JobFactory({ clients });
@@ -46,7 +46,7 @@ class JobRegistry {
    * @returns {void}
    */
   push(job) {
-    this.#jobs.push(job);
+    this.#enqueued.push(job);
   }
 
   /**
@@ -55,7 +55,7 @@ class JobRegistry {
    * @returns {void}
    */
   fail(job) {
-    this.#failedJobs.push(job);
+    this.#failed.push(job);
   }
 
   /**
@@ -72,7 +72,7 @@ class JobRegistry {
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.#jobs.pick() || this.#failedJobs.pick();
+    return this.#enqueued.pick() || this.#failed.pick();
   }
 
   /**
@@ -80,7 +80,7 @@ class JobRegistry {
    * @returns {boolean} True if there are jobs in the queue, false otherwise.
    */
   hasJob() {
-    return this.#jobs.hasItem() || this.#failedJobs.hasItem();
+    return this.#enqueued.hasItem() || this.#failed.hasItem();
   }
 
   /**
