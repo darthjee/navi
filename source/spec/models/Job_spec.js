@@ -45,10 +45,13 @@ describe('Job', () => {
       });
 
       it('performs the job', async () => {
+        expect(job.attempts).toEqual(0);
         await expectAsync(job.perform()).toBeResolvedTo(response);
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
       });
     });
+
     describe('when the client request fails', () => {
       beforeEach(() => {
         response = { status: 502 };
@@ -64,8 +67,10 @@ describe('Job', () => {
       });
 
       it('performs the job', async () => {
+        expect(job.attempts).toEqual(0);
         await expectAsync(job.perform()).toBeRejectedWith(expectedError);
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
       });
     });
   });

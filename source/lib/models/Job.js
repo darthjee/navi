@@ -21,6 +21,8 @@ class Job {
     this.#resourceRequest = resourceRequest;
     this.#parameters = parameters;
     this.#clients = clients;
+    
+    this.attempts = 0;
   }
 
   /**
@@ -31,6 +33,7 @@ class Job {
    * @returns {Promise} A promise that resolves with the result of performing the job's resource request.
    */
   async perform() {
+    this.attempts += 1;
     return this.#getClient().perform(this.#resourceRequest);
   }
 
