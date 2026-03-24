@@ -55,6 +55,15 @@ class JobRegistry {
   }
 
   /**
+   * Marks a job as finished.
+   * @param {Job} job - The job to mark as finished.
+   * @returns {void}
+   */
+  finish(job) {
+    this.finished.push(job);
+  }
+
+  /**
    * Picks (removes and returns) the first job from the queue.
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
