@@ -18,6 +18,9 @@ class JobRegistry {
    *
    * @param {object} options - The options for the JobRegistry.
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
+   * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
+   * @param {Queue} [options.failed] - An optional queue to use for failed jobs. If not provided, a new Queue will be created.
+   * @param {Queue} [options.finished] - An optional queue to use for finished jobs. If not provided, a new Queue will be created.
    */
   constructor({ queue, failed, finished, clients }) {
     this.#enqueued = queue || new Queue();
