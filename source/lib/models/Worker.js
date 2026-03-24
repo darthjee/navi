@@ -25,6 +25,12 @@ class Worker {
     this.job = job;
   }
 
+  /**
+   * Performs the assigned job. If no job is assigned, an error is thrown.
+   * Any errors that occur during job execution are caught and logged.
+   * @returns {Promise<void>}
+   * @see Job.perform() for the actual job execution logic.
+   */
   async perform() {
     if (!this.job) {
       throw new Error('No job assigned to worker');
