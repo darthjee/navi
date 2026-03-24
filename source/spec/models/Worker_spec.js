@@ -105,6 +105,12 @@ describe('Worker', () => {
         await worker.perform();
         expect(finished.has(job.id)).toBeTrue();
       });
+
+      it('unassigns the job after finishing', async () => {
+        expect(worker.job).toEqual(job);
+        await worker.perform();
+        expect(worker.job).toBeUndefined();
+      });
     });
 
     describe('when the client request fails', () => {
@@ -133,6 +139,12 @@ describe('Worker', () => {
         await worker.perform();
         expect(failed.hasItem()).toBeTrue();
         expect(failed.pick()).toEqual(job);
+      });
+
+      it('unassigns the job after finishing', async () => {
+        expect(worker.job).toEqual(job);
+        await worker.perform();
+        expect(worker.job).toBeUndefined();
       });
     });
   });

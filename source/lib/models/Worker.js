@@ -41,12 +41,10 @@ class Worker {
       this.jobRegistry.finish(this.job);
     } catch (error) {
       console.error(`Error occurred while performing job: ${error}`);
-      this.#fail();
+      this.jobRegistry.fail(this.job);
+    } finally {
+      this.job = undefined;
     }
-  }
-
-  #fail() {
-    this.jobRegistry.fail(this.job);
   }
 }
 
