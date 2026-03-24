@@ -25,6 +25,8 @@ describe('Worker', () => {
   let response;
   let expectedError;
 
+  let idle;
+
   const baseUrl = 'http://example.com';
   const url = '/categories.json';
   const fullUrl = 'http://example.com/categories.json';
@@ -35,7 +37,10 @@ describe('Worker', () => {
     finished = new IdentifyableCollection();
     failed = new Queue();
     jobRegistry = new JobRegistry({ failed, finished, clients });
-    workerRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
+
+    idle = new IdentifyableCollection();
+    workerRegistry = new WorkersRegistry({ quantity: 0, idle, jobRegistry });
+
     worker = new Worker({ id: 1, jobRegistry, workerRegistry });
   });
 

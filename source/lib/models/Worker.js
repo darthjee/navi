@@ -44,6 +44,7 @@ class Worker {
       this.jobRegistry.fail(this.job);
     } finally {
       this.job = undefined;
+      this.workerRegistry.setIdle(this.id);
     }
   }
 }
