@@ -1,5 +1,4 @@
 import { Engine } from '../../lib/services/Engine.js';
-import { DummyJob } from '../support/models/DummyJob.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
