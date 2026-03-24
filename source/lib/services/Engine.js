@@ -2,13 +2,16 @@ import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersAllocator } from './WorkersAllocator.js';
 
 class Engine {
-  constructor({ workersRegistry }) {
-    this.jobRegistry = new JobRegistry();
-    this.workersRegistry = workersRegistry;
+  #jobRegistry;
+  #workersRegistry;
+
+  constructor({ jobRegistry, workersRegistry }) {
+    this.#jobRegistry = jobRegistry;
+    this.#workersRegistry = workersRegistry;
 
     this.allocator = new WorkersAllocator({
-      jobRegistry: this.jobRegistry,
-      workersRegistry: this.workersRegistry,
+      jobRegistry: this.#jobRegistry,
+      workersRegistry: this.#workersRegistry,
     });
   }
 
@@ -26,8 +29,8 @@ class Engine {
   }
 
   #continueProcessing() {
-    return this.jobRegistry.hasJob()
-    || this.workersRegistry.hasIdleWorker();
+    return this.#jobRegistry.hasJob()
+    || this.#workersRegistry.hasIdleWorker();
   }
 }
 
