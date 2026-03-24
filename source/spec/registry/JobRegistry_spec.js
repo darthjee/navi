@@ -242,7 +242,7 @@ describe('JobRegistry', () => {
 
       registry.finish(picked);
 
-      expect(registry.hasJob()).toBeFalse()
+      expect(registry.hasJob()).toBeFalse();
       expect(registry.pick()).toBeUndefined();
     });
 
