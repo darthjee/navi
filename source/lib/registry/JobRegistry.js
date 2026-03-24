@@ -27,6 +27,7 @@ class JobRegistry {
     this.#factory = new JobFactory({ clients });
   }
 
+
   /**
    * Enqueues a new job using the JobFactory.
    * @param {object} jobAttributes - The attributes for the job (resourceRequest, parameters, etc).
@@ -36,17 +37,8 @@ class JobRegistry {
    */
   enqueue({ resourceRequest, parameters } = {}) {
     const job = this.#factory.build({resourceRequest, parameters});
-    this.push(job);
+    this.#push(job);
     return job;
-  }
-
-  /**
-   * Pushes a job onto the end of the queue.
-   * @param {Job} job - The job to add to the queue.
-   * @returns {void}
-   */
-  push(job) {
-    this.#enqueued.push(job);
   }
 
   /**
@@ -105,6 +97,15 @@ class JobRegistry {
    */
   hasLock(worker) {
     return this.#lockedBy === worker.id;
+  }
+
+  /**
+   * Pushes a job onto the end of the queue.
+   * @param {Job} job - The job to add to the queue.
+   * @returns {void}
+   */
+  #push(job) {
+    this.#enqueued.push(job);
   }
 }
 

@@ -45,22 +45,12 @@ describe('JobRegistry', () => {
 
     describe('when the queue has jobs', () => {
       beforeEach(() => {
-        registry.push(new Job({ payload: {} }));
+        registry.enqueue({});
       });
 
       it('returns true', () => {
         expect(registry.hasJob()).toBeTrue();
       });
-    });
-  });
-
-  describe('#push', () => {
-    it('adds a job to the queue', () => {
-      const job = new Job({ payload: {} });
-
-      registry.push(job);
-
-      expect(registry.hasJob()).toBeTrue();
     });
   });
 
@@ -75,10 +65,8 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = new Job({ payload: { id: 1 } });
-        job2 = new Job({ payload: { id: 2 } });
-        registry.push(job1);
-        registry.push(job2);
+        job1 = registry.enqueue({ parameters: { value: 1 } });
+        job2 = registry.enqueue({ parameters: { value: 2 } });
       });
 
       it('returns the first job', () => {
@@ -106,10 +94,8 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = new Job({ payload: { id: 1 } });
-        job2 = new Job({ payload: { id: 2 } });
-        registry.fail(job1);
-        registry.fail(job2);
+        job1 = registry.enqueue({ parameters: { value: 1 } });
+        job2 = registry.enqueue({ parameters: { value: 2 } });
       });
 
       it('returns the first job', () => {
@@ -137,10 +123,10 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = new Job({ payload: { id: 1 } });
-        job2 = new Job({ payload: { id: 2 } });
+        registry.enqueue({ parameters: { value: 1 } });
+        job1 = registry.pick();
+        job2 = registry.enqueue({ parameters: { value: 2 } });
         registry.fail(job1);
-        registry.push(job2);
       });
 
       it('returns the first not failed job', () => {
@@ -231,8 +217,7 @@ describe('JobRegistry', () => {
 
   describe('#fail', () => {
     it('does not re-queue a picked job', () => {
-      const job = new Job({ payload: { id: 1 } });
-      registry.push(job);
+      const job = registry.enqueue({ parameters: { value: 1 } });
 
       const picked = registry.pick();
       expect(picked).toBe(job);
@@ -250,8 +235,7 @@ describe('JobRegistry', () => {
 
   describe('#finish', () => {
     it('does not re-queue a picked job', () => {
-      const job = new Job({ payload: { id: 1 } });
-      registry.push(job);
+      const job = registry.enqueue({ parameters: { value: 1 } });
 
       const picked = registry.pick();
       expect(picked).toBe(job);
