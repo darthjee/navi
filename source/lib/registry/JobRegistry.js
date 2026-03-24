@@ -1,7 +1,7 @@
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
 import { JobFactory } from '../factories/JobFactory.js';
-import { Queue } from '../utils/Queue.js';
 import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
+import { Queue } from '../utils/Queue.js';
 
 /**
  * JobRegistry manages a queue of jobs for Workers to consume.
