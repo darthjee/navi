@@ -7,6 +7,7 @@ describe('Client', () => {
   const url = '/categories.json';
   const fullUrl = 'http://example.com/categories.json';
   const status = 200;
+
   let client;
   let expectedError;
   let resourceRequest;
@@ -17,9 +18,11 @@ describe('Client', () => {
   });
 
   it('returns true when status matches and requests using baseUrl + url', async () => {
-    spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
+    const response = { status: 200 };
+    const promise = Promise.resolve(response);
+    spyOn(axios, 'get').and.returnValue(promise);
 
-    await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(true);
+    await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     expect(axios.get).toHaveBeenCalledWith(fullUrl);
   });
 
@@ -33,9 +36,24 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed when status does not match', async () => {
-      spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 404 }));
+      const promise = Promise.resolve({ status: 404 });
+      spyOn(axios, 'get').and.returnValue(promise);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
+    });
+  });
+
+  describe('when request status is 404 but it is a match', () => {
+    beforeEach(() => {
+      resourceRequest = new ResourceRequest({ url, status: 404 });
+    });
+
+    it('throws RequestFailed when status does not match', async () => {
+      const response = { status: 404 };
+      const promise = Promise.resolve(response);
+      spyOn(axios, 'get').and.returnValue(promise);
+
+      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     });
   });
 
@@ -49,7 +67,8 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed with correct status and full url on error.response', async () => {
-      spyOn(axios, 'get').and.returnValue(Promise.reject({ response: { status: 500 } }));
+      const promise = Promise.reject({ response: { status: 500 } });
+      spyOn(axios, 'get').and.returnValue(promise);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
     });

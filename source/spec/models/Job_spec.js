@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
@@ -17,6 +18,9 @@ describe('Job', () => {
   const fullUrl = 'http://example.com/categories.json';
   const status = 200;
 
+  let response;
+  let expectedError;
+
   beforeEach(() => {
     resourceRequest = new ResourceRequest({ url, status });
     client = new Client({ name: 'default', baseUrl });
@@ -33,13 +37,42 @@ describe('Job', () => {
   });
 
   describe('#process', () => {
-    beforeEach(() => {
-      spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 200 }));
+    describe('when the client request is successful', () => {
+      beforeEach(() => {
+        response = { status: 200 };
+        const promise = Promise.resolve(response);
+
+        spyOn(axios, 'get').and.returnValue(promise);
+      });
+
+      it('performs the job', async () => {
+        expect(job.attempts).toEqual(0);
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
+        expect(job.lastError).toBeUndefined();
+      });
     });
 
-    it('performs the job', async () => {
-      await expectAsync(job.perform()).toBeResolvedTo(true);
-      expect(axios.get).toHaveBeenCalledWith(fullUrl);
+    describe('when the client request fails', () => {
+      beforeEach(() => {
+        response = { status: 502 };
+        const promise = Promise.resolve(response);
+
+        expectedError = new RequestFailed(502, fullUrl);
+
+        spyOn(axios, 'get').and.returnValue(promise);
+      });
+
+      it('register failure and attempt', async () => {
+        expect(job.attempts).toEqual(0);
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeRejectedWith(expectedError);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
+        expect(job.lastError).toEqual(expectedError);
+      });
     });
   });
 });
