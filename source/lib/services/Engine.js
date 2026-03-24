@@ -1,5 +1,5 @@
-import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersAllocator } from './WorkersAllocator.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
 
 class Engine {
   #jobRegistry;
