@@ -7,6 +7,10 @@ import { Queue } from '../utils/Queue.js';
  * @author darthjee
  */
 class JobRegistry {
+  #jobs;
+  #failedJobs
+  #finished;
+  #lockedBy;
   #factory;
 
   /**
@@ -16,10 +20,10 @@ class JobRegistry {
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    */
   constructor({ jobs, failedJobs, finished, clients }) {
-    this.jobs = jobs || new Queue();
-    this.failedJobs = failedJobs || new Queue();
-    this.finished = finished || new Queue();
-    this.lockedBy = null;
+    this.#jobs = jobs || new Queue();
+    this.#failedJobs = failedJobs || new Queue();
+    this.#finished = finished || new Queue();
+    this.#lockedBy = null;
     this.#factory = new JobFactory({ clients });
   }
 
@@ -42,7 +46,7 @@ class JobRegistry {
    * @returns {void}
    */
   push(job) {
-    this.jobs.push(job);
+    this.#jobs.push(job);
   }
 
   /**
@@ -51,7 +55,7 @@ class JobRegistry {
    * @returns {void}
    */
   fail(job) {
-    this.failedJobs.push(job);
+    this.#failedJobs.push(job);
   }
 
   /**
@@ -60,7 +64,7 @@ class JobRegistry {
    * @returns {void}
    */
   finish(job) {
-    this.finished.push(job);
+    this.#finished.push(job);
   }
 
   /**
@@ -68,7 +72,7 @@ class JobRegistry {
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.jobs.pick() || this.failedJobs.pick();
+    return this.#jobs.pick() || this.#failedJobs.pick();
   }
 
   /**
@@ -76,7 +80,7 @@ class JobRegistry {
    * @returns {boolean} True if there are jobs in the queue, false otherwise.
    */
   hasJob() {
-    return this.jobs.hasItem() || this.failedJobs.hasItem();
+    return this.#jobs.hasItem() || this.#failedJobs.hasItem();
   }
 
   /**
@@ -87,8 +91,8 @@ class JobRegistry {
    * @throws {LockedByOtherWorker} When the registry is already locked by another worker.
    */
   lock(worker) {
-    if (this.lockedBy === null) {
-      this.lockedBy = worker.id;
+    if (this.#lockedBy === null) {
+      this.#lockedBy = worker.id;
     } else {
       throw new LockedByOtherWorker();
     }
@@ -100,7 +104,7 @@ class JobRegistry {
    * @returns {boolean} True if the worker holds the lock, false otherwise.
    */
   hasLock(worker) {
-    return this.lockedBy === worker.id;
+    return this.#lockedBy === worker.id;
   }
 }
 

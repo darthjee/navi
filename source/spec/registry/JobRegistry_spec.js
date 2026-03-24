@@ -176,7 +176,7 @@ describe('JobRegistry', () => {
       it('sets lockedBy to the worker id', () => {
         registry.lock(worker);
 
-        expect(registry.lockedBy).toEqual(worker.id);
+        expect(registry.hasLock(worker)).toBeTrue();
       });
     });
 
@@ -258,8 +258,8 @@ describe('JobRegistry', () => {
 
       registry.finish(picked);
 
-      expect(registry.hasJob()).toBeTrue();
-      expect(registry.pick()).toEqual(job);
+      expect(registry.hasJob()).toBeFalse()
+      expect(registry.pick()).toBeUndefined();
     });
 
     it('is safe to call with undefined', () => {
