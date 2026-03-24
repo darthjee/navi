@@ -24,6 +24,19 @@ class Worker {
   assign(job) {
     this.job = job;
   }
+
+  async perform() {
+    if (!this.job) {
+      throw new Error('No job assigned to worker');
+    }
+
+    try {
+      await this.job.perform();
+    } catch (error) {
+      console.error(`Error occurred while performing job: ${error}`);
+    }
+  }
+
 }
 
 export { Worker };
