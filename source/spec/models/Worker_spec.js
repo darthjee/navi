@@ -73,15 +73,17 @@ describe('Worker', () => {
         const promise = Promise.resolve(response);
 
         spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(console, 'error').and.stub(); // Suppress error logging during test
       });
 
       it('performs the job', async () => {
         expect(job.attempts).toEqual(0);
         expect(job.lastError).toBeUndefined();
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await worker.perform();
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
         expect(job.attempts).toEqual(1);
         expect(job.lastError).toBeUndefined();
+        expect(console.error).not.toHaveBeenCalled();
       });
     });
 
@@ -93,15 +95,17 @@ describe('Worker', () => {
         expectedError = new RequestFailed(502, fullUrl);
 
         spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(console, 'error').and.stub(); // Suppress error logging during test
       });
 
       it('register failure and attempt', async () => {
         expect(job.attempts).toEqual(0);
         expect(job.lastError).toBeUndefined();
-        await expectAsync(job.perform()).toBeRejectedWith(expectedError);
+        await worker.perform();
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
         expect(job.attempts).toEqual(1);
         expect(job.lastError).toEqual(expectedError);
+        expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: ${expectedError}`);
       });
     });
   });
