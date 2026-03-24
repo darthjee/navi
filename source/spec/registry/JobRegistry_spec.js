@@ -4,15 +4,23 @@ import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
+import { Queue } from '../../lib/utils/Queue.js';
 
 describe('JobRegistry', () => {
   let registry;
   let resourceRequest;
   let clients;
 
+  let jobs;
+  let failedJobs;
+  let finished;
+
   beforeEach(() => {
     clients = new ClientRegistry();
-    registry = new JobRegistry({ clients });
+    jobs = new Queue();
+    failedJobs = new Queue();
+    finished = new Queue();
+    registry = new JobRegistry({ jobs, failedJobs, finished, clients });
     resourceRequest = new ResourceRequest({ url: 'http://example.com', status: 200 });
   });
 
@@ -37,22 +45,12 @@ describe('JobRegistry', () => {
 
     describe('when the queue has jobs', () => {
       beforeEach(() => {
-        registry.push(new Job({ payload: {} }));
+        registry.enqueue({});
       });
 
       it('returns true', () => {
         expect(registry.hasJob()).toBeTrue();
       });
-    });
-  });
-
-  describe('#push', () => {
-    it('adds a job to the queue', () => {
-      const job = new Job({ payload: {} });
-
-      registry.push(job);
-
-      expect(registry.hasJob()).toBeTrue();
     });
   });
 
@@ -67,10 +65,8 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = new Job({ payload: { id: 1 } });
-        job2 = new Job({ payload: { id: 2 } });
-        registry.push(job1);
-        registry.push(job2);
+        job1 = registry.enqueue({ parameters: { value: 1 } });
+        job2 = registry.enqueue({ parameters: { value: 2 } });
       });
 
       it('returns the first job', () => {
@@ -98,10 +94,8 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = new Job({ payload: { id: 1 } });
-        job2 = new Job({ payload: { id: 2 } });
-        registry.fail(job1);
-        registry.fail(job2);
+        job1 = registry.enqueue({ parameters: { value: 1 } });
+        job2 = registry.enqueue({ parameters: { value: 2 } });
       });
 
       it('returns the first job', () => {
@@ -129,10 +123,10 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = new Job({ payload: { id: 1 } });
-        job2 = new Job({ payload: { id: 2 } });
+        registry.enqueue({ parameters: { value: 1 } });
+        job1 = registry.pick();
+        job2 = registry.enqueue({ parameters: { value: 2 } });
         registry.fail(job1);
-        registry.push(job2);
       });
 
       it('returns the first not failed job', () => {
@@ -168,7 +162,7 @@ describe('JobRegistry', () => {
       it('sets lockedBy to the worker id', () => {
         registry.lock(worker);
 
-        expect(registry.lockedBy).toEqual(worker.id);
+        expect(registry.hasLock(worker)).toBeTrue();
       });
     });
 
@@ -223,8 +217,7 @@ describe('JobRegistry', () => {
 
   describe('#fail', () => {
     it('does not re-queue a picked job', () => {
-      const job = new Job({ payload: { id: 1 } });
-      registry.push(job);
+      const job = registry.enqueue({ parameters: { value: 1 } });
 
       const picked = registry.pick();
       expect(picked).toBe(job);
@@ -237,6 +230,24 @@ describe('JobRegistry', () => {
 
     it('is safe to call with undefined', () => {
       expect(() => registry.fail(undefined)).not.toThrow();
+    });
+  });
+
+  describe('#finish', () => {
+    it('does not re-queue a picked job', () => {
+      const job = registry.enqueue({ parameters: { value: 1 } });
+
+      const picked = registry.pick();
+      expect(picked).toBe(job);
+
+      registry.finish(picked);
+
+      expect(registry.hasJob()).toBeFalse();
+      expect(registry.pick()).toBeUndefined();
+    });
+
+    it('is safe to call with undefined', () => {
+      expect(() => registry.finish(undefined)).not.toThrow();
     });
   });
 });

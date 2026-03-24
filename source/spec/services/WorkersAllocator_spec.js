@@ -21,7 +21,7 @@ describe('WorkersAllocator', () => {
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
     workersRegistry.initWorkers();
     worker = workers.byIndex(0);
-    job = new Job({ payload: { value: 1 } });
+    job = new Job({});
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
   });
@@ -41,7 +41,7 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there is a single worker and a single job', () => {
     beforeEach(() => {
-      jobRegistry.push(job);
+      job = jobRegistry.enqueue({});
     });
 
     it('allocates all workers for the jobs', () => {
@@ -58,9 +58,9 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there is a single worker and several jobs', () => {
     beforeEach(() => {
-      jobRegistry.push(job);
-      jobRegistry.push(new Job({ payload: { value: 2 } }));
-      jobRegistry.push(new Job({ payload: { value: 3 } }));
+      job = jobRegistry.enqueue({});
+      jobRegistry.enqueue({ parameters: { value: 2 } });
+      jobRegistry.enqueue({ parameters: { value: 3 } });
     });
 
     it('allocates all workers for the jobs they can', () => {
@@ -83,9 +83,9 @@ describe('WorkersAllocator', () => {
       worker = workers.byIndex(0);
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
-      jobRegistry.push(job);
-      jobRegistry.push(new Job({ payload: { value: 2 } }));
-      jobRegistry.push(new Job({ payload: { value: 3 } }));
+      job = jobRegistry.enqueue({});
+      jobRegistry.enqueue({ parameters: { value: 2 } });
+      jobRegistry.enqueue({ parameters: { value: 3 } });
     });
 
     it('allocates all workers for the jobs they can', () => {

@@ -1,14 +1,30 @@
+import axios from 'axios';
+import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
+import { Client } from '../../lib/services/Client.js';
 
 describe('Worker', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
   let clients;
+
+  let resourceRequest;
+  let client;
+  let parameters;
+  let job;
+  let response;
+  let expectedError;
+
+  const baseUrl = 'http://example.com';
+  const url = '/categories.json';
+  const fullUrl = 'http://example.com/categories.json';
+  const status = 200;
 
   beforeEach(() => {
     clients = new ClientRegistry({});
@@ -36,6 +52,69 @@ describe('Worker', () => {
       const job = new Job({ payload: { value: 1 } });
       worker.assign(job);
       expect(worker.job).toEqual(job);
+    });
+  });
+
+
+  describe('#process', () => {
+    beforeEach(() => {
+      resourceRequest = new ResourceRequest({ url, status });
+      client = new Client({ name: 'default', baseUrl });
+      clients = new ClientRegistry({ default: client });
+      parameters = {};
+
+      job = new Job({ id: 'id', resourceRequest, clients, parameters });
+      worker.assign(job);
+    });
+
+    describe('when no job is assigned', () => {
+      it('throws an error', async () => {
+        const unassignedWorker = new Worker({ id: 2, jobRegistry, workerRegistry });
+        expectedError = new Error('No job assigned to worker');
+        await expectAsync(unassignedWorker.perform()).toBeRejectedWith(expectedError);
+      });
+    });
+
+    describe('when the client request is successful', () => {
+      beforeEach(() => {
+        response = { status: 200 };
+        const promise = Promise.resolve(response);
+
+        spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(console, 'error').and.stub(); // Suppress error logging during test
+      });
+
+      it('performs the job', async () => {
+        expect(job.attempts).toEqual(0);
+        expect(job.lastError).toBeUndefined();
+        await worker.perform();
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
+        expect(job.lastError).toBeUndefined();
+        expect(console.error).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when the client request fails', () => {
+      beforeEach(() => {
+        response = { status: 502 };
+        const promise = Promise.resolve(response);
+
+        expectedError = new RequestFailed(502, fullUrl);
+
+        spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(console, 'error').and.stub(); // Suppress error logging during test
+      });
+
+      it('register failure and attempt', async () => {
+        expect(job.attempts).toEqual(0);
+        expect(job.lastError).toBeUndefined();
+        await worker.perform();
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
+        expect(job.lastError).toEqual(expectedError);
+        expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: ${expectedError}`);
+      });
     });
   });
 });
