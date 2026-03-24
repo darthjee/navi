@@ -18,6 +18,7 @@ describe('Job', () => {
   const status = 200;
 
   let response;
+  let expectedError;
 
   beforeEach(() => {
     resourceRequest = new ResourceRequest({ url, status });
@@ -35,16 +36,37 @@ describe('Job', () => {
   });
 
   describe('#process', () => {
-    beforeEach(() => {
-      response = { status: 200 };
-      const promise = Promise.resolve(response);
+    describe('when the client request is successful', () => {
+      beforeEach(() => {
+        response = { status: 200 };
+        const promise = Promise.resolve(response);
 
-      spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(axios, 'get').and.returnValue(promise);
+      });
+
+      it('performs the job', async () => {
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+      });
     });
+    describe('when the client request fails', () => {
+      beforeEach(() => {
+        response = { status: 502 };
+        const promise = Promise.resolve(response);
 
-    it('performs the job', async () => {
-      await expectAsync(job.perform()).toBeResolvedTo(response);
-      expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expectedError = jasmine.objectContaining({
+          name: 'RequestFailed',
+          statusCode: 502,
+          url: fullUrl,
+        });
+
+        spyOn(axios, 'get').and.returnValue(promise);
+      });
+
+      it('performs the job', async () => {
+        await expectAsync(job.perform()).toBeRejectedWith(expectedError);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+      });
     });
   });
 });
