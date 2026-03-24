@@ -4,15 +4,23 @@ import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
+import { Queue } from '../../lib/utils/Queue.js';
 
 describe('JobRegistry', () => {
   let registry;
   let resourceRequest;
   let clients;
 
+  let jobs;
+  let failedJobs;
+  let finished;
+
   beforeEach(() => {
     clients = new ClientRegistry();
-    registry = new JobRegistry({ clients });
+    jobs = new Queue();
+    failedJobs = new Queue();
+    finished = new Queue();
+    registry = new JobRegistry({ jobs, failedJobs, finished, clients });
     resourceRequest = new ResourceRequest({ url: 'http://example.com', status: 200 });
   });
 
@@ -237,6 +245,25 @@ describe('JobRegistry', () => {
 
     it('is safe to call with undefined', () => {
       expect(() => registry.fail(undefined)).not.toThrow();
+    });
+  });
+
+  describe('#finish', () => {
+    it('does not re-queue a picked job', () => {
+      const job = new Job({ payload: { id: 1 } });
+      registry.push(job);
+
+      const picked = registry.pick();
+      expect(picked).toBe(job);
+
+      registry.finish(picked);
+
+      expect(registry.hasJob()).toBeTrue();
+      expect(registry.pick()).toEqual(job);
+    });
+
+    it('is safe to call with undefined', () => {
+      expect(() => registry.finish(undefined)).not.toThrow();
     });
   });
 });
