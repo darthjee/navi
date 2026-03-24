@@ -8,6 +8,7 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Client } from '../../lib/services/Client.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { Queue } from '../../lib/utils/Queue.js';
 
 describe('Worker', () => {
   let jobRegistry;
@@ -15,6 +16,7 @@ describe('Worker', () => {
   let worker;
   let clients;
   let finished;
+  let failed;
 
   let resourceRequest;
   let client;
@@ -31,7 +33,8 @@ describe('Worker', () => {
   beforeEach(() => {
     clients = new ClientRegistry({});
     finished = new IdentifyableCollection();
-    jobRegistry = new JobRegistry({ finished, clients });
+    failed = new Queue();
+    jobRegistry = new JobRegistry({ failed, finished, clients });
     workerRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
     worker = new Worker({ id: 1, jobRegistry, workerRegistry });
   });
@@ -123,6 +126,13 @@ describe('Worker', () => {
         expect(job.attempts).toEqual(1);
         expect(job.lastError).toEqual(expectedError);
         expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: ${expectedError}`);
+      });
+
+      it ('fails the job', async () => {
+        expect(failed.hasItem()).toBeFalse();
+        await worker.perform();
+        expect(failed.hasItem()).toBeTrue();
+        expect(failed.pick()).toEqual(job);
       });
     });
   });
