@@ -1,5 +1,4 @@
 import { WorkersAllocator } from './WorkersAllocator.js';
-import { JobRegistry } from '../registry/JobRegistry.js';
 
 class Engine {
   #jobRegistry;
@@ -30,7 +29,7 @@ class Engine {
 
   #continueProcessing() {
     return this.#jobRegistry.hasJob()
-    || this.#workersRegistry.hasIdleWorker();
+    && this.#workersRegistry.hasIdleWorker();
   }
 }
 

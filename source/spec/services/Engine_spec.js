@@ -21,7 +21,8 @@ describe('Engine', () => {
 
   describe('start', () => {
     describe('when there are jobs to process and idle workers', () => {
-      it('should process jobs until there are no more jobs or idle workers', () => {
+      it('does nothing', () => {
+        expect(jobRegistry.hasJob()).toBeFalse();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
       });
