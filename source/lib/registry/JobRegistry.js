@@ -1,6 +1,7 @@
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
 import { JobFactory } from '../factories/JobFactory.js';
 import { Queue } from '../utils/Queue.js';
+import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 
 /**
  * JobRegistry manages a queue of jobs for Workers to consume.
@@ -25,7 +26,7 @@ class JobRegistry {
   constructor({ queue, failed, finished, clients }) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new Queue();
-    this.#finished = finished || new Queue();
+    this.#finished = finished || new IdentifyableCollection();
     this.#lockedBy = null;
     this.#factory = new JobFactory({ clients });
   }

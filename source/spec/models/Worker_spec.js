@@ -7,12 +7,14 @@ import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Client } from '../../lib/services/Client.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 
 describe('Worker', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
   let clients;
+  let finished;
 
   let resourceRequest;
   let client;
@@ -28,7 +30,8 @@ describe('Worker', () => {
 
   beforeEach(() => {
     clients = new ClientRegistry({});
-    jobRegistry = new JobRegistry({ clients });
+    finished = new IdentifyableCollection();
+    jobRegistry = new JobRegistry({ finished, clients });
     workerRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
     worker = new Worker({ id: 1, jobRegistry, workerRegistry });
   });
