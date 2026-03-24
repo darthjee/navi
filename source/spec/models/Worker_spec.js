@@ -67,6 +67,14 @@ describe('Worker', () => {
       worker.assign(job);
     });
 
+    describe('when no job is assigned', () => {
+      it('throws an error', async () => {
+        const unassignedWorker = new Worker({ id: 2, jobRegistry, workerRegistry });
+        expectedError = new Error('No job assigned to worker');
+        await expectAsync(unassignedWorker.perform()).toBeRejectedWith(expectedError);
+      });
+    });
+
     describe('when the client request is successful', () => {
       beforeEach(() => {
         response = { status: 200 };
