@@ -3,12 +3,28 @@ import { Worker } from '../../lib/models/Worker.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
+import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
+import { Client } from '../../lib/services/Client.js';
+import axios from 'axios';
 
 describe('Worker', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
   let clients;
+
+  let resourceRequest;
+  let client;
+  let parameters;
+  let job;
+  let response;
+  let expectedError;
+
+  const baseUrl = 'http://example.com';
+  const url = '/categories.json';
+  const fullUrl = 'http://example.com/categories.json';
+  const status = 200;
 
   beforeEach(() => {
     clients = new ClientRegistry({});
@@ -36,6 +52,57 @@ describe('Worker', () => {
       const job = new Job({ payload: { value: 1 } });
       worker.assign(job);
       expect(worker.job).toEqual(job);
+    });
+  });
+
+  
+  describe('#process', () => {
+    beforeEach(() => {
+      resourceRequest = new ResourceRequest({ url, status });
+      client = new Client({ name: 'default', baseUrl });
+      clients = new ClientRegistry({ default: client });
+      parameters = {};
+
+      job = new Job({ id: 'id', resourceRequest, clients, parameters });
+      worker.assign(job);
+    });
+
+    describe('when the client request is successful', () => {
+      beforeEach(() => {
+        response = { status: 200 };
+        const promise = Promise.resolve(response);
+
+        spyOn(axios, 'get').and.returnValue(promise);
+      });
+
+      it('performs the job', async () => {
+        expect(job.attempts).toEqual(0);
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
+        expect(job.lastError).toBeUndefined();
+      });
+    });
+
+    describe('when the client request fails', () => {
+      beforeEach(() => {
+        response = { status: 502 };
+        const promise = Promise.resolve(response);
+
+        expectedError = new RequestFailed(502, fullUrl);
+
+        spyOn(axios, 'get').and.returnValue(promise);
+      });
+
+      it('register failure and attempt', async () => {
+        expect(job.attempts).toEqual(0);
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeRejectedWith(expectedError);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.attempts).toEqual(1);
+        expect(job.lastError).toEqual(expectedError);
+      });
     });
   });
 });

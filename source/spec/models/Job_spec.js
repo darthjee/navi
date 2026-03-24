@@ -9,9 +9,9 @@ import { Client } from '../../lib/services/Client.js';
 describe('Job', () => {
   let resourceRequest;
   let clients;
+  let client;
   let parameters;
   let job;
-  let client;
 
   const baseUrl = 'http://example.com';
   const url = '/categories.json';

@@ -36,7 +36,6 @@ class Worker {
       console.error(`Error occurred while performing job: ${error}`);
     }
   }
-
 }
 
 export { Worker };
