@@ -4,7 +4,6 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
-
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 
 describe('WorkersAllocator', () => {

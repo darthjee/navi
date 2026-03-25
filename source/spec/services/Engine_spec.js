@@ -1,8 +1,8 @@
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Engine } from '../../lib/services/Engine.js';
-import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
 
 describe('Engine', () => {
