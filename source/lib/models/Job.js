@@ -38,9 +38,7 @@ class Job {
       this.lastError = undefined;
       return await this.#getClient().perform(this.#resourceRequest);
     } catch (error) {
-      this.#attempts += 1;
-      this.lastError = error;
-      throw error;
+      this._fail(error);
     }
   }
 
@@ -50,6 +48,12 @@ class Job {
    */
   exhausted() {
     return this.#attempts >= 3;
+  }
+
+  _fail(error) {
+    this.#attempts += 1;
+    this.lastError = error;
+    throw error;
   }
 
   /**

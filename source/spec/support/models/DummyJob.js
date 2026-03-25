@@ -11,8 +11,10 @@ class DummyJob extends Job {
   }
 
   perform() {
+      this.lastError = undefined;
+
     if (Math.random() > DummyJob.getSuccessRate()) {
-      throw new Error('Job failed');
+      this._fail(new Error('Job failed'));
     }
   }
 }
