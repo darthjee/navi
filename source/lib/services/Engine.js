@@ -15,12 +15,13 @@ class Engine {
    * @param {object} param0 - The parameters for creating an Engine instance.
    * @param {JobRegistry} param0.jobRegistry - The job registry to allocate jobs from.
    * @param {WorkersRegistry} param0.workersRegistry - The workers registry to allocate workers from.
+   * @param {WorkersAllocator} param0.allocator - The workers allocator to manage job allocation.
    */
-  constructor({ jobRegistry, workersRegistry }) {
+  constructor({ jobRegistry, workersRegistry, allocator }) {
     this.#jobRegistry = jobRegistry;
     this.#workersRegistry = workersRegistry;
 
-    this.allocator = new WorkersAllocator({
+    this.allocator = allocator || new WorkersAllocator({
       jobRegistry: this.#jobRegistry,
       workersRegistry: this.#workersRegistry,
     });

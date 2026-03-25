@@ -5,6 +5,7 @@ import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.j
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../support/models/DummyJob.js';
+import { DummyWorkersAllocator } from '../support/services/DummyWorkersAllocator.js';
 
 describe('Engine', () => {
   let engine;
@@ -12,6 +13,7 @@ describe('Engine', () => {
   let jobRegistry;
   let workerFactory;
   let workersRegistry;
+  let allocator;
 
   let finished;
   let dead;
@@ -104,6 +106,26 @@ describe('Engine', () => {
         expect(finished.size() + dead.size()).toBe(20);
         expect(finished.size()).not.toBe(0);
         expect(dead.size()).not.toBe(0);
+      });
+    });
+
+    describe('when jobs take some time to be processed', () => {
+      beforeEach(() => {
+        allocator = new DummyWorkersAllocator({ jobRegistry, workersRegistry });
+        engine = new Engine({ jobRegistry, workersRegistry, allocator });
+        DummyJob.setSuccessRate(1);
+
+        for (let i = 0; i < 20; i++) {
+          jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        }
+      });
+
+      it('processes all jobs until they are in the finished or dead', () => {
+        expect(jobRegistry.hasJob()).toBeTrue();
+        engine.start();
+        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size()).toBe(20);
+        expect(dead.size()).toBe(0);
       });
     });
   });
