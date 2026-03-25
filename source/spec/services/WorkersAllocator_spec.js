@@ -5,6 +5,7 @@ import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
+import { DummyJob } from '../support/models/DummyJob.js';
 
 describe('WorkersAllocator', () => {
   let jobRegistry;
@@ -26,6 +27,7 @@ describe('WorkersAllocator', () => {
     workersRegistry.initWorkers();
     worker = workers.byIndex(0);
     spyOn(worker, 'perform');
+    DummyJob.setSuccessRate(1);
 
     job = new Job({});
 

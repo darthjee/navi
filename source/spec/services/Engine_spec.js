@@ -87,5 +87,24 @@ describe('Engine', () => {
         expect(dead.size()).toBe(1);
       });
     });
+
+    describe('when jobs fails some times', () => {
+      beforeEach(() => {
+        DummyJob.setSuccessRate(0.1);
+
+        for (let i = 0; i < 20; i++) {
+          jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        }
+      });
+
+      it('processes all jobs until they are in the finished or dead', () => {
+        expect(jobRegistry.hasJob()).toBeTrue();
+        engine.start();
+        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size() + dead.size()).toBe(20);
+        expect(finished.size()).not.toBe(0);
+        expect(dead.size()).not.toBe(0);
+      });
+    });
   });
 });
