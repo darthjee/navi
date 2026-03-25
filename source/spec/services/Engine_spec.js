@@ -14,11 +14,13 @@ describe('Engine', () => {
   let workersRegistry;
 
   let finished;
+  let dead;
 
   beforeEach(() => {
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
-    jobRegistry = new JobRegistry({ finished, factory: jobFactory });
+    dead = new IdentifyableCollection();
+    jobRegistry = new JobRegistry({ finished, dead, factory: jobFactory });
 
     workerFactory = new DummyWorkerFactory({ jobRegistry });
     workersRegistry = new WorkersRegistry({ quantity: 2, factory: workerFactory });
@@ -67,6 +69,7 @@ describe('Engine', () => {
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(4);
+        expect(dead.size()).toBe(0);
       });
     });
 
@@ -76,11 +79,12 @@ describe('Engine', () => {
         jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
       });
 
-      it('processes all jobs', () => {
+      it('processes all jobs until they are in the dead queue', () => {
         expect(jobRegistry.hasJob()).toBeTrue();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(0);
+        expect(dead.size()).toBe(1);
       });
     });
   });
