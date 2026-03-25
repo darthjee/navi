@@ -11,6 +11,7 @@ class JobRegistry {
   #enqueued;
   #failed;
   #finished;
+  #dead;
   #lockedBy;
   #factory;
 
@@ -22,12 +23,15 @@ class JobRegistry {
    * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
    * @param {Queue} [options.failed] - An optional queue to use for failed jobs. If not provided, a new Queue will be created.
    * @param {Queue} [options.finished] - An optional queue to use for finished jobs. If not provided, a new Queue will be created.
+   * @param {Queue} [options.dead] - An optional queue to use for dead jobs. If not provided, a new Queue will be created.
    * @param {JobFactory} [options.factory] - An optional JobFactory to use for creating jobs. If not provided, a new JobFactory will be created with the provided clients.
    */
-  constructor({ queue, failed, finished, clients, factory }) {
+  constructor({ queue, failed, finished, dead, clients, factory }) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new Queue();
     this.#finished = finished || new IdentifyableCollection();
+    this.#dead = dead || new IdentifyableCollection();
+
     this.#lockedBy = null;
     this.#factory = factory || new JobFactory({ clients });
   }
@@ -52,7 +56,11 @@ class JobRegistry {
    * @returns {void}
    */
   fail(job) {
-    this.#failed.push(job);
+    if (job.exhausted()) {
+      this.#dead.push(job);
+    } else {
+      this.#failed.push(job);
+    }
   }
 
   /**
