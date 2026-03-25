@@ -32,13 +32,28 @@ describe('Engine', () => {
       });
     });
 
-    describe('when there are jobs to process and no idle workers', () => {
+    describe('when there are jobs to process', () => {
       beforeEach(() => {
         jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
         jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
       });
 
-      it('does nothing', () => {
+      it('processes all jobs', () => {
+        expect(jobRegistry.hasJob()).toBeTrue();
+        engine.start();
+        expect(jobRegistry.hasJob()).toBeFalse();
+      });
+    });
+
+    describe('when there more jobs than workers', () => {
+      beforeEach(() => {
+        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+      });
+
+      it('processes all jobs', () => {
         expect(jobRegistry.hasJob()).toBeTrue();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
