@@ -4,6 +4,7 @@ import { Engine } from '../../lib/services/Engine.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
+import { DummyJob } from '../support/models/DummyJob.js';
 
 describe('Engine', () => {
   let engine;
@@ -23,6 +24,7 @@ describe('Engine', () => {
     workersRegistry = new WorkersRegistry({ quantity: 2, factory: workerFactory });
     workersRegistry.initWorkers();
 
+    DummyJob.setSuccessRate(1);
     engine = new Engine({ jobRegistry, workersRegistry });
   });
 
@@ -63,6 +65,20 @@ describe('Engine', () => {
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(4);
+      });
+    });
+
+    describe('when jobs fail all the time', () => {
+      beforeEach(() => {
+        DummyJob.setSuccessRate(0);
+        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+      });
+
+      it('processes all jobs', () => {
+        expect(jobRegistry.hasJob()).toBeTrue();
+        engine.start();
+        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size()).toBe(0);
       });
     });
   });
