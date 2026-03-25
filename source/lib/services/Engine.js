@@ -33,7 +33,7 @@ class Engine {
    */
   start() {
     // Start the engine by processing jobs
-    this.#processJobs();
+    this.#allocateWorkers();
   }
 
   /**
@@ -41,19 +41,19 @@ class Engine {
    * @returns {void}
    * @private
    */
-  #processJobs() {
+  #allocateWorkers() {
     // Main job processing loop
 
-    while (this.#continueProcessing()) {
+    while (this.#continueAllocating()) {
       this.allocator.allocate();
     }
   }
 
   /**
-   * Checks if the engine should continue processing jobs.
+   * Checks if the engine should continue allocating jobs.
    * @returns {boolean} True if there are jobs and idle workers, false otherwise.
    */
-  #continueProcessing() {
+  #continueAllocating() {
     return this.#jobRegistry.hasJob()
     && this.#workersRegistry.hasIdleWorker();
   }
