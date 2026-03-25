@@ -46,11 +46,31 @@ describe('Job', () => {
       });
 
       it('performs the job', async () => {
-        expect(job.attempts).toEqual(0);
+        expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await expectAsync(job.perform()).toBeResolvedTo(response);
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
-        expect(job.attempts).toEqual(1);
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toBeUndefined();
+      });
+
+      it('increments attempts and sets lastError on failure', async () => {
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toBeUndefined();
+      });
+
+      it('does not exhaust after several attempts', async () => {
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
     });
@@ -66,13 +86,34 @@ describe('Job', () => {
       });
 
       it('register failure and attempt', async () => {
-        expect(job.attempts).toEqual(0);
         expect(job.lastError).toBeUndefined();
-        await expectAsync(job.perform()).toBeRejectedWith(expectedError);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl);
-        expect(job.attempts).toEqual(1);
+        await job.perform().catch(() => {});
+        await job.perform().catch(() => {});
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toEqual(expectedError);
+        await job.perform().catch(() => {});
+        expect(job.exhausted()).toBeTrue();
         expect(job.lastError).toEqual(expectedError);
       });
+    });
+  });
+
+  describe('#exhausted', () => {
+    beforeEach(async () => {
+      await job.perform().catch(() => {});
+      await job.perform().catch(() => {});
+    });
+
+    it('returns false if attempts are less than 3', () => {
+      expect(job.exhausted()).toBeFalse();
+    });
+
+    it('returns true if attempts are 3 or more', async () => {
+      await job.perform().catch(() => {});
+      expect(job.exhausted()).toBeTrue();
+
+      await job.perform().catch(() => {});
+      expect(job.exhausted()).toBeTrue();
     });
   });
 });
