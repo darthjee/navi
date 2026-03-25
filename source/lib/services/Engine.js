@@ -42,8 +42,6 @@ class Engine {
    * @private
    */
   #allocateWorkers() {
-    // Main job processing loop
-
     while (this.#continueAllocating()) {
       this.allocator.allocate();
     }

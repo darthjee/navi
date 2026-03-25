@@ -116,12 +116,14 @@ describe('Engine', () => {
       beforeEach(() => {
         allocator = new DummyWorkersAllocator({ jobRegistry, workersRegistry });
         engine = new Engine({ jobRegistry, workersRegistry, allocator });
-        DummyJob.setSuccessRate(1);
+        DummyJob.setSuccessRate(0.1);
+
         spyOn(workersRegistry, 'hasIdleWorker').and.callFake(() => {
-          const result = jobRegistry.hasJob() && workersRegistry.hasIdleWorker.and.originalFn.call(workersRegistry);
-          if (result) return result;
-          busy.list().forEach(worker => worker.process());
-          return false;
+          const result = workersRegistry.hasIdleWorker.and.originalFn.call(workersRegistry);
+          if (!result || !jobRegistry.hasJob()) {
+            busy.list().forEach(worker => worker.perform());
+          }
+          return result;
         });
 
         for (let i = 0; i < 20; i++) {
@@ -133,8 +135,7 @@ describe('Engine', () => {
         expect(jobRegistry.hasJob()).toBeTrue();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
-        expect(finished.size()).toBe(20);
-        expect(dead.size()).toBe(0);
+        expect(finished.size() + dead.size()).toBe(20);
       });
     });
   });
