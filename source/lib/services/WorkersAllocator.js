@@ -24,8 +24,8 @@ class WorkersAllocator {
    * @returns {void}
    */
   allocate() {
-    while (this.#canAllocate()) {
-      this.#allocateWorker();
+    while (this._canAllocate()) {
+      this._allocateNext();
     }
   }
 
@@ -36,9 +36,21 @@ class WorkersAllocator {
    * and assigns the job to the worker.
    * @returns {void}
    */
-  #allocateWorker() {
+  _allocateNext() {
     const job = this.jobRegistry.pick();
     const worker = this.workersRegistry.getIdleWorker();
+    this._allocateWorkerToJob(worker, job);
+  }
+
+  /**
+   * Allocates a worker to a job.
+   *
+   * This method assigns the given job to the given worker and then performs the job.
+   * @param {Worker} worker - The worker to allocate the job to.
+   * @param {Job} job - The job to be allocated to the worker.
+   * @returns {void}
+   */
+  _allocateWorkerToJob(worker, job) {
     worker.assign(job);
     worker.perform();
   }
@@ -49,7 +61,7 @@ class WorkersAllocator {
    * This method checks if the job registry has any jobs and if the workers registry has any idle workers.
    * @returns {boolean} True if there are available jobs and idle workers, false otherwise.
    */
-  #canAllocate() {
+  _canAllocate() {
     return this.jobRegistry.hasJob() && this.workersRegistry.hasIdleWorker();
   }
 }
