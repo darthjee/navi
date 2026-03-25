@@ -40,7 +40,7 @@ class Worker {
       await this.job.perform();
       this.jobRegistry.finish(this.job);
     } catch (error) {
-      console.error(`Error occurred while performing job: ${error}`);
+      console.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
       this.jobRegistry.fail(this.job);
     } finally {
       this.job = undefined;
