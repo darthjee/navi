@@ -136,7 +136,7 @@ describe('Worker', () => {
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
-        expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: ${expectedError}`);
+        expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: #${job.id} - ${expectedError}`);
       });
 
       it ('fails the job', async () => {
