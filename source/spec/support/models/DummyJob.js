@@ -10,7 +10,7 @@ class DummyJob extends Job {
     return this._successRate ?? 1;
   }
 
-  async perform() {
+  perform() {
     if (Math.random() > DummyJob.getSuccessRate()) {
       throw new Error('Job failed');
     }
