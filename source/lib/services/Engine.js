@@ -47,6 +47,10 @@ class Engine {
     }
   }
 
+  /**
+   * Checks if the engine should continue allocating jobs to workers.
+   * @returns {boolean} True if there are jobs to process or busy workers, false otherwise.
+   */
   #continueAllocating() {
     return this.#jobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
   }
