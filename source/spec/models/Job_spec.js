@@ -75,4 +75,19 @@ describe('Job', () => {
       });
     });
   });
+
+  describe('#exhausted', () => {
+    it('returns false if attempts are less than 3', () => {
+      job.attempts = 2;
+      expect(job.exhausted()).toBeFalse();
+    });
+
+    it('returns true if attempts are 3 or more', () => {
+      job.attempts = 3;
+      expect(job.exhausted()).toBeTrue();
+
+      job.attempts = 4;
+      expect(job.exhausted()).toBeTrue();
+    });
+  });
 });

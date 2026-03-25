@@ -44,6 +44,14 @@ class Job {
   }
 
   /**
+   * Checks if the job has been exhausted (i.e., has reached the maximum number of attempts).
+   * @returns {boolean} True if the job is exhausted, false otherwise.
+   */
+  exhausted() {
+    return this.attempts >= 3;
+  }
+
+  /**
    * Gets the client associated with this job's resource request.
    * @returns {Client} The client associated with this job's resource request.
    * @private
