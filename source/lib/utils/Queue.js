@@ -7,8 +7,8 @@
 class Queue {
   /**
    * Creates an instance of Queue.
-    *
-    * This constructor initializes an empty array to store the items in the queue.
+   *
+   * This constructor initializes an empty array to store the items in the queue.
    */
   constructor() {
     this.items = [];
