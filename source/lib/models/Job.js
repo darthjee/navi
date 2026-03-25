@@ -50,6 +50,11 @@ class Job {
     return this.#attempts >= 3;
   }
 
+  /**
+   * Handles a failed job attempt.
+   * @param {Error} error - The error that caused the job to fail.
+   * @private
+   */
   _fail(error) {
     this.#attempts += 1;
     this.lastError = error;

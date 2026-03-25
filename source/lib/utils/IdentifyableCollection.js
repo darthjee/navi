@@ -36,6 +36,11 @@ class IdentifyableCollection {
     return this.#items[id];
   }
 
+  /**
+   * Checks if the collection has an item with the specified id.
+   * @param {string|number} id - The id of the item to check.
+   * @returns {boolean} - True if the item exists, false otherwise.
+   */
   has(id) {
     return this.#items[id] !== undefined;
   }
