@@ -3,11 +3,13 @@ import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Engine } from '../../lib/services/Engine.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
 
 describe('Engine', () => {
   let engine;
   let jobFactory;
   let jobRegistry;
+  let workerFactory;
   let workersRegistry;
 
   let finished;
@@ -17,7 +19,8 @@ describe('Engine', () => {
     finished = new IdentifyableCollection();
     jobRegistry = new JobRegistry({ finished, factory: jobFactory });
 
-    workersRegistry = new WorkersRegistry({ quantity: 2 });
+    workerFactory = new DummyWorkerFactory();
+    workersRegistry = new WorkersRegistry({ quantity: 2, factory: workerFactory });
     workersRegistry.initWorkers();
 
     engine = new Engine({ jobRegistry, workersRegistry });
