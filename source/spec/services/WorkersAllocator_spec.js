@@ -21,6 +21,8 @@ describe('WorkersAllocator', () => {
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
     workersRegistry.initWorkers();
     worker = workers.byIndex(0);
+    spyOn(worker, 'perform');
+
     job = new Job({});
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
@@ -36,6 +38,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toBeUndefined();
       expect(workersRegistry.hasIdleWorker()).toBeTrue();
       expect(jobRegistry.hasJob()).toBeFalse();
+      expect(worker.perform).not.toHaveBeenCalled();
     });
   });
 
@@ -53,6 +56,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
+      expect(worker.perform).toHaveBeenCalled();
     });
   });
 
@@ -72,6 +76,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeTrue();
+      expect(worker.perform).toHaveBeenCalled();
     });
   });
 
@@ -81,6 +86,7 @@ describe('WorkersAllocator', () => {
       workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers });
       workersRegistry.initWorkers();
       worker = workers.byIndex(0);
+      spyOn(worker, 'perform');
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
       job = jobRegistry.enqueue({});
@@ -97,6 +103,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
+      expect(worker.perform).toHaveBeenCalled();
     });
   });
 });
