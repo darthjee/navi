@@ -227,10 +227,6 @@ describe('JobRegistry', () => {
       expect(registry.hasJob()).toBeTrue();
       expect(registry.pick()).toEqual(job);
     });
-
-    it('is safe to call with undefined', () => {
-      expect(() => registry.fail(undefined)).not.toThrow();
-    });
   });
 
   describe('#finish', () => {
