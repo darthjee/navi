@@ -32,6 +32,7 @@ describe('Engine', () => {
         expect(jobRegistry.hasJob()).toBeFalse();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size()).toBe(0);
       });
     });
 
@@ -45,6 +46,7 @@ describe('Engine', () => {
         expect(jobRegistry.hasJob()).toBeTrue();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size()).toBe(2);
       });
     });
 
@@ -60,6 +62,7 @@ describe('Engine', () => {
         expect(jobRegistry.hasJob()).toBeTrue();
         engine.start();
         expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size()).toBe(4);
       });
     });
   });
