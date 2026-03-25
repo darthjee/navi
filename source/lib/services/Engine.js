@@ -49,13 +49,8 @@ class Engine {
     }
   }
 
-  /**
-   * Checks if the engine should continue allocating jobs.
-   * @returns {boolean} True if there are jobs and idle workers, false otherwise.
-   */
   #continueAllocating() {
-    return this.#jobRegistry.hasJob()
-    && this.#workersRegistry.hasIdleWorker();
+    return this.#jobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
   }
 }
 

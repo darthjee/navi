@@ -18,6 +18,8 @@ describe('Engine', () => {
   let finished;
   let dead;
 
+  let busy;
+
   beforeEach(() => {
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
@@ -25,7 +27,8 @@ describe('Engine', () => {
     jobRegistry = new JobRegistry({ finished, dead, factory: jobFactory });
 
     workerFactory = new DummyWorkerFactory({ jobRegistry });
-    workersRegistry = new WorkersRegistry({ quantity: 2, factory: workerFactory });
+    busy = new IdentifyableCollection();
+    workersRegistry = new WorkersRegistry({ busy, quantity: 2, factory: workerFactory });
     workersRegistry.initWorkers();
 
     DummyJob.setSuccessRate(1);
@@ -114,6 +117,12 @@ describe('Engine', () => {
         allocator = new DummyWorkersAllocator({ jobRegistry, workersRegistry });
         engine = new Engine({ jobRegistry, workersRegistry, allocator });
         DummyJob.setSuccessRate(1);
+        spyOn(workersRegistry, 'hasIdleWorker').and.callFake(() => {
+          const result = jobRegistry.hasJob() && workersRegistry.hasIdleWorker.and.originalFn.call(workersRegistry);
+          if (result) return result;
+          busy.list().forEach(worker => worker.process());
+          return false;
+        });
 
         for (let i = 0; i < 20; i++) {
           jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
