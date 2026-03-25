@@ -43,6 +43,12 @@ class WorkersAllocator {
     worker.perform();
   }
 
+  /**
+   * Checks if there are available jobs and idle workers to allocate.
+   *
+   * This method checks if the job registry has any jobs and if the workers registry has any idle workers.
+   * @returns {boolean} True if there are available jobs and idle workers, false otherwise.
+   */
   #canAllocate() {
     return this.jobRegistry.hasJob() && this.workersRegistry.hasIdleWorker();
   }
