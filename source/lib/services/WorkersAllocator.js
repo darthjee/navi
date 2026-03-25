@@ -40,6 +40,7 @@ class WorkersAllocator {
     const job = this.jobRegistry.pick();
     const worker = this.workersRegistry.getIdleWorker();
     worker.assign(job);
+    worker.perform();
   }
 
   #canAllocate() {

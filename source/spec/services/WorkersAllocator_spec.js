@@ -4,6 +4,7 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 
 describe('WorkersAllocator', () => {
   let jobRegistry;
@@ -14,13 +15,18 @@ describe('WorkersAllocator', () => {
   let workers;
   let clients;
 
+  let jobFactory;
+
   beforeEach(() => {
     clients = new ClientRegistry({});
-    jobRegistry = new JobRegistry({ clients });
+    jobFactory = new DummyJobFactory();
+    jobRegistry = new JobRegistry({ clients, factory: jobFactory });
     workers = new IdentifyableCollection();
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
     workersRegistry.initWorkers();
     worker = workers.byIndex(0);
+    spyOn(worker, 'perform');
+
     job = new Job({});
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
@@ -36,6 +42,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toBeUndefined();
       expect(workersRegistry.hasIdleWorker()).toBeTrue();
       expect(jobRegistry.hasJob()).toBeFalse();
+      expect(worker.perform).not.toHaveBeenCalled();
     });
   });
 
@@ -53,6 +60,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
+      expect(worker.perform).toHaveBeenCalled();
     });
   });
 
@@ -72,6 +80,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeTrue();
+      expect(worker.perform).toHaveBeenCalled();
     });
   });
 
@@ -81,6 +90,7 @@ describe('WorkersAllocator', () => {
       workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers });
       workersRegistry.initWorkers();
       worker = workers.byIndex(0);
+      spyOn(worker, 'perform');
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
       job = jobRegistry.enqueue({});
@@ -97,6 +107,7 @@ describe('WorkersAllocator', () => {
       expect(worker.job).toEqual(job);
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
+      expect(worker.perform).toHaveBeenCalled();
     });
   });
 });
