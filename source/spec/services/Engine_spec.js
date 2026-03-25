@@ -26,6 +26,8 @@ describe('Engine', () => {
 
     DummyJob.setSuccessRate(1);
     engine = new Engine({ jobRegistry, workersRegistry });
+
+    spyOn(console, 'error').and.stub();
   });
 
   describe('start', () => {
