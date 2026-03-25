@@ -7,6 +7,7 @@ class Job {
   #parameters;
   #clients;
   #client;
+  #attempts;
 
   /**
    * Creates a new Job instance.
@@ -22,7 +23,7 @@ class Job {
     this.#parameters = parameters;
     this.#clients = clients;
 
-    this.attempts = 0;
+    this.#attempts = 0;
   }
 
   /**
@@ -35,7 +36,7 @@ class Job {
   async perform() {
     try {
       this.lastError = undefined;
-      this.attempts += 1;
+      this.#attempts += 1;
       return await this.#getClient().perform(this.#resourceRequest);
     } catch (error) {
       this.lastError = error;
@@ -48,7 +49,7 @@ class Job {
    * @returns {boolean} True if the job is exhausted, false otherwise.
    */
   exhausted() {
-    return this.attempts >= 3;
+    return this.#attempts >= 3;
   }
 
   /**

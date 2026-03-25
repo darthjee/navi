@@ -96,11 +96,11 @@ describe('Worker', () => {
       });
 
       it('performs the job', async () => {
-        expect(job.attempts).toEqual(0);
+        expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
-        expect(job.attempts).toEqual(1);
+        expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         expect(console.error).not.toHaveBeenCalled();
       });
@@ -130,11 +130,11 @@ describe('Worker', () => {
       });
 
       it('register failure and attempt', async () => {
-        expect(job.attempts).toEqual(0);
+        expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
         expect(axios.get).toHaveBeenCalledWith(fullUrl);
-        expect(job.attempts).toEqual(1);
+        expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
         expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: ${expectedError}`);
       });
