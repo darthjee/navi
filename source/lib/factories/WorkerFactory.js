@@ -31,8 +31,8 @@ class WorkerFactory extends Factory {
    * It builds the worker by calling the base Factory's build method, passing in the jobRegistry and workerRegistry as part of the attributes for the Worker instance.
    * @returns {Worker} The created Worker instance.
    */
-  build() {
-    return super.build({ jobRegistry: this.#jobRegistry, workerRegistry: this.#workerRegistry });
+  build({ workerRegistry } = {}) {
+    return super.build({ jobRegistry: this.#jobRegistry, workerRegistry: workerRegistry || this.#workerRegistry });
   }
 }
 

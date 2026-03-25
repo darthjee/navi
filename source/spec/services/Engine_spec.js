@@ -19,7 +19,7 @@ describe('Engine', () => {
     finished = new IdentifyableCollection();
     jobRegistry = new JobRegistry({ finished, factory: jobFactory });
 
-    workerFactory = new DummyWorkerFactory();
+    workerFactory = new DummyWorkerFactory({ jobRegistry });
     workersRegistry = new WorkersRegistry({ quantity: 2, factory: workerFactory });
     workersRegistry.initWorkers();
 
