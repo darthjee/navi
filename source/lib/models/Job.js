@@ -36,9 +36,9 @@ class Job {
   async perform() {
     try {
       this.lastError = undefined;
-      this.#attempts += 1;
       return await this.#getClient().perform(this.#resourceRequest);
     } catch (error) {
+      this.#attempts += 1;
       this.lastError = error;
       throw error;
     }

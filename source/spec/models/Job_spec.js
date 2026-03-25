@@ -62,6 +62,17 @@ describe('Job', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
+
+      it('does not exhaust after several attempts', async () => {
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toBeUndefined();
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(job.exhausted()).toBeFalse();
+        expect(job.lastError).toBeUndefined();
+      });
     });
 
     describe('when the client request fails', () => {
