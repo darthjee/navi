@@ -15,12 +15,13 @@ class Engine {
    * @param {object} param0 - The parameters for creating an Engine instance.
    * @param {JobRegistry} param0.jobRegistry - The job registry to allocate jobs from.
    * @param {WorkersRegistry} param0.workersRegistry - The workers registry to allocate workers from.
+   * @param {WorkersAllocator} param0.allocator - The workers allocator to manage job allocation.
    */
-  constructor({ jobRegistry, workersRegistry }) {
+  constructor({ jobRegistry, workersRegistry, allocator }) {
     this.#jobRegistry = jobRegistry;
     this.#workersRegistry = workersRegistry;
 
-    this.allocator = new WorkersAllocator({
+    this.allocator = allocator || new WorkersAllocator({
       jobRegistry: this.#jobRegistry,
       workersRegistry: this.#workersRegistry,
     });
@@ -32,7 +33,7 @@ class Engine {
    */
   start() {
     // Start the engine by processing jobs
-    this.#processJobs();
+    this.#allocateWorkers();
   }
 
   /**
@@ -40,21 +41,18 @@ class Engine {
    * @returns {void}
    * @private
    */
-  #processJobs() {
-    // Main job processing loop
-
-    while (this.#continueProcessing()) {
+  #allocateWorkers() {
+    while (this.#continueAllocating()) {
       this.allocator.allocate();
     }
   }
 
   /**
-   * Checks if the engine should continue processing jobs.
-   * @returns {boolean} True if there are jobs and idle workers, false otherwise.
+   * Checks if the engine should continue allocating jobs to workers.
+   * @returns {boolean} True if there are jobs to process or busy workers, false otherwise.
    */
-  #continueProcessing() {
-    return this.#jobRegistry.hasJob()
-    && this.#workersRegistry.hasIdleWorker();
+  #continueAllocating() {
+    return this.#jobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
   }
 }
 

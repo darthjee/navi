@@ -5,6 +5,7 @@ import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.j
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../support/models/DummyJob.js';
+import { DummyWorkersAllocator } from '../support/services/DummyWorkersAllocator.js';
 
 describe('Engine', () => {
   let engine;
@@ -12,9 +13,12 @@ describe('Engine', () => {
   let jobRegistry;
   let workerFactory;
   let workersRegistry;
+  let allocator;
 
   let finished;
   let dead;
+
+  let busy;
 
   beforeEach(() => {
     jobFactory = new DummyJobFactory();
@@ -23,7 +27,8 @@ describe('Engine', () => {
     jobRegistry = new JobRegistry({ finished, dead, factory: jobFactory });
 
     workerFactory = new DummyWorkerFactory({ jobRegistry });
-    workersRegistry = new WorkersRegistry({ quantity: 2, factory: workerFactory });
+    busy = new IdentifyableCollection();
+    workersRegistry = new WorkersRegistry({ busy, quantity: 2, factory: workerFactory });
     workersRegistry.initWorkers();
 
     DummyJob.setSuccessRate(1);
@@ -104,6 +109,33 @@ describe('Engine', () => {
         expect(finished.size() + dead.size()).toBe(20);
         expect(finished.size()).not.toBe(0);
         expect(dead.size()).not.toBe(0);
+      });
+    });
+
+    describe('when jobs take some time to be processed', () => {
+      beforeEach(() => {
+        allocator = new DummyWorkersAllocator({ jobRegistry, workersRegistry });
+        engine = new Engine({ jobRegistry, workersRegistry, allocator });
+        DummyJob.setSuccessRate(0.1);
+
+        spyOn(workersRegistry, 'hasIdleWorker').and.callFake(() => {
+          const result = workersRegistry.hasIdleWorker.and.originalFn.call(workersRegistry);
+          if (!result || !jobRegistry.hasJob()) {
+            busy.list().forEach(worker => worker.perform());
+          }
+          return result;
+        });
+
+        for (let i = 0; i < 20; i++) {
+          jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        }
+      });
+
+      it('processes all jobs until they are in the finished or dead', () => {
+        expect(jobRegistry.hasJob()).toBeTrue();
+        engine.start();
+        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(finished.size() + dead.size()).toBe(20);
       });
     });
   });
