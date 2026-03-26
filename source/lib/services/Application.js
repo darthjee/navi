@@ -36,8 +36,8 @@ class Application {
     this.jobRegistry = new JobRegistry({ clients: this.config.clients });
     this.workersRegistry = new WorkersRegistry({
       jobRegistry: this.jobRegistry,
-      ...this.config.workersConfig,
-      workers: this.#workers
+      workers: this.#workers,
+      ...this.config.workersConfig
     });
 
     this.workersRegistry.initWorkers();
