@@ -10,14 +10,18 @@ import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 describe('Application', () => {
   let app;
   let configFilePath;
+  let config;
 
-  beforeEach(() => {
-    configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
-
-    app = new Application();
-  });
+  let workersRegistry;
+  let jobRegistry;
 
   describe('#loadConfig', () => {
+    beforeEach(() => {
+      configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+
+      app = new Application();
+    });
+
     describe('when config file is valid', () => {
       it('should initialize config', () => {
         expect(app.config).toBeUndefined();
@@ -59,6 +63,25 @@ describe('Application', () => {
       it('should throw an error', () => {
         expect(() => app.loadConfig()).toThrowError(ConfigurationFileNotProvided);
       });
+    });
+  });
+
+  describe('#run', () => {
+    beforeEach(() => {
+      configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+      config = Config.fromFile(configFilePath);
+
+      jobRegistry = new JobRegistry({ clients: config.clients });
+      workersRegistry = new WorkersRegistry({ quantity: 5, jobRegistry });
+
+      app = new Application();
+      app.loadConfig(configFilePath, { workersRegistry });
+    });
+
+    it('initializes the simple jobs', () => {
+      expect(jobRegistry.hasJob()).toBeFalse();
+      app.run();
+      expect(jobRegistry.hasJob()).toBeTrue();
     });
   });
 });
