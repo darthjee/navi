@@ -1,3 +1,4 @@
+import { Engine } from './Engine.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
@@ -41,6 +42,14 @@ class Application {
     });
 
     this.workersRegistry.initWorkers();
+  }
+
+  run() {
+    this.engine = new Engine({
+      jobRegistry: this.jobRegistry,
+      workersRegistry: this.workersRegistry
+    });
+    this.engine.start();
   }
 }
 
