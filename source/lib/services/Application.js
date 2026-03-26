@@ -23,19 +23,19 @@ class Application {
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
    * @returns {void}
    */
-  loadConfig(configPath) {
+  loadConfig(configPath, ...options) {
     if (!configPath) {
       throw new ConfigurationFileNotProvided();
     }
 
     // Load the configuration from the specified path.
     this.config = Config.fromFile(configPath);
-    this.#initRegistries();
+    this.#initRegistries(...options);
   }
 
-  #initRegistries() {
-    this.jobRegistry = new JobRegistry({ clients: this.config.clients });
-    this.workersRegistry = new WorkersRegistry({
+  #initRegistries({ jobRegistry, workersRegistry } = {}) {
+    this.jobRegistry = jobRegistry || new JobRegistry({ clients: this.config.clients });
+    this.workersRegistry = workersRegistry || new WorkersRegistry({
       jobRegistry: this.jobRegistry,
       workers: this.#workers,
       ...this.config.workersConfig
