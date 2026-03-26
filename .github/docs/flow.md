@@ -98,25 +98,24 @@ After `loadConfig`, `Application` iterates over all `ResourceRequest` entries ac
 
 ## 5. Engine Loop
 
-**`Engine`** drives the processing lifecycle.
+**`Engine`** drives the processing lifecycle by delegating job assignment to the `WorkersAllocator`.
 
-### Outer loop — runs while there is remaining work
+### Main allocation loop
 
-Remaining work means: at least one busy worker **or** at least one job in the queue.
+The Engine continuously calls the `WorkersAllocator` to assign jobs to workers as long as there is remaining work:
 
-- `WorkersRegistry.hasBusyWorker()` — returns `true` if any worker is currently processing.
-- `JobRegistry.hasJob()` — returns `true` if there are jobs to process (considers both the main queue and the failed queue).
+- Remaining work means: at least one busy worker **or** at least one job in the queue.
+  - `WorkersRegistry.hasBusyWorker()` — returns `true` if any worker is currently processing.
+  - `JobRegistry.hasJob()` — returns `true` if there are jobs to process (main or failed queue).
 
-If no idle workers are available but work remains, the Engine **sleeps** for a configurable duration before retrying.
+The allocation loop:
 
-### Inner loop — assigns jobs to idle workers
+1. While there is remaining work, the Engine calls `WorkersAllocator.allocate()`.
+2. The `WorkersAllocator` assigns jobs to idle workers as long as both are available, using extensible allocation logic.
+3. If no idle workers are available but work remains, the Engine may sleep for a configurable duration before retrying (future: configurable sleep).
+4. The loop stops when all jobs are processed and all workers are idle.
 
-While `WorkersRegistry.hasIdleWorker()` **and** `JobRegistry.hasJob()`:
-
-1. Pick the next job from the main queue (`JobRegistry.pick()`).
-2. Retrieve an idle worker from `WorkersRegistry`.
-3. Mark the worker as busy (`WorkersRegistry.setBusy(workerId)`).
-4. Dispatch the job to the worker **asynchronously** (non-blocking) to enable parallelism.
+This design decouples the engine's control flow from the job assignment logic, making it easier to test and extend allocation strategies.
 
 When the main queue is empty, the inner loop may promote jobs from the failed queue back to the main queue, giving previously failed requests a retry window after the rest of the work has been attempted.
 

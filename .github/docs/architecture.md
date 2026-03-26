@@ -60,7 +60,8 @@ Business logic and I/O layer.
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
 | `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL and throws `RequestFailed` if the status does not match. |
-| `Engine` | Drives the processing loop. Assigns jobs to idle workers; waits (configurable sleep) when no idle workers are available; stops when all workers are idle and all queues are empty. |
+| `Engine` | Drives the main allocation loop. Continuously calls the `WorkersAllocator` to assign jobs to workers as long as there are jobs to process or busy workers. Stops when all jobs are processed and all workers are idle. |
+| `WorkersAllocator` | Handles the logic for assigning jobs to workers. Provides extensible methods for allocation, allowing custom strategies and easier testing. Used by `Engine` to decouple job assignment from engine control flow. |
 | `JobFactory` | Creates `Job` instances from a `ResourceRequest` and a parameter map. |
 | `WorkersFactory` | Creates and initializes `Worker` instances for the pool   ← planned; not yet implemented. |
 | `ResponseParser` | Parses HTTP response bodies and extracts parameters for downstream action enqueueing. |
