@@ -29,19 +29,12 @@ class Engine {
 
   /**
    * Starts the engine by processing jobs.
+   *
+   * This method continuously checks for available jobs and idle workers, and assigns
+   * jobs to workers until there are no more jobs and no more busy workers.
    * @returns {void}
    */
   start() {
-    // Start the engine by processing jobs
-    this.#allocateWorkers();
-  }
-
-  /**
-   * Processes jobs by continuously allocating them to idle workers until there are no more jobs or no more idle workers.
-   * @returns {void}
-   * @private
-   */
-  #allocateWorkers() {
     while (this.#continueAllocating()) {
       this.allocator.allocate();
     }
