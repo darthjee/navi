@@ -10,6 +10,9 @@ With the Dockerfile ready (#80), `docker-compose.yml` must replace the static Ap
 service with the new Express build. The `navi_httpd` service name and `backend` alias are
 preserved so `navi_proxy` requires no changes.
 
+The volume path points to `new-dev/data.yml` for now. The final rename (`new-dev/` → `dev/`) and
+path update happen in issue #82.
+
 ## Step 1 — Update `navi_httpd` in `docker-compose.yml`
 
 ```yaml
@@ -27,17 +30,14 @@ navi_httpd:
     context: .
     dockerfile: dockerfiles/dev_httpd/Dockerfile
   volumes:
-    - ./dev/data.yml:/home/node/app/data.yml
+    - ./new-dev/data.yml:/home/node/app/data.yml
   ports:
     - "0.0.0.0:3020:80"
 ```
-
-Only `data.yml` is mounted as a volume so the data file can be edited and the container
-restarted — without rebuilding the image.
 
 ## Acceptance Criteria
 
 - [ ] `docker compose up navi_httpd` builds and starts the Express container without errors.
 - [ ] `navi_proxy` continues to forward and cache requests correctly (`backend` alias unchanged).
-- [ ] Editing `dev/data.yml` and running `docker compose restart navi_httpd` reflects new data
+- [ ] Editing `new-dev/data.yml` and running `docker compose restart navi_httpd` reflects new data
   without a rebuild.
