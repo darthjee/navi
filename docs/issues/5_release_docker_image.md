@@ -10,6 +10,8 @@ This image is based on darthjee/production_node:0.2.1
 The dockerfile is inspired by dockerfiles/dev_navy/Dockerfile but is on
 dockerfiles/production_navy/Dockerfile
 
+This release should not have development related packages
+
 We need to push it to docker
 
 We need to push the docker image description
