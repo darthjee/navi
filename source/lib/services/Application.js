@@ -45,11 +45,21 @@ class Application {
   }
 
   run() {
-    this.engine = new Engine({
+    this.engine = this.buildEngine();
+    this.engine.start();
+  }
+
+  buildEngine() {
+    return new Engine({
       jobRegistry: this.jobRegistry,
       workersRegistry: this.workersRegistry
     });
-    this.engine.start();
+  }
+
+  enqueueFirstJobs() {
+    this.config.resourceRegistry.filterItems(resource => true).forEach(resource => {
+      this.jobRegistry.enqueue({ resourceRequest, parameters })
+    });
   }
 }
 
