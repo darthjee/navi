@@ -4,11 +4,10 @@ import { Config } from '../../lib/models/Config.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
-import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js'
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { DummyJob } from '../support/models/DummyJob.js';
-import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Application', () => {
   let app;
@@ -18,8 +17,6 @@ describe('Application', () => {
   let jobFactory;
   let workersRegistry;
   let jobRegistry;
-  let workerFactory;
-  let dead;
 
   describe('#loadConfig', () => {
     beforeEach(() => {
@@ -80,18 +77,18 @@ describe('Application', () => {
       config = Config.fromFile(configFilePath);
 
       jobFactory = new DummyJobFactory();
-      dead = new IdentifyableCollection();
-      jobRegistry = new JobRegistry({ clients: config.clients, factory: jobFactory, dead });
+      jobRegistry = new JobRegistry({ clients: config.clients, factory: jobFactory });
 
-      workerFactory = new DummyWorkerFactory({ jobRegistry });
       workersRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
 
       app = new Application();
-      app.loadConfig(configFilePath, { workersRegistry, jobRegistry});
+      app.loadConfig(configFilePath, { workersRegistry, jobRegistry });
     });
 
     it('initializes the simple jobs', () => {
+      expect(jobRegistry.hasJob()).toBeFalse();
       app.run();
+      expect(jobRegistry.hasJob()).toBeTrue();
     });
   });
 });
