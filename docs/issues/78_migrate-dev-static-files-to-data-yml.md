@@ -1,4 +1,4 @@
-# X01: Migrate Static Dev Files to `dev/data.yml`
+#78: Migrate Static Dev Files to `dev/data.yml`
 
 Parent issue: https://github.com/darthjee/navi/issues/68
 
