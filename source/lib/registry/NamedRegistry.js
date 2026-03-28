@@ -38,10 +38,19 @@ class NamedRegistry {
     this.#notFound(name);
   }
 
+  /**
+   * Filters the items in the registry based on a predicate function.
+   * @param {function} predicate The predicate function to test each item.
+   * @returns {Array} An array of items that match the predicate.
+   */
   filter(predicate) {
     return Object.values(this.items).filter(predicate);
   }
 
+  /**
+   * Returns the number of items in the registry.
+   * @returns {number} The number of items in the registry.
+   */
   size() {
     if (this.#size === undefined) {
       this.#size = Object.keys(this.items).length;

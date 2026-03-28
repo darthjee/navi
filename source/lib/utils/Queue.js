@@ -35,7 +35,7 @@ class Queue {
    * @returns {boolean} True if the queue has items, false otherwise.
    */
   hasItem() {
-    return size();
+    return this.size() > 0;
   }
 
   /**

@@ -43,4 +43,25 @@ describe('Queue', () => {
       expect(queue.hasItem()).toBeFalse();
     });
   });
+
+  describe('#size', () => {
+    it('returns 0 for a new queue', () => {
+      expect(queue.size()).toBe(0);
+    });
+
+    it('returns the number of items in the queue', () => {
+      queue.push(1);
+      queue.push(2);
+      expect(queue.size()).toBe(2);
+    });
+
+    it('decreases when items are picked', () => {
+      queue.push(1);
+      queue.push(2);
+      queue.pick();
+      expect(queue.size()).toBe(1);
+      queue.pick();
+      expect(queue.size()).toBe(0);
+    });
+  });
 });
