@@ -58,7 +58,10 @@ class Application {
 
   enqueueFirstJobs() {
     this.config.resourceRegistry.filterItems(resource => true).forEach(resource => {
-      this.jobRegistry.enqueue({ resourceRequest, parameters })
+      resource.resourceRequests.forEach(resourceRequest => {
+        parameters = {};
+        this.jobRegistry.enqueue({ resourceRequest, parameters });
+      });
     });
   }
 }
