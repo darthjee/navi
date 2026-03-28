@@ -16,7 +16,6 @@ ignore:
   - docs/**
   - dev/**
   - docker_volumes/**
-  - dockerfiles/**
 ```
 
 - `docs/**` — documentation and issue/plan files
