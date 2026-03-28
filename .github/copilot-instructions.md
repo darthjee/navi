@@ -8,12 +8,13 @@ Its primary purpose is to warm caches by performing HTTP requests based on a use
 
 ## Documentation
 
-Detailed documentation is split into focused files under `.github/docs/`:
+All project documentation lives under [`docs/`](../docs/):
 
 | File | Contents |
 |------|----------|
-| [Architecture](docs/architecture.md) | Source code layout (`exceptions/`, `models/`, `registry/`, `services/`), module system, code style, tooling, developer workflow, and Copilot implementation guidelines. |
-| [Runtime Flow](docs/flow.md) | CLI entrypoint (`navi.js`), config loading, initial enqueueing, Engine loop, worker execution, action-based resource chaining, failure handling, and future web UI. |
+| [Architecture](../docs/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
+| [Runtime Flow](../docs/flow.md) | CLI entrypoint, config loading, initial enqueueing, Engine loop, worker execution, failure handling. |
+| [Plans](../docs/plans/) | Implementation plans for ongoing or upcoming features. |
 
 ## Engineering Standards
 
@@ -23,7 +24,7 @@ Detailed documentation is split into focused files under `.github/docs/`:
 
 ## Quick Reference
 
-- **Run tests:** `yarn test` (via `make dev`)
+- **Run tests:** `yarn test` (via `make tests`)
 - **Lint:** `yarn lint`
 - **Build dev image:** `make build-dev`
 - **Build prod image:** `make build`
