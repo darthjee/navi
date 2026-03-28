@@ -1,12 +1,12 @@
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { Config } from '../../lib/models/Config.js';
 import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { Client } from '../../lib/services/Client.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Config', () => {
   let expectedResources;
@@ -23,7 +23,7 @@ describe('Config', () => {
     beforeEach(() => {
       resource = new Resource({
         name: 'categories',
-        resourceRequests: [new ResourceRequest({ url: '/categories.json', status: 200 })],
+        resourceRequests: [ResourceRequestFactory.build()],
       });
       config = new Config({
         resources: { categories: resource },
@@ -163,7 +163,7 @@ describe('Config', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
         expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
+          ResourceRequestFactory.build()
         ];
         expectedResources = {
           categories: new Resource({

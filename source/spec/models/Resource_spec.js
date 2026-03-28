@@ -1,5 +1,5 @@
 import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Resource', () => {
   describe('.fromObject', () => {
@@ -21,8 +21,8 @@ describe('Resource', () => {
       expect(resource).toEqual(new Resource({
         name,
         resourceRequests: [
-          new ResourceRequest({ url: '/categories.json', status: 200 }),
-          new ResourceRequest({ url: '/categories.html', status: 302 }),
+          ResourceRequestFactory.build(),
+          ResourceRequestFactory.build({ url: '/categories.html', status: 302 }),
         ],
       }));
     });
@@ -52,13 +52,13 @@ describe('Resource', () => {
         new Resource({
           name: 'categories',
           resourceRequests: [
-            new ResourceRequest({ url: '/categories.json', status: 200 }),
+            ResourceRequestFactory.build(),
           ],
         }),
         new Resource({
           name: 'category',
           resourceRequests: [
-            new ResourceRequest({ url: '/categories/{:id}.json', status: 200 }),
+            ResourceRequestFactory.build({ url: '/categories/{:id}.json' }),
           ],
         }),
       ]);

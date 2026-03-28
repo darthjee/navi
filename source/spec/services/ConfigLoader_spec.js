@@ -1,10 +1,10 @@
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { Client } from '../../lib/services/Client.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('ConfigLoader', () => {
   let expectedResources;
@@ -16,7 +16,7 @@ describe('ConfigLoader', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
         expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
+          ResourceRequestFactory.build()
         ];
         expectedResources = {
           categories: new Resource({
@@ -57,7 +57,7 @@ describe('ConfigLoader', () => {
     describe('when the yaml misses workers definition', () => {
       beforeEach(() => {
         expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
+          ResourceRequestFactory.build()
         ];
         expectedResources = {
           categories: new Resource({

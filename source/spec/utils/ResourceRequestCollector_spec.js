@@ -1,11 +1,11 @@
 import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { ResourceRequestCollector } from '../../lib/utils/ResourceRequestCollector.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('ResourceRequestCollector', () => {
-  const paramFree = (url) => new ResourceRequest({ url, status: 200 });
-  const withParam = (url) => new ResourceRequest({ url, status: 200 });
+  const paramFree = (url) => ResourceRequestFactory.build({ url });
+  const withParam = (url) => ResourceRequestFactory.build({ url });
 
   const categoriesRequest = paramFree('/categories.json');
   const productsRequest = paramFree('/products.json');

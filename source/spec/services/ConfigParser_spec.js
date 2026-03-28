@@ -1,11 +1,11 @@
 import { MissingClientsConfig } from '../../lib/exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
 import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { Client } from '../../lib/services/Client.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('ConfigParser', () => {
   let expectedResources;
@@ -20,7 +20,7 @@ describe('ConfigParser', () => {
         config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
 
         expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
+          ResourceRequestFactory.build()
         ];
         expectedResources = {
           categories: new Resource({
@@ -83,7 +83,7 @@ describe('ConfigParser', () => {
 
       beforeEach(() => {
         expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
+          ResourceRequestFactory.build()
         ];
         expectedResources = {
           categories: new Resource({

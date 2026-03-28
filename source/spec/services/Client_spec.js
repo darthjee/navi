@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Client } from '../../lib/services/Client.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Client', () => {
   const baseUrl = 'http://example.com';
@@ -14,7 +14,7 @@ describe('Client', () => {
 
   beforeEach(() => {
     client = new Client({ name: 'default', baseUrl });
-    resourceRequest = new ResourceRequest({ url, status });
+    resourceRequest = ResourceRequestFactory.build({ url, status });
   });
 
   it('returns true when status matches and requests using baseUrl + url', async () => {
@@ -45,7 +45,7 @@ describe('Client', () => {
 
   describe('when request status is 404 but it is a match', () => {
     beforeEach(() => {
-      resourceRequest = new ResourceRequest({ url, status: 404 });
+      resourceRequest = ResourceRequestFactory.build({ url, status: 404 });
     });
 
     it('throws RequestFailed when status does not match', async () => {
