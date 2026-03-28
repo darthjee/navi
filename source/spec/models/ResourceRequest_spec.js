@@ -17,4 +17,31 @@ describe('ResourceRequest', () => {
       expect(resourceRequests.every((resourceRequest) => resourceRequest instanceof ResourceRequest)).toBeTrue();
     });
   });
+
+  describe('#needsParams', () => {
+    it('returns false when the URL has no placeholders', () => {
+      const request = new ResourceRequest({ url: '/categories.json', status: 200 });
+      expect(request.needsParams()).toBeFalse();
+    });
+
+    it('returns true when the URL has one placeholder', () => {
+      const request = new ResourceRequest({ url: '/categories/{:id}.json', status: 200 });
+      expect(request.needsParams()).toBeTrue();
+    });
+
+    it('returns true when the URL has multiple placeholders', () => {
+      const request = new ResourceRequest({ url: '/categories/{:id}/items/{:item_id}', status: 200 });
+      expect(request.needsParams()).toBeTrue();
+    });
+
+    it('returns false for an empty URL', () => {
+      const request = new ResourceRequest({ url: '', status: 200 });
+      expect(request.needsParams()).toBeFalse();
+    });
+
+    it('returns false for a malformed placeholder without the colon prefix', () => {
+      const request = new ResourceRequest({ url: '/categories/{id}.json', status: 200 });
+      expect(request.needsParams()).toBeFalse();
+    });
+  });
 });
