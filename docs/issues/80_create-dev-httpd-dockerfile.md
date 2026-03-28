@@ -1,7 +1,7 @@
-# X03: Create `dockerfiles/dev_httpd/Dockerfile`
+#80: Create `dockerfiles/dev_httpd/Dockerfile`
 
 Parent issue: https://github.com/darthjee/navi/issues/68
-Depends on: X02
+Depends on: #79
 
 ## Background
 

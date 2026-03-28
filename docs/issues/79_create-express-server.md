@@ -1,7 +1,7 @@
 #79: Create Express Dev Server
 
 Parent issue: https://github.com/darthjee/navi/issues/68
-Depends on: 78
+Depends on: #78
 
 ## Background
 
