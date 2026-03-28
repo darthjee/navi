@@ -87,12 +87,11 @@ describe('Application', () => {
       workersRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
 
       app = new Application();
-      app.loadConfig(configFilePath, { workersRegistry });
+      app.loadConfig(configFilePath, { workersRegistry, jobRegistry});
     });
 
-    fit('initializes the simple jobs', () => {
+    it('initializes the simple jobs', () => {
       app.run();
-      console.info(jobRegistry.report());
     });
   });
 });
