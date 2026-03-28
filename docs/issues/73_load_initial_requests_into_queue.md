@@ -1,40 +1,47 @@
 # Issue 73: Load Initial Parameter-Free ResourceRequests into Queue
 
+Issue Link: https://github.com/darthjee/navi/issues/73
+
 ## Background
 
-When starting the Navi application, we want to pre-populate the job queue with `ResourceRequest` instances that do **not** require parameters. This ensures the cache-warming process can begin immediately, and subsequent parameterized requests can be enqueued as their dependencies are resolved (e.g., after fetching `/categories.json`, we can enqueue `/categories/:id/items.json` for each discovered `id`).
+When starting the Navi application, the job queue must be pre-populated with `ResourceRequest`
+instances that do **not** require URL parameters. This allows the cache-warming process to begin
+immediately; parameterized requests (e.g. `/categories/:id/items.json`) are only enqueued later,
+once their parameters are discovered from earlier responses.
 
-Currently, all jobs are enqueued only after the engine starts, and there is no filtering to ensure only parameter-free requests are loaded initially.
+Currently, `Application` initializes its registries via `loadConfig`, but never starts the engine
+and never enqueues any jobs. The CLI (`bin/navi.js`) only calls `app.loadConfig(config)` and then
+exits.
+
+## Existing Building Blocks (already on `main`)
+
+- `ResourceRequest#needsParams()` — returns `true` if the URL contains `{:placeholder}` tokens.
+- `ResourceRequestCollector` (`lib/utils/`) — wraps a `ResourceRegistry` and exposes
+  `requestsNeedingNoParams()` to retrieve all parameter-free requests.
 
 ## Proposal
 
-- On application startup, before starting the engine, enqueue all `ResourceRequest` jobs whose URLs do **not** require parameters.
-- Parameterized requests (e.g., `/categories/:id/items.json`) should **not** be enqueued at this stage, as their parameters are only known after processing earlier responses.
+Add an `Application#run()` method that, after `loadConfig`, enqueues all parameter-free requests
+and starts the engine. Update the CLI to call `run()`.
 
-## Implementation Steps
+### Implementation Steps
 
-1. **Identify Parameter-Free Requests**
-   - Each `ResourceRequest` must provide a method (e.g., `needsParams()`) to determine if its URL requires parameters.
-   - Only requests where `needsParams()` returns `false` should be considered for initial enqueueing.
+1. **`Application#enqueueFirstJobs()`** — use `ResourceRequestCollector` to collect all
+   parameter-free `ResourceRequest` instances from `config.resourceRegistry` and enqueue each one
+   into `jobRegistry` with an empty parameters map.
 
-2. **Collect Eligible Requests**
-   - Use the `ResourceRegistry` to collect all `ResourceRequest` instances.
-   - Filter them using the `needsParams()` method.
+2. **`Application#buildEngine()`** — instantiate and return an `Engine` wired to the current
+   `jobRegistry` and `workersRegistry`.
 
-3. **Enqueue Jobs**
-   - Add all eligible (parameter-free) requests to the job queue before the engine starts.
+3. **`Application#run()`** — call `buildEngine()`, then `enqueueFirstJobs()`, then
+   `engine.start()`.
+
+4. **Update CLI** — change `bin/navi.js` to call `app.run()` after `app.loadConfig(config)`.
 
 ## Acceptance Criteria
 
-- On startup, only parameter-free `ResourceRequest` jobs are enqueued.
-- Parameterized requests are only enqueued after their required parameters are available.
-- The logic is covered by automated tests.
-- Documentation is updated to describe the new startup flow.
-
-## Benefits
-
-- Ensures the queue is populated with valid jobs at startup.
-- Prevents errors from enqueuing requests with missing parameters.
-- Lays the groundwork for dynamic job enqueueing as new data is discovered.
-
----
+- [ ] `Application#run()` exists and orchestrates engine creation, initial enqueueing, and engine start.
+- [ ] On startup, only parameter-free `ResourceRequest` jobs are present in the queue.
+- [ ] Parameterized requests are not enqueued at startup.
+- [ ] The CLI calls `app.run()` after `app.loadConfig()`.
+- [ ] All new behaviour is covered by automated tests (`yarn test` passes).

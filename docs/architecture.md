@@ -141,3 +141,4 @@ When generating or modifying code:
 8. Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property.
 9. Use static factory methods (`fromObject()`, `fromListObject()`) when creating model instances from raw config objects.
 10. Always include the `.js` file extension in import statements.
+11. Each commit must be unitary and atomic: one logical change per commit, with tests and implementation in the same commit. Never bundle unrelated changes together.
