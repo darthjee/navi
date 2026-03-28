@@ -18,6 +18,26 @@ All project documentation lives under [`docs/`](docs/):
 | [Plans](docs/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/issues/) | Detailed specs for open GitHub issues. |
 
+### Issues (`docs/issues/`)
+
+Each file documents a GitHub issue in detail. Naming convention:
+
+```
+docs/issues/<github_issue_id>_<issue_name>.md
+```
+
+Example: `docs/issues/5_release_docker_image.md` for issue #5.
+
+### Plans (`docs/plans/`)
+
+Each plan is a directory named after the topic, containing one or more related files:
+
+```
+docs/plans/<topic>/<related_files>.md
+```
+
+Example: `docs/plans/parameter-free-request-resources/implementation.md`.
+
 ## Engineering Standards
 
 - All source code, comments, documentation, and PRs must be written in English.
