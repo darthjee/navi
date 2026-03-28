@@ -1,7 +1,7 @@
-# X02: Create Express Dev Server
+#79: Create Express Dev Server
 
 Parent issue: https://github.com/darthjee/navi/issues/68
-Depends on: X01
+Depends on: 78
 
 ## Background
 
