@@ -1,5 +1,3 @@
-import { ResourceRegistry } from './ResourceRegistry.js';
-
 /**
  * ResourceRequestCollector gathers ResourceRequest instances from a ResourceRegistry.
  * It provides methods to retrieve all requests or only those that do not require parameters.
