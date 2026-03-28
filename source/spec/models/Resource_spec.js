@@ -1,4 +1,5 @@
 import { Resource } from '../../lib/models/Resource.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Resource', () => {
@@ -18,7 +19,7 @@ describe('Resource', () => {
     it('maps request objects to ResourceRequest instances', () => {
       const resource = Resource.fromObject({ name, resourceRequests });
 
-      expect(resource).toEqual(new Resource({
+      expect(resource).toEqual(ResourceFactory.build({
         name,
         resourceRequests: [
           ResourceRequestFactory.build(),
@@ -49,13 +50,8 @@ describe('Resource', () => {
       const mappedResources = Resource.fromListObject(resources);
 
       expect(mappedResources).toEqual([
-        new Resource({
-          name: 'categories',
-          resourceRequests: [
-            ResourceRequestFactory.build(),
-          ],
-        }),
-        new Resource({
+        ResourceFactory.build(),
+        ResourceFactory.build({
           name: 'category',
           resourceRequests: [
             ResourceRequestFactory.build({ url: '/categories/{:id}.json' }),

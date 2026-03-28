@@ -1,6 +1,5 @@
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { Config } from '../../lib/models/Config.js';
-import { Resource } from '../../lib/models/Resource.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
@@ -8,12 +7,11 @@ import { Client } from '../../lib/services/Client.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
-import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 
 describe('Config', () => {
   let expectedResources;
   let expectedClients;
-  let expectedResourceRequests;
   let expectedClientRegistry;
   let expectedResourceRegistry;
   let expectedWorkersConfig;
@@ -23,10 +21,7 @@ describe('Config', () => {
     let resource;
 
     beforeEach(() => {
-      resource = new Resource({
-        name: 'categories',
-        resourceRequests: [ResourceRequestFactory.build()],
-      });
+      resource = ResourceFactory.build();
       config = new Config({
         resources: { categories: resource },
         clients: {},
@@ -164,13 +159,8 @@ describe('Config', () => {
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
-        expectedResourceRequests = [
-          ResourceRequestFactory.build()
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
           default: ClientFactory.build(),

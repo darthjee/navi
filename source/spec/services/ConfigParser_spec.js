@@ -1,16 +1,14 @@
 import { MissingClientsConfig } from '../../lib/exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
-import { Resource } from '../../lib/models/Resource.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
-import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 
 describe('ConfigParser', () => {
   let expectedResources;
   let expectedClients;
-  let expectedResourceRequests;
   let expectedWorkersConfig;
   let config;
 
@@ -19,13 +17,8 @@ describe('ConfigParser', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
 
-        expectedResourceRequests = [
-          ResourceRequestFactory.build()
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
           default: ClientFactory.build(),
@@ -82,13 +75,8 @@ describe('ConfigParser', () => {
       });
 
       beforeEach(() => {
-        expectedResourceRequests = [
-          ResourceRequestFactory.build()
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
           default: ClientFactory.build(),

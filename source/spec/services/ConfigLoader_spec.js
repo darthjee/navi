@@ -1,27 +1,20 @@
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
-import { Resource } from '../../lib/models/Resource.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
-import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 
 describe('ConfigLoader', () => {
   let expectedResources;
   let expectedClients;
-  let expectedResourceRequests;
   let expectedWorkersConfig;
 
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
-        expectedResourceRequests = [
-          ResourceRequestFactory.build()
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
           default: ClientFactory.build(),
@@ -56,13 +49,8 @@ describe('ConfigLoader', () => {
 
     describe('when the yaml misses workers definition', () => {
       beforeEach(() => {
-        expectedResourceRequests = [
-          ResourceRequestFactory.build()
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
           default: ClientFactory.build(),
