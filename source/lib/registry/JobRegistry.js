@@ -36,7 +36,6 @@ class JobRegistry {
     this.#factory = factory || new JobFactory({ clients });
   }
 
-
   /**
    * Enqueues a new job using the JobFactory.
    * @param {object} jobAttributes - The attributes for the job (resourceRequest, parameters, etc).

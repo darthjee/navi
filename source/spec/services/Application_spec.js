@@ -5,19 +5,28 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
+import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
+import { DummyJob } from '../support/models/DummyJob.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Application', () => {
   let app;
   let configFilePath;
+  let config;
 
-  beforeEach(() => {
-    configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
-
-    app = new Application();
-  });
+  let jobFactory;
+  let workerFactory;
+  let workersRegistry;
+  let jobRegistry;
 
   describe('#loadConfig', () => {
+    beforeEach(() => {
+      configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+
+      app = new Application();
+    });
+
     describe('when config file is valid', () => {
       it('should initialize config', () => {
         expect(app.config).toBeUndefined();
@@ -59,6 +68,29 @@ describe('Application', () => {
       it('should throw an error', () => {
         expect(() => app.loadConfig()).toThrowError(ConfigurationFileNotProvided);
       });
+    });
+  });
+
+  describe('#run', () => {
+    beforeEach(() => {
+      DummyJob.setSuccessRate(1);
+
+      configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+      config = Config.fromFile(configFilePath);
+
+      jobFactory = new DummyJobFactory();
+      jobRegistry = new JobRegistry({ clients: config.clients, factory: jobFactory });
+
+      workerFactory = new DummyWorkerFactory({ jobRegistry });
+      workersRegistry = new WorkersRegistry({ quantity: 1, jobRegistry, factory: workerFactory });
+
+      app = new Application();
+      app.loadConfig(configFilePath, { workersRegistry, jobRegistry });
+    });
+
+    it('processes all initial parameter-free jobs', () => {
+      app.run();
+      expect(jobRegistry.hasJob()).toBeFalse();
     });
   });
 });
