@@ -35,7 +35,15 @@ class Queue {
    * @returns {boolean} True if the queue has items, false otherwise.
    */
   hasItem() {
-    return this.items.length > 0;
+    return this.size() > 0;
+  }
+
+  /**
+   *  Returns the number of items currently in the queue.
+   * @returns {number} The number of items currently in the queue.
+   */
+  size() {
+    return this.items.length;
   }
 }
 
