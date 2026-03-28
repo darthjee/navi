@@ -1,9 +1,9 @@
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceFactory } from '../support/factories/ResourceFactory.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigLoader', () => {
   let expectedResources;

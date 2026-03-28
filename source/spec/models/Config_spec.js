@@ -1,13 +1,12 @@
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { Config } from '../../lib/models/Config.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { Client } from '../../lib/services/Client.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
 import { ResourceFactory } from '../support/factories/ResourceFactory.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Config', () => {
   let expectedResources;

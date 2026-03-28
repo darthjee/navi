@@ -1,5 +1,5 @@
-import { Resource } from '../../../lib/models/Resource.js';
 import { ResourceRequestFactory } from './ResourceRequestFactory.js';
+import { Resource } from '../../../lib/models/Resource.js';
 
 /**
  * Factory for creating Resource instances in tests.

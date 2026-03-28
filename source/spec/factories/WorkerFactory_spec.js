@@ -1,8 +1,7 @@
 import { WorkerFactory } from '../../lib/factories/WorkerFactory.js';
 import { Worker } from '../../lib/models/Worker.js';
-import { JobRegistry } from '../../lib/registry/JobRegistry.js';
-import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
-import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
+import { JobRegistryFactory } from '../support/factories/JobRegistryFactory.js';
+import { WorkersRegistryFactory } from '../support/factories/WorkersRegistryFactory.js';
 
 describe('WorkerFactory', () => {
   describe('#build', () => {
@@ -11,9 +10,8 @@ describe('WorkerFactory', () => {
     let workerRegistry;
 
     beforeEach(() => {
-      const clients = ClientRegistryFactory.build({});
-      jobRegistry = new JobRegistry({ clients });
-      workerRegistry = new WorkersRegistry({ jobRegistry });
+      jobRegistry = JobRegistryFactory.build();
+      workerRegistry = WorkersRegistryFactory.build({ jobRegistry });
       factory = new WorkerFactory({ jobRegistry, workerRegistry });
     });
 

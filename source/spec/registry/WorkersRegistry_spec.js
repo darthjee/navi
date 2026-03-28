@@ -1,18 +1,15 @@
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
-import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { JobRegistryFactory } from '../support/factories/JobRegistryFactory.js';
 
 describe('WorkersRegistry', () => {
   let jobRegistry;
   let workerRegistry;
   let worker;
   let worker_id;
-  let clients;
 
   beforeEach(() => {
-    clients = new ClientRegistry({});
-    jobRegistry = new JobRegistry({ clients });
+    jobRegistry = JobRegistryFactory.build();
   });
 
   describe('#constructor', () => {

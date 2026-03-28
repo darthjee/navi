@@ -2,9 +2,9 @@ import { MissingClientsConfig } from '../../lib/exceptions/MissingClientsConfig.
 import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceFactory } from '../support/factories/ResourceFactory.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigParser', () => {
   let expectedResources;

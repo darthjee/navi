@@ -1,5 +1,5 @@
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { ClientFactory } from './ClientFactory.js';
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 
 /**
  * Factory for creating ClientRegistry instances in tests.
