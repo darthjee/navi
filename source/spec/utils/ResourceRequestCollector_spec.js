@@ -1,7 +1,7 @@
 import { Resource } from '../../lib/models/Resource.js';
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
-import { ResourceRequestCollector } from '../../lib/registry/ResourceRequestCollector.js';
+import { ResourceRequestCollector } from '../../lib/utils/ResourceRequestCollector.js';
 
 describe('ResourceRequestCollector', () => {
   const paramFree = (url) => new ResourceRequest({ url, status: 200 });
