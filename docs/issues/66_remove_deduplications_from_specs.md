@@ -1,5 +1,7 @@
 # Remove Duplications from Specs
 
+Issue Link: https://github.com/darthjee/navi/issues/66
+
 ## Description
 
 There is significant duplication across our Jasmine specs under `source/spec/`. Many test files repeat object creation, setup logic, and sample data, which increases maintenance cost and makes it harder to update tests consistently.
