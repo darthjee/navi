@@ -30,13 +30,13 @@ Example: `docs/issues/5_release_docker_image.md` for issue #5.
 
 ### Plans (`docs/plans/`)
 
-Each plan is a directory named after the topic, containing one or more related files:
+Each plan is a directory named after the GitHub issue ID and topic, containing one or more related files:
 
 ```
-docs/plans/<topic>/<related_files>.md
+docs/plans/<github_issue_id>_<topic>/<related_files>.md
 ```
 
-Example: `docs/plans/parameter-free-request-resources/implementation.md`.
+Example: `docs/plans/66_remove-spec-duplications/plan.md` for issue #66.
 
 ## Engineering Standards
 
