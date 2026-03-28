@@ -3,6 +3,7 @@ import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNot
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
 class Application {
   #workers;
@@ -58,11 +59,9 @@ class Application {
   }
 
   enqueueFirstJobs() {
-    this.config.resourceRegistry.filter(resource => true).forEach(resource => {
-      resource.resourceRequests.forEach(resourceRequest => {
-        const parameters = {};
-        this.jobRegistry.enqueue({ resourceRequest, parameters });
-      });
+    new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach(resourceRequest => {
+      const parameters = {};
+      this.jobRegistry.enqueue({ resourceRequest, parameters });
     });
   }
 }
