@@ -36,6 +36,10 @@ class NamedRegistry {
     this.#notFound(name);
   }
 
+  filter(predicate) {
+    return Object.values(this.items).filter(predicate);
+  }
+
   /**
    * Throws a not-found exception for the specified item name.
    * @param {string} name The name of the item that was not found.
