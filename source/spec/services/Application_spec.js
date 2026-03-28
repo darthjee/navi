@@ -6,6 +6,7 @@ import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
+import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../support/models/DummyJob.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
@@ -15,6 +16,7 @@ describe('Application', () => {
   let config;
 
   let jobFactory;
+  let workerFactory;
   let workersRegistry;
   let jobRegistry;
 
@@ -71,7 +73,7 @@ describe('Application', () => {
 
   describe('#run', () => {
     beforeEach(() => {
-      DummyJob.setSuccessRate(0);
+      DummyJob.setSuccessRate(1);
 
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
       config = Config.fromFile(configFilePath);
@@ -79,16 +81,16 @@ describe('Application', () => {
       jobFactory = new DummyJobFactory();
       jobRegistry = new JobRegistry({ clients: config.clients, factory: jobFactory });
 
-      workersRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
+      workerFactory = new DummyWorkerFactory({ jobRegistry });
+      workersRegistry = new WorkersRegistry({ quantity: 1, jobRegistry, factory: workerFactory });
 
       app = new Application();
       app.loadConfig(configFilePath, { workersRegistry, jobRegistry });
     });
 
-    it('initializes the simple jobs', () => {
-      expect(jobRegistry.hasJob()).toBeFalse();
+    it('processes all initial parameter-free jobs', () => {
       app.run();
-      expect(jobRegistry.hasJob()).toBeTrue();
+      expect(jobRegistry.hasJob()).toBeFalse();
     });
   });
 });

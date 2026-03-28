@@ -45,12 +45,20 @@ class Application {
     this.workersRegistry.initWorkers();
   }
 
+  /**
+   * Starts the application by building the engine, enqueueing initial jobs, and starting the engine.
+   * @returns {void}
+   */
   run() {
     this.engine = this.buildEngine();
     this.enqueueFirstJobs();
-    //this.engine.start();
+    this.engine.start();
   }
 
+  /**
+   * Builds and returns a new Engine instance wired to the current registries.
+   * @returns {Engine} The created Engine instance.
+   */
   buildEngine() {
     return new Engine({
       jobRegistry: this.jobRegistry,
@@ -58,10 +66,15 @@ class Application {
     });
   }
 
+  /**
+   * Enqueues all parameter-free ResourceRequests into the job registry.
+   * These are requests whose URLs contain no {:placeholder} tokens and can be
+   * processed immediately without any external parameters.
+   * @returns {void}
+   */
   enqueueFirstJobs() {
-    new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach(resourceRequest => {
-      const parameters = {};
-      this.jobRegistry.enqueue({ resourceRequest, parameters });
+    new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
+      this.jobRegistry.enqueue({ resourceRequest, parameters: {} });
     });
   }
 }
