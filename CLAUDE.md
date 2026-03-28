@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Additional Documentation
+
+See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for engineering standards (English-only code/comments/PRs) and pointers to detailed docs under `.github/docs/` (architecture, runtime flow).
+
 ## Project Overview
 
 Navi is a **queue-based cache-warmer** written in Node.js. It reads a YAML configuration file and performs HTTP requests concurrently using a configurable worker pool, with support for resource chaining (downstream jobs enqueued from parent responses) and automatic retry of failed requests.
