@@ -1,7 +1,7 @@
-# X05: Add `build-httpd` Target to Makefile
+# 82: Add `build-httpd` Target to Makefile
 
 Parent issue: https://github.com/darthjee/navi/issues/68
-Depends on: X04
+Depends on: #81
 
 ## Background
 
