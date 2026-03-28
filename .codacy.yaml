@@ -1,0 +1,4 @@
+ignore:
+  - docs/**
+  - dev/**
+  - docker_volumes/**

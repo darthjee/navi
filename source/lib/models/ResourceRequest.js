@@ -14,6 +14,15 @@ class ResourceRequest {
   }
 
   /**
+   * Returns true if the URL template contains any {:placeholder} tokens,
+   * indicating that parameter substitution is required before the request can be made.
+   * @returns {boolean} true if the URL requires parameters, false otherwise.
+   */
+  needsParams() {
+    return /\{:\w+\}/.test(this.url);
+  }
+
+  /**
    * Creates a list of ResourceRequest instances from an array of objects.
    * @param {Array<{ url: string, status: number }>} array list of objects with attributes to create a new ResourceRequest
    * @returns {Array<ResourceRequest>} list of ResourceRequest instances
