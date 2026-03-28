@@ -1,4 +1,4 @@
-import { WorkersAllocator } from '../../../lib/services/WorkersAllocator.js';
+import { WorkersAllocator } from '../../../../lib/services/WorkersAllocator.js';
 
 class DummyWorkersAllocator extends WorkersAllocator {
   _allocateWorkerToJob(worker, job) {

@@ -1,4 +1,4 @@
-import { WorkerFactory } from '../../../lib/factories/WorkerFactory.js';
+import { WorkerFactory } from '../../../../lib/factories/WorkerFactory.js';
 import { DummyWorker } from '../models/DummyWorker.js';
 
 class DummyWorkerFactory extends WorkerFactory {
