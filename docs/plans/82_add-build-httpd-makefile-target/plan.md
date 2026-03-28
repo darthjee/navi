@@ -1,4 +1,4 @@
-# Plan: Add `build-httpd` Target to Makefile (#82)
+# Plan: Finalise Dev Container Migration (#82)
 
 Issue: https://github.com/darthjee/navi/issues/82
 Parent: https://github.com/darthjee/navi/issues/68
@@ -6,23 +6,64 @@ Depends on: #81
 
 ## Context
 
-With the Express container wired into `docker-compose.yml` (#81), the `Makefile` should expose
-a `build-httpd` target consistent with the existing `build-dev` and `build` targets.
+This is the final issue of the migration. By this point the Express container is running from
+`new-dev/`. This issue renames `new-dev/` → `dev/`, removes the old static files, updates the
+`docker-compose.yml` volume path, and adds the `build-httpd` Makefile target.
 
-Current relevant targets for reference:
+## Step 1 — Rename `new-dev/` to `dev/`
 
-```makefile
-build-dev:
-	docker build -f $(DOCKERFILE_DEV) . -t $(IMAGE):dev
+Remove the old static files from `dev/`:
 
-build:
-	docker build -f $(DOCKERFILE_PROD) . -t $(IMAGE):latest
+```
+dev/categories.json
+dev/categories/1.json
+dev/categories/1/itens.json
+dev/categories/2.json
+dev/categories/2/itens.json
+dev/categories/3.json
+dev/categories/3/itens.json
 ```
 
-## Step 1 — Add variable and target to `Makefile`
+Move all files from `new-dev/` into `dev/`:
 
-Add `build-httpd` to the `.PHONY` list, declare the Dockerfile path variable, add the help line,
-and add the target:
+```
+new-dev/app.js     → dev/app.js
+new-dev/package.json → dev/package.json
+new-dev/yarn.lock  → dev/yarn.lock
+new-dev/data.yml   → dev/data.yml
+```
+
+Remove the now-empty `new-dev/` directory.
+
+## Step 2 — Update `docker-compose.yml`
+
+Change the volume path in the `navi_httpd` service:
+
+```yaml
+# Before
+volumes:
+  - ./new-dev/data.yml:/home/node/app/data.yml
+
+# After
+volumes:
+  - ./dev/data.yml:/home/node/app/data.yml
+```
+
+## Step 3 — Update `dockerfiles/dev_httpd/Dockerfile`
+
+Change the `COPY` source from `new-dev/` to `dev/`:
+
+```dockerfile
+# Before
+COPY --chown=node:node ./new-dev/ /home/node/app/
+
+# After
+COPY --chown=node:node ./dev/ /home/node/app/
+```
+
+## Step 4 — Add `build-httpd` to `Makefile`
+
+Add `build-httpd` to the `.PHONY` list, add a help line, and add the target:
 
 ```makefile
 DOCKERFILE_HTTPD ?= dockerfiles/dev_httpd/Dockerfile
@@ -39,5 +80,10 @@ build-httpd:
 
 ## Acceptance Criteria
 
-- [ ] `make build-httpd` builds the `navi_httpd` Docker image without errors.
+- [ ] `new-dev/` no longer exists.
+- [ ] `dev/` contains only `app.js`, `package.json`, `yarn.lock`, `data.yml`.
+- [ ] `docker-compose.yml` mounts `./dev/data.yml`.
+- [ ] `dockerfiles/dev_httpd/Dockerfile` copies from `./dev/`.
+- [ ] `make build-httpd` builds the `navi_httpd` image without errors.
 - [ ] `make help` lists the `build-httpd` target.
+- [ ] `docker compose up navi_httpd` continues to work correctly.

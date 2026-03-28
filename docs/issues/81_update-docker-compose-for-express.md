@@ -5,7 +5,7 @@ Depends on: #80
 
 ## Background
 
-With the Dockerfile ready (X03), `docker-compose.yml` must be updated to replace the static Apache `httpd` service with the new Express build.
+With the Dockerfile ready (#80), `docker-compose.yml` must be updated to replace the static Apache `httpd` service with the new Express build. The volume path points to `new-dev/data.yml` for now; the final rename to `dev/` happens in #82.
 
 ## Task
 
@@ -26,7 +26,7 @@ navi_httpd:
     context: .
     dockerfile: dockerfiles/dev_httpd/Dockerfile
   volumes:
-    - ./dev/data.yml:/home/node/app/data.yml
+    - ./new-dev/data.yml:/home/node/app/data.yml
   ports:
     - "0.0.0.0:3020:80"
 ```
@@ -37,4 +37,4 @@ Only `data.yml` is mounted as a volume so the data can be updated without rebuil
 
 - [ ] `docker compose up navi_httpd` builds and starts the Express container without errors.
 - [ ] `navi_proxy` continues to forward requests to `navi_httpd` (`backend` alias unchanged).
-- [ ] Changing `dev/data.yml` and running `docker compose restart navi_httpd` reflects new data without rebuilding.
+- [ ] Editing `new-dev/data.yml` and running `docker compose restart navi_httpd` reflects new data without a rebuild.

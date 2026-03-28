@@ -5,13 +5,13 @@ Depends on: #78
 
 ## Background
 
-With `dev/data.yml` in place (X01), we need the Node.js Express application that reads it at startup and dynamically registers all endpoints.
+With `new-dev/data.yml` in place (#78), we need the Node.js Express application that reads it at startup and dynamically registers all endpoints.
 
 ## Task
 
-Create the following files in `dev/`:
+Create the following files in `new-dev/`:
 
-### `dev/app.js`
+### `new-dev/app.js`
 
 Express app that:
 1. Reads `data.yml` at startup using `js-yaml`.
@@ -25,12 +25,12 @@ Express app that:
 
 See [`docs/plans/68_change-dev-container-to-express/data-format.md`](../plans/68_change-dev-container-to-express/data-format.md) for expected request/response examples.
 
-### `dev/package.json`
+### `new-dev/package.json`
 
-Minimal package definition with `express` and `js-yaml` as dependencies. Run `yarn install` to generate `dev/yarn.lock`.
+Minimal package definition with `express` and `js-yaml` as dependencies. Run `yarn install` inside `new-dev/` to generate `new-dev/yarn.lock`.
 
 ## Acceptance Criteria
 
-- [ ] `dev/app.js`, `dev/package.json`, and `dev/yarn.lock` exist.
-- [ ] Starting the app with `node app.js` serves correct JSON on all four endpoints.
+- [ ] `new-dev/app.js`, `new-dev/package.json`, and `new-dev/yarn.lock` exist.
+- [ ] Starting the app with `node app.js` from inside `new-dev/` serves correct JSON on all four endpoints.
 - [ ] Unmatched routes return a `404` JSON response.

@@ -6,10 +6,12 @@ Depends on: #78
 
 ## Context
 
-With `dev/data.yml` in place (#78), this issue creates the Node.js Express application that reads
-it at startup and serves all four endpoint groups dynamically.
+With `new-dev/data.yml` in place (#78), this issue creates the Node.js Express application that
+reads it at startup and serves all four endpoint groups dynamically.
 
-## Step 1 — Create `dev/package.json`
+All files are created in `new-dev/`. The rename to `dev/` happens in issue #82.
+
+## Step 1 — Create `new-dev/package.json`
 
 Minimal package definition declaring `express` and `js-yaml` as dependencies:
 
@@ -28,9 +30,9 @@ Minimal package definition declaring `express` and `js-yaml` as dependencies:
 }
 ```
 
-Run `yarn install` inside `dev/` to generate `yarn.lock`.
+Run `yarn install` inside `new-dev/` to generate `new-dev/yarn.lock`.
 
-## Step 2 — Create `dev/app.js`
+## Step 2 — Create `new-dev/app.js`
 
 Express app that reads `data.yml` and registers all routes at startup:
 
@@ -73,8 +75,8 @@ app.listen(80);
 
 ## Acceptance Criteria
 
-- [ ] `dev/package.json` and `dev/yarn.lock` exist.
-- [ ] `dev/app.js` exists and starts without errors with `node app.js`.
+- [ ] `new-dev/package.json` and `new-dev/yarn.lock` exist.
+- [ ] `new-dev/app.js` exists and starts without errors with `node app.js` from inside `new-dev/`.
 - [ ] `GET /categories.json` returns all categories without `items`.
 - [ ] `GET /categories/:id.json` returns the correct category or `404`.
 - [ ] `GET /categories/:id/items.json` returns the correct items list or `404`.
