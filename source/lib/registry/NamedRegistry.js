@@ -7,6 +7,8 @@ import { ItemNotFound } from '../exceptions/ItemNotFound.js';
  * @author darthjee
  */
 class NamedRegistry {
+  #size;
+
   /*
    * The exception class to throw when an item is not found.
    * Subclasses should override this property to specify the appropriate exception type.
@@ -34,6 +36,17 @@ class NamedRegistry {
       return this.items[name];
     }
     this.#notFound(name);
+  }
+
+  filter(predicate) {
+    return Object.values(this.items).filter(predicate);
+  }
+
+  size() {
+    if (this.#size === undefined) {
+      this.#size = Object.keys(this.items).length;
+    }
+    return this.#size;
   }
 
   /**
