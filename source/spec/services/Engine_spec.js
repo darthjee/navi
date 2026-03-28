@@ -2,10 +2,10 @@ import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Engine } from '../../lib/services/Engine.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
-import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
-import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
-import { DummyJob } from '../support/models/DummyJob.js';
-import { DummyWorkersAllocator } from '../support/services/DummyWorkersAllocator.js';
+import { DummyJobFactory } from '../support/dummies/factories/DummyJobFactory.js';
+import { DummyWorkerFactory } from '../support/dummies/factories/DummyWorkerFactory.js';
+import { DummyJob } from '../support/dummies/models/DummyJob.js';
+import { DummyWorkersAllocator } from '../support/dummies/services/DummyWorkersAllocator.js';
 
 describe('Engine', () => {
   let engine;

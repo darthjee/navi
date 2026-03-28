@@ -1,5 +1,5 @@
 import { Factory } from '../../lib/factories/Factory.js';
-import { MyClass } from '../support/models/MyClass.js';
+import { MyClass } from '../support/dummies/models/MyClass.js';
 
 describe('Factory', () => {
   let factory;

@@ -1,4 +1,4 @@
-import { Job } from '../../../lib/models/Job.js';
+import { Job } from '../../../../lib/models/Job.js';
 
 class DummyJob extends Job {
 

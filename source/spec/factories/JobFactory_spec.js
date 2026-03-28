@@ -1,7 +1,7 @@
 import { JobFactory } from '../../lib/factories/JobFactory.js';
 import { Job } from '../../lib/models/Job.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
+import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Factory', () => {
   describe('#build', () => {
@@ -12,9 +12,9 @@ describe('Factory', () => {
 
     beforeEach(() => {
       factory = new JobFactory();
-      resourceRequest = new ResourceRequest({ url: '/test', status: 200 });
+      resourceRequest = ResourceRequestFactory.build({ url: '/test' });
       parameters = {};
-      clients = new ClientRegistry({});
+      clients = ClientRegistryFactory.build({});
     });
 
     it('builds an instance of Job', () => {

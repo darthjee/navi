@@ -1,5 +1,6 @@
 import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Resource', () => {
   describe('.fromObject', () => {
@@ -18,11 +19,11 @@ describe('Resource', () => {
     it('maps request objects to ResourceRequest instances', () => {
       const resource = Resource.fromObject({ name, resourceRequests });
 
-      expect(resource).toEqual(new Resource({
+      expect(resource).toEqual(ResourceFactory.build({
         name,
         resourceRequests: [
-          new ResourceRequest({ url: '/categories.json', status: 200 }),
-          new ResourceRequest({ url: '/categories.html', status: 302 }),
+          ResourceRequestFactory.build(),
+          ResourceRequestFactory.build({ url: '/categories.html', status: 302 }),
         ],
       }));
     });
@@ -49,16 +50,11 @@ describe('Resource', () => {
       const mappedResources = Resource.fromListObject(resources);
 
       expect(mappedResources).toEqual([
-        new Resource({
-          name: 'categories',
-          resourceRequests: [
-            new ResourceRequest({ url: '/categories.json', status: 200 }),
-          ],
-        }),
-        new Resource({
+        ResourceFactory.build(),
+        ResourceFactory.build({
           name: 'category',
           resourceRequests: [
-            new ResourceRequest({ url: '/categories/{:id}.json', status: 200 }),
+            ResourceRequestFactory.build({ url: '/categories/{:id}.json' }),
           ],
         }),
       ]);

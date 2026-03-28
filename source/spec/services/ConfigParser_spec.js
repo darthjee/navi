@@ -1,16 +1,14 @@
 import { MissingClientsConfig } from '../../lib/exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
-import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
-import { Client } from '../../lib/services/Client.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigParser', () => {
   let expectedResources;
   let expectedClients;
-  let expectedResourceRequests;
   let expectedWorkersConfig;
   let config;
 
@@ -19,16 +17,11 @@ describe('ConfigParser', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
 
-        expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
@@ -82,16 +75,11 @@ describe('ConfigParser', () => {
       });
 
       beforeEach(() => {
-        expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
       });

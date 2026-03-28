@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { Worker } from '../../lib/models/Worker.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
-import { Client } from '../../lib/services/Client.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { Queue } from '../../lib/utils/Queue.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
+import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
+import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Worker', () => {
   let jobRegistry;
@@ -33,7 +33,7 @@ describe('Worker', () => {
   const status = 200;
 
   beforeEach(() => {
-    clients = new ClientRegistry({});
+    clients = ClientRegistryFactory.build({});
     finished = new IdentifyableCollection();
     failed = new Queue();
     jobRegistry = new JobRegistry({ failed, finished, clients });
@@ -69,9 +69,9 @@ describe('Worker', () => {
 
   describe('#process', () => {
     beforeEach(() => {
-      resourceRequest = new ResourceRequest({ url, status });
-      client = new Client({ name: 'default', baseUrl });
-      clients = new ClientRegistry({ default: client });
+      resourceRequest = ResourceRequestFactory.build({ url, status });
+      client = ClientFactory.build({ baseUrl });
+      clients = ClientRegistryFactory.build({ default: client });
       parameters = {};
 
       job = new Job({ id: 'id', resourceRequest, clients, parameters });

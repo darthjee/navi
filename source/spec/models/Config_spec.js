@@ -1,17 +1,16 @@
 import { ClientNotFound } from '../../lib/exceptions/ClientNotFound.js';
 import { Config } from '../../lib/models/Config.js';
-import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { Client } from '../../lib/services/Client.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
+import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('Config', () => {
   let expectedResources;
   let expectedClients;
-  let expectedResourceRequests;
   let expectedClientRegistry;
   let expectedResourceRegistry;
   let expectedWorkersConfig;
@@ -21,10 +20,7 @@ describe('Config', () => {
     let resource;
 
     beforeEach(() => {
-      resource = new Resource({
-        name: 'categories',
-        resourceRequests: [new ResourceRequest({ url: '/categories.json', status: 200 })],
-      });
+      resource = ResourceFactory.build();
       config = new Config({
         resources: { categories: resource },
         clients: {},
@@ -50,7 +46,7 @@ describe('Config', () => {
     let otherClient;
 
     beforeEach(() => {
-      defaultClient = new Client({ name: 'default', baseUrl: 'https://example.com' });
+      defaultClient = ClientFactory.build();
       otherClient = new Client({ name: 'other', baseUrl: 'https://other.com' });
     });
 
@@ -162,18 +158,13 @@ describe('Config', () => {
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
-        expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
-        expectedClientRegistry = new ClientRegistry(expectedClients);
+        expectedClientRegistry = ClientRegistryFactory.build(expectedClients);
         expectedResourceRegistry = new ResourceRegistry(expectedResources);
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });

@@ -1,30 +1,23 @@
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
-import { Resource } from '../../lib/models/Resource.js';
-import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
-import { Client } from '../../lib/services/Client.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
+import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 describe('ConfigLoader', () => {
   let expectedResources;
   let expectedClients;
-  let expectedResourceRequests;
   let expectedWorkersConfig;
 
   describe('.fromFile', () => {
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
-        expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
@@ -56,16 +49,11 @@ describe('ConfigLoader', () => {
 
     describe('when the yaml misses workers definition', () => {
       beforeEach(() => {
-        expectedResourceRequests = [
-          new ResourceRequest({ url: '/categories.json', status: 200 })
-        ];
         expectedResources = {
-          categories: new Resource({
-            name: 'categories', resourceRequests: expectedResourceRequests
-          }),
+          categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
       });
