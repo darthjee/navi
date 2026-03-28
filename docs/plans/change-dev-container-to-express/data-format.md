@@ -1,6 +1,6 @@
 # YAML Data Format and Generated Endpoints
 
-## `dev_server/data.yml` Structure
+## `dev/data.yml` Structure
 
 ```yaml
 categories:
@@ -71,7 +71,7 @@ Returns a single item within a category. Returns `404` if either the category or
 
 ## Extending the Data
 
-To add or modify data, edit `dev_server/data.yml` and restart the `navi_httpd` container:
+To add or modify data, edit `dev/data.yml` and restart the `navi_httpd` container:
 
 ```bash
 docker compose restart navi_httpd
