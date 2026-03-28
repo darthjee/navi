@@ -36,6 +36,14 @@ class JobRegistry {
     this.#factory = factory || new JobFactory({ clients });
   }
 
+  report() {
+    return {
+      enqueued: this.#enqueued.size(),
+      failed: this.#failed.size(),
+      finished: this.#finished.size(),
+      dead: this.#dead.size()
+    };
+  }
 
   /**
    * Enqueues a new job using the JobFactory.

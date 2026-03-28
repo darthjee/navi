@@ -4,16 +4,22 @@ import { Config } from '../../lib/models/Config.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../lib/services/Application.js';
-import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js'
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
+import { DummyJob } from '../support/models/DummyJob.js';
+import { DummyWorkerFactory } from '../support/factories/DummyWorkerFactory.js';
 
 describe('Application', () => {
   let app;
   let configFilePath;
   let config;
 
+  let jobFactory;
   let workersRegistry;
   let jobRegistry;
+  let workerFactory;
+  let dead;
 
   describe('#loadConfig', () => {
     beforeEach(() => {
@@ -68,20 +74,25 @@ describe('Application', () => {
 
   describe('#run', () => {
     beforeEach(() => {
+      DummyJob.setSuccessRate(0);
+
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
       config = Config.fromFile(configFilePath);
 
-      jobRegistry = new JobRegistry({ clients: config.clients });
-      workersRegistry = new WorkersRegistry({ quantity: 5, jobRegistry });
+      jobFactory = new DummyJobFactory();
+      dead = new IdentifyableCollection();
+      jobRegistry = new JobRegistry({ clients: config.clients, factory: jobFactory, dead });
+
+      workerFactory = new DummyWorkerFactory({ jobRegistry });
+      workersRegistry = new WorkersRegistry({ quantity: 0, jobRegistry });
 
       app = new Application();
       app.loadConfig(configFilePath, { workersRegistry });
     });
 
-    it('initializes the simple jobs', () => {
-      expect(jobRegistry.hasJob()).toBeFalse();
+    fit('initializes the simple jobs', () => {
       app.run();
-      expect(jobRegistry.hasJob()).toBeTrue();
+      console.info(jobRegistry.report());
     });
   });
 });

@@ -47,7 +47,7 @@ class Application {
   run() {
     this.engine = this.buildEngine();
     this.enqueueFirstJobs();
-    this.engine.start();
+    //this.engine.start();
   }
 
   buildEngine() {
@@ -60,7 +60,7 @@ class Application {
   enqueueFirstJobs() {
     this.config.resourceRegistry.filter(resource => true).forEach(resource => {
       resource.resourceRequests.forEach(resourceRequest => {
-        let parameters = {};
+        const parameters = {};
         this.jobRegistry.enqueue({ resourceRequest, parameters });
       });
     });
