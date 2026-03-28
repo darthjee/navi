@@ -71,4 +71,25 @@ describe('NamedRegistry', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('#size', () => {
+    const items = {
+      foo: { name: 'foo', value: 1 },
+      bar: { name: 'bar', value: 2 },
+      baz: { name: 'baz', value: 3 }
+    };
+
+    beforeEach(() => {
+      registry = new NamedRegistry(items);
+    });
+
+    it('returns the number of items in the registry', () => {
+      expect(registry.size()).toBe(3);
+    });
+
+    it('returns 0 when the registry is empty', () => {
+      const emptyRegistry = new NamedRegistry({});
+      expect(emptyRegistry.size()).toBe(0);
+    });
+  });
 });
