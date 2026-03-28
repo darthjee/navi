@@ -1,9 +1,9 @@
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
-import { Client } from '../../lib/services/Client.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('ConfigLoader', () => {
@@ -24,7 +24,7 @@ describe('ConfigLoader', () => {
           }),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
@@ -65,7 +65,7 @@ describe('ConfigLoader', () => {
           }),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
       });

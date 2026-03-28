@@ -6,6 +6,8 @@ import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../lib/registry/ResourceRegistry.js';
 import { Client } from '../../lib/services/Client.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
+import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Config', () => {
@@ -50,7 +52,7 @@ describe('Config', () => {
     let otherClient;
 
     beforeEach(() => {
-      defaultClient = new Client({ name: 'default', baseUrl: 'https://example.com' });
+      defaultClient = ClientFactory.build();
       otherClient = new Client({ name: 'other', baseUrl: 'https://other.com' });
     });
 
@@ -171,9 +173,9 @@ describe('Config', () => {
           }),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
-        expectedClientRegistry = new ClientRegistry(expectedClients);
+        expectedClientRegistry = ClientRegistryFactory.build(expectedClients);
         expectedResourceRegistry = new ResourceRegistry(expectedResources);
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });

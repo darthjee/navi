@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Client } from '../../lib/services/Client.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('Client', () => {
@@ -13,7 +13,7 @@ describe('Client', () => {
   let resourceRequest;
 
   beforeEach(() => {
-    client = new Client({ name: 'default', baseUrl });
+    client = ClientFactory.build({ baseUrl });
     resourceRequest = ResourceRequestFactory.build({ url, status });
   });
 

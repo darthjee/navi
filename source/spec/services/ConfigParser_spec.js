@@ -2,9 +2,9 @@ import { MissingClientsConfig } from '../../lib/exceptions/MissingClientsConfig.
 import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
 import { Resource } from '../../lib/models/Resource.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
-import { Client } from '../../lib/services/Client.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('ConfigParser', () => {
@@ -28,7 +28,7 @@ describe('ConfigParser', () => {
           }),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
@@ -91,7 +91,7 @@ describe('ConfigParser', () => {
           }),
         };
         expectedClients = {
-          default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+          default: ClientFactory.build(),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
       });

@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
-import { Client } from '../../lib/services/Client.js';
+import { ClientFactory } from '../support/factories/ClientFactory.js';
+import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 
@@ -23,8 +23,8 @@ describe('Job', () => {
 
   beforeEach(() => {
     resourceRequest = ResourceRequestFactory.build({ url, status });
-    client = new Client({ name: 'default', baseUrl });
-    clients = new ClientRegistry({ default: client });
+    client = ClientFactory.build({ baseUrl });
+    clients = ClientRegistryFactory.build({ default: client });
     parameters = {};
 
     job = new Job({ id: 'id', resourceRequest, clients, parameters });

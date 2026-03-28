@@ -1,9 +1,9 @@
 import { Job } from '../../lib/models/Job.js';
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
 import { DummyJobFactory } from '../support/factories/DummyJobFactory.js';
 import { DummyJob } from '../support/models/DummyJob.js';
 
@@ -14,12 +14,11 @@ describe('WorkersAllocator', () => {
   let job;
   let worker;
   let workers;
-  let clients;
 
   let jobFactory;
 
   beforeEach(() => {
-    clients = new ClientRegistry({});
+    const clients = ClientRegistryFactory.build({});
     jobFactory = new DummyJobFactory();
     jobRegistry = new JobRegistry({ clients, factory: jobFactory });
     workers = new IdentifyableCollection();
