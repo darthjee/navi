@@ -21,7 +21,6 @@ ignore:
 - `docs/**` — documentation and issue/plan files
 - `dev/**` — Express dev server (not application source)
 - `docker_volumes/**` — runtime config and cache volumes
-- `dockerfiles/**` — Docker build definitions, not analyzed code
 
 `source/` is the only directory that should be analyzed.
 
