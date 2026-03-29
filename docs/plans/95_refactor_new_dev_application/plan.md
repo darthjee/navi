@@ -89,6 +89,8 @@ app.listen(80);
 
 **Delete this file.** Its responsibility moves to `server.js`.
 
+Load of data may be done in a similar way source/navi.js loads the config file, by checking arguments which return a path for the yaml and then loads that yaml as an object (json like)
+
 ---
 
 ## Implementation Steps
