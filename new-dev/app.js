@@ -1,10 +1,12 @@
 import express from 'express';
 import { notFound } from './lib/not_found.js';
-import router from './lib/router.js';
+import Router from './lib/router.js';
 
-const app = express();
+const buildApp = (data) => {
+  const app = express();
+  app.use(new Router(data).build());
+  app.use((_req, res) => notFound(res));
+  return app;
+};
 
-app.use(router);
-app.use((_req, res) => notFound(res));
-
-export default app;
+export default buildApp;

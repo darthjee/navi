@@ -1,7 +1,7 @@
 import express from 'express';
 import request from 'supertest';
-import Router from '../../lib/router.js';
 import { notFound } from '../../lib/not_found.js';
+import Router from '../../lib/router.js';
 
 const data = {
   categories: [
