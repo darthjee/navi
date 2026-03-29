@@ -19,6 +19,11 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - coverage-final:
+          requires: [jasmine, jasmine-dev]
+          filters:
+            tags:
+              only: /.*/
 
 jobs:
   jasmine:
@@ -33,8 +38,8 @@ jobs:
           name: Unit tests (Jasmine)
           command: cd source; npm run coverage
       - run:
-          name: Upload coverage to Codacy
-          command: cd source; bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
+          name: Upload coverage to Codacy (partial)
+          command: cd source; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
   checks:
     docker:
       - image: darthjee/circleci_node:0.2.1
@@ -62,8 +67,8 @@ jobs:
           name: Unit tests (Jasmine + c8 coverage)
           command: cd new-dev; npm run coverage
       - run:
-          name: Upload coverage to Codacy (Disable for now)
-          command: cd new-dev; echo 'bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info'
+          name: Upload coverage to Codacy (partial)
+          command: cd new-dev; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
 
   checks-dev:
     docker:
@@ -79,3 +84,11 @@ jobs:
       - run:
           name: Duplication report (JSCPD)
           command: cd new-dev; npm run report
+
+  coverage-final:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - run:
+          name: Finalize coverage on Codacy
+          command: bash <(curl -Ls https://coverage.codacy.com/get.sh) final
