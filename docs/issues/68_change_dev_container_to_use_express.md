@@ -27,6 +27,7 @@ Replace the `navi_httpd` Apache container with a Node.js application running an 
 
 - [x] [#78 Migrate dev data to YAML](https://github.com/darthjee/navi/issues/78)
 - [x] [#79 Create Express dev server](https://github.com/darthjee/navi/issues/79)
+- [ ] [#86 Add tests suite for new-dev container](https://github.com/darthjee/navi/issues/86)
 - [ ] [#80 Add Dockerfile for Express dev server](https://github.com/darthjee/navi/issues/80)
 - [ ] [#81 Wire Express container into docker-compose](https://github.com/darthjee/navi/issues/81)
 - [ ] [#82 Finalise dev container migration](https://github.com/darthjee/navi/issues/82)
