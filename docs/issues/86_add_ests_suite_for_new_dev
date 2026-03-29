@@ -1,0 +1,32 @@
+# 86: Add Tests Suite for new-dev Node.js Container
+
+https://github.com/darthjee/navi/issues/86
+
+## Background
+
+The new development backend (`new-dev/`) is a Node.js Express application that serves dynamic endpoints based on a YAML file. While the main application in `source/` already has a comprehensive test suite running in CI, the Express dev server currently lacks automated tests. To ensure reliability and prevent regressions, we need to add a dedicated test suite for the `new-dev` container and integrate it into the CI pipeline.
+
+## Task
+
+- Set up an automated test suite for the Express app in `new-dev/`.
+- Tests must cover all endpoints and edge cases (valid requests, 404s, malformed input, etc).
+- Tests must run automatically in CI, just like the main application's tests.
+
+## Requirements
+
+- Use a standard Node.js testing framework (e.g., Jest, Mocha, or Jasmine) and a HTTP assertion library (e.g., supertest).
+- Place all test files under `new-dev/spec/` or a similar directory.
+- Add a test script to `new-dev/package.json` (e.g., `yarn test`).
+- Ensure the test suite can be run both locally and in CI.
+- Update CI configuration to run the new-dev tests as part of the build.
+- Document how to run the tests in the project documentation.
+
+## Acceptance Criteria
+
+- [ ] All endpoints in `new-dev/app.js` are covered by automated tests.
+- [ ] Tests verify correct responses for valid requests and proper 404 handling for invalid routes/IDs.
+- [ ] Running `yarn test` inside `new-dev/` executes the full test suite.
+- [ ] CI runs the new-dev test suite and fails on errors.
+- [ ] Documentation is updated with instructions for running and maintaining the tests.
+
+---
