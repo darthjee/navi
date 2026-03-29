@@ -1,5 +1,8 @@
 import request from 'supertest';
-import app from '../app.js';
+import buildApp from '../app.js';
+import { FixturesUtils } from './support/utils/FixturesUtils.js';
+
+const app = buildApp(FixturesUtils.loadYamlFixture('data.yml'));
 
 describe('GET /categories.json', () => {
   it('returns all categories without items', async () => {
