@@ -45,6 +45,37 @@ A PR is considered complete when:
     ```
   - This requirement applies primarily to source code. For specs, refactor only if there is excessive duplication.
 
+## Code Organization
+
+### File Responsibility: Class Declarers vs Scripts
+
+Every source file (excluding test files) must act as a **class declarer** — it should define and export one or more classes or modules. Files must not act as **scripts** (i.e., they must not execute logic at import time or perform side effects directly).
+
+The only exceptions are **entrypoints**:
+
+| Application | Entrypoint |
+|-------------|-----------|
+| Main app (`source/`) | `source/bin/navi.js` |
+| Dev app (`new-dev/`) | `new-dev/server.js` |
+
+`new-dev/app.js` is the application module (exports the configured Express app) and is imported by both `server.js` and the test suite. It is not a script.
+
+*Example:*
+```js
+// Good: class declarer — defines and exports a class
+class Router {
+  register(app) { ... }
+}
+export default Router;
+
+// Bad: script — executes logic at module level
+const router = Router();
+router.get('/path', handler);
+export default router;
+```
+
+Test files are exempt from this rule and may import modules and execute setup code freely.
+
 ## Refactoring Guidelines
 
 When refactoring, aim to:

@@ -69,8 +69,8 @@ Three categories, each with three items:
 
 ```
 new-dev/
-├── app.js          # Express app (routes, logic)
-├── server.js       # Entry point — calls app.listen(80)
+├── server.js       # Entrypoint (script) — calls app.listen(80)
+├── app.js          # App module (class declarer) — exports configured Express app
 ├── data.yml        # Data source (same categories/items as dev/)
 ├── package.json
 ├── eslint.config.mjs
@@ -83,9 +83,9 @@ new-dev/
 
 **Stack:** Node.js (ES Modules), Express 4, js-yaml
 
-**Entry point:** `server.js` — imports the app and calls `listen(80)`.
+**Server launcher (entrypoint):** `server.js` — imports the app and calls `listen(80)`. This is the only file in `new-dev/` that acts as a script.
 
-**App module:** `app.js` — exports the Express app without calling `listen`, so it can be imported cleanly in tests.
+**App module:** `app.js` — declares and exports the configured Express app (routes + middleware) without calling `listen`. Imported by both `server.js` and the test suite.
 
 **Data loading:** `data.yml` is read once at startup with `readFileSync` and parsed with `js-yaml`. The result is kept in memory for the lifetime of the process.
 
@@ -194,7 +194,7 @@ The services use an `.env` file (copied from `.env.sample` during `make setup`).
 | Aspect | `dev/` | `new-dev/` |
 |--------|--------|------------|
 | Implementation | Static JSON files | Express/Node.js app |
-| Server | Apache httpd (Docker image `httpd`) | Node.js (`server.js` → `app.listen(80)`) |
+| Server | Apache httpd (Docker image `httpd`) | Node.js (`server.js` → `app.listen(80)`); `app.js` exports the app module |
 | Data source | Individual `.json` files on disk | Single `data.yml` file loaded at startup |
 | Items path | `/categories/:id/itens.json` (Portuguese) | `/categories/:id/items.json` (English) |
 | 404 handling | Apache default 404 page | JSON `{"error": "Not found"}` |
