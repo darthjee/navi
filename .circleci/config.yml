@@ -19,31 +19,25 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Set folder
-          command: mv source/* ./; rm -rf source/
-      - run:
           name: Install dependencies
-          command: yarn install
+          command: cd source; yarn install
       - run:
           name: Unit tests (Jasmine)
-          command: npm run coverage
+          command: cd source; npm run coverage
       - run:
           name: Upload coverage to Codacy
-          command: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
+          command: cd source; bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
   checks:
     docker:
       - image: darthjee/circleci_node:0.2.1
     steps:
       - checkout
       - run:
-          name: Set folder
-          command: mv source/* ./; rm -rf source/
-      - run:
           name: Install dependencies
-          command: yarn install
+          command: cd source; yarn install
       - run:
           name: Lint
-          command: npm run lint
+          command: cd source; npm run lint
       - run:
           name: Duplication report (JSCPD)
-          command: npm run report
+          command: cd source; npm run report
