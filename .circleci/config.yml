@@ -62,8 +62,8 @@ jobs:
           name: Unit tests (Jasmine + c8 coverage)
           command: cd new-dev; npm run coverage
       - run:
-          name: Upload coverage to Codacy
-          command: cd new-dev; bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
+          name: Upload coverage to Codacy (Disable for now)
+          command: cd new-dev; echo 'bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info'
 
   checks-dev:
     docker:
