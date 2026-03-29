@@ -15,6 +15,7 @@ All project documentation lives under [`docs/`](docs/):
 |------|----------|
 | [Architecture](docs/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
 | [Runtime Flow](docs/flow.md) | CLI entrypoint, config loading, initial enqueueing, Engine loop, worker execution, failure handling. |
+| [Contributing](docs/contribute.md) | Explanation on how to contribute, commit and open PRs |
 | [Plans](docs/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/issues/) | Detailed specs for open GitHub issues. |
 
