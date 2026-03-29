@@ -1,24 +1,7 @@
 import DataNavigator from '../../lib/data_navigator.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
-const data = {
-  categories: [
-    {
-      id: 1,
-      name: 'Books',
-      items: [
-        { id: 1, name: 'The Hobbit' },
-        { id: 2, name: 'The Lord of the Rings' },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Movies',
-      items: [
-        { id: 4, name: 'The Shawshank Redemption' },
-      ],
-    },
-  ],
-};
+const data = FixturesUtils.loadYamlFixture('data.yml');
 
 describe('DataNavigator', () => {
   describe('#navigate', () => {
