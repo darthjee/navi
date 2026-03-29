@@ -3,10 +3,49 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node app.js"
+    "start": "node server.js",
+    "test": "npx c8 jasmine spec/**/*.js",
+    "coverage": "npx c8 --reporter=lcov jasmine spec/**/*.js",
+    "lint": "eslint .",
+    "report": "jscpd app.js spec --reporters console,html --output ./report/jscpd"
   },
   "dependencies": {
     "express": "^4.18.0",
     "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.0.0",
+    "eslint": "^8.0.1",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jasmine": "^4.1.3",
+    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-promise": "^6.0.1",
+    "globals": "^16.5.0",
+    "jasmine": "^5.0.0",
+    "jscpd": "4.0.8",
+    "c8": "11.0.0",
+    "supertest": "^7.0.0"
+  },
+  "jasmine": {
+    "spec_dir": "spec",
+    "spec_files": [
+      "**/*[sS]pec.js"
+    ]
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "extension": [".js"],
+    "include": ["app.js"],
+    "exclude": [
+      "spec/**",
+      "coverage/**",
+      "report/**"
+    ],
+    "all": true,
+    "check-coverage": false
   }
 }
