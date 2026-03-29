@@ -142,3 +142,4 @@ When generating or modifying code:
 9. Use static factory methods (`fromObject()`, `fromListObject()`) when creating model instances from raw config objects.
 10. Always include the `.js` file extension in import statements.
 11. Each commit must be unitary and atomic: one logical change per commit, with tests and implementation in the same commit. Never bundle unrelated changes together.
+12. Every source file must act as a class declarer (define and export classes/modules), not a script. Only entrypoints (`source/bin/navi.js` and `new-dev/server.js`) may execute logic directly. Test files are exempt.
