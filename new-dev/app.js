@@ -31,4 +31,4 @@ app.get('/categories/:id/items/:item_id.json', (req, res) => {
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
-app.listen(80);
+export default app;
