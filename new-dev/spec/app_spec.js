@@ -1,39 +1,8 @@
 import request from 'supertest';
 import buildApp from '../app.js';
+import { FixturesUtils } from './support/utils/FixturesUtils.js';
 
-const data = {
-  categories: [
-    {
-      id: 1,
-      name: 'Books',
-      items: [
-        { id: 1, name: 'The Hobbit' },
-        { id: 2, name: 'The Lord of the Rings' },
-        { id: 3, name: 'The Silmarillion' },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Movies',
-      items: [
-        { id: 4, name: 'The Shawshank Redemption' },
-        { id: 5, name: 'The Godfather' },
-        { id: 6, name: 'The Dark Knight' },
-      ],
-    },
-    {
-      id: 3,
-      name: 'Music',
-      items: [
-        { id: 7, name: 'The Beatles' },
-        { id: 8, name: 'Nirvana' },
-        { id: 9, name: 'Queen' },
-      ],
-    },
-  ],
-};
-
-const app = buildApp(data);
+const app = buildApp(FixturesUtils.loadYamlFixture('data.yml'));
 
 describe('GET /categories.json', () => {
   it('returns all categories without items', async () => {
