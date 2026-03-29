@@ -7,7 +7,7 @@
     "test": "npx c8 jasmine spec/**/*.js",
     "coverage": "npx c8 --reporter=lcov jasmine spec/**/*.js",
     "lint": "eslint .",
-    "report": "jscpd app.js spec --reporters console,html --output ./report/jscpd"
+    "report": "jscpd app.js lib spec --reporters console,html --output ./report/jscpd"
   },
   "dependencies": {
     "express": "^4.18.0",
@@ -39,7 +39,7 @@
       "html"
     ],
     "extension": [".js"],
-    "include": ["app.js"],
+    "include": ["app.js", "lib/**/*.js"],
     "exclude": [
       "spec/**",
       "coverage/**",
