@@ -1,5 +1,5 @@
-import express from 'express';
 import { readFileSync } from 'fs';
+import express from 'express';
 import { load } from 'js-yaml';
 
 const app = express();
