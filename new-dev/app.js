@@ -1,6 +1,6 @@
 import express from 'express';
-import router from './lib/router.js';
 import { notFound } from './lib/not_found.js';
+import router from './lib/router.js';
 
 const app = express();
 
