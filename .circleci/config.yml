@@ -11,6 +11,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - jasmine-dev:
+          filters:
+            tags:
+              only: /.*/
+      - checks-dev:
+          filters:
+            tags:
+              only: /.*/
 
 jobs:
   jasmine:
@@ -41,3 +49,33 @@ jobs:
       - run:
           name: Duplication report (JSCPD)
           command: cd source; npm run report
+
+  jasmine-dev:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd new-dev; yarn install
+      - run:
+          name: Unit tests (Jasmine + c8 coverage)
+          command: cd new-dev; npm run coverage
+      - run:
+          name: Upload coverage to Codacy (Disable for now)
+          command: cd new-dev; echo 'bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info'
+
+  checks-dev:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd new-dev; yarn install
+      - run:
+          name: Lint
+          command: cd new-dev; npm run lint
+      - run:
+          name: Duplication report (JSCPD)
+          command: cd new-dev; npm run report
