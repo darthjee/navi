@@ -46,7 +46,7 @@ categories:
       - id: 9
         name: Queen
 ```
-
+- Category list â `dev/categories.json`
 Data sources:
 - Category list → `dev/categories.json`
 - Category detail → `dev/categories/<id>.json`
