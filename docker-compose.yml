@@ -46,6 +46,7 @@ services:
       context: .
       dockerfile: dockerfiles/dev_app/Dockerfile
     volumes:
-      - ./dev/data.yml:/home/node/app/data.yml
+      - ./dev/:/home/node/app/
+      - ./docker_volumes/node_modules:/home/node/app/node_modules
     ports:
       - 0.0.0.0:3020:80
