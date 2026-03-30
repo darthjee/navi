@@ -7,14 +7,22 @@ describe('WorkersRegistry', () => {
   let workerRegistry;
   let worker;
   let worker_id;
+  let workers;
+  let busy;
+  let idle;
 
   beforeEach(() => {
     jobRegistry = JobRegistryFactory.build();
+    workers = new IdentifyableCollection();
+    busy = new IdentifyableCollection();
+    idle = new IdentifyableCollection();
+    workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers, busy, idle });
+    workerRegistry.initWorkers();
+    worker = workers.byIndex(0);
+    worker_id = worker.id;
   });
 
   describe('#constructor', () => {
-    let workers;
-
     beforeEach(() => {
       workers = new IdentifyableCollection();
       workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers });
@@ -38,10 +46,6 @@ describe('WorkersRegistry', () => {
   });
 
   describe('#initWorkers', () => {
-    let workers;
-    let busy;
-    let idle;
-
     beforeEach(() => {
       workers = new IdentifyableCollection();
       busy = new IdentifyableCollection();
@@ -88,20 +92,6 @@ describe('WorkersRegistry', () => {
   });
 
   describe('WorkersRegistry#setBusy', () => {
-    let workers;
-    let busy;
-    let idle;
-
-    beforeEach(() => {
-      workers = new IdentifyableCollection();
-      busy = new IdentifyableCollection();
-      idle = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers, busy, idle });
-      workerRegistry.initWorkers();
-      worker = workers.byIndex(0);
-      worker_id = worker.id;
-    });
-
     it('moves a worker from idle to busy when the worker exists', () => {
       expect(idle.get(worker_id)).toBe(worker);
 
@@ -127,18 +117,7 @@ describe('WorkersRegistry', () => {
   });
 
   describe('WorkersRegistry#setIdle', () => {
-    let workers;
-    let busy;
-    let idle;
-
     beforeEach(() => {
-      workers = new IdentifyableCollection();
-      busy = new IdentifyableCollection();
-      idle = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers, busy, idle });
-      workerRegistry.initWorkers();
-      worker = workers.byIndex(0);
-      worker_id = worker.id;
       workerRegistry.setBusy(worker_id);
     });
 
@@ -167,16 +146,6 @@ describe('WorkersRegistry', () => {
   });
 
   describe('#hasBusyWorker', () => {
-    let workers;
-
-    beforeEach(() => {
-      workers = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
-      workerRegistry.initWorkers();
-      worker = workers.byIndex(0);
-      worker_id = worker.id;
-    });
-
     it('returns true when there is a busy worker', () => {
       workerRegistry.setBusy(worker_id);
 
@@ -187,16 +156,8 @@ describe('WorkersRegistry', () => {
       expect(workerRegistry.hasBusyWorker()).toBe(false);
     });
   });
+
   describe('#hasIdleWorker', () => {
-    let workers;
-
-    beforeEach(() => {
-      workers = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
-      workerRegistry.initWorkers();
-      worker_id = workers.byIndex(0).id;
-    });
-
     it('returns true when there is a idle worker', () => {
       expect(workerRegistry.hasIdleWorker()).toBe(true);
     });
@@ -208,15 +169,6 @@ describe('WorkersRegistry', () => {
   });
 
   describe('#getIdleWorker', () => {
-    let workers;
-
-    beforeEach(() => {
-      workers = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
-      workerRegistry.initWorkers();
-      worker_id = workers.byIndex(0).id;
-    });
-
     it('returns an idle worker when available', () => {
       const idleWorker = workerRegistry.getIdleWorker();
 
