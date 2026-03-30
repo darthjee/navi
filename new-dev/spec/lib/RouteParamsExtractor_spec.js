@@ -1,4 +1,4 @@
-import RouteParamsExtractor from '../../lib/route_params_extractor.js';
+import RouteParamsExtractor from '../../lib/RouteParamsExtractor.js';
 
 describe('RouteParamsExtractor', () => {
   describe('#steps', () => {

@@ -1,8 +1,8 @@
 import { Router as ExpressRouter } from 'express';
-import DataNavigator from './data_navigator.js';
+import DataNavigator from './DataNavigator.js';
 import { notFound } from './not_found.js';
-import RouteParamsExtractor from './route_params_extractor.js';
-import RouteRegistrar from './route_registrar.js';
+import RouteParamsExtractor from './RouteParamsExtractor.js';
+import RouteRegistrar from './RouteRegistrar.js';
 
 class Router {
   constructor(data) {

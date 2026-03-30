@@ -1,4 +1,4 @@
-import DataNavigator from '../../lib/data_navigator.js';
+import DataNavigator from '../../lib/DataNavigator.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');

@@ -46,3 +46,9 @@ services:
       - ./dev:/usr/local/apache2/htdocs
     ports:
       - 0.0.0.0:3020:80
+
+  navi_dev_app:
+    image: darthjee/node:0.2.1
+    volumes:
+      - ./new-dev:/home/node/app
+      - ./docker_volumes/node_modules:/home/node/app/node_modules

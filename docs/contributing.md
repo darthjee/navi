@@ -76,6 +76,22 @@ export default router;
 
 Test files are exempt from this rule and may import modules and execute setup code freely.
 
+### File Naming: CamelCase for Class Files
+
+Files that define and export a class must use **CamelCase** naming, matching the class name exactly.
+
+*Examples:*
+- `Router.js` for `class Router`
+- `Config.js` for `class Config`
+- `RouteRegistrar.js` for `class RouteRegistrar`
+- `DataNavigator.js` for `class DataNavigator`
+
+This applies to both source files and their corresponding spec files:
+- `Router.js` → spec: `Router_spec.js`
+- `DataNavigator.js` → spec: `DataNavigator_spec.js`
+
+Non-class files (e.g., utility modules that export functions) use lowercase or camelCase at the author's discretion.
+
 ## Refactoring Guidelines
 
 When refactoring, aim to:
