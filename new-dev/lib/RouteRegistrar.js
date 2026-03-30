@@ -1,6 +1,6 @@
-import DataNavigator from './data_navigator.js';
+import DataNavigator from './DataNavigator.js';
 import { notFound } from './not_found.js';
-import RouteParamsExtractor from './route_params_extractor.js';
+import RouteParamsExtractor from './RouteParamsExtractor.js';
 
 class RouteRegistrar {
   constructor(router, data) {

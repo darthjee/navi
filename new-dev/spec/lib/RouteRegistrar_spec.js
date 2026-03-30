@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import RouteRegistrar from '../../lib/route_registrar.js';
+import RouteRegistrar from '../../lib/RouteRegistrar.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
