@@ -76,6 +76,8 @@ describe('Worker', () => {
 
       job = new Job({ id: 'id', resourceRequest, clients, parameters });
       worker.assign(job);
+
+      spyOn(console, 'error').and.stub();
     });
 
     describe('when no job is assigned', () => {
@@ -92,7 +94,6 @@ describe('Worker', () => {
         const promise = Promise.resolve(response);
 
         spyOn(axios, 'get').and.returnValue(promise);
-        spyOn(console, 'error').and.stub(); // Suppress error logging during test
       });
 
       it('performs the job', async () => {
@@ -126,7 +127,6 @@ describe('Worker', () => {
         expectedError = new RequestFailed(502, fullUrl);
 
         spyOn(axios, 'get').and.returnValue(promise);
-        spyOn(console, 'error').and.stub(); // Suppress error logging during test
       });
 
       it('register failure and attempt', async () => {

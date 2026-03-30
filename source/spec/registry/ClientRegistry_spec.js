@@ -13,63 +13,49 @@ describe('ClientRegistry', () => {
   });
 
   describe('#getClient', () => {
-    describe('when a client with the given name exists', () => {
+    describe('when default and other clients exist', () => {
       let clientRegistry;
 
       beforeEach(() => {
         clientRegistry = new ClientRegistry({ default: defaultClient, other: otherClient });
       });
 
-      it('returns the client by name', () => {
-        expect(clientRegistry.getClient('other')).toBe(otherClient);
+      describe('when a client with the given name exists', () => {
+        it('returns the client by name', () => {
+          expect(clientRegistry.getClient('other')).toBe(otherClient);
+        });
+      });
+
+      describe('when name is "default" and a default client exists', () => {
+        it('returns the default client', () => {
+          expect(clientRegistry.getClient('default')).toBe(defaultClient);
+        });
+      });
+
+      describe('when no name is given and a default client exists', () => {
+        it('returns the default client', () => {
+          expect(clientRegistry.getClient()).toBe(defaultClient);
+        });
       });
     });
 
-    describe('when name is "default" and a default client exists', () => {
-      let clientRegistry;
-
-      beforeEach(() => {
-        clientRegistry = new ClientRegistry({ default: defaultClient, other: otherClient });
-      });
-
-      it('returns the default client', () => {
-        expect(clientRegistry.getClient('default')).toBe(defaultClient);
-      });
-    });
-
-    describe('when no name is given and a default client exists', () => {
-      let clientRegistry;
-
-      beforeEach(() => {
-        clientRegistry = new ClientRegistry({ default: defaultClient, other: otherClient });
-      });
-
-      it('returns the default client', () => {
-        expect(clientRegistry.getClient()).toBe(defaultClient);
-      });
-    });
-
-    describe('when no name is given and no default client exists but only one client', () => {
+    describe('when only one client exists (no default)', () => {
       let clientRegistry;
 
       beforeEach(() => {
         clientRegistry = new ClientRegistry({ other: otherClient });
       });
 
-      it('returns the single client', () => {
-        expect(clientRegistry.getClient()).toBe(otherClient);
-      });
-    });
-
-    describe('when name is "default", no default client exists, and only one client exists', () => {
-      let clientRegistry;
-
-      beforeEach(() => {
-        clientRegistry = new ClientRegistry({ other: otherClient });
+      describe('when no name is given and no default client exists but only one client', () => {
+        it('returns the single client', () => {
+          expect(clientRegistry.getClient()).toBe(otherClient);
+        });
       });
 
-      it('returns the single client', () => {
-        expect(clientRegistry.getClient('default')).toBe(otherClient);
+      describe('when name is "default", no default client exists, and only one client exists', () => {
+        it('returns the single client', () => {
+          expect(clientRegistry.getClient('default')).toBe(otherClient);
+        });
       });
     });
 
@@ -88,7 +74,7 @@ describe('ClientRegistry', () => {
       });
     });
 
-    describe('when no name is given, no default client, and multiple clients exist', () => {
+    describe('when no default client and multiple clients exist', () => {
       let clientRegistry;
 
       beforeEach(() => {
@@ -98,29 +84,22 @@ describe('ClientRegistry', () => {
         });
       });
 
-      it('throws ClientNotFound for default', () => {
-        expect(() => clientRegistry.getClient()).toThrowError(
-          ClientNotFound,
-          'Client "default" not found.',
-        );
-      });
-    });
-
-    describe('when name is "default", no default client, and multiple clients exist', () => {
-      let clientRegistry;
-
-      beforeEach(() => {
-        clientRegistry = new ClientRegistry({
-          other: otherClient,
-          another: new Client({ name: 'another', baseUrl: 'https://another.com' }),
+      describe('when no name is given, no default client, and multiple clients exist', () => {
+        it('throws ClientNotFound for default', () => {
+          expect(() => clientRegistry.getClient()).toThrowError(
+            ClientNotFound,
+            'Client "default" not found.',
+          );
         });
       });
 
-      it('throws ClientNotFound for default', () => {
-        expect(() => clientRegistry.getClient('default')).toThrowError(
-          ClientNotFound,
-          'Client "default" not found.',
-        );
+      describe('when name is "default", no default client, and multiple clients exist', () => {
+        it('throws ClientNotFound for default', () => {
+          expect(() => clientRegistry.getClient('default')).toThrowError(
+            ClientNotFound,
+            'Client "default" not found.',
+          );
+        });
       });
     });
   });
