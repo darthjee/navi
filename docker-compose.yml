@@ -45,6 +45,6 @@ services:
       context: .
       dockerfile: dockerfiles/dev_httpd/Dockerfile
     volumes:
-      - ./new-dev/data.yml:/home/node/app/data.yml
+      - ./dev/data.yml:/home/node/app/data.yml
     ports:
       - 0.0.0.0:3020:80
