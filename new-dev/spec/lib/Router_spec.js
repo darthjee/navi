@@ -1,7 +1,7 @@
 import express from 'express';
 import request from 'supertest';
 import { notFound } from '../../lib/not_found.js';
-import Router from '../../lib/router.js';
+import Router from '../../lib/Router.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
