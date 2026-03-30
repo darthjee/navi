@@ -1,6 +1,8 @@
 import { Router as ExpressRouter } from 'express';
 import DataNavigator from './data_navigator.js';
 import { notFound } from './not_found.js';
+import RouteParamsExtractor from './route_params_extractor.js';
+import RouteRegistrar from './route_registrar.js';
 
 class Router {
   constructor(data) {
@@ -9,35 +11,23 @@ class Router {
 
   build() {
     const router = ExpressRouter();
+    const registrar = new RouteRegistrar(router, this._data);
 
-    router.get('/categories.json', (_req, res) => {
-      const categories = new DataNavigator(this._data, ['categories']).navigate();
-      res.json(categories.map(({ id, name }) => ({ id, name })));
+    router.get('/categories.json', (req, res) => {
+      const steps = new RouteParamsExtractor('/categories.json', req.params).steps();
+      const result = new DataNavigator(this._data, steps).navigate();
+      res.json(result.map(({ id, name }) => ({ id, name })));
     });
 
     router.get('/categories/:id.json', (req, res) => {
-      const category = new DataNavigator(
-        this._data, ['categories', Number(req.params.id)]
-      ).navigate();
-      if (!category) return notFound(res);
-      res.json({ id: category.id, name: category.name });
+      const steps = new RouteParamsExtractor('/categories/:id.json', req.params).steps();
+      const result = new DataNavigator(this._data, steps).navigate();
+      if (!result) return notFound(res);
+      res.json({ id: result.id, name: result.name });
     });
 
-    router.get('/categories/:id/items.json', (req, res) => {
-      const items = new DataNavigator(
-        this._data, ['categories', Number(req.params.id), 'items']
-      ).navigate();
-      if (!items) return notFound(res);
-      res.json(items);
-    });
-
-    router.get('/categories/:id/items/:item_id.json', (req, res) => {
-      const item = new DataNavigator(
-        this._data, ['categories', Number(req.params.id), 'items', Number(req.params.item_id)]
-      ).navigate();
-      if (!item) return notFound(res);
-      res.json(item);
-    });
+    registrar.register('/categories/:id/items.json');
+    registrar.register('/categories/:id/items/:item_id.json');
 
     return router;
   }
