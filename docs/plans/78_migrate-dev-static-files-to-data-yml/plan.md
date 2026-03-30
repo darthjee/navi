@@ -1,7 +1,7 @@
 # Plan: Migrate Static Dev Files to `new-dev/data.yml` (#78)
 
-Issue: https://github.com/darthjee/navi/issues/78
-Parent: https://github.com/darthjee/navi/issues/68
+Issue: <https://github.com/darthjee/navi/issues/78>
+Parent: <https://github.com/darthjee/navi/issues/68>
 
 ## Context
 

@@ -1,6 +1,6 @@
 # 86: Add Tests Suite for new-dev Node.js Container
 
-https://github.com/darthjee/navi/issues/86
+<https://github.com/darthjee/navi/issues/86>
 
 ## Background
 

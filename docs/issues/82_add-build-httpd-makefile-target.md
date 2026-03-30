@@ -1,6 +1,6 @@
 # 82: Finalise Dev Container Migration
 
-Parent issue: https://github.com/darthjee/navi/issues/68
+Parent issue: <https://github.com/darthjee/navi/issues/68>
 Depends on: #81
 
 ## Background

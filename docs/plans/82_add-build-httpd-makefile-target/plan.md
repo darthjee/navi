@@ -1,7 +1,7 @@
 # Plan: Finalise Dev Container Migration (#82)
 
-Issue: https://github.com/darthjee/navi/issues/82
-Parent: https://github.com/darthjee/navi/issues/68
+Issue: <https://github.com/darthjee/navi/issues/82>
+Parent: <https://github.com/darthjee/navi/issues/68>
 Depends on: #81
 
 ## Context
@@ -75,7 +75,7 @@ DOCKERFILE_HTTPD ?= dockerfiles/dev_httpd/Dockerfile
 
 ```makefile
 build-httpd:
-	docker build -f $(DOCKERFILE_HTTPD) . -t $(IMAGE):httpd
+ docker build -f $(DOCKERFILE_HTTPD) . -t $(IMAGE):httpd
 ```
 
 ## Acceptance Criteria

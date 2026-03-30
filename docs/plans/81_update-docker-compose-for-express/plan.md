@@ -1,7 +1,7 @@
 # Plan: Update `docker-compose.yml` to Use Express Container (#81)
 
-Issue: https://github.com/darthjee/navi/issues/81
-Parent: https://github.com/darthjee/navi/issues/68
+Issue: <https://github.com/darthjee/navi/issues/81>
+Parent: <https://github.com/darthjee/navi/issues/68>
 Depends on: #80
 
 ## Context

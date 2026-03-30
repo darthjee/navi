@@ -1,7 +1,7 @@
 # Plan: Create Express Dev Server (#79)
 
-Issue: https://github.com/darthjee/navi/issues/79
-Parent: https://github.com/darthjee/navi/issues/68
+Issue: <https://github.com/darthjee/navi/issues/79>
+Parent: <https://github.com/darthjee/navi/issues/68>
 Depends on: #78
 
 ## Context

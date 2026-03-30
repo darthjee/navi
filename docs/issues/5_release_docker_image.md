@@ -1,6 +1,6 @@
 # Release Docker Image (#5)
 
-Issue Link: https://github.com/darthjee/navi/issues/5
+Issue Link: <https://github.com/darthjee/navi/issues/5>
 
 ## Problem
 

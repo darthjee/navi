@@ -1,6 +1,6 @@
 # Issue 68: Change Dev Container to Use Express
 
-Issue Link: https://github.com/darthjee/navi/issues/68
+Issue Link: <https://github.com/darthjee/navi/issues/68>
 
 ## Background
 
