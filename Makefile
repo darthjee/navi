@@ -3,6 +3,7 @@
 PROJECT ?= navi
 COMPOSE ?= docker compose
 APP_SERVICE ?= $(PROJECT)_app
+DEV_SERVICE ?= $(PROJECT)_dev_app
 TEST_SERVICE ?= $(PROJECT)_tests
 DEV_SHELL ?= /bin/bash
 IMAGE ?= $(PROJECT)
@@ -32,6 +33,9 @@ build-dev:
 
 build:
 	docker build -f $(DOCKERFILE_PROD) . -t $(IMAGE):latest
+
+dev-app:
+	$(COMPOSE) run --rm $(DEV_SERVICE) $(DEV_SHELL)
 
 .env:
 	cp .env.sample .env
