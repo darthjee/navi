@@ -1,7 +1,6 @@
-#78: Migrate Static Dev Files to `new-dev/data.yml`
+# 78: Migrate Static Dev Files to `new-dev/data.yml`
 
-Parent issue: https://github.com/darthjee/navi/issues/68
-
+Parent issue: <https://github.com/darthjee/navi/issues/68>
 ## Background
 
 The `./dev/` directory currently holds static JSON files served by the Apache `navi_httpd` container:

@@ -1,6 +1,6 @@
-#79: Create Express Dev Server
+# 79: Create Express Dev Server
 
-Parent issue: https://github.com/darthjee/navi/issues/68
+Parent issue: <https://github.com/darthjee/navi/issues/68>
 Depends on: #78
 
 ## Background
@@ -14,7 +14,7 @@ Create the following files in `new-dev/`:
 ### `new-dev/app.js`
 
 Express app that:
-1. Reads `data.yml` at startup using `js-yaml`.
+
 2. Registers four route groups dynamically from the loaded data:
    - `GET /categories.json` — returns all categories (without `items`).
    - `GET /categories/:id.json` — returns a single category by `id`; `404` if not found.

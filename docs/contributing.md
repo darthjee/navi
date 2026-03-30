@@ -82,6 +82,7 @@ Test files are exempt from this rule and may import modules and execute setup co
 Files that define and export a class must use **CamelCase** naming, matching the class name exactly.
 
 *Examples:*
+
 - `Router.js` for `class Router`
 - `Config.js` for `class Config`
 - `RouteRegistrar.js` for `class RouteRegistrar`

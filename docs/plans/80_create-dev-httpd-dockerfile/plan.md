@@ -1,7 +1,7 @@
 # Plan: Create `dockerfiles/dev_httpd/Dockerfile` (#80)
 
-Issue: https://github.com/darthjee/navi/issues/80
-Parent: https://github.com/darthjee/navi/issues/68
+Issue: <https://github.com/darthjee/navi/issues/80>
+Parent: <https://github.com/darthjee/navi/issues/68>
 Depends on: #79
 
 ## Context

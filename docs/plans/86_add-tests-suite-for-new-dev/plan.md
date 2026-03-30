@@ -1,7 +1,7 @@
 # Plan: Add Tests Suite for new-dev Node.js Container (#86)
 
-Issue: https://github.com/darthjee/navi/issues/86
-Parent: https://github.com/darthjee/navi/issues/68
+Issue: <https://github.com/darthjee/navi/issues/86>
+Parent: <https://github.com/darthjee/navi/issues/68>
 Depends on: #79
 
 ## Context
