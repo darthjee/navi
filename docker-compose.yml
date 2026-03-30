@@ -41,14 +41,10 @@ services:
       - 0.0.0.0:3010:80
 
   navi_httpd:
-    image: httpd
+    build:
+      context: .
+      dockerfile: dockerfiles/dev_httpd/Dockerfile
     volumes:
-      - ./dev:/usr/local/apache2/htdocs
+      - ./new-dev/data.yml:/home/node/app/data.yml
     ports:
       - 0.0.0.0:3020:80
-
-  navi_dev_app:
-    image: darthjee/node:0.2.1
-    volumes:
-      - ./new-dev:/home/node/app
-      - ./docker_volumes/node_modules:/home/node/app/node_modules
