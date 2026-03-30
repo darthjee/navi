@@ -91,7 +91,7 @@ Files that define and export a class must use **CamelCase** naming, matching the
 This applies to both source files and their corresponding spec files:
 - `Router.js` → spec: `Router_spec.js`
 - `DataNavigator.js` → spec: `DataNavigator_spec.js`
-
+- `Router.js` â spec: `Router_spec.js`
 Non-class files (e.g., utility modules that export functions) use lowercase or camelCase at the author's discretion.
 
 ## Dependency Injection
