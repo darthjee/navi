@@ -31,20 +31,23 @@ services:
 
   navi_proxy:
     image: darthjee/tent:0.5.0
-    depends_on: [navi_httpd]
+    depends_on: [navi_dev_app]
     links:
-      - navi_httpd:backend
+      - navi_dev_app:backend
     volumes:
       - ./docker_volumes/proxy_configuration:/var/www/html/configuration/
       - ./docker_volumes/proxy_cache:/var/www/html/cache/
     ports:
       - 0.0.0.0:3010:80
 
-  navi_httpd:
+  navi_dev_app:
+    image: navi_app:dev
     build:
       context: .
-      dockerfile: dockerfiles/dev_httpd/Dockerfile
+      dockerfile: dockerfiles/dev_app/Dockerfile
+    command: node server.js
     volumes:
-      - ./dev/data.yml:/home/node/app/data.yml
+      - ./dev/:/home/node/app/
+      - ./docker_volumes/node_modules:/home/node/app/node_modules
     ports:
       - 0.0.0.0:3020:80
