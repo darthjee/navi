@@ -45,6 +45,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/dev_app/Dockerfile
+    command: node server.js
     volumes:
       - ./dev/:/home/node/app/
       - ./docker_volumes/node_modules:/home/node/app/node_modules
