@@ -1,10 +1,29 @@
-FROM darthjee/node:0.2.1
+FROM darthjee/scripts:0.6.0 as scripts
+FROM darthjee/node:0.2.1 as base
 
-COPY --chown=node:node ./dev/ /home/node/app/
+USER root
+RUN apt-get update && apt-get install -y rsync && rm -rf /var/lib/apt/lists/*
+USER node
+
+COPY --chown=node:node \
+  ./dev/package.json ./dev/yarn.lock \
+  /home/node/app/
+
+######################################
+
+FROM base as builder
+
+ENV HOME_DIR /home/node
+
+USER root
+COPY --chown=node:node --from=scripts /home/scripts/builder/yarn_builder.sh /usr/local/sbin/yarn_builder.sh
+RUN /bin/bash yarn_builder.sh
+
+#######################
+# FINAL IMAGE
+FROM base
+ENV HOME_DIR /home/node
+
+COPY --chown=node:node --from=builder /home/node/yarn/new/ /usr/local/share/.cache/yarn/v6/
 
 USER node
-WORKDIR /home/node/app
-
-RUN yarn install
-
-CMD ["node", "app.js"]
