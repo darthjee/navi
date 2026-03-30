@@ -1,6 +1,6 @@
 import express from 'express';
 import { notFound } from './lib/not_found.js';
-import Router from './lib/router.js';
+import Router from './lib/Router.js';
 
 const buildApp = (data) => {
   const app = express();
