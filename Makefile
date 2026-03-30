@@ -7,18 +7,18 @@ DEV_SERVICE ?= $(PROJECT)_dev_app
 TEST_SERVICE ?= $(PROJECT)_tests
 DEV_SHELL ?= /bin/bash
 IMAGE ?= $(PROJECT)
-DOCKERFILE_DEV ?= dockerfiles/dev_navy/Dockerfile
-DOCKERFILE_PROD ?= dockerfiles/navy/Dockerfile
-DOCKERFILE_HTTPD ?= dockerfiles/dev_httpd/Dockerfile
+APP_IMAGE ?= $(PROJECT)_app
+DOCKERFILE_DEV ?= dockerfiles/dev_navi/Dockerfile
+DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
 
 help:
 	@echo "Usage:"
 	@echo "  make setup      Prepare dev environment (.env + compose build)"
 	@echo "  make dev        Open $(APP_SERVICE) container with $(DEV_SHELL)"
 	@echo "  make tests      Open $(TEST_SERVICE) container with $(DEV_SHELL)"
-	@echo "  make build-dev   Build development image from $(DOCKERFILE_DEV)"
-	@echo "  make build       Build production image from $(DOCKERFILE_PROD)"
-	@echo "  make build-httpd Build dev httpd image from $(DOCKERFILE_HTTPD)"
+	@echo "  make dev-app    Build development image from $(DOCKERFILE_DEV)"
+	@echo "  make build-dev  Build dev app image from $(DOCKERFILE_DEV)"
+	@echo "  make build-dev-app Build dev app image from $(DOCKERFILE_DEV)"
 
 setup: .env
 	$(COMPOSE) build base_build
@@ -30,17 +30,14 @@ dev: .env
 tests:
 	$(COMPOSE) run --rm $(TEST_SERVICE) $(DEV_SHELL)
 
+dev-app:
+	$(COMPOSE) run --rm $(DEV_SERVICE) $(DEV_SHELL)
+
 build-dev:
 	docker build -f $(DOCKERFILE_DEV) . -t $(IMAGE):dev
 
-build:
-	docker build -f $(DOCKERFILE_PROD) . -t $(IMAGE):latest
-
-build-httpd:
-	docker build -f $(DOCKERFILE_HTTPD) . -t $(IMAGE):httpd
-
-dev-app:
-	$(COMPOSE) run --rm $(DEV_SERVICE) $(DEV_SHELL)
+build-dev-app:
+	docker build -f $(DOCKERFILE_DEV_APP) . -t $(APP_IMAGE):dev
 
 .env:
 	cp .env.sample .env
