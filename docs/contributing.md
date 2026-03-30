@@ -83,6 +83,7 @@ Files that define and export a class must use **CamelCase** naming, matching the
 
 *Examples:*
 
+- `Router.js` for `class Router`
 - `Config.js` for `class Config`
 - `RouteRegistrar.js` for `class RouteRegistrar`
 - `DataNavigator.js` for `class DataNavigator`
