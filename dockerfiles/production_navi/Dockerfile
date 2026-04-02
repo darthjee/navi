@@ -2,7 +2,9 @@ FROM darthjee/production_node:0.2.1 AS builder
 
 COPY --chown=node:node ./source/package.json ./source/yarn.lock /home/node/app/
 
-RUN cd /home/node/app && yarn install --frozen-lockfile --production
+WORKDIR /home/node/app
+
+RUN yarn install --frozen-lockfile --production
 
 ######################################
 
