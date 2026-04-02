@@ -77,6 +77,61 @@ update-description:
   - Document how to run `make build-image` and `make release` locally.
   - Add sample config to `docs/examples/` (no test fixtures in production image).
 
+## Dockerfile — implementation details and guidance
+
+Developers should use `dockerfiles/dev_navi/Dockerfile` as inspiration for layout and caching techniques, but the production Dockerfile must **not** install development dependencies or include test/spec files.
+
+Key rules and recommended structure:
+
+- Base image
+  - Use `darthjee/production_node:0.2.1` (or another production-focused base) for both reproducibility and parity with existing images.
+
+- Multi-stage build
+  - Stage: builder
+    - COPY only `source/package.json` and `source/yarn.lock` first.
+    - Run `yarn install --frozen-lockfile` (no --production flag here if you build production node_modules in a later step, but prefer installing production deps only when possible).
+    - COPY the rest of `source/`.
+    - If a build/transpile step is required, run it in this stage.
+  - Stage: final
+    - Start from a small runtime base (alpine or the production_node image).
+    - Set `ENV NODE_ENV=production`.
+    - COPY only the artifacts required to run the app (built files and production node_modules).
+    - Do NOT copy `spec/`, `source/spec/`, `docs/`, or other dev files.
+    - Create an unprivileged user and switch to it.
+
+- Install production dependencies only
+  - Ensure the final image contains only production dependencies:
+    - Option A (recommended): in builder, install production deps only (`yarn install --frozen-lockfile --production`) and copy node_modules to final.
+    - Option B: install all deps in builder then run `yarn install --production --frozen-lockfile` in final to prune dev deps.
+  - Use `--frozen-lockfile` to guarantee reproducible installs.
+
+- Caching and layers
+  - Copy package.json/yarn.lock and run `yarn install` before copying source to leverage Docker layer caching.
+  - If using yarn v2/berry, adapt cache copies similar to `dev_navi` but avoid copying dev caches into the final image.
+
+- Exclude files
+  - Add a `.dockerignore` that excludes:
+    - `spec/`, `node_modules/`, `.git`, `docs/`, `dockerfiles/`, local editor files, and any test fixtures.
+  - This prevents accidental inclusion of tests or large files.
+
+- Image size and reproducibility
+  - Prefer smaller runtime base and remove build tools from the final stage.
+  - Pin base image versions and use `--platform linux/amd64` in CI builds.
+
+- Health and runtime behavior
+  - Expose the port used by the app (e.g., `EXPOSE 80`).
+  - Provide a sensible `CMD`/`ENTRYPOINT` (e.g., `node bin/navi.js`).
+  - Optionally add a `HEALTHCHECK` for basic smoke testing.
+
+- Security
+  - Run the app as a non-root user.
+  - Avoid embedding secrets or environment-specific config; expect config to be mounted at runtime.
+
+- Local reproducibility
+  - Document how to build and run the image locally using Makefile targets:
+    - `TAG=local make build-image`
+    - `docker run --rm -p 8080:80 -v $(pwd)/docker_volumes/config:/app/config darthjee/navi:local`
+
 ## Acceptance Criteria (updated)
 
 - [ ] Makefile contains `build-image`, `release`, and `update-description` targets.
@@ -187,3 +242,8 @@ update-description:
 - Makefile targets should be simple commands so they work both locally and in CI.
 - Prefer explicit platform targeting for reproducibility.
 - Test Makefile targets locally before merging
+
+## References
+
+- See `dockerfiles/dev_navi/Dockerfile` for caching and multi-stage patterns.
+- Use this plan's Makefile targets and CI snippets to keep behavior consistent between local and CI builds.
