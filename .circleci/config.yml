@@ -25,7 +25,7 @@ workflows:
             tags:
               only: /.*/
       - build-and-release:
-          requires: [jasmine, checks]
+          requires: [jasmine, jasmine-dev, checks, checks-dev]
           filters:
             tags:
               only: /.*/
@@ -114,24 +114,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Docker build
-          command: |
-            TAG=${CIRCLE_TAG:-latest}
-            docker build --platform linux/amd64 \
-              -f dockerfiles/production_navy/Dockerfile . \
-              -t darthjee/navi:$TAG \
-              -t darthjee/navi:latest
-      - run:
-          name: Docker login
-          command: echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
-      - run:
-          name: Docker push (versioned tag)
-          command: |
-            TAG=${CIRCLE_TAG:-latest}
-            docker push darthjee/navi:$TAG
-      - run:
-          name: Docker push (latest)
-          command: docker push darthjee/navi:latest
+          name: Build and release
+          command: make release TAG=${CIRCLE_TAG:-latest}
 
   update-description:
     docker:
@@ -139,5 +123,5 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Docker push description
-          command: /bin/sh /home/scripts/sbin/docker_hub.sh login_and_push_description darthjee/navi DOCKERHUB_DESCRIPTION.md
+          name: Update Docker Hub description
+          command: make update-description
