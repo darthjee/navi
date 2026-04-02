@@ -28,7 +28,7 @@ workflows:
           requires: [jasmine, jasmine-dev, checks, checks-dev]
           filters:
             tags:
-              only: /.*/
+              only: /\d+\.\d+\.\d+/
             branches:
               only:
                 - main
@@ -36,7 +36,7 @@ workflows:
           requires: [build-and-release]
           filters:
             tags:
-              only: /.*/
+              only: /\d+\.\d+\.\d+/
             branches:
               only:
                 - main
