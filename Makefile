@@ -10,6 +10,7 @@ IMAGE ?= $(PROJECT)
 APP_IMAGE ?= $(PROJECT)_app
 DOCKERFILE_DEV ?= dockerfiles/dev_navi/Dockerfile
 DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
+DOCKERFILE_PROD ?= dockerfiles/production_navy/Dockerfile
 
 help:
 	@echo "Usage:"
@@ -38,6 +39,9 @@ build-dev:
 
 build-dev-app:
 	docker build -f $(DOCKERFILE_DEV_APP) . -t $(APP_IMAGE):dev
+
+build:
+	docker build -f $(DOCKERFILE_PROD) . -t $(IMAGE):latest
 
 .env:
 	cp .env.sample .env

@@ -24,6 +24,22 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - build-and-release:
+          requires: [jasmine, checks]
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only:
+                - main
+      - update-description:
+          requires: [build-and-release]
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only:
+                - main
 
 jobs:
   jasmine:
@@ -92,3 +108,36 @@ jobs:
       - run:
           name: Finalize coverage on Codacy
           command: bash <(curl -Ls https://coverage.codacy.com/get.sh) final
+
+  build-and-release:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Docker build
+          command: |
+            TAG=${CIRCLE_TAG:-latest}
+            docker build --platform linux/amd64 \
+              -f dockerfiles/production_navy/Dockerfile . \
+              -t darthjee/navi:$TAG \
+              -t darthjee/navi:latest
+      - run:
+          name: Docker login
+          command: echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+      - run:
+          name: Docker push (versioned tag)
+          command: |
+            TAG=${CIRCLE_TAG:-latest}
+            docker push darthjee/navi:$TAG
+      - run:
+          name: Docker push (latest)
+          command: docker push darthjee/navi:latest
+
+  update-description:
+    docker:
+      - image: darthjee/scripts:0.6.0
+    steps:
+      - checkout
+      - run:
+          name: Docker push description
+          command: /bin/sh /home/scripts/sbin/docker_hub.sh login_and_push_description darthjee/navi DOCKERHUB_DESCRIPTION.md
