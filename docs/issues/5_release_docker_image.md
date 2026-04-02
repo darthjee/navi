@@ -27,9 +27,11 @@ workflows:
   test-and-release:
     jobs:
       - jasmine
+      - jasmine-dev
       - checks
+      - checks-dev
       - build-and-release:
-          requires: [jasmine, checks]
+          requires: [jasmine, jasmine-dev, checks, checks-dev]
           filters:
             branches:
               only: main
@@ -129,9 +131,11 @@ workflows:
   test-and-release:
     jobs:
       - jasmine
+      - jasmine-dev
       - checks
+      - checks-dev
       - build-and-release:
-          requires: [jasmine, checks]
+          requires: [jasmine, jasmine-dev, checks, checks-dev]
           filters:
             branches:
               only: main
@@ -200,4 +204,4 @@ Set these in CircleCI project settings under **Environment Variables**.
 
 - Keep the production Dockerfile minimal: install only production deps with `yarn install --production` and copy only required files.
 - Prefer explicit platform targeting (`--platform linux/amd64`) for CI reproducibility.
-- Ensure CI job uses `machine: true` to avoid Docker-in
+- Ensure CI job uses `machine: true` to avoid Docker-in-Docker complexity.
