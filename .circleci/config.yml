@@ -24,6 +24,22 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - build-and-release:
+          requires: [jasmine, jasmine-dev, checks, checks-dev]
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only:
+                - main
+      - update-description:
+          requires: [build-and-release]
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only:
+                - main
 
 jobs:
   jasmine:
@@ -92,3 +108,20 @@ jobs:
       - run:
           name: Finalize coverage on Codacy
           command: bash <(curl -Ls https://coverage.codacy.com/get.sh) final
+
+  build-and-release:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build and release
+          command: make release TAG=${CIRCLE_TAG:-latest}
+
+  update-description:
+    docker:
+      - image: darthjee/scripts:0.6.0
+    steps:
+      - checkout
+      - run:
+          name: Update Docker Hub description
+          command: make update-description
