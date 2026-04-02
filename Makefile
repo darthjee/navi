@@ -1,4 +1,4 @@
-.PHONY: help setup dev tests build-dev build build-httpd
+.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description
 
 PROJECT ?= navi
 COMPOSE ?= docker compose
@@ -10,6 +10,10 @@ IMAGE ?= $(PROJECT)
 APP_IMAGE ?= $(PROJECT)_app
 DOCKERFILE_DEV ?= dockerfiles/dev_navi/Dockerfile
 DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
+DOCKERFILE_PROD ?= dockerfiles/production_navi/Dockerfile
+PROD_IMAGE := darthjee/navi
+PLATFORM := linux/amd64
+DOCKER_HUB_SCRIPT ?= /home/scripts/sbin/docker_hub.sh
 
 help:
 	@echo "Usage:"
@@ -38,6 +42,23 @@ build-dev:
 
 build-dev-app:
 	docker build -f $(DOCKERFILE_DEV_APP) . -t $(APP_IMAGE):dev
+
+build:
+	docker build -f $(DOCKERFILE_PROD) . -t $(PROD_IMAGE):latest
+
+build-image:
+	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make build-image)"; exit 1; fi
+	docker build --platform $(PLATFORM) -f $(DOCKERFILE_PROD) . -t $(PROD_IMAGE):$(TAG) -t $(PROD_IMAGE):latest
+
+release:
+	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make release)"; exit 1; fi
+	$(MAKE) build-image TAG=$(TAG)
+	@echo "$$DOCKER_HUB_PASSWORD" | docker login -u "$$DOCKER_HUB_USERNAME" --password-stdin
+	docker push $(PROD_IMAGE):$(TAG)
+	docker push $(PROD_IMAGE):latest
+
+update-description:
+	/bin/sh $(DOCKER_HUB_SCRIPT) login_and_push_description $(PROD_IMAGE) DOCKERHUB_DESCRIPTION.md
 
 .env:
 	cp .env.sample .env
