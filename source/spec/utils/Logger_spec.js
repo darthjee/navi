@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Logger } from '../../lib/utils/Logger.js';
 
 describe('Logger', () => {

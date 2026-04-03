@@ -10,7 +10,7 @@ class WebServer {
   #app;
 
   /**
-   * @param {object} params
+   * @param {object} params - Options for initializing the WebServer.
    * @param {number} params.port - Port to listen on.
    * @param {object} params.jobRegistry - The job registry instance.
    * @param {object} params.workersRegistry - The workers registry instance.
@@ -32,11 +32,11 @@ class WebServer {
 
   /**
    * Factory method. Returns a WebServer when webConfig is present, null otherwise.
-   * @param {object} params
+   * @param {object} params - Options for building the WebServer.
    * @param {object|null} params.webConfig - The web configuration object.
    * @param {object} params.jobRegistry - The job registry instance.
    * @param {object} params.workersRegistry - The workers registry instance.
-   * @returns {WebServer|null}
+   * @returns {WebServer|null} A WebServer instance if webConfig is provided, otherwise null.
    */
   static build({ webConfig, jobRegistry, workersRegistry }) {
     if (!webConfig) return null;
