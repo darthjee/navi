@@ -1,8 +1,12 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { RouteRegister } from './RouteRegister.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
 const { Router: ExpressRouter } = express;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.join(__dirname, '../../public');
 
 /**
  * Builds the Express router with all application routes.
@@ -36,6 +40,12 @@ class Router {
         jobRegistry:     this.#jobRegistry,
         workersRegistry: this.#workersRegistry,
       }),
+    });
+
+    router.use(express.static(publicDir));
+
+    router.get('*', (_req, res) => {
+      res.sendFile(path.join(publicDir, 'index.html'));
     });
 
     return router;

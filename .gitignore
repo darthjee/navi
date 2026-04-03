@@ -143,5 +143,9 @@ source/docs
 
 docker_volumes/proxy_cache
 docker_volumes/node_modules*
+docker_volumes/static/*
+!docker_volumes/static/.gitkeep
+
+frontend/node_modules
 
 **/*.orig
