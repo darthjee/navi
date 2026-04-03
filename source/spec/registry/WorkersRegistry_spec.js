@@ -183,4 +183,33 @@ describe('WorkersRegistry', () => {
       expect(idleWorker).toBeNull();
     });
   });
+
+  describe('#stats', () => {
+    describe('when all workers are idle', () => {
+      it('returns idle count matching number of workers and busy count of zero', () => {
+        expect(workerRegistry.stats()).toEqual({ idle: 1, busy: 0 });
+      });
+    });
+
+    describe('when a worker is set to busy', () => {
+      beforeEach(() => {
+        workerRegistry.setBusy(worker_id);
+      });
+
+      it('returns busy count of 1 and idle count of zero', () => {
+        expect(workerRegistry.stats()).toEqual({ idle: 0, busy: 1 });
+      });
+    });
+
+    describe('when a busy worker is returned to idle', () => {
+      beforeEach(() => {
+        workerRegistry.setBusy(worker_id);
+        workerRegistry.setIdle(worker_id);
+      });
+
+      it('returns idle count of 1 and busy count of zero', () => {
+        expect(workerRegistry.stats()).toEqual({ idle: 1, busy: 0 });
+      });
+    });
+  });
 });
