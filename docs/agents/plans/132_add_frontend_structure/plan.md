@@ -18,18 +18,47 @@ Add a Vite + React frontend application to Navi that displays worker and job dat
 Create `frontend/` at the project root with a minimal Vite + React setup:
 
 - `frontend/index.html` — entry HTML pointing to `src/main.jsx`
-- `frontend/package.json` — scripts: `dev` (Vite dev server on port 8080), `build`
+- `frontend/package.json` — scripts: `dev` (Vite dev server on port 8080), `build`; uses Yarn (not npm)
+- `frontend/yarn.lock` — committed lockfile (required by the Dockerfile COPY step)
 - `frontend/vite.config.js` — set `build.outDir` to `dist` (mapped to shared volume via Docker)
 - `frontend/src/main.jsx` — React entry point
 - `frontend/src/App.jsx` — component that fetches `/stats.json` and renders worker/job data
 
 ### Step 2 — Create the frontend Dockerfile
 
-Create `dockerfiles/dev_frontend/Dockerfile` for the Vite container:
+Create `dockerfiles/dev_frontend/Dockerfile` following the same multi-stage pattern as the other dev Dockerfiles in this project (see `sample-Dockerfile` at the project root):
 
-- Base on a Node image.
-- Install dependencies from `frontend/package.json`.
-- Default command: `npm run dev` (Vite dev server with `--host 0.0.0.0 --port 8080`).
+```dockerfile
+FROM darthjee/scripts:0.7.0 as scripts
+FROM darthjee/vite_weave-base:0.0.4 as base
+
+COPY --chown=node:node \
+  ./frontend/package.json frontend/yarn.lock \
+  /home/node/app/
+
+######################################
+
+FROM base as builder
+
+ENV HOME_DIR /home/node
+
+USER root
+COPY --chown=node:node --from=scripts /home/scripts/builder/yarn_builder.sh /usr/local/sbin/yarn_builder.sh
+RUN /bin/bash yarn_builder.sh
+
+#######################
+# FINAL IMAGE
+FROM base
+ENV HOME_DIR /home/node
+
+COPY --chown=node:node --from=builder /home/node/yarn/new/ /usr/local/share/.cache/yarn/v6/
+
+USER node
+```
+
+- Uses `darthjee/vite_weave-base:0.0.4` as the base image (provides Node + Vite tooling).
+- Uses `darthjee/scripts` to install Yarn dependencies via `yarn_builder.sh` (same pattern as the navi dev Dockerfile).
+- The default command to start the dev server (`yarn dev --host 0.0.0.0 --port 8080`) is set in `docker-compose.yml`, not in the Dockerfile.
 
 ### Step 3 — Add the shared Docker volume
 
@@ -96,6 +125,7 @@ In `frontend/src/App.jsx`, implement:
 
 - `frontend/index.html`
 - `frontend/package.json`
+- `frontend/yarn.lock`
 - `frontend/vite.config.js`
 - `frontend/src/main.jsx`
 - `frontend/src/App.jsx`
