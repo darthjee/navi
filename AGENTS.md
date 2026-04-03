@@ -9,36 +9,36 @@ It reads a YAML configuration file and performs HTTP requests concurrently using
 
 ## Documentation
 
-All project documentation lives under [`docs/`](docs/):
+All project documentation lives under [`docs/agents/`](docs/agents/):
 
 | File | Contents |
 |------|----------|
-| [Architecture](docs/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
-| [Runtime Flow](docs/flow.md) | CLI entrypoint, config loading, initial enqueueing, Engine loop, worker execution, failure handling. |
-| [Contributing](docs/contribute.md) | Explanation on how to contribute, commit and open PRs |
-| [Dev Application](docs/dev-app.md) | The sample backend used to test Navi: a dynamic Express (`dev/`) application, endpoints, classes, testing, CI jobs, and Docker Compose services. |
-| [Plans](docs/plans/) | Implementation plans for ongoing or upcoming features. |
-| [Issues](docs/issues/) | Detailed specs for open GitHub issues. |
+| [Architecture](docs/agents/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
+| [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, initial enqueueing, Engine loop, worker execution, failure handling. |
+| [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
+| [Dev Application](docs/agents/dev-app.md) | The sample backend used to test Navi: a dynamic Express (`dev/`) application, endpoints, classes, testing, CI jobs, and Docker Compose services. |
+| [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
+| [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
 
-### Issues (`docs/issues/`)
+### Issues (`docs/agents/issues/`)
 
 Each file documents a GitHub issue in detail. Naming convention:
 
 ```
-docs/issues/<github_issue_id>_<issue_name>.md
+docs/agents/issues/<github_issue_id>_<issue_name>.md
 ```
 
-Example: `docs/issues/5_release_docker_image.md` for issue #5.
+Example: `docs/agents/issues/5_release_docker_image.md` for issue #5.
 
-### Plans (`docs/plans/`)
+### Plans (`docs/agents/plans/`)
 
 Each plan is a directory named after the GitHub issue ID and topic, containing one or more related files:
 
 ```
-docs/plans/<github_issue_id>_<topic>/<related_files>.md
+docs/agents/plans/<github_issue_id>_<topic>/<related_files>.md
 ```
 
-Example: `docs/plans/66_remove-spec-duplications/plan.md` for issue #66.
+Example: `docs/agents/plans/66_remove-spec-duplications/plan.md` for issue #66.
 
 ## Engineering Standards
 
