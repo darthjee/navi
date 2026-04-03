@@ -13,7 +13,7 @@ class Router {
   #workersRegistry;
 
   /**
-   * @param {object} params
+   * @param {object} params - Options for initializing the Router.
    * @param {object} params.jobRegistry - The job registry instance.
    * @param {object} params.workersRegistry - The workers registry instance.
    */

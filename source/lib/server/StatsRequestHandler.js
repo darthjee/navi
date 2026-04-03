@@ -9,7 +9,7 @@ class StatsRequestHandler extends RequestHandler {
   #workersRegistry;
 
   /**
-   * @param {object} params
+   * @param {object} params - Options for initializing the StatsRequestHandler.
    * @param {object} params.jobRegistry - The job registry instance.
    * @param {object} params.workersRegistry - The workers registry instance.
    */

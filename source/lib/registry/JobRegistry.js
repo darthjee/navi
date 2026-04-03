@@ -126,7 +126,7 @@ class JobRegistry {
 
   /**
    * Returns counts of jobs in each state.
-   * @returns {{ enqueued: number, processing: number, failed: number, finished: number, dead: number }}
+   * @returns {{ enqueued: number, processing: number, failed: number, finished: number, dead: number }} Counts of jobs in each state.
    */
   stats() {
     return {

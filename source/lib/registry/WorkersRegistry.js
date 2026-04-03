@@ -111,7 +111,7 @@ class WorkersRegistry {
 
   /**
    * Returns counts of workers in each state.
-   * @returns {{ idle: number, busy: number }}
+   * @returns {{ idle: number, busy: number }} Counts of workers in each state.
    */
   stats() {
     return {
