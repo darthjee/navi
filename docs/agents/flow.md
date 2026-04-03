@@ -47,6 +47,9 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then starts t
 workers:
   quantity: 5          # number of concurrent workers
 
+web:
+  port: 3000           # port for the monitoring web UI (omit to disable)
+
 clients:
   default:
     base_url: https://example.com
@@ -82,6 +85,10 @@ Each `ResourceRequest` entry may specify:
 - `status` — expected HTTP response status code.
 - `client` — name of the client to use (falls back to `default`).
 - `actions` — list of downstream resources to enqueue after a successful response, with parameter mappings.
+
+The optional top-level `web:` key configures the monitoring web UI:
+
+- `port` — TCP port where the Express web server listens. Omit the `web:` key entirely to run Navi without a web server.
 
 ---
 
@@ -167,11 +174,11 @@ All queues (`main`, `failed`, `finished`, `deadJobs`) are managed inside `JobReg
 
 ---
 
-## 8. Future Web UI
+## 8. Web UI
 
-When enabled by configuration, `Application` will start a local web server (built with React + React Bootstrap — dependencies already included).
+When the `web:` key is present in the configuration, `Application` starts a local **read-only monitoring web UI** built with React + React Bootstrap. It is served by an Express.js `WebServer` on the configured port.
 
-The web UI will display:
+The web UI displays:
 
 - Jobs currently in queue.
 - Jobs being processed.
@@ -179,4 +186,11 @@ The web UI will display:
 - Failed jobs (with last failure reason).
 - Dead jobs (exceeded retry limit).
 
-This interface is read-only and is intended for monitoring ongoing or recent runs.
+To enable it, add the following to your configuration file:
+
+```yaml
+web:
+  port: 3000
+```
+
+Omit the `web:` key entirely to run Navi in headless mode (no web server).
