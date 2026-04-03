@@ -1,4 +1,11 @@
+/**
+ * Projects a data object (or array of objects) to a defined set of attributes,
+ * stripping any fields not in the allowlist.
+ */
 class Serializer {
+  /**
+   * @param {string[]} attributes - List of attribute names to keep in the output.
+   */
   constructor(attributes) {
     this._attributes = attributes;
   }
