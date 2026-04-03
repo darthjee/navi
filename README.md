@@ -49,6 +49,9 @@ Navi is configured via a YAML file that defines HTTP clients, resources, and the
 workers:
   quantity: 5          # number of concurrent workers (default: 1)
 
+web:
+  port: 3000           # port for the monitoring web UI (omit to disable)
+
 clients:
   default:
     base_url: https://example.com
@@ -83,6 +86,7 @@ resources:
 | Field | Description |
 |-------|-------------|
 | `workers.quantity` | Number of concurrent workers. Defaults to `1`. |
+| `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. |
 | `resources.<name>` | A named group of URL requests to warm. |
@@ -195,6 +199,23 @@ yarn docs    # generate JSDoc API documentation
 The following features are planned but not yet implemented:
 
 - **WorkersFactory** — the factory responsible for instantiating `Worker` instances is planned but not yet implemented. Workers are currently initialized directly inside `WorkersRegistry`.
-- **Web UI** — a local read-only monitoring interface (built with React + React Bootstrap) that will display the state of queued, in-progress, finished, failed, and dead jobs in real time.
 - **First release (v0.0.1)** — the project has not yet had a tagged release.
+
+### Web UI
+
+Navi includes a built-in **read-only monitoring web UI** (built with React + React Bootstrap).
+Enable it by adding a `web:` section to your configuration file:
+
+```yaml
+web:
+  port: 3000
+```
+
+When enabled, the UI is accessible at `http://localhost:<port>` and displays the real-time state of all job queues:
+
+- Jobs currently in queue.
+- Jobs being processed.
+- Finished jobs.
+- Failed jobs (with last failure reason).
+- Dead jobs (exceeded retry limit).
 

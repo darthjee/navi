@@ -45,6 +45,9 @@ Navi is configured via a YAML file that defines HTTP clients, resources, and the
 workers:
   quantity: 5          # number of concurrent workers (default: 1)
 
+web:
+  port: 3000           # port for the monitoring web UI (omit to disable)
+
 clients:
   default:
     base_url: https://example.com
@@ -79,6 +82,7 @@ resources:
 | Field | Description |
 |-------|-------------|
 | `workers.quantity` | Number of concurrent workers. Defaults to `1`. |
+| `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. |
 | `resources.<name>` | A named group of URL requests to warm. |

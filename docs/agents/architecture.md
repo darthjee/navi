@@ -31,12 +31,13 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 
 | Class | Responsibility |
 |-------|---------------|
-| `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, and `WorkersConfig`. Entry point: `Config.fromFile(filePath)`. |
+| `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
 | `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
 | `Job` | Wraps a unit of work (payload) to be consumed from the queue. Tracks a failure counter and last exception. |
 | `WorkersConfig` | Holds the worker pool size (`quantity`, default 1). |
+| `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 
 ### `registry/`
 
@@ -56,7 +57,7 @@ Business logic and I/O layer.
 
 | Class | Responsibility |
 |-------|---------------|
-| `Application` | Main orchestrator. `loadConfig(configPath)` initializes `config`, `jobRegistry`, and `workersRegistry`. Enqueues initial parameter-free resources on startup. Optionally starts the web UI. |
+| `Application` | Main orchestrator. `loadConfig(configPath)` initializes `config`, `jobRegistry`, and `workersRegistry`. Enqueues initial parameter-free resources on startup. Optionally starts the web UI when `web:` is present in configuration. |
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
 | `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL and throws `RequestFailed` if the status does not match. |
@@ -65,6 +66,8 @@ Business logic and I/O layer.
 | `JobFactory` | Creates `Job` instances from a `ResourceRequest` and a parameter map. |
 | `WorkersFactory` | Creates and initializes `Worker` instances for the pool   ← planned; not yet implemented. |
 | `ResponseParser` | Parses HTTP response bodies and extracts parameters for downstream action enqueueing. |
+| `WebServer` | Optional Express.js server that serves the monitoring web UI. Created via `WebServer.build()`; returns `null` when `webConfig` is absent. Listens on the port defined by `WebConfig`. |
+| `Router` | Defines the Express routes for the web UI. Exposes `GET /stats.json` returning combined job and worker statistics. |
 
 ## Module System
 
