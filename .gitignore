@@ -146,6 +146,9 @@ docker_volumes/node_modules*
 docker_volumes/static/*
 !docker_volumes/static/.gitkeep
 
+source/public/*
+!source/public/.gitkeep
+
 frontend/node_modules
 
 **/*.orig
