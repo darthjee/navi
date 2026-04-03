@@ -142,5 +142,6 @@ source/report
 source/docs
 
 docker_volumes/proxy_cache
+docker_volumes/node_modules*
 
 **/*.orig

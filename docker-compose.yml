@@ -48,6 +48,6 @@ services:
     command: node server.js
     volumes:
       - ./dev/:/home/node/app/
-      - ./docker_volumes/node_modules:/home/node/app/node_modules
+      - ./docker_volumes/node_modules_dev:/home/node/app/node_modules
     ports:
       - 0.0.0.0:3020:80
