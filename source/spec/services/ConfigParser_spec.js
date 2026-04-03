@@ -1,5 +1,6 @@
 import { MissingClientsConfig } from '../../lib/exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../lib/exceptions/MissingResourceConfig.js';
+import { WebConfig } from '../../lib/models/WebConfig.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ConfigParser } from '../../lib/services/ConfigParser.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
@@ -108,6 +109,33 @@ describe('ConfigParser', () => {
         expect(() => ConfigParser.fromObject(null)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',
         );
+      });
+    });
+
+    describe('when the config has web configuration', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_web.yml');
+      });
+
+      it('returns a WebConfig', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.webConfig).toEqual(jasmine.objectContaining({ port: 3000 }));
+      });
+
+      it('returns a WebConfig instance', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.webConfig instanceof WebConfig).toBeTrue();
+      });
+    });
+
+    describe('when the config has no web key', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
+      });
+
+      it('returns null for webConfig', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.webConfig).toBeNull();
       });
     });
   });

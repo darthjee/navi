@@ -3,6 +3,7 @@ import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNot
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { WebServer } from '../server/WebServer.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
 class Application {
@@ -46,12 +47,14 @@ class Application {
   }
 
   /**
-   * Starts the application by building the engine, enqueueing initial jobs, and starting the engine.
+   * Starts the application by building the engine, web server, enqueueing initial jobs, and starting both.
    * @returns {void}
    */
   run() {
     this.engine = this.buildEngine();
+    this.webServer = this.buildWebServer();
     this.enqueueFirstJobs();
+    this.webServer?.start();
     this.engine.start();
   }
 
@@ -63,6 +66,18 @@ class Application {
     return new Engine({
       jobRegistry: this.jobRegistry,
       workersRegistry: this.workersRegistry
+    });
+  }
+
+  /**
+   * Builds and returns a WebServer if web configuration is present, otherwise null.
+   * @returns {WebServer|null} The created WebServer instance or null.
+   */
+  buildWebServer() {
+    return WebServer.build({
+      webConfig:       this.config.webConfig,
+      jobRegistry:     this.jobRegistry,
+      workersRegistry: this.workersRegistry,
     });
   }
 

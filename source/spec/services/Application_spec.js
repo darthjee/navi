@@ -3,6 +3,7 @@ import { ConfigurationFileNotProvided } from '../../lib/exceptions/Configuration
 import { Config } from '../../lib/models/Config.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
+import { WebServer } from '../../lib/server/WebServer.js';
 import { Application } from '../../lib/services/Application.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { DummyJobFactory } from '../support/dummies/factories/DummyJobFactory.js';
@@ -91,6 +92,37 @@ describe('Application', () => {
     it('processes all initial parameter-free jobs', () => {
       app.run();
       expect(jobRegistry.hasJob()).toBeFalse();
+    });
+
+    it('sets webServer to null when no web config present', () => {
+      app.run();
+      expect(app.webServer).toBeNull();
+    });
+  });
+
+  describe('#buildWebServer', () => {
+    describe('when config has no web key', () => {
+      beforeEach(() => {
+        configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+        app = new Application();
+        app.loadConfig(configFilePath);
+      });
+
+      it('returns null', () => {
+        expect(app.buildWebServer()).toBeNull();
+      });
+    });
+
+    describe('when config has a web key', () => {
+      beforeEach(() => {
+        configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_web.yml');
+        app = new Application();
+        app.loadConfig(configFilePath);
+      });
+
+      it('returns a WebServer instance', () => {
+        expect(app.buildWebServer() instanceof WebServer).toBeTrue();
+      });
     });
   });
 });
