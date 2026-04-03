@@ -30,16 +30,14 @@ workflows:
             tags:
               only: /\d+\.\d+\.\d+/
             branches:
-              only:
-                - main
+              ignore: /.*/
       - update-description:
           requires: [build-and-release]
           filters:
             tags:
               only: /\d+\.\d+\.\d+/
             branches:
-              only:
-                - main
+              ignore: /.*/
 
 jobs:
   jasmine:
