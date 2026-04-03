@@ -2,6 +2,7 @@ import { Client } from './Client.js';
 import { MissingClientsConfig } from '../exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../exceptions/MissingResourceConfig.js';
 import { Resource } from '../models/Resource.js';
+import { WebConfig } from '../models/WebConfig.js';
 import { WorkersConfig } from '../models/WorkersConfig.js';
 
 /**
@@ -33,12 +34,13 @@ class ConfigParser {
   }
 
   /**
-   * Parses the configuration object and maps resources and clients to model instances.
+   * Parses the config object into a structured configuration.
    * @returns {{
    * resources: Record<string, Resource>,
    * clients: Record<string, Client>,
-   * workers: WorkersConfig
-   * }} Mapped resources and clients by name. and workers configuration.
+   * workersConfig: WorkersConfig,
+   * webConfig: WebConfig|null
+   * }} Parsed configuration with resources, clients, workersConfig, and webConfig.
    */
   parse() {
     const mappedResources = Object.fromEntries(
@@ -50,14 +52,20 @@ class ConfigParser {
     );
 
     return {
-      resources: mappedResources,
-      clients: mappedClients,
-      workersConfig: this.#workersConfig()
+      resources:     mappedResources,
+      clients:       mappedClients,
+      workersConfig: this.#workersConfig(),
+      webConfig:     this.#webConfig(),
     };
   }
 
   #workersConfig() {
     return new WorkersConfig(this.config.workers);
+  }
+
+  #webConfig() {
+    if (!this.config.web) return null;
+    return new WebConfig(this.config.web);
   }
 
   /**
