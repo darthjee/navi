@@ -3,8 +3,8 @@ import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNot
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
-import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 import { WebServer } from '../server/WebServer.js';
+import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
 class Application {
   #workers;

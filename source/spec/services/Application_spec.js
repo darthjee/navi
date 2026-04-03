@@ -3,8 +3,8 @@ import { ConfigurationFileNotProvided } from '../../lib/exceptions/Configuration
 import { Config } from '../../lib/models/Config.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
-import { Application } from '../../lib/services/Application.js';
 import { WebServer } from '../../lib/server/WebServer.js';
+import { Application } from '../../lib/services/Application.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { DummyJobFactory } from '../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/dummies/factories/DummyWorkerFactory.js';
