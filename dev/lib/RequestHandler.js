@@ -2,7 +2,16 @@ import DataNavigator from './DataNavigator.js';
 import { notFound } from './not_found.js';
 import RouteParamsExtractor from './RouteParamsExtractor.js';
 
+/**
+ * Handles an incoming Express request by navigating the in-memory data,
+ * optionally serializing the result, and writing the JSON response.
+ */
 class RequestHandler {
+  /**
+   * @param {string} route - Express route pattern used to derive navigation steps.
+   * @param {Object} data - Root data structure.
+   * @param {import('./Serializer.js').default|null} [serializer] - Optional serializer to project the result.
+   */
   constructor(route, data, serializer = null) {
     this._route = route;
     this._data = data;

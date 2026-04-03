@@ -1,7 +1,15 @@
 import RequestHandler from './RequestHandler.js';
 import Serializer from './Serializer.js';
 
+/**
+ * Registers individual GET routes on an Express router, wiring each route
+ * to a {@link RequestHandler} and an optional {@link Serializer}.
+ */
 class RouteRegister {
+  /**
+   * @param {import('express').Router} router - Express router instance.
+   * @param {Object} data - Root data structure shared across all handlers.
+   */
   constructor(router, data) {
     this._router = router;
     this._data = data;
