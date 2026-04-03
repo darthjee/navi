@@ -24,7 +24,7 @@ Create `frontend/` at the project root with a minimal Vite + React setup:
   - Dependencies: `react`, `react-dom`, `react-bootstrap`, `bootstrap`, `@tanstack/react-query`, `date-fns`
   - DevDependencies: `vite`, `@vitejs/plugin-react`, `eslint` + plugins, `sass`, `jasmine`, `nyc`
 - `frontend/yarn.lock` — committed lockfile (required by the Dockerfile COPY step)
-- `frontend/vite.config.js` — set `build.outDir` to `dist` (mapped to shared volume via Docker)
+- `frontend/vite.config.js` — based on `docs/agents/plans/132_add_frontend_structure/sample-vite.config.js`; no changes needed. Configures the dev server (port 8080, host 0.0.0.0, cors), and enables the React plugin with `babel-plugin-react-compiler`. No explicit `build.outDir` needed — Vite defaults to `dist/`, which is already mapped to the shared Docker volume.
 - `frontend/src/main.jsx` — React entry point
 - `frontend/src/App.jsx` — component that fetches `/stats.json` and renders worker/job data
 
