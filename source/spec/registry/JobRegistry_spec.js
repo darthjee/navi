@@ -3,6 +3,7 @@ import { Job } from '../../lib/models/Job.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
+import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
 import { Queue } from '../../lib/utils/Queue.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
@@ -14,13 +15,15 @@ describe('JobRegistry', () => {
   let jobs;
   let failedJobs;
   let finished;
+  let processing;
 
   beforeEach(() => {
     clients = new ClientRegistry();
     jobs = new Queue();
     failedJobs = new Queue();
     finished = new Queue();
-    registry = new JobRegistry({ jobs, failedJobs, finished, clients });
+    processing = new IdentifyableCollection();
+    registry = new JobRegistry({ jobs, failedJobs, finished, processing, clients });
     resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
   });
 
@@ -59,6 +62,12 @@ describe('JobRegistry', () => {
       it('returns undefined', () => {
         expect(registry.pick()).toBeUndefined();
       });
+
+      it('does not add anything to processing', () => {
+        registry.pick();
+
+        expect(processing.hasAny()).toBeFalse();
+      });
     });
 
     describe('when the queue has jobs', () => {
@@ -87,6 +96,12 @@ describe('JobRegistry', () => {
         registry.pick();
 
         expect(registry.hasJob()).toBeFalse();
+      });
+
+      it('adds the picked job to processing', () => {
+        const job = registry.pick();
+
+        expect(processing.has(job.id)).toBeTrue();
       });
     });
 
@@ -227,6 +242,17 @@ describe('JobRegistry', () => {
       expect(registry.hasJob()).toBeTrue();
       expect(registry.pick()).toEqual(job);
     });
+
+    it('removes the job from processing', () => {
+      const job = registry.enqueue({ parameters: { value: 1 } });
+      const picked = registry.pick();
+
+      expect(processing.has(picked.id)).toBeTrue();
+
+      registry.fail(job);
+
+      expect(processing.has(picked.id)).toBeFalse();
+    });
   });
 
   describe('#finish', () => {
@@ -244,6 +270,17 @@ describe('JobRegistry', () => {
 
     it('is safe to call with undefined', () => {
       expect(() => registry.finish(undefined)).not.toThrow();
+    });
+
+    it('removes the job from processing', () => {
+      const job = registry.enqueue({ parameters: { value: 1 } });
+      const picked = registry.pick();
+
+      expect(processing.has(picked.id)).toBeTrue();
+
+      registry.finish(job);
+
+      expect(processing.has(picked.id)).toBeFalse();
     });
   });
 });
