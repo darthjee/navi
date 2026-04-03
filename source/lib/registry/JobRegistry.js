@@ -12,6 +12,7 @@ class JobRegistry {
   #failed;
   #finished;
   #dead;
+  #processing;
   #lockedBy;
   #factory;
 
@@ -22,15 +23,17 @@ class JobRegistry {
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
    * @param {Queue} [options.failed] - An optional queue to use for failed jobs. If not provided, a new Queue will be created.
-   * @param {Queue} [options.finished] - An optional queue to use for finished jobs. If not provided, a new Queue will be created.
-   * @param {Queue} [options.dead] - An optional queue to use for dead jobs. If not provided, a new Queue will be created.
+   * @param {IdentifyableCollection} [options.finished] - An optional collection to use for finished jobs. If not provided, a new IdentifyableCollection will be created.
+   * @param {IdentifyableCollection} [options.dead] - An optional collection to use for dead jobs. If not provided, a new IdentifyableCollection will be created.
+   * @param {IdentifyableCollection} [options.processing] - An optional collection to use for jobs currently being processed. If not provided, a new IdentifyableCollection will be created.
    * @param {JobFactory} [options.factory] - An optional JobFactory to use for creating jobs. If not provided, a new JobFactory will be created with the provided clients.
    */
-  constructor({ queue, failed, finished, dead, clients, factory }) {
+  constructor({ queue, failed, finished, dead, processing, clients, factory }) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new Queue();
     this.#finished = finished || new IdentifyableCollection();
     this.#dead = dead || new IdentifyableCollection();
+    this.#processing = processing || new IdentifyableCollection();
 
     this.#lockedBy = null;
     this.#factory = factory || new JobFactory({ clients });
@@ -51,10 +54,13 @@ class JobRegistry {
 
   /**
    * Marks a job as failed.
+   * Removes the job from processing before queuing it for retry or marking it as dead.
    * @param {Job} job - The job to mark as failed.
    * @returns {void}
    */
   fail(job) {
+    if (!job) return;
+    this.#processing.remove(job.id);
     if (job.exhausted()) {
       this.#dead.push(job);
     } else {
@@ -64,19 +70,26 @@ class JobRegistry {
 
   /**
    * Marks a job as finished.
+   * Removes the job from processing before adding it to the finished collection.
    * @param {Job} job - The job to mark as finished.
    * @returns {void}
    */
   finish(job) {
+    if (!job) return;
+    this.#processing.remove(job.id);
     this.#finished.push(job);
   }
 
   /**
-   * Picks (removes and returns) the first job from the queue.
+   * Picks (removes and returns) the first job from the queue and adds it to processing.
    * @returns {Job|undefined} The first job in the queue, or undefined if empty.
    */
   pick() {
-    return this.#enqueued.pick() || this.#failed.pick();
+    const job = this.#enqueued.pick() || this.#failed.pick();
+    if (job) {
+      this.#processing.push(job);
+    }
+    return job;
   }
 
   /**
