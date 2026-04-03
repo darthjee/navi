@@ -123,6 +123,20 @@ class JobRegistry {
   hasLock(worker) {
     return this.#lockedBy === worker.id;
   }
+
+  /**
+   * Returns counts of jobs in each state.
+   * @returns {{ enqueued: number, processing: number, failed: number, finished: number, dead: number }}
+   */
+  stats() {
+    return {
+      enqueued: this.#enqueued.size(),
+      processing: this.#processing.size(),
+      failed: this.#failed.size(),
+      finished: this.#finished.size(),
+      dead: this.#dead.size(),
+    };
+  }
 }
 
 export { JobRegistry };

@@ -110,6 +110,17 @@ class WorkersRegistry {
   }
 
   /**
+   * Returns counts of workers in each state.
+   * @returns {{ idle: number, busy: number }}
+   */
+  stats() {
+    return {
+      idle: this.#idle.size(),
+      busy: this.#busy.size(),
+    };
+  }
+
+  /**
    * Builds a new Worker with a unique UUID and adds it to the internal workers list.
    * @returns {Worker} The newly created Worker instance.
    */
