@@ -26,15 +26,21 @@ Create `frontend/` at the project root with a minimal Vite + React setup:
 
 ### Step 2 — Create the frontend Dockerfile
 
-Create `dockerfiles/dev_frontend/Dockerfile` following the same multi-stage pattern as the other dev Dockerfiles in this project (see `sample-Dockerfile` at the project root):
+Create `dockerfiles/dev_frontend/Dockerfile` as a single self-contained multi-stage image, inlining what `vite_weave-base` used to provide (see `sample-base-Dockerfile` at the project root):
 
 ```dockerfile
 FROM darthjee/scripts:0.7.0 as scripts
-FROM darthjee/vite_weave-base:0.0.4 as base
+FROM darthjee/node:0.2.1 as base
+
+USER root
+RUN apt-get update && apt-get install -y rsync && rm -rf /var/lib/apt/lists/*
+USER node
 
 COPY --chown=node:node \
   ./frontend/package.json frontend/yarn.lock \
   /home/node/app/
+COPY --chown=node:node --from=scripts \
+  /home/scripts/sbin/deploy_frontend.sh /usr/local/sbin/
 
 ######################################
 
@@ -56,9 +62,10 @@ COPY --chown=node:node --from=builder /home/node/yarn/new/ /usr/local/share/.cac
 USER node
 ```
 
-- Uses `darthjee/vite_weave-base:0.0.4` as the base image (provides Node + Vite tooling).
-- Uses `darthjee/scripts` to install Yarn dependencies via `yarn_builder.sh` (same pattern as the navi dev Dockerfile).
-- The default command to start the dev server (`yarn dev --host 0.0.0.0 --port 8080`) is set in `docker-compose.yml`, not in the Dockerfile.
+- Based on `darthjee/node:0.2.1` with `rsync` installed (same stack as the navi dev image).
+- Copies `deploy_frontend.sh` from `darthjee/scripts` for production build deployment.
+- Yarn dependencies are pre-cached via `yarn_builder.sh` (same pattern as the navi dev Dockerfile).
+- The dev server command (`yarn dev --host 0.0.0.0 --port 8080`) is set in `docker-compose.yml`, not in the Dockerfile.
 
 ### Step 3 — Add the shared Docker volume
 
