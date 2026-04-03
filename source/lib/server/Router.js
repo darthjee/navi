@@ -1,12 +1,18 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
 import { RouteRegister } from './RouteRegister.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
 const { Router: ExpressRouter } = express;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, '../../public');
+
+const staticLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max:      200,
+});
 
 /**
  * Builds the Express router with all application routes.
@@ -44,7 +50,7 @@ class Router {
 
     router.use(express.static(publicDir));
 
-    router.get('*', (_req, res) => {
+    router.get('*', staticLimiter, (_req, res) => {
       res.sendFile(path.join(publicDir, 'index.html'));
     });
 
