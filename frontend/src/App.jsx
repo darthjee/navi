@@ -1,38 +1,16 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function WorkerCard({ worker }) {
-  const statusVariant = {
-    idle:   'success',
-    busy:   'warning',
-    failed: 'danger',
-  }[worker.status] || 'secondary';
-
+function StatItem({ label, value, variant }) {
   return (
-    <div className={`card border-${statusVariant} mb-2`}>
-      <div className="card-body py-2 px-3">
-        <span className="fw-bold me-2">Worker {worker.id}</span>
-        <span className={`badge bg-${statusVariant}`}>{worker.status}</span>
-        {worker.job && (
-          <span className="ms-2 text-muted small">{worker.job}</span>
-        )}
+    <div className="col">
+      <div className={`card text-bg-${variant} h-100`}>
+        <div className="card-body text-center">
+          <div className="fs-2 fw-bold">{value}</div>
+          <div className="text-uppercase small">{label}</div>
+        </div>
       </div>
     </div>
-  );
-}
-
-function JobRow({ job }) {
-  return (
-    <tr>
-      <td>{job.id}</td>
-      <td>{job.url}</td>
-      <td>
-        <span className={`badge bg-${job.status === 'pending' ? 'secondary' : 'info'}`}>
-          {job.status}
-        </span>
-      </td>
-      <td>{job.retries ?? 0}</td>
-    </tr>
   );
 }
 
@@ -78,43 +56,30 @@ function App() {
     );
   }
 
-  const workers = stats?.workers ?? [];
-  const jobs = stats?.jobs ?? [];
+  const workers = stats?.workers ?? {};
+  const jobs = stats?.jobs ?? {};
 
   return (
     <div className="container mt-4">
       <h1 className="mb-4">Navi — Cache Warmer</h1>
 
       <section className="mb-5">
-        <h2 className="h4 mb-3">Workers ({workers.length})</h2>
-        {workers.length === 0 ? (
-          <p className="text-muted">No workers registered.</p>
-        ) : (
-          workers.map((w) => <WorkerCard key={w.id} worker={w} />)
-        )}
+        <h2 className="h4 mb-3">Workers</h2>
+        <div className="row row-cols-2 row-cols-md-4 g-3">
+          <StatItem label="Idle"  value={workers.idle ?? 0} variant="success" />
+          <StatItem label="Busy"  value={workers.busy ?? 0} variant="warning" />
+        </div>
       </section>
 
       <section>
-        <h2 className="h4 mb-3">Job Queue ({jobs.length})</h2>
-        {jobs.length === 0 ? (
-          <p className="text-muted">No jobs in queue.</p>
-        ) : (
-          <table className="table table-bordered table-sm">
-            <thead className="table-light">
-              <tr>
-                <th>ID</th>
-                <th>URL</th>
-                <th>Status</th>
-                <th>Retries</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((job) => (
-                <JobRow key={job.id} job={job} />
-              ))}
-            </tbody>
-          </table>
-        )}
+        <h2 className="h4 mb-3">Jobs</h2>
+        <div className="row row-cols-2 row-cols-md-5 g-3">
+          <StatItem label="Enqueued"   value={jobs.enqueued   ?? 0} variant="secondary" />
+          <StatItem label="Processing" value={jobs.processing ?? 0} variant="primary"   />
+          <StatItem label="Failed"     value={jobs.failed     ?? 0} variant="danger"    />
+          <StatItem label="Finished"   value={jobs.finished   ?? 0} variant="success"   />
+          <StatItem label="Dead"       value={jobs.dead       ?? 0} variant="dark"      />
+        </div>
       </section>
     </div>
   );
