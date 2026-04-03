@@ -18,7 +18,11 @@ Add a Vite + React frontend application to Navi that displays worker and job dat
 Create `frontend/` at the project root with a minimal Vite + React setup:
 
 - `frontend/index.html` — entry HTML pointing to `src/main.jsx`
-- `frontend/package.json` — scripts: `dev` (Vite dev server on port 8080), `build`; uses Yarn (not npm)
+- `frontend/package.json` — based on `docs/agents/plans/132_add_frontend_structure/sample-package.json`; adapt `name` and `description` to Navi. Key points:
+  - `"type": "module"` (ES Modules)
+  - `"scripts"`: `build` (`vite build`), `server` (`vite dev --host 0.0.0.0 --port 8080`), plus `lint`, `lint_fix`, `test`, `report`
+  - Dependencies: `react`, `react-dom`, `react-bootstrap`, `bootstrap`, `@tanstack/react-query`, `date-fns`
+  - DevDependencies: `vite`, `@vitejs/plugin-react`, `eslint` + plugins, `sass`, `jasmine`, `nyc`
 - `frontend/yarn.lock` — committed lockfile (required by the Dockerfile COPY step)
 - `frontend/vite.config.js` — set `build.outDir` to `dist` (mapped to shared volume via Docker)
 - `frontend/src/main.jsx` — React entry point
@@ -26,7 +30,7 @@ Create `frontend/` at the project root with a minimal Vite + React setup:
 
 ### Step 2 — Create the frontend Dockerfile
 
-Create `dockerfiles/dev_frontend/Dockerfile` as a single self-contained multi-stage image, inlining what `vite_weave-base` used to provide (see `sample-base-Dockerfile` at the project root):
+Create `dockerfiles/dev_frontend/Dockerfile` as a single self-contained multi-stage image, inlining what `vite_weave-base` used to provide (see `docs/agents/plans/132_add_frontend_structure/sample-base-Dockerfile`):
 
 ```dockerfile
 FROM darthjee/scripts:0.7.0 as scripts
@@ -65,7 +69,7 @@ USER node
 - Based on `darthjee/node:0.2.1` with `rsync` installed (same stack as the navi dev image).
 - Copies `deploy_frontend.sh` from `darthjee/scripts` for production build deployment.
 - Yarn dependencies are pre-cached via `yarn_builder.sh` (same pattern as the navi dev Dockerfile).
-- The dev server command (`yarn dev --host 0.0.0.0 --port 8080`) is set in `docker-compose.yml`, not in the Dockerfile.
+- The dev server command (`yarn server`) is set in `docker-compose.yml`, not in the Dockerfile (maps to `vite dev --host 0.0.0.0 --port 8080` via the `server` script in `package.json`).
 
 ### Step 3 — Add the shared Docker volume
 
