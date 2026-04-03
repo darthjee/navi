@@ -41,8 +41,8 @@ function App() {
     );
   }
 
-  const workers = stats?.workers ?? {};
-  const jobs = stats?.jobs ?? {};
+  const workers = stats.workers;
+  const jobs = stats.jobs;
 
   return (
     <div className="container mt-4">
@@ -51,19 +51,19 @@ function App() {
       <section className="mb-5">
         <h2 className="h4 mb-3">Workers</h2>
         <div className="row row-cols-2 row-cols-md-4 g-3">
-          <StatItem label="Idle"  value={workers.idle ?? 0} variant="success" />
-          <StatItem label="Busy"  value={workers.busy ?? 0} variant="warning" />
+          <StatItem label="Idle"  value={workers.idle} variant="success" />
+          <StatItem label="Busy"  value={workers.busy} variant="warning" />
         </div>
       </section>
 
       <section>
         <h2 className="h4 mb-3">Jobs</h2>
         <div className="row row-cols-2 row-cols-md-5 g-3">
-          <StatItem label="Enqueued"   value={jobs.enqueued   ?? 0} variant="secondary" />
-          <StatItem label="Processing" value={jobs.processing ?? 0} variant="primary"   />
-          <StatItem label="Failed"     value={jobs.failed     ?? 0} variant="danger"    />
-          <StatItem label="Finished"   value={jobs.finished   ?? 0} variant="success"   />
-          <StatItem label="Dead"       value={jobs.dead       ?? 0} variant="dark"      />
+          <StatItem label="Enqueued"   value={jobs.enqueued}   variant="secondary" />
+          <StatItem label="Processing" value={jobs.processing} variant="primary"   />
+          <StatItem label="Failed"     value={jobs.failed}     variant="danger"    />
+          <StatItem label="Finished"   value={jobs.finished}   variant="success"   />
+          <StatItem label="Dead"       value={jobs.dead}       variant="dark"      />
         </div>
       </section>
     </div>
