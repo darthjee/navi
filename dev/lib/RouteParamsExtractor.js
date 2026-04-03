@@ -1,4 +1,12 @@
+/**
+ * Converts an Express route pattern and its resolved params into the
+ * ordered steps array expected by {@link DataNavigator}.
+ */
 class RouteParamsExtractor {
+  /**
+   * @param {string} route - Express route pattern (e.g. `/categories/:id.json`).
+   * @param {Object<string, string>} params - Resolved route params from `req.params`.
+   */
   constructor(route, params) {
     this._route = route;
     this._params = params;
