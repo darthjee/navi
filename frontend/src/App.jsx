@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StatItem from './components/StatItem.jsx';
+import fetchStats from './clients/StatsClient.js';
 
 function App() {
   const [stats, setStats] = useState(null);
@@ -9,11 +10,7 @@ function App() {
 
   useEffect(() => {
     const load = () => {
-      fetch('/stats.json')
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
+      fetchStats()
         .then((data) => {
           setStats(data);
           setError(null);
