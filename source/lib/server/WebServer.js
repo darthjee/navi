@@ -24,7 +24,7 @@ class WebServer {
   /**
    * Starts the Express server on the configured port.
    * The returned http.Server can be used to close the server (e.g. in tests).
-   * @returns {object} The http.Server instance.
+   * @returns {http.Server} The http.Server instance.
    */
   start() {
     return this.#app.listen(this.#port);

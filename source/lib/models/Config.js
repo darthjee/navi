@@ -13,13 +13,7 @@ class Config {
    * @param {Record<string, Resource>} params.resources - A mapping of resource names to Resource instances.
    * @param {Record<string, Client>} params.clients - A mapping of client names to Client instances.
    * @param {WorkersConfig} params.workersConfig - The configuration for worker instances.
-   */
-  /**
-   * @param {object} params - Configuration parameters.
-   * @param {object} params.resources - Resource definitions.
-   * @param {object} params.clients - Client definitions.
-   * @param {object} params.workersConfig - Workers configuration.
-   * @param {object|null} [params.webConfig] - Optional web server configuration.
+   * @param {WebConfig|null} [params.webConfig] - Optional web server configuration.
    */
   constructor({ resources, clients, workersConfig, webConfig }) {
     this.resourceRegistry = new ResourceRegistry(resources);
