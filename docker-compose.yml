@@ -51,3 +51,14 @@ services:
       - ./docker_volumes/node_modules_dev:/home/node/app/node_modules
     ports:
       - 0.0.0.0:3020:80
+
+  navi_frontend:
+    image: navi_frontend:dev
+    build:
+      context: .
+      dockerfile: dockerfiles/dev_frontend/Dockerfile
+    command: yarn build
+    volumes:
+      - ./frontend:/home/node/app
+      - ./docker_volumes/node_modules_frontend:/home/node/app/node_modules
+      - ./source/public:/home/node/app/dist
