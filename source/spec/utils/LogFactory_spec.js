@@ -1,6 +1,6 @@
-import { LogFactory } from '../../lib/utils/LogFactory.js';
 import { IncrementalIdGenerator } from '../../lib/utils/IncrementalIdGenerator.js';
 import { Log } from '../../lib/utils/Log.js';
+import { LogFactory } from '../../lib/utils/LogFactory.js';
 
 describe('LogFactory', () => {
   let factory;

@@ -1,5 +1,5 @@
-import { Log } from './Log.js';
 import { IncrementalIdGenerator } from './IncrementalIdGenerator.js';
+import { Log } from './Log.js';
 
 /**
  * LogFactory creates Log instances with automatically assigned incremental IDs.

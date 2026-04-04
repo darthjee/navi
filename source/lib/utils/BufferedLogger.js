@@ -1,5 +1,5 @@
-import { Logger } from './Logger.js';
 import { LogBuffer } from './LogBuffer.js';
+import { Logger } from './Logger.js';
 
 /**
  * BufferedLogger extends Logger functionality by maintaining a history of log messages.
