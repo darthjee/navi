@@ -14,12 +14,12 @@ navi_app ──► navi_proxy (tent, :3010) ──► navi_dev_app (:3020/:80)
 
 ---
 
-## `dev/` — Express/Node.js application
+## `dev/app/` — Express/Node.js application
 
 ### Structure
 
 ```
-dev/
+dev/app/
 ├── server.js             # Entrypoint (script) — loads data.yml and calls app.listen(80)
 ├── app.js                # App module — builds and exports the configured Express app
 ├── data.yml              # Data source: categories and items
@@ -52,7 +52,7 @@ dev/
 
 **Stack:** Node.js (ES Modules), Express 4, js-yaml
 
-**Server launcher (entrypoint):** `server.js` — reads `data.yml` (or a path from `process.argv[2]`), parses it with js-yaml, builds the app, and calls `app.listen(80)`. This is the only file in `dev/` that acts as a script.
+**Server launcher (entrypoint):** `server.js` — reads `data.yml` (or a path from `process.argv[2]`), parses it with js-yaml, builds the app, and calls `app.listen(80)`. This is the only file in `dev/app/` that acts as a script.
 
 **App module:** `app.js` — exports `buildApp(data)`, which constructs the Express application with all routes registered and a catch-all 404 handler. Imported by both `server.js` and the test suite.
 
@@ -179,7 +179,7 @@ Tests live in `spec/`. They import the Express app (or individual classes) direc
 
 ### Running tests
 
-Inside the `dev/` directory:
+Inside the `dev/app/` directory:
 
 ```bash
 yarn test       # Run tests with c8 coverage (text + HTML)
@@ -196,8 +196,8 @@ yarn report     # JSCPD duplication analysis
 |-----|-----------|-------------|
 | `jasmine` | `source/` | Runs Navi's own tests + uploads coverage to Codacy (partial) |
 | `checks` | `source/` | ESLint + JSCPD |
-| `jasmine-dev` | `dev/` | Runs dev-app tests + uploads coverage to Codacy (partial) |
-| `checks-dev` | `dev/` | ESLint + JSCPD |
+| `jasmine-dev` | `dev/app/` | Runs dev-app tests + uploads coverage to Codacy (partial) |
+| `checks-dev` | `dev/app/` | ESLint + JSCPD |
 | `coverage-final` | — | Sends the Codacy `final` signal after both partial uploads complete |
 
 `jasmine-dev` and `checks-dev` mirror the structure of `jasmine` and `checks`. `coverage-final` depends on both `jasmine` and `jasmine-dev` so Codacy receives a combined coverage report from both applications.
@@ -210,7 +210,7 @@ All jobs run on every push and every tag. There are no branch restrictions on th
 
 | Service | Image | Port | Purpose |
 |---------|-------|------|---------|
-| `navi_dev_app` | `navi_app:dev` | `3020:80` | Runs the Express dev app from `dev/` |
+| `navi_dev_app` | `navi_app:dev` | `3020:80` | Runs the Express dev app from `dev/app/` |
 | `navi_proxy` | `darthjee/tent:0.5.0` | `3010:80` | Reverse-proxy + caching layer in front of `navi_dev_app` |
 | `navi_app` | `navi:dev` | — | Navi application container; linked to `navi_proxy` as `remote_host` |
 | `navi_tests` | `navi:dev` | — | Test/lint container for `source/` |
