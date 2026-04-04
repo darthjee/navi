@@ -1,6 +1,6 @@
-import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import express from 'express';
 import { RouteRegister } from './RouteRegister.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
@@ -44,7 +44,7 @@ class Router {
 
     router.use(express.static(publicDir));
 
-    router.get('*', (_req, res) => {
+    router.use((_req, res) => {
       res.sendFile(path.join(publicDir, 'index.html'));
     });
 
