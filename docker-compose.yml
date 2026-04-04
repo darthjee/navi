@@ -57,7 +57,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/dev_frontend/Dockerfile
-    command: yarn build
+    command: yarn server
     volumes:
       - ./frontend:/home/node/app
       - ./docker_volumes/node_modules_frontend:/home/node/app/node_modules
