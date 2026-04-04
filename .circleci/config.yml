@@ -76,13 +76,13 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: cd dev; yarn install
+          command: cd dev/app; yarn install
       - run:
           name: Unit tests (Jasmine + c8 coverage)
-          command: cd dev; npm run coverage
+          command: cd dev/app; npm run coverage
       - run:
           name: Upload coverage to Codacy (partial)
-          command: cd dev; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+          command: cd dev/app; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
 
   checks-dev:
     docker:
@@ -91,13 +91,13 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: cd dev; yarn install
+          command: cd dev/app; yarn install
       - run:
           name: Lint
-          command: cd dev; npm run lint
+          command: cd dev/app; npm run lint
       - run:
           name: Duplication report (JSCPD)
-          command: cd dev; npm run report
+          command: cd dev/app; npm run report
 
   coverage-final:
     docker:

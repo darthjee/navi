@@ -57,9 +57,9 @@ The only exceptions are **entrypoints**:
 | Application | Entrypoint |
 |-------------|-----------|
 | Main app (`source/`) | `source/bin/navi.js` |
-| Dev app (`dev/`) | `dev/server.js` |
+| Dev app (`dev/app/`) | `dev/app/server.js` |
 
-`dev/app.js` is the application module (exports the configured Express app) and is imported by both `server.js` and the test suite. It is not a script.
+`dev/app/app.js` is the application module (exports the configured Express app) and is imported by both `server.js` and the test suite. It is not a script.
 
 *Example:*
 ```js
