@@ -1,6 +1,8 @@
 # Dev Proxy
 
-The dev proxy is a [Tent](https://github.com/darthjee/tent)-powered reverse proxy that sits between Navi and the dev application during local development. It gives Navi a realistic target: an HTTP endpoint that caches responses to disk, so the full cache-warming cycle can be exercised in a controlled environment.
+> **Note:** There are two separate Tent-powered proxies in this project — `navi_proxy` and `navi_web_proxy`. This document covers `navi_proxy`, which is dedicated to cache-warming tests. For the web proxy that routes browser traffic to Vite or Navi, see issue [#137](https://github.com/darthjee/navi/issues/137) and the `navi_web_proxy` service in `docker-compose.yml`.
+
+The dev proxy (`navi_proxy`) is a [Tent](https://github.com/darthjee/tent)-powered reverse proxy that sits between Navi and the dev application during local development. It gives Navi a realistic target: an HTTP endpoint that caches responses to disk, so the full cache-warming cycle can be exercised in a controlled environment.
 
 This is precisely how Navi's cache warm-up is tested locally. Navi issues requests to the proxy, the proxy forwards them to the dev app on first contact and caches the responses, and subsequent requests are served from cache. After running Navi, you can inspect `docker_volumes/proxy_cache/` on the host to confirm which endpoints were warmed — each cache file corresponds to a URI that Navi successfully pre-fetched.
 
