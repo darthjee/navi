@@ -1,4 +1,4 @@
-import { Log } from './Log.js';
+import { LogFactory } from './LogFactory.js';
 
 /**
  * LogBuffer manages a limited collection of log entries with automatic retention.
@@ -8,7 +8,7 @@ import { Log } from './Log.js';
 class LogBuffer {
   #logs;
   #retention;
-  #nextId;
+  #factory;
 
   /**
    * Creates a new LogBuffer instance.
@@ -17,7 +17,7 @@ class LogBuffer {
   constructor(retention = 100) {
     this.#logs = [];
     this.#retention = retention;
-    this.#nextId = 1;
+    this.#factory = new LogFactory();
   }
 
   /**
@@ -25,10 +25,10 @@ class LogBuffer {
    * If retention limit is reached, removes the oldest log.
    * @param {string} level - The log level.
    * @param {string} message - The log message.
-   * @returns {Log} The created log entry.
+   * @returns {import('./Log.js').Log} The created log entry.
    */
   add(level, message) {
-    const log = new Log(this.#nextId++, level, message);
+    const log = this.#factory.build(level, message);
 
     this.#logs.push(log);
 

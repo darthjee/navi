@@ -20,43 +20,51 @@ class BufferedLogger extends Logger {
   }
 
   /**
-   * Logs a debug message and stores it in the buffer.
+   * Logs a debug message and stores it in the buffer if the level allows.
    * @param {string} message - The message to log.
    * @returns {void}
    */
   debug(message) {
-    super.debug(message);
-    this.#buffer.add('debug', message);
+    if (this.shouldLog('debug')) {
+      console.debug(message); // eslint-disable-line no-console
+      this.#buffer.add('debug', message);
+    }
   }
 
   /**
-   * Logs an info message and stores it in the buffer.
+   * Logs an info message and stores it in the buffer if the level allows.
    * @param {string} message - The message to log.
    * @returns {void}
    */
   info(message) {
-    super.info(message);
-    this.#buffer.add('info', message);
+    if (this.shouldLog('info')) {
+      console.info(message); // eslint-disable-line no-console
+      this.#buffer.add('info', message);
+    }
   }
 
   /**
-   * Logs a warn message and stores it in the buffer.
+   * Logs a warn message and stores it in the buffer if the level allows.
    * @param {string} message - The message to log.
    * @returns {void}
    */
   warn(message) {
-    super.warn(message);
-    this.#buffer.add('warn', message);
+    if (this.shouldLog('warn')) {
+      console.warn(message); // eslint-disable-line no-console
+      this.#buffer.add('warn', message);
+    }
   }
 
   /**
-   * Logs an error message and stores it in the buffer.
+   * Logs an error message and stores it in the buffer if the level allows.
    * @param {string} message - The message to log.
    * @returns {void}
    */
   error(message) {
-    super.error(message);
-    this.#buffer.add('error', message);
+    if (this.shouldLog('error')) {
+      console.error(message); // eslint-disable-line no-console
+      this.#buffer.add('error', message);
+    }
   }
 
   /**

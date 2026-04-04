@@ -15,10 +15,11 @@ class Logger {
   }
 
   /**
+   * Returns whether a message at the given level should be logged.
    * @param {string} level - The log level to check.
    * @returns {boolean} True if the message should be logged at the given level.
    */
-  #shouldLog(level) {
+  shouldLog(level) {
     return this.#levels[level] >= this.#levels[this.#level];
   }
 
@@ -28,7 +29,7 @@ class Logger {
    * @returns {void}
    */
   debug(message) {
-    if (this.#shouldLog('debug')) console.debug(message); // eslint-disable-line no-console
+    if (this.shouldLog('debug')) console.debug(message); // eslint-disable-line no-console
   }
 
   /**
@@ -37,7 +38,7 @@ class Logger {
    * @returns {void}
    */
   info(message) {
-    if (this.#shouldLog('info')) console.info(message); // eslint-disable-line no-console
+    if (this.shouldLog('info')) console.info(message); // eslint-disable-line no-console
   }
 
   /**
@@ -46,7 +47,7 @@ class Logger {
    * @returns {void}
    */
   warn(message) {
-    if (this.#shouldLog('warn')) console.warn(message); // eslint-disable-line no-console
+    if (this.shouldLog('warn')) console.warn(message); // eslint-disable-line no-console
   }
 
   /**
@@ -55,7 +56,7 @@ class Logger {
    * @returns {void}
    */
   error(message) {
-    if (this.#shouldLog('error')) console.error(message); // eslint-disable-line no-console
+    if (this.shouldLog('error')) console.error(message); // eslint-disable-line no-console
   }
 }
 

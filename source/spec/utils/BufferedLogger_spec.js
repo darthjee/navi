@@ -29,7 +29,7 @@ describe('BufferedLogger', () => {
   });
 
   describe('#debug', () => {
-    it('calls the parent logger debug', () => {
+    it('logs the debug message to console', () => {
       logger.debug('msg');
       expect(console.debug).toHaveBeenCalledWith('msg');
     });
@@ -41,10 +41,24 @@ describe('BufferedLogger', () => {
       expect(logs[0].level).toBe('debug');
       expect(logs[0].message).toBe('msg');
     });
+
+    describe('when the log level is above debug', () => {
+      it('does not add to the buffer', () => {
+        const infoLogger = new BufferedLogger('info');
+        infoLogger.debug('silent');
+        expect(infoLogger.bufferSize).toBe(0);
+      });
+
+      it('does not log to console', () => {
+        const infoLogger = new BufferedLogger('info');
+        infoLogger.debug('silent');
+        expect(console.debug).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('#info', () => {
-    it('calls the parent logger info', () => {
+    it('logs the info message to console', () => {
       logger.info('msg');
       expect(console.info).toHaveBeenCalledWith('msg');
     });
@@ -55,10 +69,18 @@ describe('BufferedLogger', () => {
       expect(logs.length).toBe(1);
       expect(logs[0].level).toBe('info');
     });
+
+    describe('when the log level is above info', () => {
+      it('does not add to the buffer', () => {
+        const warnLogger = new BufferedLogger('warn');
+        warnLogger.info('silent');
+        expect(warnLogger.bufferSize).toBe(0);
+      });
+    });
   });
 
   describe('#warn', () => {
-    it('calls the parent logger warn', () => {
+    it('logs the warn message to console', () => {
       logger.warn('msg');
       expect(console.warn).toHaveBeenCalledWith('msg');
     });
@@ -69,10 +91,18 @@ describe('BufferedLogger', () => {
       expect(logs.length).toBe(1);
       expect(logs[0].level).toBe('warn');
     });
+
+    describe('when the log level is above warn', () => {
+      it('does not add to the buffer', () => {
+        const errorLogger = new BufferedLogger('error');
+        errorLogger.warn('silent');
+        expect(errorLogger.bufferSize).toBe(0);
+      });
+    });
   });
 
   describe('#error', () => {
-    it('calls the parent logger error', () => {
+    it('logs the error message to console', () => {
       logger.error('msg');
       expect(console.error).toHaveBeenCalledWith('msg');
     });
@@ -82,6 +112,14 @@ describe('BufferedLogger', () => {
       const logs = logger.getLogs();
       expect(logs.length).toBe(1);
       expect(logs[0].level).toBe('error');
+    });
+
+    describe('when the log level is silent', () => {
+      it('does not add to the buffer', () => {
+        const silentLogger = new BufferedLogger('silent');
+        silentLogger.error('silent');
+        expect(silentLogger.bufferSize).toBe(0);
+      });
     });
   });
 
@@ -169,3 +207,4 @@ describe('BufferedLogger', () => {
     });
   });
 });
+
