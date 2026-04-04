@@ -62,3 +62,15 @@ services:
       - ./frontend:/home/node/app
       - ./docker_volumes/node_modules_frontend:/home/node/app/node_modules
       - ./source/public:/home/node/app/dist
+
+  navi_web_proxy:
+    image: darthjee/tent:0.5.0
+    depends_on: [navi_app, navi_frontend]
+    links:
+      - navi_app:backend
+      - navi_frontend:frontend
+    env_file: .env
+    volumes:
+      - ./dev/web_proxy:/var/www/html/configuration/
+    ports:
+      - 0.0.0.0:3030:80
