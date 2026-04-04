@@ -174,4 +174,46 @@ describe('Logger', () => {
       expect(console.warn).toHaveBeenCalledWith('msg');
     });
   });
+
+  describe('.default', () => {
+    it('returns a Logger instance', () => {
+      expect(Logger.default()).toBeInstanceOf(Logger);
+    });
+
+    it('returns the same instance on successive calls (singleton)', () => {
+      expect(Logger.default()).toBe(Logger.default());
+    });
+  });
+
+  describe('.debug', () => {
+    it('delegates to the default logger instance', () => {
+      spyOn(Logger.default(), 'debug');
+      Logger.debug('static debug msg');
+      expect(Logger.default().debug).toHaveBeenCalledWith('static debug msg');
+    });
+  });
+
+  describe('.info', () => {
+    it('delegates to the default logger instance', () => {
+      spyOn(Logger.default(), 'info');
+      Logger.info('static info msg');
+      expect(Logger.default().info).toHaveBeenCalledWith('static info msg');
+    });
+  });
+
+  describe('.warn', () => {
+    it('delegates to the default logger instance', () => {
+      spyOn(Logger.default(), 'warn');
+      Logger.warn('static warn msg');
+      expect(Logger.default().warn).toHaveBeenCalledWith('static warn msg');
+    });
+  });
+
+  describe('.error', () => {
+    it('delegates to the default logger instance', () => {
+      spyOn(Logger.default(), 'error');
+      Logger.error('static error msg');
+      expect(Logger.default().error).toHaveBeenCalledWith('static error msg');
+    });
+  });
 });
