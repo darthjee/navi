@@ -261,6 +261,38 @@ describe('Logger', () => {
     });
   });
 
+  describe('#setLevel', () => {
+    let logger;
+
+    beforeEach(() => {
+      logger = new Logger('info');
+    });
+
+    it('lowers the level to allow previously-suppressed messages', () => {
+      logger.setLevel('debug');
+      logger.debug('msg');
+      expect(console.debug).toHaveBeenCalledWith('msg');
+    });
+
+    it('raises the level to suppress previously-logged messages', () => {
+      logger.setLevel('warn');
+      logger.info('msg');
+      expect(console.info).not.toHaveBeenCalled();
+    });
+
+    it('throws for an invalid level', () => {
+      expect(() => logger.setLevel('verbose')).toThrowError(/Invalid log level/);
+    });
+  });
+
+  describe('.setLevel', () => {
+    it('delegates to the default logger instance', () => {
+      spyOn(Logger.default(), 'setLevel');
+      Logger.setLevel('debug');
+      expect(Logger.default().setLevel).toHaveBeenCalledWith('debug');
+    });
+  });
+
   describe('.reset', () => {
     let instanceBeforeReset;
 

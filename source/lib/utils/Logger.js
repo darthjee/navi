@@ -71,6 +71,18 @@ class Logger {
   }
 
   /**
+   * Sets the log level threshold for this instance.
+   * @param {string} level - The new log level ('debug', 'info', 'warn', 'error', 'silent').
+   * @returns {void}
+   */
+  setLevel(level) {
+    if (!(level in this.#levels)) {
+      throw new Error(`Invalid log level: "${level}". Must be one of: ${Object.keys(this.#levels).join(', ')}.`);
+    }
+    this.#level = level;
+  }
+
+  /**
    * Returns the default Logger instance (singleton).
    * @returns {Logger} The default logger instance.
    */
@@ -124,6 +136,15 @@ class Logger {
    */
   static suppress(value = true) {
     this.default().suppress(value);
+  }
+
+  /**
+   * Sets the log level threshold on the default logger instance.
+   * @param {string} level - The new log level ('debug', 'info', 'warn', 'error', 'silent').
+   * @returns {void}
+   */
+  static setLevel(level) {
+    this.default().setLevel(level);
   }
 
   /**
