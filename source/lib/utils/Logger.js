@@ -125,6 +125,25 @@ class Logger {
   static suppress(value = true) {
     this.default().suppress(value);
   }
+
+  /**
+   * Resets the default Logger instance so a new one is created on the next call to default().
+   * Useful in tests to ensure a clean singleton state.
+   * @returns {void}
+   */
+  static reset() {
+    this.#defaultInstance = null;
+  }
+
+  /**
+   * Sets the default Logger instance to the provided logger.
+   * Useful in tests to inject a mock or custom logger.
+   * @param {Logger} newLogger - The logger instance to use as the default.
+   * @returns {void}
+   */
+  static setDefault(newLogger) {
+    this.#defaultInstance = newLogger;
+  }
 }
 
 export { Logger };

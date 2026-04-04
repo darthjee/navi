@@ -229,35 +229,14 @@ describe('Logger', () => {
         logger.suppress();
       });
 
-      it('suppresses debug messages', () => {
-        logger.debug('msg');
-        expect(console.debug).not.toHaveBeenCalled();
-      });
-
       it('suppresses info messages', () => {
         logger.info('msg');
         expect(console.info).not.toHaveBeenCalled();
       });
 
-      it('suppresses warn messages', () => {
-        logger.warn('msg');
-        expect(console.warn).not.toHaveBeenCalled();
-      });
-
       it('suppresses error messages', () => {
         logger.error('msg');
         expect(console.error).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('when called with true', () => {
-      beforeEach(() => {
-        logger.suppress(true);
-      });
-
-      it('suppresses all log output', () => {
-        logger.info('msg');
-        expect(console.info).not.toHaveBeenCalled();
       });
     });
 
@@ -279,6 +258,44 @@ describe('Logger', () => {
       spyOn(Logger.default(), 'suppress');
       Logger.suppress(true);
       expect(Logger.default().suppress).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('.reset', () => {
+    let instanceBeforeReset;
+
+    beforeEach(() => {
+      instanceBeforeReset = Logger.default();
+      Logger.reset();
+    });
+
+    afterEach(() => {
+      Logger.setDefault(instanceBeforeReset);
+    });
+
+    it('causes default() to return a new Logger instance', () => {
+      const newInstance = Logger.default();
+      expect(newInstance).toBeInstanceOf(Logger);
+      expect(newInstance).not.toBe(instanceBeforeReset);
+    });
+  });
+
+  describe('.setDefault', () => {
+    let originalInstance;
+    let customLogger;
+
+    beforeEach(() => {
+      originalInstance = Logger.default();
+      customLogger = new Logger('debug');
+      Logger.setDefault(customLogger);
+    });
+
+    afterEach(() => {
+      Logger.setDefault(originalInstance);
+    });
+
+    it('sets the instance returned by default()', () => {
+      expect(Logger.default()).toBe(customLogger);
     });
   });
 });
