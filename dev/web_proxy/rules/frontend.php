@@ -17,14 +17,14 @@ if (getenv('FRONTEND_DEV_MODE') === 'true') {
             ['method' => 'GET', 'uri' => '/@react-refresh', 'type' => 'exact']
         ]
     ]);
-} else {
-    Configuration::buildRule([
-        'handler' => [
-            'type' => 'proxy',
-            'host' => 'http://backend:80'
-        ],
-        'matchers' => [
-            ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
-        ]
-    ]);
 }
+
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'proxy',
+        'host' => 'http://backend:80'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+    ]
+]);
