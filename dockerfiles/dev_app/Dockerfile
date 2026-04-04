@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y rsync && rm -rf /var/lib/apt/lists/*
 USER node
 
 COPY --chown=node:node \
-  ./dev/package.json ./dev/yarn.lock \
+  ./dev/app/package.json ./dev/app/yarn.lock \
   /home/node/app/
 
 ######################################

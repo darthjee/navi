@@ -35,7 +35,7 @@ services:
     links:
       - navi_dev_app:backend
     volumes:
-      - ./docker_volumes/proxy_configuration:/var/www/html/configuration/
+      - ./dev/proxy:/var/www/html/configuration/
       - ./docker_volumes/proxy_cache:/var/www/html/cache/
     ports:
       - 0.0.0.0:3010:80
@@ -47,7 +47,7 @@ services:
       dockerfile: dockerfiles/dev_app/Dockerfile
     command: node server.js
     volumes:
-      - ./dev/:/home/node/app/
+      - ./dev/app/:/home/node/app/
       - ./docker_volumes/node_modules_dev:/home/node/app/node_modules
     ports:
       - 0.0.0.0:3020:80
