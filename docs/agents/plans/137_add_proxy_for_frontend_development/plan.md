@@ -4,6 +4,8 @@
 
 Add a new Tent-powered Docker service (`navi_web_proxy`) that acts as the single web entry point for the Navi application. It routes traffic to either the Vite dev server (`navi_frontend`) or Navi itself (`navi_app`) depending on the `FRONTEND_DEV_MODE` environment variable. No caching is involved — this proxy does routing only.
 
+**The proxy never serves static files directly.** All content — whether in development or not — is always fetched from an upstream service: Vite or Navi. Tent's `StaticFileHandler` is not used here.
+
 ---
 
 ## Context
@@ -123,6 +125,7 @@ Add a note clarifying that `navi_web_proxy` is a separate concern from `navi_pro
 ## Notes
 
 - `proxy` handler is used instead of `default_proxy` in both branches to guarantee no caching is ever applied. `default_proxy` adds `FileCacheMiddleware` by default, which is not wanted here.
+- **Static files are never served by Tent itself.** `StaticFileHandler` is deliberately not used — every response originates from an upstream (`navi_frontend` or `navi_app`). This keeps the proxy a pure router and avoids any duplication of file-serving responsibilities.
 - The Vite dev server needs `/@vite/` and `/@react-refresh` to be forwarded for HMR to work; missing these paths will break hot reload silently in the browser.
 - `navi_frontend` listens on port `8080` (set in `frontend/vite.config.js`).
 - There is no need to fix the `Host` header for the Vite dev server — Vite does not restrict routing by `Host`.
