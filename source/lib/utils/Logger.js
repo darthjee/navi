@@ -6,6 +6,7 @@ class Logger {
   static #defaultInstance;
 
   #level;
+  #suppressed = false;
   #levels = { debug: 0, info: 1, warn: 2, error: 3, silent: 4 };
 
   /**
@@ -21,7 +22,7 @@ class Logger {
    * @returns {boolean} True if the message should be logged at the given level.
    */
   #shouldLog(level) {
-    return this.#levels[level] >= this.#levels[this.#level];
+    return !this.#suppressed && this.#levels[level] >= this.#levels[this.#level];
   }
 
   /**
@@ -58,6 +59,15 @@ class Logger {
    */
   error(message) {
     if (this.#shouldLog('error')) console.error(message); // eslint-disable-line no-console
+  }
+
+  /**
+   * Suppresses or restores log output for this instance.
+   * @param {boolean} [value=true] - When true, all log output is suppressed.
+   * @returns {void}
+   */
+  suppress(value = true) {
+    this.#suppressed = value;
   }
 
   /**
@@ -105,6 +115,15 @@ class Logger {
    */
   static error(message) {
     this.default().error(message);
+  }
+
+  /**
+   * Suppresses or restores log output on the default logger instance.
+   * @param {boolean} [value=true] - When true, all log output is suppressed.
+   * @returns {void}
+   */
+  static suppress(value = true) {
+    this.default().suppress(value);
   }
 }
 
