@@ -17,6 +17,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, initial enqueueing, Engine loop, worker execution, failure handling. |
 | [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
 | [Dev Application](docs/agents/dev-app.md) | The sample backend used to test Navi: a dynamic Express (`dev/`) application, endpoints, classes, testing, CI jobs, and Docker Compose services. |
+| [Dev Proxy](docs/agents/dev-proxy.md) | The Tent-powered reverse proxy (`dev/proxy`) used in local development: configuration files, caching behaviour, request flow, and how to extend the rules. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
 
