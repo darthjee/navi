@@ -1,7 +1,7 @@
-import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../lib/exceptions/ConfigurationFileNotProvided.js';
 import { Config } from '../../lib/models/Config.js';
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WebServer } from '../../lib/server/WebServer.js';
