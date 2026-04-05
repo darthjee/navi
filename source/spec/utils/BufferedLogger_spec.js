@@ -1,15 +1,9 @@
-/* eslint-disable no-console */
 import { BufferedLogger } from '../../lib/utils/BufferedLogger.js';
 
 describe('BufferedLogger', () => {
   let logger;
 
   beforeEach(() => {
-    spyOn(console, 'debug').and.stub();
-    spyOn(console, 'info').and.stub();
-    spyOn(console, 'warn').and.stub();
-    spyOn(console, 'error').and.stub();
-
     logger = new BufferedLogger('debug');
   });
 
@@ -29,11 +23,6 @@ describe('BufferedLogger', () => {
   });
 
   describe('#debug', () => {
-    it('logs the debug message to console', () => {
-      logger.debug('msg');
-      expect(console.debug).toHaveBeenCalledWith('msg');
-    });
-
     it('adds a debug log to the buffer', () => {
       logger.debug('msg');
       const logs = logger.getLogs();
@@ -48,21 +37,10 @@ describe('BufferedLogger', () => {
         infoLogger.debug('silent');
         expect(infoLogger.bufferSize).toBe(0);
       });
-
-      it('does not log to console', () => {
-        const infoLogger = new BufferedLogger('info');
-        infoLogger.debug('silent');
-        expect(console.debug).not.toHaveBeenCalled();
-      });
     });
   });
 
   describe('#info', () => {
-    it('logs the info message to console', () => {
-      logger.info('msg');
-      expect(console.info).toHaveBeenCalledWith('msg');
-    });
-
     it('adds an info log to the buffer', () => {
       logger.info('msg');
       const logs = logger.getLogs();
@@ -80,11 +58,6 @@ describe('BufferedLogger', () => {
   });
 
   describe('#warn', () => {
-    it('logs the warn message to console', () => {
-      logger.warn('msg');
-      expect(console.warn).toHaveBeenCalledWith('msg');
-    });
-
     it('adds a warn log to the buffer', () => {
       logger.warn('msg');
       const logs = logger.getLogs();
@@ -102,11 +75,6 @@ describe('BufferedLogger', () => {
   });
 
   describe('#error', () => {
-    it('logs the error message to console', () => {
-      logger.error('msg');
-      expect(console.error).toHaveBeenCalledWith('msg');
-    });
-
     it('adds an error log to the buffer', () => {
       logger.error('msg');
       const logs = logger.getLogs();

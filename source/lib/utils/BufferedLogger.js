@@ -20,13 +20,12 @@ class BufferedLogger extends BaseLogger {
   }
 
   /**
-   * Outputs the message to console and stores it in the buffer.
+   * Stores the message in the buffer.
    * @param {string} level - The log level ('debug', 'info', 'warn', 'error').
    * @param {string} message - The message to output.
    * @returns {void}
    */
   _output(level, message) {
-    console[level](message); // eslint-disable-line no-console
     this.#buffer.add(level, message);
   }
 
