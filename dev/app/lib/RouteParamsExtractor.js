@@ -3,13 +3,16 @@
  * ordered steps array expected by {@link DataNavigator}.
  */
 class RouteParamsExtractor {
+  #route;
+  #params;
+
   /**
    * @param {string} route - Express route pattern (e.g. `/categories/:id.json`).
    * @param {Object<string, string>} params - Resolved route params from `req.params`.
    */
   constructor(route, params) {
-    this._route = route;
-    this._params = params;
+    this.#route = route;
+    this.#params = params;
   }
 
   /**
@@ -17,13 +20,13 @@ class RouteParamsExtractor {
    * @returns {Array<string|number>}
    */
   steps() {
-    return this._route
+    return this.#route
       .replace(/\.json$/, '')
       .split('/')
       .filter(Boolean)
       .map((segment) => {
         if (segment.startsWith(':')) {
-          return Number(this._params[segment.slice(1)]);
+          return Number(this.#params[segment.slice(1)]);
         }
         return segment;
       });

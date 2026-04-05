@@ -7,15 +7,19 @@ import RouteParamsExtractor from './RouteParamsExtractor.js';
  * optionally serializing the result, and writing the JSON response.
  */
 class RequestHandler {
+  #route;
+  #data;
+  #serializer;
+
   /**
    * @param {string} route - Express route pattern used to derive navigation steps.
    * @param {Object} data - Root data structure.
    * @param {import('./Serializer.js').default|null} [serializer] - Optional serializer to project the result.
    */
   constructor(route, data, serializer = null) {
-    this._route = route;
-    this._data = data;
-    this._serializer = serializer;
+    this.#route = route;
+    this.#data = data;
+    this.#serializer = serializer;
   }
 
   /**
@@ -25,10 +29,10 @@ class RequestHandler {
    * @param {import('express').Response} res
    */
   handle(req, res) {
-    const steps = new RouteParamsExtractor(this._route, req.params).steps();
-    const result = new DataNavigator(this._data, steps).navigate();
+    const steps = new RouteParamsExtractor(this.#route, req.params).steps();
+    const result = new DataNavigator(this.#data, steps).navigate();
     if (result === null) return notFound(res);
-    res.json(this._serializer ? this._serializer.serialize(result) : result);
+    res.json(this.#serializer ? this.#serializer.serialize(result) : result);
   }
 }
 
