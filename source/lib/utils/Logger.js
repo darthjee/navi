@@ -10,14 +10,22 @@ class Logger {
   static #loggerGroup;
 
   /**
+   * Ensures the default LoggerGroup instance exists, creating one with a ConsoleLogger if needed.
+   * @returns {void}
+   */
+  static #ensureLoggerGroup() {
+    if (!this.#loggerGroup) {
+      this.#loggerGroup = new LoggerGroup([new ConsoleLogger()]);
+    }
+  }
+
+  /**
    * Returns the default LoggerGroup instance (singleton).
    * Initialized with a ConsoleLogger on first access.
    * @returns {LoggerGroup} The default logger group instance.
    */
   static default() {
-    if (!this.#loggerGroup) {
-      this.#loggerGroup = new LoggerGroup([new ConsoleLogger()]);
-    }
+    this.#ensureLoggerGroup();
     return this.#loggerGroup;
   }
 
