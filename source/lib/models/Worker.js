@@ -1,4 +1,4 @@
-import { Logger } from '../utils/Logger.js';
+import { ConsoleLogger } from '../utils/ConsoleLogger.js';
 
 /**
  * Worker processes jobs pulled from a JobRegistry.
@@ -18,7 +18,7 @@ class Worker {
     this.id = id;
     this.jobRegistry = jobRegistry;
     this.workerRegistry = workerRegistry;
-    this.#logger = new Logger();
+    this.#logger = new ConsoleLogger();
   }
 
   /**
