@@ -1,3 +1,4 @@
+import { ClientRegistry } from '../../lib/registry/ClientRegistry.js';
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../lib/exceptions/ConfigurationFileNotProvided.js';
 import { Config } from '../../lib/models/Config.js';
@@ -45,6 +46,20 @@ describe('Application', () => {
         expect(app.jobRegistry instanceof JobRegistry).toBeTrue();
       });
 
+      it('initializes job registry with clientRegistry from config', () => {
+        app.loadConfig(configFilePath);
+
+        expect(app.jobRegistry instanceof JobRegistry).toBeTrue();
+        expect(app.config.clientRegistry instanceof ClientRegistry).toBeTrue();
+      });
+
+      it('does not expose a clients property on config (uses clientRegistry instead)', () => {
+        app.loadConfig(configFilePath);
+
+        expect(app.config.clients).toBeUndefined();
+        expect(app.config.clientRegistry).toBeDefined();
+      });
+
       it('initializes workers registry', () => {
         const workers = new IdentifyableCollection();
 
@@ -80,7 +95,7 @@ describe('Application', () => {
       config = Config.fromFile(configFilePath);
 
       jobFactory = new DummyJobFactory();
-      jobRegistry = new JobRegistry({ clients: config.clients, factory: jobFactory });
+      jobRegistry = new JobRegistry({ clients: config.clientRegistry, factory: jobFactory });
 
       workerFactory = new DummyWorkerFactory({ jobRegistry });
       workersRegistry = new WorkersRegistry({ quantity: 1, jobRegistry, factory: workerFactory });
