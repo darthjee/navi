@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
 import jasmine from 'eslint-plugin-jasmine';
+import sortClassMembers from 'eslint-plugin-sort-class-members';
 import globals from 'globals';
 
 export default [
@@ -12,6 +13,7 @@ export default [
     files: ['**/*.js'],
     plugins: {
       'import': importPlugin,
+      'sort-class-members': sortClassMembers,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -46,6 +48,18 @@ export default [
       eqeqeq: ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
+
+      'sort-class-members/sort-class-members': ['error', {
+        order: [
+          '[static-properties]',
+          '[static-methods]',
+          '[properties]',
+          'constructor',
+          { type: 'method', private: false },
+          { type: 'method', private: true },
+        ],
+        accessorPairPositioning: 'getThenSet',
+      }],
     },
   },
   {

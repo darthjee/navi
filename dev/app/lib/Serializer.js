@@ -3,11 +3,13 @@
  * stripping any fields not in the allowlist.
  */
 class Serializer {
+  #attributes;
+
   /**
    * @param {string[]} attributes - List of attribute names to keep in the output.
    */
   constructor(attributes) {
-    this._attributes = attributes;
+    this.#attributes = attributes;
   }
 
   /**
@@ -21,7 +23,7 @@ class Serializer {
       return data.map((item) => this.serialize(item));
     }
     return Object.fromEntries(
-      this._attributes.map((attr) => [attr, data[attr]])
+      this.#attributes.map((attr) => [attr, data[attr]])
     );
   }
 }
