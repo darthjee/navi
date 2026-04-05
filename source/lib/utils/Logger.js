@@ -105,7 +105,7 @@ class Logger {
   /**
    * Sets the default logger to the provided instance, wrapping it in a LoggerGroup.
    * Useful in tests to inject a mock or custom logger.
-   * @param {object} logger - The logger instance to use as the default.
+   * @param {BaseLogger} logger - The logger instance to use as the default.
    * @returns {void}
    */
   static setDefault(logger) {
@@ -114,7 +114,7 @@ class Logger {
 
   /**
    * Replaces the default logger group with a new LoggerGroup containing the provided logger.
-   * @param {object} logger - The logger instance to use in the new group.
+   * @param {BaseLogger} logger - The logger instance to use in the new group.
    * @returns {void}
    */
   static setLogger(logger) {
@@ -123,7 +123,7 @@ class Logger {
 
   /**
    * Adds a logger to the default logger group.
-   * @param {object} logger - The logger instance to add.
+   * @param {BaseLogger} logger - The logger instance to add.
    * @returns {void}
    */
   static addLogger(logger) {
