@@ -4,6 +4,26 @@ import { LoggerGroup } from './LoggerGroup.js';
 /**
  * Static facade for the default LoggerGroup singleton.
  * All instance-level log logic lives in BaseLogger / ConsoleLogger / LoggerGroup.
+ *
+ * @example <caption>Basic logging (default ConsoleLogger)</caption>
+ * Logger.info('Server started');
+ * Logger.warn('Low memory');
+ * Logger.error('Request failed');
+ *
+ * @example <caption>Swap to a custom logger</caption>
+ * Logger.setLogger(myCustomLogger);
+ * Logger.info('Now routed through myCustomLogger');
+ *
+ * @example <caption>Add an extra log destination</caption>
+ * const buffered = new BufferedLogger();
+ * Logger.addLogger(buffered);
+ * Logger.info('Goes to console and buffered logger');
+ *
+ * @example <caption>Suppress all output</caption>
+ * Logger.suppress();
+ * Logger.info('This will not be printed');
+ * Logger.suppress(false); // restore output
+ *
  * @author darthjee
  */
 class Logger {
