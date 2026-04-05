@@ -78,7 +78,7 @@ describe('Logger', () => {
     });
 
     afterEach(() => {
-      Logger.setDefault(instanceBeforeReset);
+      Logger.reset();
     });
 
     it('causes default() to return a new LoggerGroup instance', () => {
@@ -90,20 +90,24 @@ describe('Logger', () => {
 
   describe('.setDefault', () => {
     let originalInstance;
-    let customLoggerGroup;
+    let customLogger;
 
     beforeEach(() => {
       originalInstance = Logger.default();
-      customLoggerGroup = new LoggerGroup([new ConsoleLogger()]);
-      Logger.setDefault(customLoggerGroup);
+      customLogger = new ConsoleLogger();
+      Logger.setDefault(customLogger);
     });
 
     afterEach(() => {
-      Logger.setDefault(originalInstance);
+      Logger.reset();
     });
 
-    it('sets the instance returned by default()', () => {
-      expect(Logger.default()).toBe(customLoggerGroup);
+    it('sets a new LoggerGroup as the default', () => {
+      expect(Logger.default()).toBeInstanceOf(LoggerGroup);
+    });
+
+    it('new LoggerGroup contains the provided logger', () => {
+      expect(Logger.default().getLoggers()).toContain(customLogger);
     });
   });
 
@@ -125,7 +129,7 @@ describe('Logger', () => {
     });
 
     afterEach(() => {
-      Logger.setDefault(originalInstance);
+      Logger.reset();
     });
 
     it('replaces the default instance with a new LoggerGroup', () => {
@@ -154,7 +158,7 @@ describe('Logger', () => {
     });
 
     afterEach(() => {
-      Logger.setDefault(originalInstance);
+      Logger.reset();
     });
 
     it('delegates to the default LoggerGroup addLogger', () => {
