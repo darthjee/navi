@@ -6,11 +6,13 @@ import RouteRegister from './RouteRegister.js';
  * registered for the categories-and-items API.
  */
 class Router {
+  #data;
+
   /**
    * @param {Object} data - Parsed YAML data loaded at startup.
    */
   constructor(data) {
-    this._data = data;
+    this.#data = data;
   }
 
   /**
@@ -19,7 +21,7 @@ class Router {
    */
   build() {
     const router = ExpressRouter();
-    const register = new RouteRegister(router, this._data);
+    const register = new RouteRegister(router, this.#data);
 
     register.register({ route: '/categories.json', attributes: ['id', 'name'] });
     register.register({ route: '/categories/:id.json', attributes: ['id', 'name'] });

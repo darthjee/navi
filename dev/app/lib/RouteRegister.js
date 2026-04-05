@@ -6,13 +6,16 @@ import Serializer from './Serializer.js';
  * to a {@link RequestHandler} and an optional {@link Serializer}.
  */
 class RouteRegister {
+  #router;
+  #data;
+
   /**
    * @param {import('express').Router} router - Express router instance.
    * @param {Object} data - Root data structure shared across all handlers.
    */
   constructor(router, data) {
-    this._router = router;
-    this._data = data;
+    this.#router = router;
+    this.#data = data;
   }
 
   /**
@@ -23,8 +26,8 @@ class RouteRegister {
    */
   register({ route, attributes } = {}) {
     const serializer = attributes ? new Serializer(attributes) : null;
-    const handler = new RequestHandler(route, this._data, serializer);
-    this._router.get(route, (req, res) => handler.handle(req, res));
+    const handler = new RequestHandler(route, this.#data, serializer);
+    this.#router.get(route, (req, res) => handler.handle(req, res));
   }
 }
 
