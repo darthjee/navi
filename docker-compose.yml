@@ -19,7 +19,9 @@ services:
     <<: *base
     container_name: navi_app
     depends_on: [base_build, navi_proxy]
-    command: /bin/bash
+    command: node bin/navi.js
+    ports:
+      - 0.0.0.0:3000:3000
     links:
       - navi_proxy:remote_host
 
