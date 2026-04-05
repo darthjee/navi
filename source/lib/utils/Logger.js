@@ -1,62 +1,95 @@
+import { ConsoleLogger } from './ConsoleLogger.js';
+
 /**
- * Logger utility that filters log output based on a configurable level threshold.
+ * Static facade for the default ConsoleLogger singleton.
+ * All instance-level log logic lives in BaseLogger / ConsoleLogger.
  * @author darthjee
  */
 class Logger {
-  #level;
-  #levels = { debug: 0, info: 1, warn: 2, error: 3, silent: 4 };
+  static #defaultInstance;
 
   /**
-   * Creates a new Logger instance.
-   * @param {string} [level] - The log level threshold. Defaults to the LOG_LEVEL env var or 'info'.
+   * Returns the default ConsoleLogger instance (singleton).
+   * @returns {ConsoleLogger} The default logger instance.
    */
-  constructor(level) {
-    this.#level = level ?? process.env.LOG_LEVEL ?? 'info';
+  static default() {
+    if (!this.#defaultInstance) {
+      this.#defaultInstance = new ConsoleLogger();
+    }
+    return this.#defaultInstance;
   }
 
   /**
-   * Returns whether a message at the given level should be logged.
-   * @param {string} level - The log level to check.
-   * @returns {boolean} True if the message should be logged at the given level.
-   */
-  shouldLog(level) {
-    return this.#levels[level] >= this.#levels[this.#level];
-  }
-
-  /**
-   * Logs a debug message if the configured level allows it.
+   * Logs a debug message using the default logger instance.
    * @param {string} message - The message to log.
    * @returns {void}
    */
-  debug(message) {
-    if (this.shouldLog('debug')) console.debug(message); // eslint-disable-line no-console
+  static debug(message) {
+    this.default().debug(message);
   }
 
   /**
-   * Logs an info message if the configured level allows it.
+   * Logs an info message using the default logger instance.
    * @param {string} message - The message to log.
    * @returns {void}
    */
-  info(message) {
-    if (this.shouldLog('info')) console.info(message); // eslint-disable-line no-console
+  static info(message) {
+    this.default().info(message);
   }
 
   /**
-   * Logs a warn message if the configured level allows it.
+   * Logs a warn message using the default logger instance.
    * @param {string} message - The message to log.
    * @returns {void}
    */
-  warn(message) {
-    if (this.shouldLog('warn')) console.warn(message); // eslint-disable-line no-console
+  static warn(message) {
+    this.default().warn(message);
   }
 
   /**
-   * Logs an error message if the configured level allows it.
+   * Logs an error message using the default logger instance.
    * @param {string} message - The message to log.
    * @returns {void}
    */
-  error(message) {
-    if (this.shouldLog('error')) console.error(message); // eslint-disable-line no-console
+  static error(message) {
+    this.default().error(message);
+  }
+
+  /**
+   * Suppresses or restores log output on the default logger instance.
+   * @param {boolean} [value=true] - When true, all log output is suppressed.
+   * @returns {void}
+   */
+  static suppress(value = true) {
+    this.default().suppress(value);
+  }
+
+  /**
+   * Sets the log level threshold on the default logger instance.
+   * @param {string} level - The new log level ('debug', 'info', 'warn', 'error', 'silent').
+   * @returns {void}
+   */
+  static setLevel(level) {
+    this.default().setLevel(level);
+  }
+
+  /**
+   * Resets the default logger instance so a new one is created on the next call to default().
+   * Useful in tests to ensure a clean singleton state.
+   * @returns {void}
+   */
+  static reset() {
+    this.#defaultInstance = null;
+  }
+
+  /**
+   * Sets the default logger instance to the provided logger.
+   * Useful in tests to inject a mock or custom logger.
+   * @param {ConsoleLogger} newLogger - The logger instance to use as the default.
+   * @returns {void}
+   */
+  static setDefault(newLogger) {
+    this.#defaultInstance = newLogger;
   }
 }
 

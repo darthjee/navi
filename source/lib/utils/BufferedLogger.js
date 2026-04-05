@@ -1,12 +1,12 @@
+import { BaseLogger } from './BaseLogger.js';
 import { LogBuffer } from './LogBuffer.js';
-import { Logger } from './Logger.js';
 
 /**
- * BufferedLogger extends Logger functionality by maintaining a history of log messages.
+ * BufferedLogger extends BaseLogger by maintaining a history of log messages.
  * Useful for displaying logs in a web interface or debugging.
  * @author darthjee
  */
-class BufferedLogger extends Logger {
+class BufferedLogger extends BaseLogger {
   #buffer;
 
   /**
@@ -20,51 +20,14 @@ class BufferedLogger extends Logger {
   }
 
   /**
-   * Logs a debug message and stores it in the buffer if the level allows.
-   * @param {string} message - The message to log.
+   * Outputs the message to console and stores it in the buffer.
+   * @param {string} level - The log level ('debug', 'info', 'warn', 'error').
+   * @param {string} message - The message to output.
    * @returns {void}
    */
-  debug(message) {
-    if (this.shouldLog('debug')) {
-      console.debug(message); // eslint-disable-line no-console
-      this.#buffer.add('debug', message);
-    }
-  }
-
-  /**
-   * Logs an info message and stores it in the buffer if the level allows.
-   * @param {string} message - The message to log.
-   * @returns {void}
-   */
-  info(message) {
-    if (this.shouldLog('info')) {
-      console.info(message); // eslint-disable-line no-console
-      this.#buffer.add('info', message);
-    }
-  }
-
-  /**
-   * Logs a warn message and stores it in the buffer if the level allows.
-   * @param {string} message - The message to log.
-   * @returns {void}
-   */
-  warn(message) {
-    if (this.shouldLog('warn')) {
-      console.warn(message); // eslint-disable-line no-console
-      this.#buffer.add('warn', message);
-    }
-  }
-
-  /**
-   * Logs an error message and stores it in the buffer if the level allows.
-   * @param {string} message - The message to log.
-   * @returns {void}
-   */
-  error(message) {
-    if (this.shouldLog('error')) {
-      console.error(message); // eslint-disable-line no-console
-      this.#buffer.add('error', message);
-    }
+  _output(level, message) {
+    console[level](message); // eslint-disable-line no-console
+    this.#buffer.add(level, message);
   }
 
   /**
