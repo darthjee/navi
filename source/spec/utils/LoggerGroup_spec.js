@@ -131,4 +131,48 @@ describe('LoggerGroup', () => {
       expect(() => group.error('msg')).not.toThrow();
     });
   });
+
+  describe('#suppress', () => {
+    beforeEach(() => {
+      loggerA.suppress = jasmine.createSpy('suppress');
+      loggerB.suppress = jasmine.createSpy('suppress');
+    });
+
+    it('calls suppress on all loggers', () => {
+      const group = new LoggerGroup([loggerA, loggerB]);
+      group.suppress(true);
+      expect(loggerA.suppress).toHaveBeenCalledWith(true);
+      expect(loggerB.suppress).toHaveBeenCalledWith(true);
+    });
+
+    it('defaults value to true', () => {
+      const group = new LoggerGroup([loggerA]);
+      group.suppress();
+      expect(loggerA.suppress).toHaveBeenCalledWith(true);
+    });
+
+    it('does not throw when group is empty', () => {
+      const group = new LoggerGroup();
+      expect(() => group.suppress(true)).not.toThrow();
+    });
+  });
+
+  describe('#setLevel', () => {
+    beforeEach(() => {
+      loggerA.setLevel = jasmine.createSpy('setLevel');
+      loggerB.setLevel = jasmine.createSpy('setLevel');
+    });
+
+    it('calls setLevel on all loggers', () => {
+      const group = new LoggerGroup([loggerA, loggerB]);
+      group.setLevel('debug');
+      expect(loggerA.setLevel).toHaveBeenCalledWith('debug');
+      expect(loggerB.setLevel).toHaveBeenCalledWith('debug');
+    });
+
+    it('does not throw when group is empty', () => {
+      const group = new LoggerGroup();
+      expect(() => group.setLevel('debug')).not.toThrow();
+    });
+  });
 });

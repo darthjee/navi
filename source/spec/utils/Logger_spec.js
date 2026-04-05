@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { ConsoleLogger } from '../../lib/utils/ConsoleLogger.js';
 import { Logger } from '../../lib/utils/Logger.js';
+import { LoggerGroup } from '../../lib/utils/LoggerGroup.js';
 
 describe('Logger', () => {
   beforeEach(() => {
@@ -11,8 +12,8 @@ describe('Logger', () => {
   });
 
   describe('.default', () => {
-    it('returns a ConsoleLogger instance', () => {
-      expect(Logger.default()).toBeInstanceOf(ConsoleLogger);
+    it('returns a LoggerGroup instance', () => {
+      expect(Logger.default()).toBeInstanceOf(LoggerGroup);
     });
 
     it('returns the same instance on successive calls (singleton)', () => {
@@ -80,21 +81,21 @@ describe('Logger', () => {
       Logger.setDefault(instanceBeforeReset);
     });
 
-    it('causes default() to return a new ConsoleLogger instance', () => {
+    it('causes default() to return a new LoggerGroup instance', () => {
       const newInstance = Logger.default();
-      expect(newInstance).toBeInstanceOf(ConsoleLogger);
+      expect(newInstance).toBeInstanceOf(LoggerGroup);
       expect(newInstance).not.toBe(instanceBeforeReset);
     });
   });
 
   describe('.setDefault', () => {
     let originalInstance;
-    let customLogger;
+    let customLoggerGroup;
 
     beforeEach(() => {
       originalInstance = Logger.default();
-      customLogger = new ConsoleLogger('debug');
-      Logger.setDefault(customLogger);
+      customLoggerGroup = new LoggerGroup([new ConsoleLogger()]);
+      Logger.setDefault(customLoggerGroup);
     });
 
     afterEach(() => {
@@ -102,7 +103,62 @@ describe('Logger', () => {
     });
 
     it('sets the instance returned by default()', () => {
-      expect(Logger.default()).toBe(customLogger);
+      expect(Logger.default()).toBe(customLoggerGroup);
+    });
+  });
+
+  describe('.setLogger', () => {
+    let originalInstance;
+    let customLogger;
+
+    beforeEach(() => {
+      originalInstance = Logger.default();
+      customLogger = {
+        debug: jasmine.createSpy('debug'),
+        info: jasmine.createSpy('info'),
+        warn: jasmine.createSpy('warn'),
+        error: jasmine.createSpy('error'),
+        suppress: jasmine.createSpy('suppress'),
+        setLevel: jasmine.createSpy('setLevel'),
+      };
+      Logger.setLogger(customLogger);
+    });
+
+    afterEach(() => {
+      Logger.setDefault(originalInstance);
+    });
+
+    it('replaces the default instance with a new LoggerGroup', () => {
+      expect(Logger.default()).toBeInstanceOf(LoggerGroup);
+      expect(Logger.default()).not.toBe(originalInstance);
+    });
+
+    it('new LoggerGroup contains the provided logger', () => {
+      expect(Logger.default().getLoggers()).toContain(customLogger);
+    });
+  });
+
+  describe('.addLogger', () => {
+    let originalInstance;
+    let extraLogger;
+
+    beforeEach(() => {
+      originalInstance = Logger.default();
+      extraLogger = {
+        debug: jasmine.createSpy('debug'),
+        info: jasmine.createSpy('info'),
+        warn: jasmine.createSpy('warn'),
+        error: jasmine.createSpy('error'),
+      };
+      Logger.addLogger(extraLogger);
+    });
+
+    afterEach(() => {
+      Logger.setDefault(originalInstance);
+    });
+
+    it('delegates to the default LoggerGroup addLogger', () => {
+      expect(Logger.default().getLoggers()).toContain(extraLogger);
     });
   });
 });

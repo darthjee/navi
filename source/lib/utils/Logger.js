@@ -1,22 +1,24 @@
 import { ConsoleLogger } from './ConsoleLogger.js';
+import { LoggerGroup } from './LoggerGroup.js';
 
 /**
- * Static facade for the default ConsoleLogger singleton.
- * All instance-level log logic lives in BaseLogger / ConsoleLogger.
+ * Static facade for the default LoggerGroup singleton.
+ * All instance-level log logic lives in BaseLogger / ConsoleLogger / LoggerGroup.
  * @author darthjee
  */
 class Logger {
-  static #defaultInstance;
+  static #loggerGroup;
 
   /**
-   * Returns the default ConsoleLogger instance (singleton).
-   * @returns {ConsoleLogger} The default logger instance.
+   * Returns the default LoggerGroup instance (singleton).
+   * Initialized with a ConsoleLogger on first access.
+   * @returns {LoggerGroup} The default logger group instance.
    */
   static default() {
-    if (!this.#defaultInstance) {
-      this.#defaultInstance = new ConsoleLogger();
+    if (!this.#loggerGroup) {
+      this.#loggerGroup = new LoggerGroup([new ConsoleLogger()]);
     }
-    return this.#defaultInstance;
+    return this.#loggerGroup;
   }
 
   /**
@@ -74,22 +76,40 @@ class Logger {
   }
 
   /**
-   * Resets the default logger instance so a new one is created on the next call to default().
+   * Resets the default logger group so a new one is created on the next call to default().
    * Useful in tests to ensure a clean singleton state.
    * @returns {void}
    */
   static reset() {
-    this.#defaultInstance = null;
+    this.#loggerGroup = null;
   }
 
   /**
-   * Sets the default logger instance to the provided logger.
-   * Useful in tests to inject a mock or custom logger.
-   * @param {ConsoleLogger} newLogger - The logger instance to use as the default.
+   * Sets the default logger group to the provided instance.
+   * Useful in tests to inject a mock or custom logger group.
+   * @param {LoggerGroup} newLoggerGroup - The logger group instance to use as the default.
    * @returns {void}
    */
-  static setDefault(newLogger) {
-    this.#defaultInstance = newLogger;
+  static setDefault(newLoggerGroup) {
+    this.#loggerGroup = newLoggerGroup;
+  }
+
+  /**
+   * Replaces the default logger group with a new LoggerGroup containing the provided logger.
+   * @param {object} logger - The logger instance to use in the new group.
+   * @returns {void}
+   */
+  static setLogger(logger) {
+    this.#loggerGroup = new LoggerGroup([logger]);
+  }
+
+  /**
+   * Adds a logger to the default logger group.
+   * @param {object} logger - The logger instance to add.
+   * @returns {void}
+   */
+  static addLogger(logger) {
+    this.default().addLogger(logger);
   }
 }
 

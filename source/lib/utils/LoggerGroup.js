@@ -77,6 +77,24 @@ class LoggerGroup {
   error(message) {
     this.#loggers.forEach(logger => logger.error(message));
   }
+
+  /**
+   * Suppresses or restores log output on all loggers in the group.
+   * @param {boolean} [value=true] - When true, all log output is suppressed.
+   * @returns {void}
+   */
+  suppress(value = true) {
+    this.#loggers.forEach(logger => logger.suppress(value));
+  }
+
+  /**
+   * Sets the log level threshold on all loggers in the group.
+   * @param {string} level - The new log level ('debug', 'info', 'warn', 'error', 'silent').
+   * @returns {void}
+   */
+  setLevel(level) {
+    this.#loggers.forEach(logger => logger.setLevel(level));
+  }
 }
 
 export { LoggerGroup };
