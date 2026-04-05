@@ -46,6 +46,18 @@ A PR is considered complete when:
     ```
   - This requirement applies primarily to source code. For specs, refactor only if there is excessive duplication.
 
+### CI Checks
+
+Before a PR is considered complete, all CI checks relevant to the modified parts of the project must pass locally. Run only the checks that correspond to the folders you changed:
+
+| Modified folder | CircleCI jobs | Local commands to run |
+|-----------------|---------------|-----------------------|
+| `source/` | `jasmine`, `checks` | `cd source && yarn coverage && yarn lint && yarn report` |
+| `dev/app/` | `jasmine-dev`, `checks-dev` | `cd dev/app && yarn coverage && yarn lint && yarn report` |
+| `frontend/` | `jasmine-frontend`, `checks-frontend` | `cd frontend && yarn coverage && yarn lint && yarn report` |
+
+If a new container or application folder is added in the future, its corresponding test and check jobs must be run before merging any changes to that folder.
+
 ## Code Organization
 
 ### File Responsibility: Class Declarers vs Scripts
