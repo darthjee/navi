@@ -19,13 +19,17 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - checks-frontend:
+          filters:
+            tags:
+              only: /.*/
       - coverage-final:
           requires: [jasmine, jasmine-dev]
           filters:
             tags:
               only: /.*/
       - build-and-release:
-          requires: [jasmine, jasmine-dev, checks, checks-dev]
+          requires: [jasmine, jasmine-dev, checks, checks-dev, checks-frontend]
           filters:
             tags:
               only: /\d+\.\d+\.\d+/
@@ -98,6 +102,21 @@ jobs:
       - run:
           name: Duplication report (JSCPD)
           command: cd dev/app; npm run report
+
+  checks-frontend:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd frontend; yarn install
+      - run:
+          name: Lint
+          command: cd frontend; npm run lint
+      - run:
+          name: Duplication report (JSCPD)
+          command: cd frontend; npm run report
 
   coverage-final:
     docker:
