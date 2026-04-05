@@ -89,11 +89,9 @@ describe('Logger', () => {
   });
 
   describe('.setDefault', () => {
-    let originalInstance;
     let customLogger;
 
     beforeEach(() => {
-      originalInstance = Logger.default();
       customLogger = new ConsoleLogger();
       Logger.setDefault(customLogger);
     });
@@ -143,11 +141,9 @@ describe('Logger', () => {
   });
 
   describe('.addLogger', () => {
-    let originalInstance;
     let extraLogger;
 
     beforeEach(() => {
-      originalInstance = Logger.default();
       extraLogger = {
         debug: jasmine.createSpy('debug'),
         info: jasmine.createSpy('info'),
