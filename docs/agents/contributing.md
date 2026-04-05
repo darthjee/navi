@@ -94,6 +94,35 @@ This applies to both source files and their corresponding spec files:
 - `Router.js` â spec: `Router_spec.js`
 Non-class files (e.g., utility modules that export functions) use lowercase or camelCase at the author's discretion.
 
+### Method Order: Public Before Private
+
+Within a class, **public methods must be declared before private methods**. Private methods (prefixed with `#`) serve as implementation helpers and should appear at the end of the class body.
+
+*Example:*
+```js
+// Good: public methods first, private methods last
+class Worker {
+  run() {
+    this.#prepare();
+    this.#execute();
+  }
+
+  getStatus() { ... }
+
+  #prepare() { ... }
+  #execute() { ... }
+}
+
+// Bad: private methods mixed in with or before public methods
+class Worker {
+  #prepare() { ... }
+
+  run() { ... }
+
+  #execute() { ... }
+}
+```
+
 ## Dependency Injection
 
 Classes must receive their dependencies (data, configuration, collaborators) as constructor arguments. A class must never reach out to load files, read environment variables, or fetch configuration on its own.
