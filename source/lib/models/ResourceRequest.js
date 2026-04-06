@@ -38,10 +38,11 @@ class ResourceRequest {
   /**
    * Creates a list of ResourceRequest instances from an array of objects.
    * @param {Array<{ url: string, status: number }>} array list of objects with attributes to create a new ResourceRequest
-   * @param {string} [clientName] optional client name to assign to each ResourceRequest
+   * @param {object} [options={}] optional options to assign to each ResourceRequest
+   * @param {string} [options.clientName] optional client name to assign to each ResourceRequest
    * @returns {Array<ResourceRequest>} list of ResourceRequest instances
    */
-  static fromList(array, clientName) {
+  static fromList(array, { clientName } = {}) {
     return array.map((attrs) => new ResourceRequest({ ...attrs, clientName }));
   }
 }

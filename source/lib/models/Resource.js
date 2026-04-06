@@ -31,7 +31,7 @@ class Resource {
     return new Resource({
       name: obj.name,
       client: obj.client,
-      resourceRequests: ResourceRequest.fromList(obj.resourceRequests, obj.client)
+      resourceRequests: ResourceRequest.fromList(obj.resourceRequests, { clientName: obj.client })
     });
   }
 

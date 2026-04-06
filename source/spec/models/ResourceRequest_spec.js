@@ -24,7 +24,7 @@ describe('ResourceRequest', () => {
         { url: '/categories.html', status: 302 },
       ];
 
-      const resourceRequests = ResourceRequest.fromList(resources, 'myClient');
+      const resourceRequests = ResourceRequest.fromList(resources, { clientName: 'myClient' });
 
       expect(resourceRequests.every((rr) => rr.clientName === 'myClient')).toBeTrue();
     });
