@@ -66,16 +66,19 @@ class SortedArraySearcher {
   }
 
   #step() {
+    if (this.#shouldAdvanceLo()) {
+      this.#lo = this.#mid + 1;
+    } else {
+      this.#hi = this.#mid;
+    }
+  }
+
+  #shouldAdvanceLo() {
     const item = this.#array[this.#mid];
     const sortedValue = this.#sortBy(item);
-
-    if (this.#isExclusiveMode()) {
-      if (sortedValue <= this.#value) this.#lo = this.#mid + 1;
-      else this.#hi = this.#mid;
-    } else { // 'from' or 'before'
-      if (sortedValue < this.#value) this.#lo = this.#mid + 1;
-      else this.#hi = this.#mid;
-    }
+    if (sortedValue < this.#value) return true;
+    if (sortedValue > this.#value) return false;
+    return this.#isExclusiveMode();
   }
 
   #isExclusiveMode() {
