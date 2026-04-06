@@ -40,6 +40,10 @@ class SortedArrayMerger {
    * @returns {Array}
    */
   merge() {
+    this.#result = [];
+    this.#i = 0;
+    this.#j = 0;
+
     while (this.#i < this.#first.length && this.#j < this.#second.length) {
       this.#pickNext();
     }

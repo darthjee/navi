@@ -35,7 +35,6 @@ class SortedArraySearcher {
     this.#sortBy = sortBy;
     this.#value = value;
     this.#mode = mode;
-    this.#hi = array.length;
   }
 
   /**
@@ -55,6 +54,9 @@ class SortedArraySearcher {
    * @returns {number} The boundary index.
    */
   search() {
+    this.#lo = 0;
+    this.#hi = this.#array.length;
+
     while (this.#lo < this.#hi) {
       this.#mid = (this.#lo + this.#hi) >> 1;
       this.#step();
