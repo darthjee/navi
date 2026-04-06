@@ -53,13 +53,14 @@ class Client {
    * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
    */
   async perform(resourceRequest) {
-    Logger.info(`[Client:${this.name}] Requesting ${this.#buildUrl(resourceRequest.url)}`);
+    const requestUrl = this.#buildUrl(resourceRequest.url);
+    Logger.info(`[Client:${this.name}] Requesting ${requestUrl}`);
     try {
-      return await this.#request(resourceRequest);
+      return await this.#request(resourceRequest, requestUrl);
     } catch (error) {
       Logger.error(`Request failed: ${error}`);
       if (error.response) {
-        throw new RequestFailed(error.response.status, this.#buildUrl(resourceRequest.url));
+        throw new RequestFailed(error.response.status, requestUrl);
       }
       throw error;
     }
@@ -69,11 +70,11 @@ class Client {
    * Performs the HTTP request and checks the response status.
    * @param {ResourceRequest} resourceRequest Information about the URL path to request
    * and the expected status code.
+   * @param {string} requestUrl The full URL for the request.
    * @returns {Promise<boolean>} Returns true if the response status matches the expected status.
    * @throws {RequestFailed} Throws an error if the response status does not match.
    */
-  async #request(resourceRequest) {
-    const requestUrl = this.#buildUrl(resourceRequest.url);
+  async #request(resourceRequest, requestUrl) {
     const response = await axios.get(requestUrl, { timeout: this.timeout });
 
     if (response.status !== resourceRequest.status) {
