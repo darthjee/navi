@@ -17,6 +17,29 @@ describe('ResourceRequest', () => {
       ]);
       expect(resourceRequests.every((resourceRequest) => resourceRequest instanceof ResourceRequest)).toBeTrue();
     });
+
+    it('assigns the given clientName to each ResourceRequest', () => {
+      const resources = [
+        { url: '/categories.json', status: 200 },
+        { url: '/categories.html', status: 302 },
+      ];
+
+      const resourceRequests = ResourceRequest.fromList(resources, 'myClient');
+
+      expect(resourceRequests.every((rr) => rr.clientName === 'myClient')).toBeTrue();
+    });
+  });
+
+  describe('#clientName', () => {
+    it('returns undefined when no clientName is set', () => {
+      const request = ResourceRequestFactory.build();
+      expect(request.clientName).toBeUndefined();
+    });
+
+    it('returns the clientName when set', () => {
+      const request = ResourceRequestFactory.build({ clientName: 'myClient' });
+      expect(request.clientName).toBe('myClient');
+    });
   });
 
   describe('#needsParams', () => {
