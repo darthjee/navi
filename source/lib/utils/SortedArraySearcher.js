@@ -39,13 +39,13 @@ class SortedArraySearcher {
 
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
-      const item = this.#sortBy(this.#array[mid]);
+      const item = this.#array[mid];
 
       if (mode === 'after' || mode === 'upTo') {
-        if (item <= value) lo = mid + 1;
+        if (this.#sortBy(item) <= value) lo = mid + 1;
         else hi = mid;
       } else { // 'from' or 'before'
-        if (item < value) lo = mid + 1;
+        if (this.#sortBy(item) < value) lo = mid + 1;
         else hi = mid;
       }
     }
