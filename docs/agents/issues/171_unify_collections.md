@@ -2,24 +2,24 @@
 
 ## Description
 
-The classes `IdentifiableCollection` and `Queue` share several similar methods and could be unified through a common base class `Collection`.
+The classes `IdentifyableCollection` and `Queue` share several similar methods and could be unified through a common base class `Collection`.
 
 ## Problem
 
-- `IdentifiableCollection` and `Queue` both implement similar methods (`hasAny`, `hasItem`, `push`, `size`) independently.
+- `IdentifyableCollection` and `Queue` both implement similar methods (`hasAny`, `hasItem`, `push`, `size`) independently.
 - This duplication violates DRY principles and increases the maintenance surface.
 
 ## Expected Behavior
 
 - A base class `Collection` is introduced, containing the shared logic.
-- `IdentifiableCollection` and `Queue` extend `Collection`, inheriting the common methods.
+- `IdentifyableCollection` and `Queue` extend `Collection`, inheriting the common methods.
 - Each subclass retains only the behavior specific to its own purpose.
 
 ## Solution
 
-- Identify all shared methods between `IdentifiableCollection` and `Queue` (`hasAny`, `hasItem`, `push`, `size`).
+- Identify all shared methods between `IdentifyableCollection` and `Queue` (`hasAny`, `hasItem`, `push`, `size`).
 - Extract those methods into a new base class `Collection`.
-- Make `IdentifiableCollection` and `Queue` extend `Collection`.
+- Make `IdentifyableCollection` and `Queue` extend `Collection`.
 - Ensure existing tests continue to pass and add tests for the new base class if applicable.
 
 ## Benefits
