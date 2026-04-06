@@ -14,6 +14,7 @@ describe('JobRegistry', () => {
   describe('#stats', () => {
     let queue;
     let failedQueue;
+    let retryQueue;
     let finishedCollection;
     let deadCollection;
     let processingCollection;
@@ -21,16 +22,19 @@ describe('JobRegistry', () => {
     beforeEach(() => {
       queue = new Queue();
       failedQueue = new Queue();
+      retryQueue = new Queue();
       finishedCollection = new IdentifyableCollection();
       deadCollection = new IdentifyableCollection();
       processingCollection = new IdentifyableCollection();
       registry = new JobRegistry({
         queue,
         failed: failedQueue,
+        retryQueue,
         finished: finishedCollection,
         dead: deadCollection,
         processing: processingCollection,
         clients,
+        cooldown: -1,
       });
     });
 
@@ -40,6 +44,7 @@ describe('JobRegistry', () => {
           enqueued: 0,
           processing: 0,
           failed: 0,
+          retryQueue: 0,
           finished: 0,
           dead: 0,
         });
@@ -56,6 +61,7 @@ describe('JobRegistry', () => {
           enqueued: 1,
           processing: 0,
           failed: 0,
+          retryQueue: 0,
           finished: 0,
           dead: 0,
         });
@@ -73,6 +79,7 @@ describe('JobRegistry', () => {
           enqueued: 0,
           processing: 1,
           failed: 0,
+          retryQueue: 0,
           finished: 0,
           dead: 0,
         });
@@ -91,6 +98,7 @@ describe('JobRegistry', () => {
           enqueued: 0,
           processing: 0,
           failed: 0,
+          retryQueue: 0,
           finished: 1,
           dead: 0,
         });
@@ -109,6 +117,7 @@ describe('JobRegistry', () => {
           enqueued: 0,
           processing: 0,
           failed: 1,
+          retryQueue: 0,
           finished: 0,
           dead: 0,
         });
@@ -130,8 +139,29 @@ describe('JobRegistry', () => {
           enqueued: 0,
           processing: 0,
           failed: 0,
+          retryQueue: 0,
           finished: 0,
           dead: 1,
+        });
+      });
+    });
+
+    describe('when a job has been promoted to retryQueue', () => {
+      beforeEach(() => {
+        registry.enqueue({ parameters: { value: 1 } });
+        const job = registry.pick();
+        registry.fail(job);
+        registry.promoteReadyJobs();
+      });
+
+      it('returns retryQueue count of 1 and failed count of 0', () => {
+        expect(registry.stats()).toEqual({
+          enqueued:   0,
+          processing: 0,
+          failed:     0,
+          retryQueue: 1,
+          finished:   0,
+          dead:       0,
         });
       });
     });

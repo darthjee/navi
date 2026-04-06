@@ -103,6 +103,34 @@ describe('Job', () => {
     });
   });
 
+  describe('#isReady', () => {
+    describe('when readyBy is 0 (default)', () => {
+      it('returns true', () => {
+        expect(job.isReady()).toBeTrue();
+      });
+    });
+
+    describe('when readyBy is in the past', () => {
+      beforeEach(() => {
+        job.readyBy = Date.now() - 1000;
+      });
+
+      it('returns true', () => {
+        expect(job.isReady()).toBeTrue();
+      });
+    });
+
+    describe('when readyBy is in the future', () => {
+      beforeEach(() => {
+        job.readyBy = Date.now() + 10_000;
+      });
+
+      it('returns false', () => {
+        expect(job.isReady()).toBeFalse();
+      });
+    });
+  });
+
   describe('#exhausted', () => {
     beforeEach(async () => {
       spyOn(Logger, 'error').and.stub();

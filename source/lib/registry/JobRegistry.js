@@ -16,6 +16,7 @@ class JobRegistry {
   #processing;
   #lockedBy;
   #factory;
+  #cooldown;
 
   /**
    * Creates a new JobRegistry instance with an empty job queue.
@@ -24,20 +25,24 @@ class JobRegistry {
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
    * @param {Queue} [options.failed] - An optional queue to use for failed jobs. If not provided, a new Queue will be created.
+   * @param {Queue} [options.retryQueue] - An optional queue to use for jobs ready to retry. If not provided, a new Queue will be created.
    * @param {IdentifyableCollection} [options.finished] - An optional collection to use for finished jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.dead] - An optional collection to use for dead jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.processing] - An optional collection to use for jobs currently being processed. If not provided, a new IdentifyableCollection will be created.
    * @param {JobFactory} [options.factory] - An optional JobFactory to use for creating jobs. If not provided, a new JobFactory will be created with the provided clients.
+   * @param {number} [options.cooldown=5000] - Milliseconds a failed job must wait before becoming retryable. Use a negative value to disable the cooldown (e.g. in tests).
    */
-  constructor({ queue, failed, finished, dead, processing, clients, factory }) {
+  constructor({ queue, failed, retryQueue, finished, dead, processing, clients, factory, cooldown = 5000 }) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new Queue();
+    this.#retryQueue = retryQueue || new Queue();
     this.#finished = finished || new IdentifyableCollection();
     this.#dead = dead || new IdentifyableCollection();
     this.#processing = processing || new IdentifyableCollection();
 
     this.#lockedBy = null;
     this.#factory = factory || new JobFactory({ clients });
+    this.#cooldown = cooldown;
   }
 
   /**
@@ -65,6 +70,7 @@ class JobRegistry {
     if (job.exhausted()) {
       this.#dead.push(job);
     } else {
+      job.readyBy = Date.now() + this.#cooldown;
       this.#failed.push(job);
     }
   }
@@ -82,11 +88,11 @@ class JobRegistry {
   }
 
   /**
-   * Picks (removes and returns) the first job from the queue and adds it to processing.
-   * @returns {Job|undefined} The first job in the queue, or undefined if empty.
+   * Picks (removes and returns) the first job from the enqueued or retryQueue and adds it to processing.
+   * @returns {Job|undefined} The first available job, or undefined if none are ready.
    */
   pick() {
-    const job = this.#enqueued.pick() || this.#failed.pick();
+    const job = this.#enqueued.pick() || this.#retryQueue.pick();
     if (job) {
       this.#processing.push(job);
     }
@@ -94,11 +100,36 @@ class JobRegistry {
   }
 
   /**
-   * Returns whether the registry has any jobs pending.
-   * @returns {boolean} True if there are jobs in the queue, false otherwise.
+   * Promotes jobs from the failed queue to the retryQueue once their cooldown has elapsed.
+   * @returns {void}
+   */
+  promoteReadyJobs() {
+    const remaining = [];
+    while (this.#failed.hasItem()) {
+      const job = this.#failed.pick();
+      if (job.isReady()) {
+        this.#retryQueue.push(job);
+      } else {
+        remaining.push(job);
+      }
+    }
+    remaining.forEach(job => this.#failed.push(job));
+  }
+
+  /**
+   * Returns whether the registry has any jobs pending (including those in cooldown).
+   * @returns {boolean} True if any of enqueued, failed, or retryQueue is non-empty.
    */
   hasJob() {
-    return this.#enqueued.hasItem() || this.#failed.hasItem();
+    return this.#enqueued.hasItem() || this.#failed.hasItem() || this.#retryQueue.hasItem();
+  }
+
+  /**
+   * Returns whether there is a job ready to be picked by a worker right now.
+   * @returns {boolean} True if enqueued or retryQueue is non-empty.
+   */
+  hasReadyJob() {
+    return this.#enqueued.hasItem() || this.#retryQueue.hasItem();
   }
 
   /**
@@ -127,15 +158,16 @@ class JobRegistry {
 
   /**
    * Returns counts of jobs in each state.
-   * @returns {{ enqueued: number, processing: number, failed: number, finished: number, dead: number }} Counts of jobs in each state.
+   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Counts of jobs in each state.
    */
   stats() {
     return {
-      enqueued: this.#enqueued.size(),
+      enqueued:   this.#enqueued.size(),
       processing: this.#processing.size(),
-      failed: this.#failed.size(),
-      finished: this.#finished.size(),
-      dead: this.#dead.size(),
+      failed:     this.#failed.size(),
+      retryQueue: this.#retryQueue.size(),
+      finished:   this.#finished.size(),
+      dead:       this.#dead.size(),
     };
   }
 }

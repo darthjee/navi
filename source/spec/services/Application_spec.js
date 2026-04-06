@@ -109,13 +109,13 @@ describe('Application', () => {
       app.loadConfig(configFilePath, { workersRegistry, jobRegistry });
     });
 
-    it('processes all initial parameter-free jobs', () => {
-      app.run();
+    it('processes all initial parameter-free jobs', async () => {
+      await app.run();
       expect(jobRegistry.hasJob()).toBeFalse();
     });
 
-    it('sets webServer to null when no web config present', () => {
-      app.run();
+    it('sets webServer to null when no web config present', async () => {
+      await app.run();
       expect(app.webServer).toBeNull();
     });
   });

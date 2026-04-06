@@ -9,6 +9,7 @@ import { WorkersAllocator } from './WorkersAllocator.js';
 class Engine {
   #jobRegistry;
   #workersRegistry;
+  #sleepMs;
 
   /**
    * Creates an instance of Engine.
@@ -16,10 +17,12 @@ class Engine {
    * @param {JobRegistry} param0.jobRegistry - The job registry to allocate jobs from.
    * @param {WorkersRegistry} param0.workersRegistry - The workers registry to allocate workers from.
    * @param {WorkersAllocator} param0.allocator - The workers allocator to manage job allocation.
+   * @param {number} [param0.sleepMs=500] - Milliseconds to wait when all jobs are in cooldown. Use a negative value to disable sleeping (e.g. in tests).
    */
-  constructor({ jobRegistry, workersRegistry, allocator }) {
+  constructor({ jobRegistry, workersRegistry, allocator, sleepMs = 500 }) {
     this.#jobRegistry = jobRegistry;
     this.#workersRegistry = workersRegistry;
+    this.#sleepMs = sleepMs;
 
     this.allocator = allocator || new WorkersAllocator({
       jobRegistry: this.#jobRegistry,
@@ -32,11 +35,17 @@ class Engine {
    *
    * This method continuously checks for available jobs and idle workers, and assigns
    * jobs to workers until there are no more jobs and no more busy workers.
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  start() {
+  async start() {
     while (this.#continueAllocating()) {
-      this.allocator.allocate();
+      this.#jobRegistry.promoteReadyJobs();
+
+      if (this.#jobRegistry.hasReadyJob()) {
+        this.allocator.allocate();
+      } else {
+        await this.#sleep(this.#sleepMs);
+      }
     }
   }
 
@@ -46,6 +55,15 @@ class Engine {
    */
   #continueAllocating() {
     return this.#jobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
+  }
+
+  /**
+   * Waits for the given number of milliseconds.
+   * @param {number} ms - Duration in milliseconds to sleep.
+   * @returns {Promise<void>}
+   */
+  #sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
