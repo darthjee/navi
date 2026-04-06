@@ -10,6 +10,7 @@ import { Queue } from '../utils/Queue.js';
 class JobRegistry {
   #enqueued;
   #failed;
+  #retryQueue;
   #finished;
   #dead;
   #processing;

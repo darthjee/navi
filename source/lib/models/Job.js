@@ -26,6 +26,7 @@ class Job {
     this.#clients = clients;
 
     this.#attempts = 0;
+    this.readyBy = 0;
   }
 
   /**
@@ -44,6 +45,14 @@ class Job {
       Logger.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
     }
+  }
+
+  /**
+   * Checks whether the job's cooldown period has elapsed.
+   * @returns {boolean} True if the job can be retried now.
+   */
+  isReady() {
+    return Date.now() >= this.readyBy;
   }
 
   /**
