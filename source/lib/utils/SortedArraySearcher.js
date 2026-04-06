@@ -67,14 +67,19 @@ class SortedArraySearcher {
 
   #step() {
     const item = this.#array[this.#mid];
+    const sortedValue = this.#sortBy(item);
 
-    if (this.#mode === 'after' || this.#mode === 'upTo') {
-      if (this.#sortBy(item) <= this.#value) this.#lo = this.#mid + 1;
+    if (this.#isExclusiveMode()) {
+      if (sortedValue <= this.#value) this.#lo = this.#mid + 1;
       else this.#hi = this.#mid;
     } else { // 'from' or 'before'
-      if (this.#sortBy(item) < this.#value) this.#lo = this.#mid + 1;
+      if (sortedValue < this.#value) this.#lo = this.#mid + 1;
       else this.#hi = this.#mid;
     }
+  }
+
+  #isExclusiveMode() {
+    return this.#mode === 'after' || this.#mode === 'upTo';
   }
 }
 

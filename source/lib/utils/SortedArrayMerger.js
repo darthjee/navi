@@ -44,7 +44,7 @@ class SortedArrayMerger {
     this.#i = 0;
     this.#j = 0;
 
-    while (this.#i < this.#first.length && this.#j < this.#second.length) {
+    while (this.#bothHaveMore()) {
       this.#pickNext();
     }
 
@@ -57,6 +57,10 @@ class SortedArrayMerger {
     } else {
       this.#result.push(this.#second[this.#j++]);
     }
+  }
+
+  #bothHaveMore() {
+    return this.#i < this.#first.length && this.#j < this.#second.length;
   }
 
   #firstComesFirst() {
