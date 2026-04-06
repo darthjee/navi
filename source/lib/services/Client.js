@@ -14,10 +14,12 @@ class Client {
    * @param {object} attributes Client attributes.
    * @param {string} attributes.name Name identifying this client.
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
+   * @param {number} [attributes.timeout] Optional request timeout in milliseconds.
    */
-  constructor({ name, baseUrl }) {
+  constructor({ name, baseUrl, timeout }) {
     this.name = name;
     this.baseUrl = baseUrl;
+    this.timeout = timeout;
   }
 
   /**
@@ -26,10 +28,11 @@ class Client {
    * @param {string} name The name identifying the client.
    * @param {object} config Client configuration object.
    * @param {string} config.base_url Base URL for the client.
+   * @param {number} [config.timeout] Optional request timeout in milliseconds.
    * @returns {Client} A new Client instance.
    */
   static fromObject(name, config) {
-    return new Client({ name, baseUrl: config.base_url });
+    return new Client({ name, baseUrl: config.base_url, timeout: config.timeout });
   }
 
   /**
@@ -50,6 +53,7 @@ class Client {
    * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
    */
   async perform(resourceRequest) {
+    Logger.info(`[Client:${this.name}] Requesting ${this.#buildUrl(resourceRequest.url)}`);
     try {
       return await this.#request(resourceRequest);
     } catch (error) {
@@ -70,7 +74,7 @@ class Client {
    */
   async #request(resourceRequest) {
     const requestUrl = this.#buildUrl(resourceRequest.url);
-    const response = await axios.get(requestUrl);
+    const response = await axios.get(requestUrl, { timeout: this.timeout });
 
     if (response.status !== resourceRequest.status) {
       throw new RequestFailed(response.status, requestUrl);

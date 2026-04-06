@@ -100,7 +100,7 @@ describe('Worker', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
-        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         expect(console.error).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe('Worker', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
-        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
         expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: #${job.id} - ${expectedError}`);

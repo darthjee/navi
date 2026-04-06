@@ -36,6 +36,7 @@ class Job {
    * @returns {Promise} A promise that resolves with the result of performing the job's resource request.
    */
   async perform() {
+    Logger.info(`Job #${this.id} performing`);
     try {
       this.lastError = undefined;
       return await this.#getClient().perform(this.#resourceRequest);
