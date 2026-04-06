@@ -22,24 +22,37 @@ class SortedArrayMerger {
   }
 
   /**
+   * Merges two sorted arrays into a single sorted array.
+   * @param {Array} first - The first sorted array.
+   * @param {Array} second - The second sorted array.
+   * @param {Function} sortBy - Function that extracts a comparable value from an element.
+   * @returns {Array}
+   */
+  static merge(first, second, sortBy) {
+    return new SortedArrayMerger(first, second, sortBy).merge();
+  }
+
+  /**
    * Returns a new sorted array containing all elements from both arrays.
    * @returns {Array}
    */
   merge() {
     const result = [];
     let i = 0, j = 0;
-    const first = this.#first;
-    const second = this.#second;
 
-    while (i < first.length && j < second.length) {
-      if (this.#sortBy(first[i]) <= this.#sortBy(second[j])) {
-        result.push(first[i++]);
+    while (i < this.#first.length && j < this.#second.length) {
+      if (this.#firstComesFirst(i, j)) {
+        result.push(this.#first[i++]);
       } else {
-        result.push(second[j++]);
+        result.push(this.#second[j++]);
       }
     }
 
-    return result.concat(first.slice(i), second.slice(j));
+    return result.concat(this.#first.slice(i), this.#second.slice(j));
+  }
+
+  #firstComesFirst(i, j) {
+    return this.#sortBy(this.#first[i]) <= this.#sortBy(this.#second[j]);
   }
 }
 

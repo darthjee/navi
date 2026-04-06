@@ -135,11 +135,11 @@ class SortedCollection extends Collection {
   }
 
   #merge() {
-    return new SortedArrayMerger(this.#sorted, this.#nonSorted, this.#sortBy).merge();
+    return SortedArrayMerger.merge(this.#sorted, this.#nonSorted, this.#sortBy);
   }
 
   #binarySearch(value, mode) {
-    return new SortedArraySearcher(this.#sorted, this.#sortBy).search(value, mode);
+    return SortedArraySearcher.search(this.#sorted, this.#sortBy, value, mode);
   }
 }
 

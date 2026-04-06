@@ -18,34 +18,50 @@
 class SortedArraySearcher {
   #array;
   #sortBy;
+  #value;
+  #mode;
 
   /**
    * @param {Array} array - The sorted array to search.
    * @param {Function} sortBy - Function that extracts a comparable value from an element.
+   * @param {*} value - The boundary value to search for.
+   * @param {'after'|'from'|'before'|'upTo'} mode - The range mode.
    */
-  constructor(array, sortBy) {
+  constructor(array, sortBy, value, mode) {
     this.#array = array;
     this.#sortBy = sortBy;
+    this.#value = value;
+    this.#mode = mode;
   }
 
   /**
    * Returns the boundary index for slicing based on the range mode.
+   * @param {Array} array - The sorted array to search.
+   * @param {Function} sortBy - Function that extracts a comparable value from an element.
    * @param {*} value - The boundary value to search for.
    * @param {'after'|'from'|'before'|'upTo'} mode - The range mode.
    * @returns {number} The boundary index.
    */
-  search(value, mode) {
+  static search(array, sortBy, value, mode) {
+    return new SortedArraySearcher(array, sortBy, value, mode).search();
+  }
+
+  /**
+   * Returns the boundary index for slicing based on the range mode.
+   * @returns {number} The boundary index.
+   */
+  search() {
     let lo = 0, hi = this.#array.length;
 
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
       const item = this.#array[mid];
 
-      if (mode === 'after' || mode === 'upTo') {
-        if (this.#sortBy(item) <= value) lo = mid + 1;
+      if (this.#mode === 'after' || this.#mode === 'upTo') {
+        if (this.#sortBy(item) <= this.#value) lo = mid + 1;
         else hi = mid;
       } else { // 'from' or 'before'
-        if (this.#sortBy(item) < value) lo = mid + 1;
+        if (this.#sortBy(item) < this.#value) lo = mid + 1;
         else hi = mid;
       }
     }
