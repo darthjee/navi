@@ -35,17 +35,6 @@ class Application {
     this.#initRegistries(...options);
   }
 
-  #initRegistries({ jobRegistry, workersRegistry } = {}) {
-    this.jobRegistry = jobRegistry || new JobRegistry({ clients: this.config.clientRegistry });
-    this.workersRegistry = workersRegistry || new WorkersRegistry({
-      jobRegistry: this.jobRegistry,
-      workers: this.#workers,
-      ...this.config.workersConfig
-    });
-
-    this.workersRegistry.initWorkers();
-  }
-
   /**
    * Starts the application by building the engine, web server, enqueueing initial jobs, and starting both.
    * @returns {void}
@@ -91,6 +80,17 @@ class Application {
     new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
       this.jobRegistry.enqueue({ resourceRequest, parameters: {} });
     });
+  }
+
+  #initRegistries({ jobRegistry, workersRegistry } = {}) {
+    this.jobRegistry = jobRegistry || new JobRegistry({ clients: this.config.clientRegistry });
+    this.workersRegistry = workersRegistry || new WorkersRegistry({
+      jobRegistry: this.jobRegistry,
+      workers: this.#workers,
+      ...this.config.workersConfig
+    });
+
+    this.workersRegistry.initWorkers();
   }
 }
 

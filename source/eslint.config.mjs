@@ -5,6 +5,7 @@ import jasmine from 'eslint-plugin-jasmine';
 import jsdoc from 'eslint-plugin-jsdoc';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import sortClassMembers from 'eslint-plugin-sort-class-members';
 import globals from 'globals';
 
 export default [
@@ -20,6 +21,7 @@ export default [
       'react-hooks': reactHooks,
       jsdoc,
       'import': importPlugin,
+      'sort-class-members': sortClassMembers,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -73,6 +75,18 @@ export default [
       eqeqeq: ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
+
+      'sort-class-members/sort-class-members': ['error', {
+        order: [
+          '[static-properties]',
+          '[static-methods]',
+          '[properties]',
+          'constructor',
+          { type: 'method', private: false },
+          { type: 'method', private: true },
+        ],
+        accessorPairPositioning: 'getThenSet',
+      }],
 
       // React rules
       'react/jsx-uses-react': 'error',
