@@ -7,6 +7,7 @@ import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
 import { WebServer } from '../../lib/server/WebServer.js';
 import { Application } from '../../lib/services/Application.js';
 import { IdentifyableCollection } from '../../lib/utils/IdentifyableCollection.js';
+import { Logger } from '../../lib/utils/Logger.js';
 import { DummyJobFactory } from '../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/dummies/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../support/dummies/models/DummyJob.js';
@@ -75,6 +76,10 @@ describe('Application', () => {
     });
 
     describe('when config file is invalid', () => {
+      beforeEach(() => {
+        spyOn(Logger, 'error').and.stub();
+      });
+
       it('should throw an error', () => {
         expect(() => app.loadConfig('invalid')).toThrowError(ConfigurationFileNotFound);
       });

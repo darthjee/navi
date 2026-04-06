@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Logger } from '../../lib/utils/Logger.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
@@ -33,13 +34,16 @@ describe('Client', () => {
         statusCode: 404,
         url: fullUrl,
       });
+
+      spyOn(Logger, 'error').and.stub();
     });
 
-    it('throws RequestFailed when status does not match', async () => {
+    it('throws RequestFailed when status does not match and logs the error', async () => {
       const promise = Promise.resolve({ status: 404 });
       spyOn(axios, 'get').and.returnValue(promise);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
+      expect(Logger.error).toHaveBeenCalled();
     });
   });
 
@@ -64,13 +68,16 @@ describe('Client', () => {
         statusCode: 500,
         url: fullUrl,
       });
+
+      spyOn(Logger, 'error').and.stub();
     });
 
-    it('throws RequestFailed with correct status and full url on error.response', async () => {
+    it('throws RequestFailed with correct status and full url on error.response and logs the error', async () => {
       const promise = Promise.reject({ response: { status: 500 } });
       spyOn(axios, 'get').and.returnValue(promise);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
+      expect(Logger.error).toHaveBeenCalled();
     });
   });
 });

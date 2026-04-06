@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
+import { Logger } from '../utils/Logger.js';
 
 /**
  * Client performs HTTP requests for resource paths using a configured base URL.
@@ -52,6 +53,7 @@ class Client {
     try {
       return await this.#request(resourceRequest);
     } catch (error) {
+      Logger.error(`Request failed: ${error}`);
       if (error.response) {
         throw new RequestFailed(error.response.status, this.#buildUrl(resourceRequest.url));
       }
