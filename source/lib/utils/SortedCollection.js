@@ -1,4 +1,6 @@
 import { Collection } from './Collection.js';
+import { SortedArrayMerger } from './SortedArrayMerger.js';
+import { SortedArraySearcher } from './SortedArraySearcher.js';
 
 /**
  * A collection that maintains elements in sorted order.
@@ -119,53 +121,25 @@ class SortedCollection extends Collection {
   #flush() {
     if (this.#nonSorted.length === 0) return;
 
+    this.#sortNonSorted();
+    this.#sorted = this.#merge();
+    this.#nonSorted = [];
+  }
+
+  #sortNonSorted() {
     this.#nonSorted.sort((a, b) => {
       const va = this.#sortBy(a);
       const vb = this.#sortBy(b);
       return va < vb ? -1 : va > vb ? 1 : 0;
     });
-
-    this.#sorted = this.#merge(this.#sorted, this.#nonSorted);
-    this.#nonSorted = [];
   }
 
-  #merge(sorted, incoming) {
-    const result = [];
-    let i = 0, j = 0;
-
-    while (i < sorted.length && j < incoming.length) {
-      if (this.#sortBy(sorted[i]) <= this.#sortBy(incoming[j])) {
-        result.push(sorted[i++]);
-      } else {
-        result.push(incoming[j++]);
-      }
-    }
-
-    return result.concat(sorted.slice(i), incoming.slice(j));
+  #merge() {
+    return new SortedArrayMerger(this.#sorted, this.#nonSorted, this.#sortBy).merge();
   }
 
-  // Returns the boundary index for slicing #sorted based on the range method.
-  // 'after'  → first index where sortBy(el) > value
-  // 'from'   → first index where sortBy(el) >= value
-  // 'before' → first index where sortBy(el) >= value  (exclusive upper bound)
-  // 'upTo'   → first index where sortBy(el) > value   (exclusive upper bound)
   #binarySearch(value, mode) {
-    let lo = 0, hi = this.#sorted.length;
-
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      const v = this.#sortBy(this.#sorted[mid]);
-
-      if (mode === 'after' || mode === 'upTo') {
-        if (v <= value) lo = mid + 1;
-        else hi = mid;
-      } else { // 'from' or 'before'
-        if (v < value) lo = mid + 1;
-        else hi = mid;
-      }
-    }
-
-    return lo;
+    return new SortedArraySearcher(this.#sorted, this.#sortBy).search(value, mode);
   }
 }
 
