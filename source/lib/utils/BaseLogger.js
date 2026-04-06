@@ -17,14 +17,6 @@ class BaseLogger {
   }
 
   /**
-   * @param {string} level - The log level to check.
-   * @returns {boolean} True if the message should be logged at the given level.
-   */
-  #shouldLog(level) {
-    return !this.#suppressed && this.#levels[level] >= this.#levels[this.#level];
-  }
-
-  /**
    * Outputs a message at the given level. Override in subclasses.
    * @param {string} _level - The log level.
    * @param {string} _message - The message to output.
@@ -87,6 +79,14 @@ class BaseLogger {
       throw new Error(`Invalid log level: "${level}". Must be one of: ${Object.keys(this.#levels).join(', ')}.`);
     }
     this.#level = level;
+  }
+
+  /**
+   * @param {string} level - The log level to check.
+   * @returns {boolean} True if the message should be logged at the given level.
+   */
+  #shouldLog(level) {
+    return !this.#suppressed && this.#levels[level] >= this.#levels[this.#level];
   }
 }
 
