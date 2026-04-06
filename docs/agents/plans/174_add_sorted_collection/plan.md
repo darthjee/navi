@@ -32,6 +32,7 @@ class SortedCollection extends Collection {
 
   constructor(initialSet = [], { sortBy } = {}) {
     super();
+    if (typeof sortBy !== 'function') throw new Error('sortBy must be a function');
     this.#sortBy = sortBy;
     this.#nonSorted = [...initialSet];
   }
@@ -42,7 +43,7 @@ class SortedCollection extends Collection {
 
   list() {
     this.#flush();
-    return this.#sorted;
+    return [...this.#sorted];
   }
 
   size() {
@@ -161,8 +162,16 @@ describe('SortedCollection', () => {
   // ─── constructor ────────────────────────────────────────────────────────────
 
   describe('constructor', () => {
-    it('creates an empty collection when called with no arguments', () => {
-      collection = new SortedCollection();
+    it('throws if sortBy is not provided', () => {
+      expect(() => new SortedCollection([])).toThrowError('sortBy must be a function');
+    });
+
+    it('throws if sortBy is not a function', () => {
+      expect(() => new SortedCollection([], { sortBy: 'date' })).toThrowError('sortBy must be a function');
+    });
+
+    it('creates an empty collection when called with no elements', () => {
+      collection = new SortedCollection([], { sortBy });
       expect(collection.size()).toEqual(0);
     });
 
@@ -230,8 +239,15 @@ describe('SortedCollection', () => {
     });
 
     it('returns empty array for empty collection', () => {
-      collection = new SortedCollection();
+      collection = new SortedCollection([], { sortBy });
       expect(collection.list()).toEqual([]);
+    });
+
+    it('does not expose the internal array (mutation-safe)', () => {
+      collection = new SortedCollection([{ value: 1 }], { sortBy });
+      const result = collection.list();
+      result.push({ value: 99 });
+      expect(collection.size()).toEqual(1);
     });
 
     it('sorts elements from the initial set', () => {
@@ -392,7 +408,7 @@ describe('SortedCollection', () => {
 
   describe('#hasAny / #hasItem', () => {
     it('returns false when empty', () => {
-      collection = new SortedCollection();
+      collection = new SortedCollection([], { sortBy });
       expect(collection.hasAny()).toBeFalse();
       expect(collection.hasItem()).toBeFalse();
     });
@@ -418,3 +434,5 @@ describe('SortedCollection', () => {
 - `select` and range methods return plain arrays, not a new `SortedCollection`.
 - The range methods short-circuit via binary search, not by breaking a loop.
 - `#binarySearch` is shared by all four range methods; the `mode` argument controls which boundary condition is applied.
+- Constructor throws `Error('sortBy must be a function')` immediately if `sortBy` is missing or not a function — fail fast rather than crashing on first flush.
+- `list()` returns a shallow copy (`[...this.#sorted]`) to prevent callers from mutating the internal sorted array.

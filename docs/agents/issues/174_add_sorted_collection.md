@@ -16,9 +16,10 @@ A new `SortedCollection` class is needed that maintains elements in sorted order
 ## Solution
 
 - Implement the `SortedCollection` class with:
-  - Constructor: `new SortedCollection(initialSet = [], { sortBy })`
+  - Constructor: `new SortedCollection(initialSet = [], { sortBy })` — throws if `sortBy` is not a function
   - Internal state: `_sorted[]` and `_nonSorted[]`
   - A flush/merge step triggered before any iteration that sorts `_nonSorted` and merges it into `_sorted` (e.g. using a merge-sort-style algorithm to combine two already-sorted arrays efficiently)
+  - `list()` — returns a copy of the sorted array (not the internal reference, to prevent external mutation)
   - `select(fn)` — returns a new collection (or array) of elements for which `fn(element)` returns `true`
   - `after(value)` — short-circuits, returns elements whose sort field is `> value`
   - `from(value)` — short-circuits, returns elements whose sort field is `>= value`
