@@ -22,9 +22,11 @@ describe('Client', () => {
     const response = { status: 200 };
     const promise = Promise.resolve(response);
     spyOn(axios, 'get').and.returnValue(promise);
+    spyOn(Logger, 'info').and.stub();
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
-    expect(axios.get).toHaveBeenCalledWith(fullUrl);
+    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
+    expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${fullUrl}`);
   });
 
   describe('when request status is not a match', () => {
@@ -36,6 +38,7 @@ describe('Client', () => {
       });
 
       spyOn(Logger, 'error').and.stub();
+      spyOn(Logger, 'info').and.stub();
     });
 
     it('throws RequestFailed when status does not match and logs the error', async () => {
@@ -56,6 +59,7 @@ describe('Client', () => {
       const response = { status: 404 };
       const promise = Promise.resolve(response);
       spyOn(axios, 'get').and.returnValue(promise);
+      spyOn(Logger, 'info').and.stub();
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     });
@@ -70,6 +74,7 @@ describe('Client', () => {
       });
 
       spyOn(Logger, 'error').and.stub();
+      spyOn(Logger, 'info').and.stub();
     });
 
     it('throws RequestFailed with correct status and full url on error.response and logs the error', async () => {
@@ -78,6 +83,21 @@ describe('Client', () => {
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
       expect(Logger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('when a timeout is configured', () => {
+    beforeEach(() => {
+      client = ClientFactory.build({ baseUrl, timeout: 5000 });
+      spyOn(Logger, 'info').and.stub();
+    });
+
+    it('passes the timeout to the axios request', async () => {
+      const response = { status: 200 };
+      spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+
+      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+      expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
     });
   });
 });

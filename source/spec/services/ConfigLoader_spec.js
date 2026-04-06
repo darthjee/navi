@@ -20,7 +20,7 @@ describe('ConfigLoader', () => {
           categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: ClientFactory.build(),
+          default: ClientFactory.build({ timeout: 5000 }),
         };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
 

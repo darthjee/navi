@@ -44,15 +44,21 @@ describe('Job', () => {
         const promise = Promise.resolve(response);
 
         spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(Logger, 'info').and.stub();
       });
 
       it('performs the job', async () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
+      });
+
+      it('logs info when performing', async () => {
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(Logger.info).toHaveBeenCalledWith(`Job #${job.id} performing`);
       });
 
       it('does not exhaust after several attempts', async () => {
@@ -61,7 +67,7 @@ describe('Job', () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
         await expectAsync(job.perform()).toBeResolvedTo(response);
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl);
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
@@ -76,6 +82,7 @@ describe('Job', () => {
 
         spyOn(axios, 'get').and.returnValue(promise);
         spyOn(Logger, 'error').and.stub();
+        spyOn(Logger, 'info').and.stub();
       });
 
       it('register failure and attempt', async () => {
@@ -99,6 +106,7 @@ describe('Job', () => {
   describe('#exhausted', () => {
     beforeEach(async () => {
       spyOn(Logger, 'error').and.stub();
+      spyOn(Logger, 'info').and.stub();
       await job.perform().catch(() => {});
       await job.perform().catch(() => {});
     });

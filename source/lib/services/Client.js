@@ -14,10 +14,12 @@ class Client {
    * @param {object} attributes Client attributes.
    * @param {string} attributes.name Name identifying this client.
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
+   * @param {number} [attributes.timeout] Optional request timeout in milliseconds.
    */
-  constructor({ name, baseUrl }) {
+  constructor({ name, baseUrl, timeout }) {
     this.name = name;
     this.baseUrl = baseUrl;
+    this.timeout = timeout;
   }
 
   /**
@@ -26,10 +28,11 @@ class Client {
    * @param {string} name The name identifying the client.
    * @param {object} config Client configuration object.
    * @param {string} config.base_url Base URL for the client.
+   * @param {number} [config.timeout] Optional request timeout in milliseconds.
    * @returns {Client} A new Client instance.
    */
   static fromObject(name, config) {
-    return new Client({ name, baseUrl: config.base_url });
+    return new Client({ name, baseUrl: config.base_url, timeout: config.timeout });
   }
 
   /**
@@ -50,12 +53,14 @@ class Client {
    * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
    */
   async perform(resourceRequest) {
+    const requestUrl = this.#buildUrl(resourceRequest.url);
+    Logger.info(`[Client:${this.name}] Requesting ${requestUrl}`);
     try {
-      return await this.#request(resourceRequest);
+      return await this.#request(resourceRequest, requestUrl);
     } catch (error) {
       Logger.error(`Request failed: ${error}`);
       if (error.response) {
-        throw new RequestFailed(error.response.status, this.#buildUrl(resourceRequest.url));
+        throw new RequestFailed(error.response.status, requestUrl);
       }
       throw error;
     }
@@ -65,12 +70,12 @@ class Client {
    * Performs the HTTP request and checks the response status.
    * @param {ResourceRequest} resourceRequest Information about the URL path to request
    * and the expected status code.
+   * @param {string} requestUrl The full URL for the request.
    * @returns {Promise<boolean>} Returns true if the response status matches the expected status.
    * @throws {RequestFailed} Throws an error if the response status does not match.
    */
-  async #request(resourceRequest) {
-    const requestUrl = this.#buildUrl(resourceRequest.url);
-    const response = await axios.get(requestUrl);
+  async #request(resourceRequest, requestUrl) {
+    const response = await axios.get(requestUrl, { timeout: this.timeout });
 
     if (response.status !== resourceRequest.status) {
       throw new RequestFailed(response.status, requestUrl);

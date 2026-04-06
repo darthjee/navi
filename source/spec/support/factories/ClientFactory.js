@@ -9,10 +9,11 @@ class ClientFactory {
    * @param {object} [params={}] - Optional attributes.
    * @param {string} [params.name='default'] - The client name.
    * @param {string} [params.baseUrl='https://example.com'] - The base URL.
+   * @param {number} [params.timeout] - Optional request timeout in milliseconds.
    * @returns {Client} A new Client instance.
    */
-  static build({ name = 'default', baseUrl = 'https://example.com' } = {}) {
-    return new Client({ name, baseUrl });
+  static build({ name = 'default', baseUrl = 'https://example.com', timeout } = {}) {
+    return new Client({ name, baseUrl, timeout });
   }
 }
 

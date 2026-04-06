@@ -147,7 +147,7 @@ describe('Config', () => {
           categories: ResourceFactory.build(),
         };
         expectedClients = {
-          default: ClientFactory.build(),
+          default: ClientFactory.build({ timeout: 5000 }),
         };
         expectedClientRegistry = ClientRegistryFactory.build(expectedClients);
         expectedResourceRegistry = new ResourceRegistry(expectedResources);
