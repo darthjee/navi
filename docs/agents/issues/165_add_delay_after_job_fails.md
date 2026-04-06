@@ -90,6 +90,20 @@ The engine must keep running as long as any of the following is true:
 - Add a `promoteReadyJobs()` method that moves jobs from `failed` to `retryQueue` when `job.isReady()`.
 - Update `pick()` (or create a dedicated `pickRetry()`) so workers can consume from `retryQueue`.
 
+### `JobRegistry#stats()` (`source/lib/registry/JobRegistry.js`)
+
+The existing `stats()` method returns counts for every queue state. It must be extended to include the new `retryQueue`:
+
+```js
+// Before
+{ enqueued, processing, failed, finished, dead }
+
+// After
+{ enqueued, processing, failed, retryQueue, finished, dead }
+```
+
+The `GET /stats.json` endpoint (`source/lib/server/StatsRequestHandler.js`) calls `jobRegistry.stats()` directly, so it will automatically expose the new field once `stats()` is updated.
+
 ### `Engine` (`source/lib/services/Engine.js`)
 
 - Call `jobRegistry.promoteReadyJobs()` at the start (or end) of each allocation cycle.
@@ -109,5 +123,6 @@ The engine must keep running as long as any of the following is true:
 - [ ] `hasJob()` returns `true` while any of `main`, `failed`, or `retryQueue` is non-empty — keeps the engine running.
 - [ ] `hasReadyJob()` returns `true` only when `main` or `retryQueue` is non-empty — signals the allocator that a worker can be assigned a job.
 - [ ] When `hasJob()` is `true` but `hasReadyJob()` is `false`, the engine sleeps before the next cycle (all pending jobs are in cooldown).
+- [ ] The `GET /stats.json` response includes a `retryQueue` count alongside the existing job state counts.
 - [ ] All existing tests continue to pass.
-- [ ] New unit tests cover: `readyBy` assignment on failure, `promoteReadyJobs()` promotion logic, and the behaviour of both `hasJob()` and `hasReadyJob()`.
+- [ ] New unit tests cover: `readyBy` assignment on failure, `promoteReadyJobs()` promotion logic, the behaviour of both `hasJob()` and `hasReadyJob()`, and the updated `stats()` output.
