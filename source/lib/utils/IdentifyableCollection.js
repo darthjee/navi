@@ -1,4 +1,6 @@
-class IdentifyableCollection {
+import { Collection } from './Collection.js';
+
+class IdentifyableCollection extends Collection {
   #items;
   #size = null;
 
@@ -6,6 +8,7 @@ class IdentifyableCollection {
    * @param {object} items - Optional initial items, keyed by id.
    */
   constructor(items = {}) {
+    super();
     this.#items = items;
   }
 
@@ -71,14 +74,6 @@ class IdentifyableCollection {
       this.#size = this.list().length;
     }
     return this.#size;
-  }
-
-  /**
-   * Checks if the collection has any items.
-   * @returns {boolean} - True if the collection has any items, false otherwise.
-   */
-  hasAny() {
-    return this.size() > 0;
   }
 }
 
