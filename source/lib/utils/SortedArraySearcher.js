@@ -20,6 +20,9 @@ class SortedArraySearcher {
   #sortBy;
   #value;
   #mode;
+  #lo = 0;
+  #hi;
+  #mid;
 
   /**
    * @param {Array} array - The sorted array to search.
@@ -32,6 +35,7 @@ class SortedArraySearcher {
     this.#sortBy = sortBy;
     this.#value = value;
     this.#mode = mode;
+    this.#hi = array.length;
   }
 
   /**
@@ -51,22 +55,24 @@ class SortedArraySearcher {
    * @returns {number} The boundary index.
    */
   search() {
-    let lo = 0, hi = this.#array.length;
-
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      const item = this.#array[mid];
-
-      if (this.#mode === 'after' || this.#mode === 'upTo') {
-        if (this.#sortBy(item) <= this.#value) lo = mid + 1;
-        else hi = mid;
-      } else { // 'from' or 'before'
-        if (this.#sortBy(item) < this.#value) lo = mid + 1;
-        else hi = mid;
-      }
+    while (this.#lo < this.#hi) {
+      this.#mid = (this.#lo + this.#hi) >> 1;
+      this.#step();
     }
 
-    return lo;
+    return this.#lo;
+  }
+
+  #step() {
+    const item = this.#array[this.#mid];
+
+    if (this.#mode === 'after' || this.#mode === 'upTo') {
+      if (this.#sortBy(item) <= this.#value) this.#lo = this.#mid + 1;
+      else this.#hi = this.#mid;
+    } else { // 'from' or 'before'
+      if (this.#sortBy(item) < this.#value) this.#lo = this.#mid + 1;
+      else this.#hi = this.#mid;
+    }
   }
 }
 

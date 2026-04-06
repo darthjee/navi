@@ -9,6 +9,9 @@ class SortedArrayMerger {
   #first;
   #second;
   #sortBy;
+  #result = [];
+  #i = 0;
+  #j = 0;
 
   /**
    * @param {Array} first - The first sorted array.
@@ -37,22 +40,23 @@ class SortedArrayMerger {
    * @returns {Array}
    */
   merge() {
-    const result = [];
-    let i = 0, j = 0;
-
-    while (i < this.#first.length && j < this.#second.length) {
-      if (this.#firstComesFirst(i, j)) {
-        result.push(this.#first[i++]);
-      } else {
-        result.push(this.#second[j++]);
-      }
+    while (this.#i < this.#first.length && this.#j < this.#second.length) {
+      this.#pickNext();
     }
 
-    return result.concat(this.#first.slice(i), this.#second.slice(j));
+    return this.#result.concat(this.#first.slice(this.#i), this.#second.slice(this.#j));
   }
 
-  #firstComesFirst(i, j) {
-    return this.#sortBy(this.#first[i]) <= this.#sortBy(this.#second[j]);
+  #pickNext() {
+    if (this.#firstComesFirst()) {
+      this.#result.push(this.#first[this.#i++]);
+    } else {
+      this.#result.push(this.#second[this.#j++]);
+    }
+  }
+
+  #firstComesFirst() {
+    return this.#sortBy(this.#first[this.#i]) <= this.#sortBy(this.#second[this.#j]);
   }
 }
 

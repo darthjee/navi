@@ -47,8 +47,7 @@ class SortedCollection extends Collection {
    * @returns {Array} Sorted shallow copy.
    */
   list() {
-    this.#flush();
-    return [...this.#sorted];
+    return [...this.#flushedSorted()];
   }
 
   /**
@@ -66,8 +65,7 @@ class SortedCollection extends Collection {
    * @returns {Array}
    */
   select(fn) {
-    this.#flush();
-    return this.#sorted.filter(fn);
+    return this.#flushedSorted().filter(fn);
   }
 
   /**
@@ -77,7 +75,6 @@ class SortedCollection extends Collection {
    * @returns {Array}
    */
   after(value) {
-    this.#flush();
     const i = this.#binarySearch(value, 'after');
     return this.#sorted.slice(i);
   }
@@ -89,7 +86,6 @@ class SortedCollection extends Collection {
    * @returns {Array}
    */
   from(value) {
-    this.#flush();
     const i = this.#binarySearch(value, 'from');
     return this.#sorted.slice(i);
   }
@@ -101,7 +97,6 @@ class SortedCollection extends Collection {
    * @returns {Array}
    */
   before(value) {
-    this.#flush();
     const i = this.#binarySearch(value, 'before');
     return this.#sorted.slice(0, i);
   }
@@ -113,9 +108,13 @@ class SortedCollection extends Collection {
    * @returns {Array}
    */
   upTo(value) {
-    this.#flush();
     const i = this.#binarySearch(value, 'upTo');
     return this.#sorted.slice(0, i);
+  }
+
+  #flushedSorted() {
+    this.#flush();
+    return this.#sorted;
   }
 
   #flush() {
@@ -139,7 +138,7 @@ class SortedCollection extends Collection {
   }
 
   #binarySearch(value, mode) {
-    return SortedArraySearcher.search(this.#sorted, this.#sortBy, value, mode);
+    return SortedArraySearcher.search(this.#flushedSorted(), this.#sortBy, value, mode);
   }
 }
 
