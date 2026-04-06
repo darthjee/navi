@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
+import { Logger } from '../../lib/utils/Logger.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
@@ -74,6 +75,7 @@ describe('Job', () => {
         expectedError = new RequestFailed(502, fullUrl);
 
         spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(Logger, 'error').and.stub();
       });
 
       it('register failure and attempt', async () => {
@@ -86,11 +88,17 @@ describe('Job', () => {
         expect(job.exhausted()).toBeTrue();
         expect(job.lastError).toEqual(expectedError);
       });
+
+      it('logs the error', async () => {
+        await job.perform().catch(() => {});
+        expect(Logger.error).toHaveBeenCalledWith(`Job #${job.id} failed: ${expectedError}`);
+      });
     });
   });
 
   describe('#exhausted', () => {
     beforeEach(async () => {
+      spyOn(Logger, 'error').and.stub();
       await job.perform().catch(() => {});
       await job.perform().catch(() => {});
     });

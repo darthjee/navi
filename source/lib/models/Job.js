@@ -1,3 +1,5 @@
+import { Logger } from '../utils/Logger.js';
+
 /**
  * Job represents a unit of work to be processed by a Worker.
  * @author darthjee
@@ -38,6 +40,7 @@ class Job {
       this.lastError = undefined;
       return await this.#getClient().perform(this.#resourceRequest);
     } catch (error) {
+      Logger.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
     }
   }

@@ -1,6 +1,7 @@
 import { ConfigurationFileNotFound } from '../../lib/exceptions/ConfigurationFileNotFound.js';
 import { WorkersConfig } from '../../lib/models/WorkersConfig.js';
 import { ConfigLoader } from '../../lib/services/ConfigLoader.js';
+import { Logger } from '../../lib/utils/Logger.js';
 import { ClientFactory } from '../support/factories/ClientFactory.js';
 import { ResourceFactory } from '../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
@@ -90,12 +91,17 @@ describe('ConfigLoader', () => {
     });
 
     describe('when the file is not found', () => {
-      it('throws an error', () => {
+      beforeEach(() => {
+        spyOn(Logger, 'error').and.stub();
+      });
+
+      it('throws an error and logs it', () => {
         const configFilePath = FixturesUtils.getFixturePath('non-existing.yml');
 
         expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(
           ConfigurationFileNotFound
         );
+        expect(Logger.error).toHaveBeenCalled();
       });
     });
   });
