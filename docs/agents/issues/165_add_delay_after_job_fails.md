@@ -64,7 +64,14 @@ The engine must keep running as long as any of the following is true:
 - There is at least one job in the **`retryQueue`** (ready to be retried).
 - At least one **worker is busy** (currently processing a job).
 
-In code terms, `JobRegistry.hasJob()` must return `true` when any of the three queues is non-empty.
+`JobRegistry` must expose **two separate methods** to support this:
+
+| Method | Returns `true` when… | Used by |
+|--------|----------------------|---------|
+| `hasJob()` | Any of `main`, `failed`, or `retryQueue` is non-empty | **Engine** — keeps the main loop alive while there is still work to do |
+| `hasReadyJob()` | `main` or `retryQueue` is non-empty | **WorkersAllocator** — signals that a worker can be assigned a job right now |
+
+`hasJob()` returning `true` while `hasReadyJob()` returns `false` means jobs exist but all are still in their cooldown period; the engine must wait (sleep) before the next cycle rather than trying to assign work to a worker.
 
 ---
 
@@ -78,7 +85,8 @@ In code terms, `JobRegistry.hasJob()` must return `true` when any of the three q
 ### `JobRegistry` (`source/lib/registry/JobRegistry.js`)
 
 - Add a `retryQueue` (array or queue structure, same as `failed`).
-- Update `hasJob()` to also check `retryQueue` and `failed`.
+- Update `hasJob()` to return `true` when `main`, `failed`, **or** `retryQueue` is non-empty.
+- Add `hasReadyJob()` that returns `true` when `main` **or** `retryQueue` is non-empty (used by the allocator to decide whether a worker can be assigned a job).
 - Add a `promoteReadyJobs()` method that moves jobs from `failed` to `retryQueue` when `job.isReady()`.
 - Update `pick()` (or create a dedicated `pickRetry()`) so workers can consume from `retryQueue`.
 
@@ -98,6 +106,8 @@ In code terms, `JobRegistry.hasJob()` must return `true` when any of the three q
 - [ ] Failed jobs are **not** picked up by workers until `readyBy` has elapsed.
 - [ ] The engine promotes jobs from `failed` → `retryQueue` on every cycle once their `readyBy` time passes.
 - [ ] Workers pick jobs from both `main` and `retryQueue`.
-- [ ] The engine continues running while any of `main`, `failed`, or `retryQueue` is non-empty, or any worker is busy.
+- [ ] `hasJob()` returns `true` while any of `main`, `failed`, or `retryQueue` is non-empty — keeps the engine running.
+- [ ] `hasReadyJob()` returns `true` only when `main` or `retryQueue` is non-empty — signals the allocator that a worker can be assigned a job.
+- [ ] When `hasJob()` is `true` but `hasReadyJob()` is `false`, the engine sleeps before the next cycle (all pending jobs are in cooldown).
 - [ ] All existing tests continue to pass.
-- [ ] New unit tests cover: `readyBy` assignment on failure, `promoteReadyJobs()` promotion logic, and the updated `hasJob()` check.
+- [ ] New unit tests cover: `readyBy` assignment on failure, `promoteReadyJobs()` promotion logic, and the behaviour of both `hasJob()` and `hasReadyJob()`.
