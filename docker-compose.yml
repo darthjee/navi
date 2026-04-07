@@ -12,14 +12,14 @@ services:
     container_name: navi_build
     build:
       context: .
-      dockerfile: dockerfiles/dev_navy/Dockerfile
+      dockerfile: dockerfiles/dev_navi/Dockerfile
     command: echo done
 
   navi_app:
     <<: *base
     container_name: navi_app
     depends_on: [base_build, navi_proxy]
-    command: node bin/navi.js
+    command: tail -f /dev/null
     ports:
       - 0.0.0.0:3000:3000
     links:
