@@ -14,6 +14,7 @@ Add an optional `actions` list to each `ResourceRequest` config entry. After a s
 | [Actions Executor](plan_actions_executor.md) | `ActionsExecutor` class — handles array vs object normalisation and dispatches actions |
 | [Job Execution](plan_job_execution.md) | How `Job` triggers action execution after a successful response |
 | [Documentation](plan_documentation.md) | Updates to `README`, `DOCKERHUB_DESCRIPTION`, `flow.md`, and `architecture.md` |
+| [Pull Request Strategy](plan_prs.md) | How to split this feature across multiple PRs |
 
 ## Evolution Notes
 
