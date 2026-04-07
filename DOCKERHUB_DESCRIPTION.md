@@ -44,6 +44,7 @@ Navi is configured via a YAML file that defines HTTP clients, resources, and the
 ```yaml
 workers:
   quantity: 5          # number of concurrent workers (default: 1)
+  retry_cooldown: 2000 # ms before a failed job is retried (default: 2000)
 
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
@@ -82,6 +83,7 @@ resources:
 | Field | Description |
 |-------|-------------|
 | `workers.quantity` | Number of concurrent workers. Defaults to `1`. |
+| `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. |

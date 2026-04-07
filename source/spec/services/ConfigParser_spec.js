@@ -60,6 +60,20 @@ describe('ConfigParser', () => {
       });
     });
 
+    describe('when workers config includes retry_cooldown', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_retry_cooldown.yml');
+      });
+
+      it('returns a WorkersConfig with the configured retry cooldown', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workersConfig).toEqual(
+          new WorkersConfig({ quantity: 5, retry_cooldown: 3000 })
+        );
+      });
+    });
+
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/missing_clients_sample_config.yml');
