@@ -9,8 +9,9 @@ Add an optional `actions` list to each `ResourceRequest` config entry. After a s
 | File | Contents |
 |------|----------|
 | [Action Model & Config Loading](plan_action_model.md) | `ResourceRequestAction` class, how it is parsed from YAML and stored inside `ResourceRequest` |
-| [Response Parser](plan_response_parser.md) | `ResponseParser` class — JSON parsing and array normalisation |
+| [Response Parser](plan_response_parser.md) | `ResponseParser` class — JSON parsing of the raw response body |
 | [Variables Mapper](plan_variables_mapper.md) | `VariablesMapper` class — applies `variables_map` to a response item |
+| [Actions Executor](plan_actions_executor.md) | `ActionsExecutor` class — handles array vs object normalisation and dispatches actions |
 | [Job Execution](plan_job_execution.md) | How `Job` triggers action execution after a successful response |
 
 ## CI Checks
