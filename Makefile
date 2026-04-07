@@ -29,7 +29,8 @@ setup: .env
 	$(COMPOSE) run --rm $(APP_SERVICE) yarn install
 
 dev: .env
-	$(COMPOSE) run --rm $(APP_SERVICE) $(DEV_SHELL)
+	@$(COMPOSE) ps -q --status running navi_web_proxy | grep -q . || $(COMPOSE) up -d navi_web_proxy
+	$(COMPOSE) exec $(APP_SERVICE) $(DEV_SHELL)
 
 tests:
 	$(COMPOSE) run --rm $(TEST_SERVICE) $(DEV_SHELL)
