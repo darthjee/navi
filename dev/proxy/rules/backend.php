@@ -13,5 +13,8 @@ Configuration::buildRule([
     ],
     'matchers' => [
         ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware']
     ]
 ]);
