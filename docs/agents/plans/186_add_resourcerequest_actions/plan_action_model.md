@@ -11,7 +11,25 @@ Introduce `ResourceRequestAction` as a new model class, parse it from the YAML c
 - `ResourceRequest.fromList()` maps each raw object to a `new ResourceRequest({ ...attrs, clientName })`.
 - Therefore, any new key present in a YAML resource-request entry (such as `actions`) will already be spread into the `ResourceRequest` constructor — we only need to handle it there.
 
-## Step 1 — Create `ResourceRequestAction`
+## Step 1 — Create `MissingActionResource` exception
+
+If an action entry in the YAML config has no `resource` field, constructing `ResourceRequestAction` raises a dedicated exception. The error is caught per-action by `ActionsExecutor`, so remaining actions continue.
+
+**New file:** `source/lib/exceptions/MissingActionResource.js`
+
+```js
+import { AppError } from './AppError.js';
+
+class MissingActionResource extends AppError {
+  constructor() {
+    super('Action is missing the required "resource" field');
+  }
+}
+
+export { MissingActionResource };
+```
+
+## Step 2 — Create `ResourceRequestAction`
 
 **New file:** `source/lib/models/ResourceRequestAction.js`
 
@@ -20,11 +38,13 @@ Delegates mapping to `VariablesMapper` (see [`plan_variables_mapper.md`](plan_va
 ```js
 import { Logger } from '../utils/Logger.js';
 import { VariablesMapper } from './VariablesMapper.js';
+import { MissingActionResource } from '../exceptions/MissingActionResource.js';
 
 class ResourceRequestAction {
   #mapper;
 
   constructor({ resource, variables_map = {} }) {
+    if (!resource) throw new MissingActionResource();
     this.resource = resource;
     this.#mapper = new VariablesMapper(variables_map);
   }
@@ -35,12 +55,21 @@ class ResourceRequestAction {
   }
 
   static fromList(array = []) {
-    return array.map((attrs) => new ResourceRequestAction(attrs));
+    return array.flatMap((attrs) => {
+      try {
+        return [new ResourceRequestAction(attrs)];
+      } catch (error) {
+        Logger.error(`Skipping action: ${error}`);
+        return [];
+      }
+    });
   }
 }
 
 export { ResourceRequestAction };
 ```
+
+> `fromList` catches construction errors (e.g. `MissingActionResource`) per entry, logs them, and excludes the invalid action from the resulting list. The remaining valid actions are unaffected. This mirrors the same "log and continue" philosophy used at execution time in `ActionsExecutor`.
 
 ### Behaviour
 
@@ -48,6 +77,7 @@ export { ResourceRequestAction };
 |----------|-----------|-----------------|-------------|
 | With mapping | `{ id: 1, name: 'X' }` | `{ id: 'category_id' }` | `{ category_id: 1 }` |
 | Without mapping | `{ id: 1, name: 'X' }` | _(absent / empty)_ | `{ id: 1, name: 'X' }` |
+| Missing `resource` | — | — | throws `MissingActionResource` |
 
 ## Step 2 — Update `ResourceRequest` to accept and store actions
 
@@ -95,7 +125,7 @@ class ResourceRequest {
 
 `Job.perform()` passes the raw body string to `executeActions`. Details in [`plan_job_execution.md`](plan_job_execution.md).
 
-## Step 3 — Specs for `ResourceRequestAction`
+## Step 4 — Specs for `ResourceRequestAction`
 
 **New file:** `source/spec/models/ResourceRequestAction_spec.js`
 
@@ -104,8 +134,17 @@ Key cases:
 - `.fromList(undefined)` → returns `[]`
 - `.fromList([])` → returns `[]`
 - `.fromList([{ resource: 'products', variables_map: { id: 'category_id' } }])` → returns one instance
+- `.fromList` with one entry missing `resource` → logs error, returns `[]` for that entry, valid entries still returned
+- `constructor` with no `resource` → throws `MissingActionResource`
 - `#execute` with `variables_map`: spies on `Logger.info`, verifies log message contains mapped vars
 - `#execute` without `variables_map`: verifies log message contains the original item fields
+
+Also add a spec for `MissingActionResource`:
+
+**New file:** `source/spec/exceptions/MissingActionResource_spec.js`
+
+- `error.name` equals `'MissingActionResource'`
+- `error.message` mentions the missing `resource` field
 
 ## Step 4 — Specs for `ResourceRequest` actions
 
@@ -178,8 +217,10 @@ resources:
 
 ## Files to Change
 
+- `source/lib/exceptions/MissingActionResource.js` — **new**: exception class
 - `source/lib/models/ResourceRequestAction.js` — **new**: action model
 - `source/lib/models/ResourceRequest.js` — add `actions` to constructor, add `executeActions()`
+- `source/spec/exceptions/MissingActionResource_spec.js` — **new**: exception unit tests
 - `source/spec/models/ResourceRequestAction_spec.js` — **new**: unit tests
 - `source/spec/models/ResourceRequest_spec.js` — add actions-related cases
 - `source/spec/support/factories/ResourceRequestFactory.js` — add `actions` param
