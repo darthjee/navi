@@ -14,8 +14,13 @@ navi.js (CLI entrypoint — project root)
        ├─ JobRegistry  ──── main queue + failed queue + deadJobs + finished list
        └─ WorkersRegistry ─ idle/busy worker pool (created via WorkersFactory)
             └─ Worker[]  ──── each processes one Job at a time (async)
-                 └─ Client.perform(resourceRequest, params)
-                      └─ ResponseParser → enqueue follow-up actions
+                 └─ Job.perform()
+                      ├─ Client.perform(resourceRequest)  → raw response body
+                      └─ resourceRequest.executeActions(rawBody)
+                           ├─ ResponseParser   → parse JSON once
+                           └─ ActionsExecutor  → normalise + dispatch per item
+                                └─ ResourceRequestAction.execute(item)
+                                     └─ VariablesMapper.map(item) → log vars
 ```
 
 ---
@@ -65,18 +70,24 @@ resources:
     - url: /categories.json
       status: 200
       actions:
-        - resource: category
-          params:
-            id: id          # map response field "id" → placeholder {:id}
-        - resource: items
-          params:
-            category_id: id # map response field "id" → placeholder {:category_id}
-  category:
-    - url: /categories/{:id}.html
-      status: 302
+        - resource: category_information  # no variables_map → all fields pass through
+        - resource: products
+          variables_map:
+            id: category_id   # response field "id" → variable "category_id"
+  category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api      # use a specific named client for this request
+      actions:
+        - resource: kind
+          variables_map:
+            kind_id: id       # response field "kind_id" → variable "id"
+  products:
+    - url: /categories/{:category_id}/products.json
+      status: 200
+  kind:
+    - url: /kinds/{:id}.json
+      status: 200
 ```
 
 Each `ResourceRequest` entry may specify:
@@ -84,7 +95,7 @@ Each `ResourceRequest` entry may specify:
 - `url` — URL template, optionally containing `{:placeholder}` tokens.
 - `status` — expected HTTP response status code.
 - `client` — name of the client to use (falls back to `default`).
-- `actions` — list of downstream resources to enqueue after a successful response, with parameter mappings.
+- `actions` — optional list of actions to execute after a successful response (see section 6).
 
 The optional top-level `web:` key configures the monitoring web UI:
 
