@@ -1,0 +1,28 @@
+workers:
+  quantity: 5
+clients:
+  default:
+    base_url: https://example.com
+    timeout: 5000
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+      actions:
+        - resource: products
+          variables_map:
+            id: category_id
+        - resource: category_information
+  products:
+    - url: /categories/:category_id/products.json
+      status: 200
+  category_information:
+    - url: /categories/:id.json
+      status: 200
+      actions:
+        - resource: kind
+          variables_map:
+            kind_id: id
+  kind:
+    - url: /kinds/:id.json
+      status: 200

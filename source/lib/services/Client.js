@@ -75,7 +75,7 @@ class Client {
    * @throws {RequestFailed} Throws an error if the response status does not match.
    */
   async #request(resourceRequest, requestUrl) {
-    const response = await axios.get(requestUrl, { timeout: this.timeout });
+    const response = await axios.get(requestUrl, { timeout: this.timeout, responseType: 'text' });
 
     if (response.status !== resourceRequest.status) {
       throw new RequestFailed(response.status, requestUrl);
