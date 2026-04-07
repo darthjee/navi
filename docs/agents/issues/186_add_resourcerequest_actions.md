@@ -39,8 +39,12 @@ resources:
         - resource: products
           variables_map:
             id: category_id
+        - resource: category_information
   products:
     - url: /categories/:category_id/products.json
+      status: 200
+  category_information:
+    - url: /categories/:id.json
       status: 200
 ```
 
@@ -57,7 +61,9 @@ The system would log:
 
 ```
 Executing action products for { category_id: 1 }
+Executing action category_information for { id: 1 }
 Executing action products for { category_id: 2 }
+Executing action category_information for { id: 2 }
 ```
 
 ## Solution
