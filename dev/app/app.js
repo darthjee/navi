@@ -1,4 +1,5 @@
 import express from 'express';
+import morgan from 'morgan';
 import { notFound } from './lib/not_found.js';
 import Router from './lib/Router.js';
 
@@ -10,6 +11,7 @@ import Router from './lib/Router.js';
  */
 const buildApp = (data) => {
   const app = express();
+  app.use(morgan('combined'));
   app.use(new Router(data).build());
   app.use((_req, res) => notFound(res));
   return app;
