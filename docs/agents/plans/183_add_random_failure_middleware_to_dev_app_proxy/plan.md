@@ -106,6 +106,8 @@ navi_proxy:
 - `dev/proxy/configure.php` — add `require_once` for the new middleware file
 - `dev/proxy/rules/backend.php` — register `RandomFailureMiddleware` in the rule's `middlewares` array
 - `docker-compose.yml` — expose `FAILURE_RATE` env var to `navi_proxy`
+- `.env` — add `FAILURE_RATE=0` so existing tests are unaffected
+- `.env.sample` — add `FAILURE_RATE=0` to document the variable for new contributors
 
 ## CI Checks
 
