@@ -13,17 +13,17 @@ describe('JobRegistry', () => {
   let clients;
 
   let jobs;
-  let failedJobs;
+  let retryQueue;
   let finished;
   let processing;
 
   beforeEach(() => {
     clients = new ClientRegistry();
     jobs = new Queue();
-    failedJobs = new Queue();
+    retryQueue = new Queue();
     finished = new Queue();
     processing = new IdentifyableCollection();
-    registry = new JobRegistry({ jobs, failedJobs, finished, processing, clients });
+    registry = new JobRegistry({ queue: jobs, retryQueue, finished, processing, clients, cooldown: -1 });
     resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
   });
 
@@ -53,6 +53,64 @@ describe('JobRegistry', () => {
 
       it('returns true', () => {
         expect(registry.hasJob()).toBeTrue();
+      });
+    });
+
+    describe('when only the retryQueue has items', () => {
+      beforeEach(() => {
+        const job = registry.enqueue({ parameters: { value: 1 } });
+        registry.pick();
+        registry.fail(job);
+        registry.promoteReadyJobs();
+      });
+
+      it('returns true', () => {
+        expect(registry.hasJob()).toBeTrue();
+      });
+    });
+  });
+
+  describe('#hasReadyJob', () => {
+    describe('when all queues are empty', () => {
+      it('returns false', () => {
+        expect(registry.hasReadyJob()).toBeFalse();
+      });
+    });
+
+    describe('when enqueued has items', () => {
+      beforeEach(() => {
+        registry.enqueue({ parameters: { value: 1 } });
+      });
+
+      it('returns true', () => {
+        expect(registry.hasReadyJob()).toBeTrue();
+      });
+    });
+
+    describe('when only failed has items (cooldown not elapsed)', () => {
+      beforeEach(() => {
+        const freshRegistry = new JobRegistry({ clients, cooldown: 5000 });
+        const job = freshRegistry.enqueue({ parameters: { value: 1 } });
+        freshRegistry.pick();
+        freshRegistry.fail(job);
+        registry = freshRegistry;
+      });
+
+      it('returns false', () => {
+        expect(registry.hasReadyJob()).toBeFalse();
+      });
+    });
+
+    describe('when retryQueue has items', () => {
+      beforeEach(() => {
+        const job = registry.enqueue({ parameters: { value: 1 } });
+        registry.pick();
+        registry.fail(job);
+        registry.promoteReadyJobs();
+      });
+
+      it('returns true', () => {
+        expect(registry.hasReadyJob()).toBeTrue();
       });
     });
   });
@@ -142,6 +200,7 @@ describe('JobRegistry', () => {
         job1 = registry.pick();
         job2 = registry.enqueue({ parameters: { value: 2 } });
         registry.fail(job1);
+        registry.promoteReadyJobs();
       });
 
       it('returns the first not failed job', () => {
@@ -162,6 +221,31 @@ describe('JobRegistry', () => {
         registry.pick();
 
         expect(registry.hasJob()).toBeFalse();
+      });
+    });
+
+    describe('when enqueued is empty and retryQueue has items', () => {
+      let failedJob;
+
+      beforeEach(() => {
+        failedJob = registry.enqueue({ parameters: { value: 1 } });
+        registry.pick();
+        registry.fail(failedJob);
+        registry.promoteReadyJobs();
+      });
+
+      it('returns the job from retryQueue', () => {
+        expect(registry.pick()).toEqual(failedJob);
+      });
+
+      it('adds the job to processing', () => {
+        registry.pick();
+        expect(processing.has(failedJob.id)).toBeTrue();
+      });
+
+      it('empties retryQueue afterwards', () => {
+        registry.pick();
+        expect(registry.hasReadyJob()).toBeFalse();
       });
     });
   });
@@ -231,7 +315,7 @@ describe('JobRegistry', () => {
   });
 
   describe('#fail', () => {
-    it('does not re-queue a picked job', () => {
+    it('moves the failed job to the failed queue for later retry', () => {
       const job = registry.enqueue({ parameters: { value: 1 } });
 
       const picked = registry.pick();
@@ -240,6 +324,7 @@ describe('JobRegistry', () => {
       registry.fail(picked);
 
       expect(registry.hasJob()).toBeTrue();
+      registry.promoteReadyJobs();
       expect(registry.pick()).toEqual(job);
     });
 
@@ -252,6 +337,76 @@ describe('JobRegistry', () => {
       registry.fail(job);
 
       expect(processing.has(picked.id)).toBeFalse();
+    });
+
+    describe('when the job is not exhausted', () => {
+      it('sets readyBy using the configured cooldown', () => {
+        const registryWithCooldown = new JobRegistry({ clients, cooldown: 5000 });
+        const j = registryWithCooldown.enqueue({ parameters: { value: 1 } });
+        registryWithCooldown.pick();
+
+        const before = Date.now() + 4900;
+        registryWithCooldown.fail(j);
+        const after = Date.now() + 5100;
+
+        expect(j.readyBy).toBeGreaterThanOrEqual(before);
+        expect(j.readyBy).toBeLessThanOrEqual(after);
+      });
+
+      it('moves the job to the failed queue, not retryQueue', () => {
+        const registryWithCooldown = new JobRegistry({ clients, cooldown: 5000 });
+        const j = registryWithCooldown.enqueue({ parameters: { value: 1 } });
+        registryWithCooldown.pick();
+        registryWithCooldown.fail(j);
+
+        expect(registryWithCooldown.hasReadyJob()).toBeFalse();
+        expect(registryWithCooldown.hasJob()).toBeTrue();
+      });
+    });
+  });
+
+  describe('#promoteReadyJobs', () => {
+    let readyJob, waitingJob;
+
+    beforeEach(() => {
+      const slowRegistry = new JobRegistry({ clients, cooldown: 5000 });
+      readyJob = slowRegistry.enqueue({ parameters: { value: 1 } });
+      waitingJob = slowRegistry.enqueue({ parameters: { value: 2 } });
+
+      slowRegistry.pick();
+      slowRegistry.pick();
+
+      slowRegistry.fail(readyJob);
+      slowRegistry.fail(waitingJob);
+
+      readyJob.applyCooldown(-1000);
+      waitingJob.applyCooldown(10_000);
+
+      registry = slowRegistry;
+    });
+
+    it('moves the ready job to retryQueue', () => {
+      registry.promoteReadyJobs();
+
+      expect(registry.hasReadyJob()).toBeTrue();
+    });
+
+    it('keeps the waiting job in failed queue', () => {
+      registry.promoteReadyJobs();
+
+      expect(registry.hasJob()).toBeTrue();
+      expect(registry.pick()).toEqual(readyJob);
+      expect(registry.pick()).toBeUndefined();
+    });
+
+    describe('when called repeatedly', () => {
+      it('is idempotent when no new jobs become ready', () => {
+        registry.promoteReadyJobs();
+        registry.promoteReadyJobs();
+
+        registry.pick();
+        expect(registry.pick()).toBeUndefined();
+      });
     });
   });
 

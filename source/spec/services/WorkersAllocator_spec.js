@@ -35,7 +35,6 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there is a single worker and no job', () => {
     it('does not allocate any workers', () => {
-      expect(workersRegistry.hasIdleWorker()).toBeTrue();
       expect(jobRegistry.hasJob()).toBeFalse();
 
       allocator.allocate();
@@ -109,6 +108,25 @@ describe('WorkersAllocator', () => {
       expect(workersRegistry.hasIdleWorker()).toBeFalse();
       expect(jobRegistry.hasJob()).toBeFalse();
       expect(worker.perform).toHaveBeenCalled();
+    });
+  });
+
+  describe('when there is an idle worker and only a failed (cooling-down) job', () => {
+    beforeEach(() => {
+      job = jobRegistry.enqueue({});
+      const picked = jobRegistry.pick();
+      jobRegistry.fail(picked);
+    });
+
+    it('does not allocate any worker', () => {
+      expect(workersRegistry.hasIdleWorker()).toBeTrue();
+      expect(jobRegistry.hasJob()).toBeTrue();
+      expect(jobRegistry.hasReadyJob()).toBeFalse();
+
+      allocator.allocate();
+
+      expect(worker.job).toBeUndefined();
+      expect(worker.perform).not.toHaveBeenCalled();
     });
   });
 });

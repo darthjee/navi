@@ -103,6 +103,34 @@ describe('Job', () => {
     });
   });
 
+  describe('#isReadyBy', () => {
+    describe('when no cooldown was applied (default)', () => {
+      it('returns true', () => {
+        expect(job.isReadyBy(Date.now())).toBeTrue();
+      });
+    });
+
+    describe('when cooldown is in the past', () => {
+      beforeEach(() => {
+        job.applyCooldown(-1000);
+      });
+
+      it('returns true', () => {
+        expect(job.isReadyBy(Date.now())).toBeTrue();
+      });
+    });
+
+    describe('when cooldown is in the future', () => {
+      beforeEach(() => {
+        job.applyCooldown(10_000);
+      });
+
+      it('returns false', () => {
+        expect(job.isReadyBy(Date.now())).toBeFalse();
+      });
+    });
+  });
+
   describe('#exhausted', () => {
     beforeEach(async () => {
       spyOn(Logger, 'error').and.stub();

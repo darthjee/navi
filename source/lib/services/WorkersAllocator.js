@@ -62,7 +62,7 @@ class WorkersAllocator {
    * @returns {boolean} True if there are available jobs and idle workers, false otherwise.
    */
   _canAllocate() {
-    return this.workersRegistry.hasIdleWorker() && this.jobRegistry.hasJob();
+    return this.workersRegistry.hasIdleWorker() && this.jobRegistry.hasReadyJob();
   }
 }
 
