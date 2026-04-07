@@ -21,6 +21,7 @@ Currently, after a resource request is made, nothing happens with the response. 
   Executing action <resource_name> for <object_with_transformed_variables>
   ```
 - If the response body is an array, each action is executed once per element in the array.
+- If the response body is a single object, each action is executed once for that object.
 
 ## Configuration Example
 
@@ -46,9 +47,18 @@ resources:
   category_information:
     - url: /categories/:id.json
       status: 200
+      actions:
+        - resource: kind
+          variables_map:
+            kind_id: id
+  kind:
+    - url: /kinds/:id.json
+      status: 200
 ```
 
-Given this config, if `GET /categories.json` returns:
+### Example: array response
+
+If `GET /categories.json` returns:
 
 ```json
 [
@@ -66,13 +76,28 @@ Executing action products for { category_id: 2 }
 Executing action category_information for { id: 2 }
 ```
 
+### Example: single object response
+
+If `GET /categories/1.json` returns:
+
+```json
+{ "id": 1, "name": "Electronics", "kind_id": 42 }
+```
+
+The system would log:
+
+```
+Executing action kind for { id: 42 }
+```
+
 ## Solution
 
 1. Add `actions` as an optional key in the `ResourceRequest` configuration schema.
-2. Parse and validate each action entry (`resource` + `variables_map`) during config loading.
-3. After a successful response, iterate over `actions`:
-   - Apply `variables_map` to the response object (or each element if the response is an array) to produce a transformed variables object.
-   - Log `"Executing action <resource_name> for <transformed_variables>"` for each action (and each array element).
+2. Parse and validate each action entry (`resource` + optional `variables_map`) during config loading.
+3. After a successful response, normalise the body: if it is an array, iterate over its elements; if it is a single object, treat it as a one-element list.
+4. For each element and each action:
+   - Apply `variables_map` (if present) to produce a transformed variables object; fields not listed in `variables_map` are carried over as-is.
+   - Log `"Executing action <resource_name> for <transformed_variables>"`.
 
 ## Benefits
 
