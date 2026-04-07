@@ -17,7 +17,9 @@ class RandomFailureMiddleware extends Middleware
     {
         $rate = (float) (getenv('FAILURE_RATE') ?: 0);
 
-        if ($rate > 0 && lcg_value() < $rate) {
+        $randomizer = new \Random\Randomizer();
+
+        if ($rate > 0 && $randomizer->getFloat(0, 1) < $rate) {
             $response = new Response([
                 'httpCode' => 502,
                 'body'     => 'Bad Gateway'
