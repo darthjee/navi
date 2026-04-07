@@ -17,8 +17,7 @@ class ResponseParser {
   }
 
   parse() {
-    const parsed = JSON.parse(this.#raw);
-    return Array.isArray(parsed) ? parsed : [parsed];
+    return JSON.parse(this.#raw);
   }
 }
 
@@ -26,7 +25,8 @@ export { ResponseParser };
 ```
 
 - Receives the raw response body string in the constructor.
-- `parse()` returns an array of items in all cases (single object is wrapped in an array).
+- `parse()` returns the parsed JS value as-is — either an object or an array.
+- Normalising to an array is `ActionsExecutor`'s responsibility (see [`plan_actions_executor.md`](plan_actions_executor.md)).
 - For now, all responses are assumed to be JSON.
 
 ## Usage in `ResourceRequest`
@@ -55,8 +55,8 @@ executeActions(rawBody) {
 
 Key cases:
 
-- `parse()` with a JSON array string → returns the array as-is
-- `parse()` with a JSON object string → returns it wrapped in an array
+- `parse()` with a JSON array string → returns the parsed array
+- `parse()` with a JSON object string → returns the parsed object (not wrapped)
 - `parse()` with an invalid JSON string → throws (default `JSON.parse` behaviour)
 
 ## Files to Change

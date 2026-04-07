@@ -60,6 +60,7 @@ In `source/lib/models/ResourceRequest.js`:
 ```js
 import { ResourceRequestAction } from './ResourceRequestAction.js';
 import { ResponseParser } from './ResponseParser.js';
+import { ActionsExecutor } from './ActionsExecutor.js';
 
 class ResourceRequest {
   #clientName;
@@ -74,13 +75,8 @@ class ResourceRequest {
   executeActions(rawBody) {
     if (this.actions.length === 0) return;
 
-    const items = new ResponseParser(rawBody).parse();
-
-    for (const item of items) {
-      for (const action of this.actions) {
-        action.execute(item);
-      }
-    }
+    const parsed = new ResponseParser(rawBody).parse();
+    new ActionsExecutor(this.actions, parsed).execute();
   }
 
   // ... existing methods unchanged
@@ -89,10 +85,9 @@ class ResourceRequest {
 
 ### Key design points
 
-- **Early return**: if there are no actions, `ResponseParser` is never instantiated.
-- **Parse once**: `ResponseParser` is instantiated once and returns the normalised array before any iteration.
-- **Loop order**: outer loop is items, inner loop is actions.
-- **Delegation**: parsing is `ResponseParser`'s responsibility; mapping is `VariablesMapper`'s responsibility (used inside each action).
+- **Early return**: if there are no actions, neither `ResponseParser` nor `ActionsExecutor` are instantiated.
+- **Delegation**: parsing is `ResponseParser`'s responsibility; array/object normalisation is `ActionsExecutor`'s responsibility; mapping is `VariablesMapper`'s responsibility (used inside each action).
+- **`executeActions` is a thin coordinator**: parse → execute.
 
 > `fromList()` already spreads all attrs: `new ResourceRequest({ ...attrs, clientName })`, so YAML `actions` entries flow through without any change to `Resource` or `ResourceRequest.fromList()`.
 
