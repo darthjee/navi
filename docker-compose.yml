@@ -41,6 +41,7 @@ services:
       - ./docker_volumes/proxy_cache:/var/www/html/cache/
     ports:
       - 0.0.0.0:3010:80
+    env_file: .env
 
   navi_dev_app:
     image: navi_app:dev

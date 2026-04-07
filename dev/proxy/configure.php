@@ -9,4 +9,5 @@ use Tent\Models\Server;
 use Tent\Models\FolderLocation;
 use Tent\Models\RequestMatcher;
 
+require_once __DIR__ . '/middlewares/RandomFailureMiddleware.php';
 require_once __DIR__ . '/rules/backend.php';
