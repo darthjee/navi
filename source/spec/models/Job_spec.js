@@ -104,15 +104,15 @@ describe('Job', () => {
   });
 
   describe('#isReadyBy', () => {
-    describe('when readyBy is 0 (default)', () => {
+    describe('when no cooldown was applied (default)', () => {
       it('returns true', () => {
         expect(job.isReadyBy(Date.now())).toBeTrue();
       });
     });
 
-    describe('when readyBy is in the past', () => {
+    describe('when cooldown is in the past', () => {
       beforeEach(() => {
-        job.setReadyBy(Date.now() - 1000);
+        job.applyCooldown(-1000);
       });
 
       it('returns true', () => {
@@ -120,9 +120,9 @@ describe('Job', () => {
       });
     });
 
-    describe('when readyBy is in the future', () => {
+    describe('when cooldown is in the future', () => {
       beforeEach(() => {
-        job.setReadyBy(Date.now() + 10_000);
+        job.applyCooldown(10_000);
       });
 
       it('returns false', () => {

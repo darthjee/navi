@@ -379,8 +379,8 @@ describe('JobRegistry', () => {
       slowRegistry.fail(readyJob);
       slowRegistry.fail(waitingJob);
 
-      readyJob.setReadyBy(Date.now() - 1000);
-      waitingJob.setReadyBy(Date.now() + 10_000);
+      readyJob.applyCooldown(-1000);
+      waitingJob.applyCooldown(10_000);
 
       registry = slowRegistry;
     });

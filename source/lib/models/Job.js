@@ -57,11 +57,12 @@ class Job {
   }
 
   /**
-   * Sets the timestamp after which the job is eligible for retry.
-   * @param {number} time - The readyBy timestamp in milliseconds.
+   * Sets the cooldown duration in milliseconds after which the job is eligible for retry.
+   * Stores the absolute timestamp (Date.now() + ms) internally.
+   * @param {number} ms - Cooldown duration in milliseconds. Use a negative value to mark ready immediately.
    */
-  setReadyBy(time) {
-    this.#readyBy = time;
+  applyCooldown(ms) {
+    this.#readyBy = Date.now() + ms;
   }
 
   /**

@@ -73,7 +73,7 @@ class JobRegistry {
     if (job.exhausted()) {
       this.#dead.push(job);
     } else {
-      job.setReadyBy(Date.now() + this.#cooldown);
+      job.applyCooldown(this.#cooldown);
       this.#failed.push(job);
     }
   }
