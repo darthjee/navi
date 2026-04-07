@@ -14,47 +14,46 @@ Add a custom PHP middleware to the Tent-powered dev proxy (`navi_proxy`) that ra
 
 ## Implementation Steps
 
-### Step 1 — Research the Tent middleware interface
+### Step 1 — Create the custom middleware class
 
-Before writing the custom middleware class, confirm the PHP interface or base class that Tent middlewares must implement. Options:
-- Inspect the Tent source inside the container: `docker exec navi_proxy find /var/www/html/vendor -name "*.php" | xargs grep -l "interface.*Middleware"`.
-- Check the [Tent GitHub repository](https://github.com/darthjee/tent) for a middleware contract.
+Create `dev/proxy/middlewares/RandomFailureMiddleware.php`. All Tent middlewares extend the abstract `Middleware` base class and override `processRequest`. To short-circuit the chain, create a `Response` object and attach it to the request via `$request->setResponse()` — Tent will then skip the backend call and return that response directly.
 
-The custom class must implement whatever interface `FileCacheMiddleware`, `SetHeadersMiddleware`, etc. share.
-
-### Step 2 — Create the custom middleware class
-
-Create `dev/proxy/middlewares/RandomFailureMiddleware.php`. The class should:
-- Read `FAILURE_RATE` from the environment (via `getenv('FAILURE_RATE')`).
-- On each request, generate a random float (`lcg_value()` or `mt_rand()` / `mt_getrandmax()`).
-- If the random value is below the failure rate, short-circuit and return a `502` response without forwarding to the backend.
-- If the failure rate is `0` or the env var is absent, act as a pass-through.
+The class also needs a static `build(array $attributes): self` factory method, which Tent calls to instantiate the middleware from the config array.
 
 ```php
 <?php
 
 namespace Dev\Proxy\Middlewares;
 
-// Implement the correct Tent middleware interface (to be confirmed in Step 1)
-class RandomFailureMiddleware implements <TentMiddlewareInterface>
+use Tent\Middlewares\Middleware;
+use Tent\Models\ProcessingRequest;
+use Tent\Models\Response;
+
+class RandomFailureMiddleware extends Middleware
 {
-    public function handle($request, $next)
+    public static function build(array $attributes): self
+    {
+        return new self();
+    }
+
+    public function processRequest(ProcessingRequest $request): ProcessingRequest
     {
         $rate = (float) (getenv('FAILURE_RATE') ?: 0);
 
         if ($rate > 0 && lcg_value() < $rate) {
-            // Return 502 without calling $next
-            return new <TentResponse>(502, 'Bad Gateway');
+            $response = new Response([
+                'httpCode' => 502,
+                'body'     => 'Bad Gateway'
+            ]);
+            $request->setResponse($response);
         }
 
-        return $next($request);
+        return $request;
     }
 }
 ```
 
-> The exact method signature and response class depend on Step 1 findings.
-
-### Step 3 — Register the middleware in the proxy configuration
+### Step 2 — Register the middleware in the proxy configuration
 
 In `dev/proxy/configure.php`, require the new middleware file before the rules:
 
@@ -82,7 +81,7 @@ Configuration::buildRule([
 ]);
 ```
 
-### Step 4 — Expose the environment variable in docker-compose.yml
+### Step 3 — Expose the environment variable in docker-compose.yml
 
 Add an `environment` (or `env_file`) block to the `navi_proxy` service so `FAILURE_RATE` is passed into the container. Defaulting to `0` means no failures unless explicitly set:
 
@@ -122,6 +121,5 @@ FAILURE_RATE=0 docker-compose up navi_proxy
 
 ## Notes
 
-- The Tent middleware interface must be confirmed before writing the class (Step 1). If Tent does not support fully custom classes loaded from the configuration volume, an alternative approach would be to implement the failure logic directly in PHP inside `backend.php` using a raw HTTP response rather than a middleware class.
-- The `FAILURE_RATE` env var is evaluated at request time (inside the middleware), not at boot time, so it correctly applies per-request randomness.
+- The `FAILURE_RATE` env var is evaluated at request time (inside the middleware `processRequest`), not at boot time, so it correctly applies per-request randomness.
 - Cache interactions: a `502` returned by this middleware should **not** be cached, since caching a failure would persist it across retries. Confirm that `FileCacheMiddleware` (added automatically by `default_proxy`) does not cache non-2xx responses — the default `cacheCodes: ['2xx']` confirms it will not.
