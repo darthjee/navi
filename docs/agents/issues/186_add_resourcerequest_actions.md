@@ -22,6 +22,44 @@ Currently, after a resource request is made, nothing happens with the response. 
   ```
 - If the response body is an array, each action is executed once per element in the array.
 
+## Configuration Example
+
+```yaml
+workers:
+  quantity: 5
+clients:
+  default:
+    base_url: https://example.com
+    timeout: 5000
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+      actions:
+        - resource: products
+          variables_map:
+            id: category_id
+  products:
+    - url: /categories/:category_id/products.json
+      status: 200
+```
+
+Given this config, if `GET /categories.json` returns:
+
+```json
+[
+  { "id": 1, "name": "Electronics" },
+  { "id": 2, "name": "Books" }
+]
+```
+
+The system would log:
+
+```
+Executing action products for { category_id: 1 }
+Executing action products for { category_id: 2 }
+```
+
 ## Solution
 
 1. Add `actions` as an optional key in the `ResourceRequest` configuration schema.
