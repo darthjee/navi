@@ -90,17 +90,18 @@ describe('Worker', () => {
 
     describe('when the client request is successful', () => {
       beforeEach(() => {
-        response = { status: 200 };
+        response = { status: 200, data: '[]' };
         const promise = Promise.resolve(response);
 
         spyOn(axios, 'get').and.returnValue(promise);
+        spyOn(resourceRequest, 'executeActions').and.stub();
       });
 
       it('performs the job', async () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         expect(console.error).not.toHaveBeenCalled();
@@ -133,7 +134,7 @@ describe('Worker', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
         expect(console.error).toHaveBeenCalledWith(`Error occurred while performing job: #${job.id} - ${expectedError}`);

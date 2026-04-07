@@ -41,7 +41,9 @@ class Job {
     Logger.info(`Job #${this.id} performing`);
     try {
       this.lastError = undefined;
-      return await this.#getClient().perform(this.#resourceRequest);
+      const response = await this.#getClient().perform(this.#resourceRequest);
+      this.#resourceRequest.executeActions(response.data);
+      return response;
     } catch (error) {
       Logger.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);

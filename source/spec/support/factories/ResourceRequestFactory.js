@@ -10,10 +10,11 @@ class ResourceRequestFactory {
    * @param {string} [params.url='/categories.json'] - The URL template.
    * @param {number} [params.status=200] - The expected HTTP status code.
    * @param {string} [params.clientName] - The name of the client to use for this request.
+   * @param {Array} [params.actions] - List of raw action config objects.
    * @returns {ResourceRequest} A new ResourceRequest instance.
    */
-  static build({ url = '/categories.json', status = 200, clientName = undefined } = {}) {
-    return new ResourceRequest({ url, status, clientName });
+  static build({ url = '/categories.json', status = 200, clientName = undefined, actions = [] } = {}) {
+    return new ResourceRequest({ url, status, clientName, actions });
   }
 }
 
