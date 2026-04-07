@@ -145,33 +145,51 @@ Each `Worker` processes one job at a time asynchronously:
 
 1. **Resolve client** — look up the client named in `ResourceRequest` (or `default`) from `ClientRegistry`.
 2. **Resolve URL** — expand `{:placeholder}` tokens in the URL template using the job's parameter map.
-3. **Perform request** — call `Client.perform(resourceRequest, params)`; throws `RequestFailed` if the response status does not match the expected status.
-4. **Parse response** — pass the HTTP response body to **`ResponseParser`**, which extracts the data needed for downstream jobs.
-5. **Enqueue actions** — for each entry in `ResourceRequest.actions`, call `JobRegistry.enqueue(downstreamRequest, mappedParams)` using the parameter mappings defined in the action configuration.
-6. **Finish** — mark the job as finished and store it in `JobRegistry`'s finished list; call `WorkersRegistry.setIdle(workerId)` so the worker re-enters the idle pool.
-
-### Action Parameter Mapping Example
-
-Given a response body `[{ id: 1 }, { id: 2 }]` and the following actions config:
-
-```yaml
-actions:
-  - resource: category
-    params:
-      id: id          # job param "id" = response field "id"
-  - resource: items
-    params:
-      category_id: id # job param "category_id" = response field "id"
-```
-
-For each item in the response array, two sets of jobs are enqueued — **4 jobs in total** (2 resources × 2 IDs):
-
-- All `ResourceRequest` entries under `category` with `params: { id: 1 }` and `{ id: 2 }` (2 jobs).
-- All `ResourceRequest` entries under `items` with `params: { category_id: 1 }` and `{ category_id: 2 }` (2 jobs).
+3. **Perform request** — call `Client.perform(resourceRequest, params)`; throws `RequestFailed` if the response status does not match the expected status. The response body is returned as raw text (`responseType: 'text'`).
+4. **Execute actions** — call `resourceRequest.executeActions(rawBody)` to process the response and dispatch each configured action (see section 7).
+5. **Finish** — mark the job as finished and store it in `JobRegistry`'s finished list; call `WorkersRegistry.setIdle(workerId)` so the worker re-enters the idle pool.
 
 ---
 
-## 7. Failure Handling
+## 7. Response Processing & Actions
+
+After `Client.perform()` resolves, `Job` passes the raw response body to `resourceRequest.executeActions(rawBody)`.
+
+- `ResourceRequest.executeActions` returns immediately if there are no configured actions.
+- **`ResponseParser`** parses the raw JSON body once. Throws `InvalidResponseBody` if the body cannot be parsed.
+- **`ActionsExecutor`** receives the parsed value. Throws `NullResponse` if the parsed value is `null`. Normalises the value to an array (wrapping a single object), then iterates over items × actions.
+- Per item, **`ResourceRequestAction`** calls **`VariablesMapper.map(item)`** to produce transformed variables, then logs:
+  ```
+  Executing action <resource> for <variables>
+  ```
+- Action-level errors (`MissingMappingVariable`, `MissingActionResource`) are caught per action, logged, and execution continues with the next action.
+
+> **Future:** actions will be enqueued as special `Job` instances for async processing (no retry rights) instead of being executed inline.
+
+### Example
+
+Given a response body `[{ "id": 1 }, { "id": 2 }]` and the following actions config:
+
+```yaml
+actions:
+  - resource: products
+    variables_map:
+      id: category_id   # response field "id" → variable "category_id"
+  - resource: category_information
+```
+
+For each item in the response array, each action is executed — **4 executions in total** (2 items × 2 actions):
+
+```
+Executing action products for { category_id: 1 }
+Executing action category_information for { id: 1 }
+Executing action products for { category_id: 2 }
+Executing action category_information for { id: 2 }
+```
+
+---
+
+## 8. Failure Handling
 
 When a job fails (e.g., `RequestFailed` is thrown):
 
@@ -185,7 +203,7 @@ All queues (`main`, `failed`, `finished`, `deadJobs`) are managed inside `JobReg
 
 ---
 
-## 8. Web UI
+## 9. Web UI
 
 When the `web:` key is present in the configuration, `Application` starts a local **read-only monitoring web UI** built with React + React Bootstrap. It is served by an Express.js `WebServer` on the configured port.
 
