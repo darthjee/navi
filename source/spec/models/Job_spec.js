@@ -51,7 +51,7 @@ describe('Job', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
@@ -67,7 +67,7 @@ describe('Job', () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
         await expectAsync(job.perform()).toBeResolvedTo(response);
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });

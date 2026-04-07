@@ -46,6 +46,20 @@ describe('ConfigParser', () => {
       });
     });
 
+    describe('when client config has no timeout', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_without_timeout.yml');
+      });
+
+      it('returns a client with the default timeout of 5000ms', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.clients).toEqual({
+          default: ClientFactory.build({ timeout: 5000 }),
+        });
+      });
+    });
+
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/missing_clients_sample_config.yml');

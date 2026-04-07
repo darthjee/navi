@@ -25,7 +25,7 @@ describe('Client', () => {
     spyOn(Logger, 'info').and.stub();
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
-    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: undefined });
+    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
     expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${fullUrl}`);
   });
 
