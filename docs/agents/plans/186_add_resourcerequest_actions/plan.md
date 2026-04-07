@@ -13,6 +13,7 @@ Add an optional `actions` list to each `ResourceRequest` config entry. After a s
 | [Variables Mapper](plan_variables_mapper.md) | `VariablesMapper` class — applies `variables_map` to a response item |
 | [Actions Executor](plan_actions_executor.md) | `ActionsExecutor` class — handles array vs object normalisation and dispatches actions |
 | [Job Execution](plan_job_execution.md) | How `Job` triggers action execution after a successful response |
+| [Documentation](plan_documentation.md) | Updates to `README`, `DOCKERHUB_DESCRIPTION`, `flow.md`, and `architecture.md` |
 
 ## Evolution Notes
 
