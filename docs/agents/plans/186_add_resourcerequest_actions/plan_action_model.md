@@ -58,7 +58,7 @@ In `source/lib/models/ResourceRequest.js`:
 
 - Import `ResourceRequestAction`.
 - Add `actions = []` to the constructor, convert via `ResourceRequestAction.fromList(actions)`.
-- Add `executeActions(responseData)` method.
+- Add `executeActions(rawBody)` method.
 
 ```js
 import { ResourceRequestAction } from './ResourceRequestAction.js';
@@ -73,10 +73,14 @@ class ResourceRequest {
     this.actions = ResourceRequestAction.fromList(actions);
   }
 
-  executeActions(responseData) {
-    const items = Array.isArray(responseData) ? responseData : [responseData];
-    for (const action of this.actions) {
-      for (const item of items) {
+  executeActions(rawBody) {
+    if (this.actions.length === 0) return;
+
+    const parsed = JSON.parse(rawBody);
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+
+    for (const item of items) {
+      for (const action of this.actions) {
         action.execute(item);
       }
     }
@@ -86,7 +90,18 @@ class ResourceRequest {
 }
 ```
 
+### Key design points
+
+- **Early return**: if there are no actions, skip parsing entirely — no unnecessary work.
+- **Parse once**: `JSON.parse` is called once before any iteration. All responses are treated as JSON for now.
+- **Normalise once**: the array check happens once; actions receive individual items, not the raw collection.
+- **Loop order**: outer loop is items, inner loop is actions — each item is fully processed before moving to the next.
+
 > `fromList()` already spreads all attrs: `new ResourceRequest({ ...attrs, clientName })`, so YAML `actions` entries flow through without any change to `Resource` or `ResourceRequest.fromList()`.
+
+### Response body source
+
+`Job.perform()` will pass the raw response body string to `executeActions`. Since axios auto-parses JSON by default (returning `response.data` as a JS object), `Job` must instead use `responseType: 'text'` or access the raw body. The details of how `Job` obtains the raw body are covered in [`plan_job_execution.md`](plan_job_execution.md).
 
 ## Step 3 — Specs for `ResourceRequestAction`
 
