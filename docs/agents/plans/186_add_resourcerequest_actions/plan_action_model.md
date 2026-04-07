@@ -15,26 +15,23 @@ Introduce `ResourceRequestAction` as a new model class, parse it from the YAML c
 
 **New file:** `source/lib/models/ResourceRequestAction.js`
 
+Delegates mapping to `VariablesMapper` (see [`plan_variables_mapper.md`](plan_variables_mapper.md)):
+
 ```js
 import { Logger } from '../utils/Logger.js';
+import { VariablesMapper } from './VariablesMapper.js';
 
 class ResourceRequestAction {
-  #variablesMap;
+  #mapper;
 
   constructor({ resource, variables_map = {} }) {
     this.resource = resource;
-    this.#variablesMap = variables_map;
+    this.#mapper = new VariablesMapper(variables_map);
   }
 
-  execute(responseItem) {
-    const vars = this.#applyMap(responseItem);
+  execute(item) {
+    const vars = this.#mapper.map(item);
     Logger.info(`Executing action ${this.resource} for ${JSON.stringify(vars)}`);
-  }
-
-  #applyMap(item) {
-    const entries = Object.entries(this.#variablesMap);
-    if (entries.length === 0) return item;
-    return Object.fromEntries(entries.map(([src, dest]) => [dest, item[src]]));
   }
 
   static fromList(array = []) {
@@ -56,12 +53,13 @@ export { ResourceRequestAction };
 
 In `source/lib/models/ResourceRequest.js`:
 
-- Import `ResourceRequestAction`.
+- Import `ResourceRequestAction` and `ResponseParser`.
 - Add `actions = []` to the constructor, convert via `ResourceRequestAction.fromList(actions)`.
-- Add `executeActions(rawBody)` method.
+- Add `executeActions(rawBody)` method, delegating parsing to `ResponseParser` (see [`plan_response_parser.md`](plan_response_parser.md)).
 
 ```js
 import { ResourceRequestAction } from './ResourceRequestAction.js';
+import { ResponseParser } from './ResponseParser.js';
 
 class ResourceRequest {
   #clientName;
@@ -76,8 +74,7 @@ class ResourceRequest {
   executeActions(rawBody) {
     if (this.actions.length === 0) return;
 
-    const parsed = JSON.parse(rawBody);
-    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const items = new ResponseParser(rawBody).parse();
 
     for (const item of items) {
       for (const action of this.actions) {
@@ -92,16 +89,16 @@ class ResourceRequest {
 
 ### Key design points
 
-- **Early return**: if there are no actions, skip parsing entirely — no unnecessary work.
-- **Parse once**: `JSON.parse` is called once before any iteration. All responses are treated as JSON for now.
-- **Normalise once**: the array check happens once; actions receive individual items, not the raw collection.
-- **Loop order**: outer loop is items, inner loop is actions — each item is fully processed before moving to the next.
+- **Early return**: if there are no actions, `ResponseParser` is never instantiated.
+- **Parse once**: `ResponseParser` is instantiated once and returns the normalised array before any iteration.
+- **Loop order**: outer loop is items, inner loop is actions.
+- **Delegation**: parsing is `ResponseParser`'s responsibility; mapping is `VariablesMapper`'s responsibility (used inside each action).
 
 > `fromList()` already spreads all attrs: `new ResourceRequest({ ...attrs, clientName })`, so YAML `actions` entries flow through without any change to `Resource` or `ResourceRequest.fromList()`.
 
 ### Response body source
 
-`Job.perform()` will pass the raw response body string to `executeActions`. Since axios auto-parses JSON by default (returning `response.data` as a JS object), `Job` must instead use `responseType: 'text'` or access the raw body. The details of how `Job` obtains the raw body are covered in [`plan_job_execution.md`](plan_job_execution.md).
+`Job.perform()` passes the raw body string to `executeActions`. Details in [`plan_job_execution.md`](plan_job_execution.md).
 
 ## Step 3 — Specs for `ResourceRequestAction`
 
