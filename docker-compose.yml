@@ -12,7 +12,7 @@ services:
     container_name: navi_build
     build:
       context: .
-      dockerfile: dockerfiles/dev_navy/Dockerfile
+      dockerfile: dockerfiles/dev_navi/Dockerfile
     command: echo done
 
   navi_app:
