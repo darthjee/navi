@@ -1,4 +1,4 @@
-.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description
+.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up
 
 PROJECT ?= navi
 COMPOSE ?= docker compose
@@ -36,6 +36,9 @@ tests:
 
 dev-app:
 	$(COMPOSE) run --rm $(DEV_SERVICE) $(DEV_SHELL)
+
+dev-app-up:
+	$(COMPOSE) up navi_dev_app navi_proxy
 
 build-dev:
 	docker build -f $(DOCKERFILE_DEV) . -t $(IMAGE):dev
