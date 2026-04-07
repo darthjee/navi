@@ -14,6 +14,18 @@ Add an optional `actions` list to each `ResourceRequest` config entry. After a s
 | [Actions Executor](plan_actions_executor.md) | `ActionsExecutor` class — handles array vs object normalisation and dispatches actions |
 | [Job Execution](plan_job_execution.md) | How `Job` triggers action execution after a successful response |
 
+## Evolution Notes
+
+This implementation is the first of three planned phases:
+
+| Phase | What happens with an action |
+|-------|-----------------------------|
+| **Now** | Executed synchronously; logs `Executing action <resource> for <vars>` |
+| **Near future** | Enqueued as a special `Job` — async processing, **no retry rights** |
+| **Far future** | The job references the named `resource` and uses `vars` as its parameters, generating a real `ResourceRequest` |
+
+These phases are marked with `TODO` comments in the relevant source files.
+
 ## CI Checks
 
 Before opening a PR, run the following checks for the `source/` folder:

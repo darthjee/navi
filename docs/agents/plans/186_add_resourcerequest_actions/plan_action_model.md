@@ -51,6 +51,10 @@ class ResourceRequestAction {
 
   execute(item) {
     const vars = this.#mapper.map(item);
+
+    // TODO: In the future, instead of logging, this method should create a new
+    // Job referencing the resource named by this.resource, passing vars as the
+    // job parameters. The job will be enqueued for async processing.
     Logger.info(`Executing action ${this.resource} for ${JSON.stringify(vars)}`);
   }
 
