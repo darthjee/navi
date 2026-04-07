@@ -83,7 +83,10 @@ class Application {
   }
 
   #initRegistries({ jobRegistry, workersRegistry } = {}) {
-    this.jobRegistry = jobRegistry || new JobRegistry({ clients: this.config.clientRegistry });
+    this.jobRegistry = jobRegistry || new JobRegistry({
+      clients:  this.config.clientRegistry,
+      cooldown: this.config.workersConfig.retryCooldown,
+    });
     this.workersRegistry = workersRegistry || new WorkersRegistry({
       jobRegistry: this.jobRegistry,
       workers: this.#workers,

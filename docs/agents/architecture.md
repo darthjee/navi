@@ -36,7 +36,7 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
 | `Job` | Wraps a unit of work (payload) to be consumed from the queue. Tracks a failure counter and last exception. |
-| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1). |
+| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1) and the retry cooldown in milliseconds (`retryCooldown`, default 2000). |
 | `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 
 ### `registry/`
