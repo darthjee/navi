@@ -25,7 +25,7 @@ describe('Client', () => {
     spyOn(Logger, 'info').and.stub();
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
-    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
+    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
     expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${fullUrl}`);
   });
 
@@ -97,7 +97,7 @@ describe('Client', () => {
       spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
-      expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
+      expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
     });
   });
 });

@@ -34,7 +34,7 @@ Key features:
 
 - Concurrent HTTP request execution via a worker pool.
 - URL templates with placeholder parameters (e.g. `{:id}`).
-- Resource chaining: downstream jobs are enqueued automatically based on the response of a parent request.
+- Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
 - Automatic retry of failed requests after the main queue is exhausted.
 
 ---
@@ -63,23 +63,27 @@ clients:
 
 resources:
   categories:
-    - url: /categories.html
-      status: 302
     - url: /categories.json
       status: 200
       actions:
-        - resource: category
-          params:
-            id: id          # map response field "id" → placeholder {:id}
-        - resource: items
-          params:
-            category_id: id # map response field "id" → placeholder {:category_id}
-  category:
-    - url: /categories/{:id}.html
-      status: 302
+        - resource: category_information  # passes all response fields as-is
+        - resource: products
+          variables_map:
+            id: category_id   # response field "id" → variable "category_id"
+  category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api      # use a specific named client for this request
+      actions:
+        - resource: kind
+          variables_map:
+            kind_id: id       # response field "kind_id" → variable "id"
+  products:
+    - url: /categories/{:category_id}/products.json
+      status: 200
+  kind:
+    - url: /kinds/{:id}.json
+      status: 200
 ```
 
 ### Fields
@@ -95,7 +99,9 @@ resources:
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
-| `actions` | List of downstream resources to enqueue after a successful response, with parameter mappings. |
+| `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `variables_map`. |
+| `actions[].resource` | Name of the resource to act upon. Required. |
+| `actions[].variables_map` | Optional key-value map. Each entry renames a response field: `<response_field>: <new_variable_name>`. When absent, all response fields are passed through unchanged. |
 
 ### Providing the config file
 
@@ -196,11 +202,39 @@ yarn docs    # generate JSDoc API documentation
 
 ---
 
+## Actions & Response Chaining
+
+After a successful HTTP response, Navi executes each configured `action` for every item in the response body. If the body is a JSON array, each action runs once per element; if it is a single object, each action runs once.
+
+For each action, the `variables_map` is applied to the response item to produce a set of named variables:
+
+- **With `variables_map`**: only the explicitly mapped fields are included, renamed as configured.
+- **Without `variables_map`**: all response fields are passed through unchanged.
+
+**Current behaviour:** actions log a message of the form:
+```
+Executing action <resource> for <variables>
+```
+
+**Error handling:** an action whose `resource` field is missing is skipped and logged. An action that references a field absent from the response item is also skipped and logged. Other actions continue normally. A response body that is not valid JSON raises an error for the whole request.
+
+### Evolution
+
+| Phase | What happens with an action |
+|-------|-----------------------------|
+| **Now** | Executed synchronously; logs `Executing action <resource> for <vars>` |
+| **Near future** | Enqueued as a special Job — async processing, no retry rights |
+| **Far future** | Creates a real Job referencing the named resource with the mapped variables as parameters |
+
+---
+
 ## Roadmap
 
 The following features are planned but not yet implemented:
 
 - **WorkersFactory** — the factory responsible for instantiating `Worker` instances is planned but not yet implemented. Workers are currently initialized directly inside `WorkersRegistry`.
+- **Action queue** — actions will be enqueued as special Jobs for async processing (no retry rights) instead of being executed synchronously.
+- **Action job generation** — instead of logging, each action will create a real Job referencing the named resource and passing the mapped variables as parameters.
 - **First release (v0.0.1)** — the project has not yet had a tagged release.
 
 ### Web UI

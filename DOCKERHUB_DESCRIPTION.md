@@ -19,7 +19,7 @@ Key features:
 
 - Concurrent HTTP request execution via a worker pool.
 - URL templates with placeholder parameters (e.g. `{:id}`).
-- Resource chaining: downstream jobs are enqueued automatically based on the response of a parent request.
+- Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
 - Automatic retry of failed requests after the main queue is exhausted.
 
 ---
@@ -59,23 +59,20 @@ clients:
 
 resources:
   categories:
-    - url: /categories.html
-      status: 302
     - url: /categories.json
       status: 200
       actions:
-        - resource: category
-          params:
-            id: id
-        - resource: items
-          params:
-            category_id: id
-  category:
-    - url: /categories/{:id}.html
-      status: 302
+        - resource: category_information
+        - resource: products
+          variables_map:
+            id: category_id   # response field "id" → variable "category_id"
+  category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api
+  products:
+    - url: /categories/{:category_id}/products.json
+      status: 200
 ```
 
 ### Fields
@@ -91,7 +88,9 @@ resources:
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
-| `actions` | List of downstream resources to enqueue after a successful response, with parameter mappings. |
+| `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `variables_map`. |
+| `actions[].resource` | Name of the resource to act upon. Required. |
+| `actions[].variables_map` | Optional key-value map renaming response fields to variable names. When absent, all response fields pass through unchanged. |
 
 ---
 

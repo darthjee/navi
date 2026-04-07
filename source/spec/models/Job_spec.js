@@ -40,20 +40,26 @@ describe('Job', () => {
   describe('#process', () => {
     describe('when the client request is successful', () => {
       beforeEach(() => {
-        response = { status: 200 };
+        response = { status: 200, data: '[]' };
         const promise = Promise.resolve(response);
 
         spyOn(axios, 'get').and.returnValue(promise);
         spyOn(Logger, 'info').and.stub();
+        spyOn(resourceRequest, 'executeActions').and.stub();
       });
 
       it('performs the job', async () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
+      });
+
+      it('calls executeActions with the response data', async () => {
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(resourceRequest.executeActions).toHaveBeenCalledOnceWith(response.data);
       });
 
       it('logs info when performing', async () => {
@@ -67,7 +73,7 @@ describe('Job', () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
         await expectAsync(job.perform()).toBeResolvedTo(response);
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000 });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
@@ -75,7 +81,7 @@ describe('Job', () => {
 
     describe('when the client request fails', () => {
       beforeEach(() => {
-        response = { status: 502 };
+        response = { status: 502, data: '[]' };
         const promise = Promise.resolve(response);
 
         expectedError = new RequestFailed(502, fullUrl);
@@ -83,6 +89,12 @@ describe('Job', () => {
         spyOn(axios, 'get').and.returnValue(promise);
         spyOn(Logger, 'error').and.stub();
         spyOn(Logger, 'info').and.stub();
+        spyOn(resourceRequest, 'executeActions').and.stub();
+      });
+
+      it('does not call executeActions', async () => {
+        await job.perform().catch(() => {});
+        expect(resourceRequest.executeActions).not.toHaveBeenCalled();
       });
 
       it('register failure and attempt', async () => {

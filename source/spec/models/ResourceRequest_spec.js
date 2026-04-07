@@ -1,4 +1,6 @@
 import { ResourceRequest } from '../../lib/models/ResourceRequest.js';
+import { Logger } from '../../lib/utils/Logger.js';
+import { ResourceRequestActionFactory } from '../support/factories/ResourceRequestActionFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
 describe('ResourceRequest', () => {
@@ -27,6 +29,16 @@ describe('ResourceRequest', () => {
       const resourceRequests = ResourceRequest.fromList(resources, { clientName: 'myClient' });
 
       expect(resourceRequests.every((rr) => rr.clientName === 'myClient')).toBeTrue();
+    });
+
+    it('passes actions through to each ResourceRequest', () => {
+      const resources = [
+        { url: '/categories.json', status: 200, actions: [{ resource: 'products' }] },
+      ];
+
+      const resourceRequests = ResourceRequest.fromList(resources);
+
+      expect(resourceRequests[0].actions.length).toBe(1);
     });
   });
 
@@ -66,6 +78,50 @@ describe('ResourceRequest', () => {
     it('returns false for a malformed placeholder without the colon prefix', () => {
       const request = ResourceRequestFactory.build({ url: '/categories/{id}.json' });
       expect(request.needsParams()).toBeFalse();
+    });
+  });
+
+  describe('#executeActions', () => {
+    let action;
+    let request;
+
+    beforeEach(() => {
+      spyOn(Logger, 'info').and.stub();
+      spyOn(Logger, 'error').and.stub();
+      action = ResourceRequestActionFactory.build({ resource: 'products' });
+    });
+
+    describe('when there are no actions', () => {
+      it('returns immediately without parsing', () => {
+        request = ResourceRequestFactory.build();
+        expect(() => request.executeActions('not valid json')).not.toThrow();
+      });
+    });
+
+    describe('when the response is a JSON array', () => {
+      beforeEach(() => {
+        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
+      });
+
+      it('executes each action once per element', () => {
+        spyOn(action, 'execute');
+        request.actions = [action];
+        request.executeActions('[{"id":1},{"id":2}]');
+        expect(action.execute).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when the response is a JSON object', () => {
+      beforeEach(() => {
+        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
+      });
+
+      it('executes each action once', () => {
+        spyOn(action, 'execute');
+        request.actions = [action];
+        request.executeActions('{"id":1}');
+        expect(action.execute).toHaveBeenCalledOnceWith({ id: 1 });
+      });
     });
   });
 });

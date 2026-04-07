@@ -19,7 +19,11 @@ AppError (base)
 │   ├── MissingClientsConfig
 │   └── MissingResourceConfig
 ├── RequestFailed
-└── LockedByOtherWorker
+├── LockedByOtherWorker
+├── InvalidResponseBody   ← raw JSON response body could not be parsed
+├── NullResponse          ← parsed response body is null
+├── MissingActionResource ← action config entry has no "resource" field
+└── MissingMappingVariable ← variables_map references a field absent from the response
 ```
 
 All custom exceptions must extend `AppError` (directly or via an intermediate class); never extend `Error` directly.
@@ -33,7 +37,11 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 |-------|---------------|
 | `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
-| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. |
+| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `executeActions(rawBody)` to process the response after a successful HTTP request. |
+| `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `variables_map`). Uses `VariablesMapper` to transform a response item and logs the result. |
+| `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
+| `ActionsExecutor` | Normalises a parsed response (object or array) and dispatches each `ResourceRequestAction` per item. Throws `NullResponse` for null responses. Catches and logs action-level errors. |
+| `VariablesMapper` | Applies a `variables_map` to a response item, renaming fields as configured. When no map is provided, all fields pass through unchanged. Throws `MissingMappingVariable` when a source field is absent. |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
 | `Job` | Wraps a unit of work (payload) to be consumed from the queue. Tracks a failure counter and last exception. |
 | `WorkersConfig` | Holds the worker pool size (`quantity`, default 1) and the retry cooldown in milliseconds (`retryCooldown`, default 2000). |
@@ -60,12 +68,11 @@ Business logic and I/O layer.
 | `Application` | Main orchestrator. `loadConfig(configPath)` initializes `config`, `jobRegistry`, and `workersRegistry`. Enqueues initial parameter-free resources on startup. Optionally starts the web UI when `web:` is present in configuration. |
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
-| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL and throws `RequestFailed` if the status does not match. |
+| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. |
 | `Engine` | Drives the main allocation loop. Continuously calls the `WorkersAllocator` to assign jobs to workers as long as there are jobs to process or busy workers. Stops when all jobs are processed and all workers are idle. |
 | `WorkersAllocator` | Handles the logic for assigning jobs to workers. Provides extensible methods for allocation, allowing custom strategies and easier testing. Used by `Engine` to decouple job assignment from engine control flow. |
 | `JobFactory` | Creates `Job` instances from a `ResourceRequest` and a parameter map. |
 | `WorkersFactory` | Creates and initializes `Worker` instances for the pool   ← planned; not yet implemented. |
-| `ResponseParser` | Parses HTTP response bodies and extracts parameters for downstream action enqueueing. |
 | `WebServer` | Optional Express.js server that serves the monitoring web UI. Created via `WebServer.build()`; returns `null` when `webConfig` is absent. Listens on the port defined by `WebConfig`. |
 | `Router` | Defines the Express routes for the web UI. Exposes `GET /stats.json` returning combined job and worker statistics. |
 
