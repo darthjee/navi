@@ -13,7 +13,6 @@ describe('JobRegistry', () => {
   let clients;
 
   let jobs;
-  let failedJobs;
   let retryQueue;
   let finished;
   let processing;
@@ -21,11 +20,10 @@ describe('JobRegistry', () => {
   beforeEach(() => {
     clients = new ClientRegistry();
     jobs = new Queue();
-    failedJobs = new Queue();
     retryQueue = new Queue();
     finished = new Queue();
     processing = new IdentifyableCollection();
-    registry = new JobRegistry({ queue: jobs, failed: failedJobs, retryQueue, finished, processing, clients, cooldown: -1 });
+    registry = new JobRegistry({ queue: jobs, retryQueue, finished, processing, clients, cooldown: -1 });
     resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
   });
 

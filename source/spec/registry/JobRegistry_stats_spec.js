@@ -13,7 +13,6 @@ describe('JobRegistry', () => {
 
   describe('#stats', () => {
     let queue;
-    let failedQueue;
     let retryQueue;
     let finishedCollection;
     let deadCollection;
@@ -21,14 +20,12 @@ describe('JobRegistry', () => {
 
     beforeEach(() => {
       queue = new Queue();
-      failedQueue = new Queue();
       retryQueue = new Queue();
       finishedCollection = new IdentifyableCollection();
       deadCollection = new IdentifyableCollection();
       processingCollection = new IdentifyableCollection();
       registry = new JobRegistry({
         queue,
-        failed: failedQueue,
         retryQueue,
         finished: finishedCollection,
         dead: deadCollection,

@@ -2,6 +2,9 @@ import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
 import { JobFactory } from '../factories/JobFactory.js';
 import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
 import { Queue } from '../utils/Queue.js';
+import { SortedCollection } from '../utils/SortedCollection.js';
+
+const FAILED_SORT_BY = job => job.readyBy;
 
 /**
  * JobRegistry manages a queue of jobs for Workers to consume.
@@ -24,7 +27,7 @@ class JobRegistry {
    * @param {object} options - The options for the JobRegistry.
    * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
    * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
-   * @param {Queue} [options.failed] - An optional queue to use for failed jobs. If not provided, a new Queue will be created.
+   * @param {SortedCollection} [options.failed] - An optional sorted collection to use for failed jobs, sorted by readyBy. If not provided, a new SortedCollection will be created.
    * @param {Queue} [options.retryQueue] - An optional queue to use for jobs ready to retry. If not provided, a new Queue will be created.
    * @param {IdentifyableCollection} [options.finished] - An optional collection to use for finished jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.dead] - An optional collection to use for dead jobs. If not provided, a new IdentifyableCollection will be created.
@@ -34,7 +37,7 @@ class JobRegistry {
    */
   constructor({ queue, failed, retryQueue, finished, dead, processing, clients, factory, cooldown = 5000 }) {
     this.#enqueued = queue || new Queue();
-    this.#failed = failed || new Queue();
+    this.#failed = failed || new SortedCollection([], { sortBy: FAILED_SORT_BY });
     this.#retryQueue = retryQueue || new Queue();
     this.#finished = finished || new IdentifyableCollection();
     this.#dead = dead || new IdentifyableCollection();
@@ -101,19 +104,17 @@ class JobRegistry {
 
   /**
    * Promotes jobs from the failed queue to the retryQueue once their cooldown has elapsed.
+   * Uses binary search on the SortedCollection (sorted by readyBy) to efficiently
+   * split ready vs still-cooling jobs in O(log n) rather than a full O(n) scan.
    * @returns {void}
    */
   promoteReadyJobs() {
-    const remaining = [];
-    while (this.#failed.hasItem()) {
-      const job = this.#failed.pick();
-      if (job.isReady()) {
-        this.#retryQueue.push(job);
-      } else {
-        remaining.push(job);
-      }
-    }
-    remaining.forEach(job => this.#failed.push(job));
+    const now = Date.now();
+    const ready = this.#failed.upTo(now);
+    const waiting = this.#failed.after(now);
+
+    this.#failed = new SortedCollection(waiting, { sortBy: FAILED_SORT_BY });
+    ready.forEach(job => this.#retryQueue.push(job));
   }
 
   /**
