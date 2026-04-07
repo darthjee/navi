@@ -10,6 +10,7 @@ class Job {
   #clients;
   #client;
   #attempts;
+  #readyBy;
 
   /**
    * Creates a new Job instance.
@@ -26,6 +27,7 @@ class Job {
     this.#clients = clients;
 
     this.#attempts = 0;
+    this.#readyBy = 0;
   }
 
   /**
@@ -44,6 +46,32 @@ class Job {
       Logger.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
     }
+  }
+
+  /**
+   * Returns the timestamp after which the job is eligible for retry.
+   * @returns {number} The readyBy timestamp in milliseconds.
+   */
+  get readyBy() {
+    return this.#readyBy;
+  }
+
+  /**
+   * Sets the cooldown duration in milliseconds after which the job is eligible for retry.
+   * Stores the absolute timestamp (Date.now() + ms) internally.
+   * @param {number} ms - Cooldown duration in milliseconds. Use a negative value to mark ready immediately.
+   */
+  applyCooldown(ms) {
+    this.#readyBy = Date.now() + ms;
+  }
+
+  /**
+   * Checks whether the job's cooldown period has elapsed relative to the given time.
+   * @param {number} currentTime - The current timestamp in milliseconds.
+   * @returns {boolean} True if the job can be retried at the given time.
+   */
+  isReadyBy(currentTime) {
+    return currentTime >= this.#readyBy;
   }
 
   /**

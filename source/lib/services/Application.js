@@ -37,14 +37,14 @@ class Application {
 
   /**
    * Starts the application by building the engine, web server, enqueueing initial jobs, and starting both.
-   * @returns {void}
+   * @returns {Promise<void>}
    */
-  run() {
+  async run() {
     this.engine = this.buildEngine();
     this.webServer = this.buildWebServer();
     this.enqueueFirstJobs();
     this.webServer?.start();
-    this.engine.start();
+    await this.engine.start();
   }
 
   /**
