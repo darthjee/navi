@@ -1,3 +1,7 @@
+import { ActionsExecutor } from './ActionsExecutor.js';
+import { ResourceRequestAction } from './ResourceRequestAction.js';
+import { ResponseParser } from './ResponseParser.js';
+
 /**
  * ResourceRequest represents a request to a specific URL with an expected status code.
  * @author darthjee
@@ -6,15 +10,17 @@ class ResourceRequest {
   #clientName;
 
   /**
-   * @param {{ url: string, status: number, clientName: string }} attributes ResourceRequest attributes
+   * @param {object} attributes ResourceRequest attributes
    * @param {string} attributes.url The URL to request.
    * @param {number} attributes.status The expected status code of the response.
    * @param {string} [attributes.clientName] The name of the client to use for this request.
+   * @param {Array} [attributes.actions=[]] List of raw action config objects.
    */
-  constructor({ url, status, clientName }) {
+  constructor({ url, status, clientName, actions = [] }) {
     this.url = url;
     this.status = status;
     this.#clientName = clientName;
+    this.actions = ResourceRequestAction.fromList(actions);
   }
 
   /**
@@ -24,6 +30,18 @@ class ResourceRequest {
    */
   get clientName() {
     return this.#clientName;
+  }
+
+  /**
+   * Executes all configured actions against the raw response body.
+   * Returns immediately if there are no actions, skipping JSON parsing entirely.
+   * @param {string} rawBody The raw response body string.
+   */
+  executeActions(rawBody) {
+    if (this.actions.length === 0) return;
+
+    const parsed = new ResponseParser(rawBody).parse();
+    new ActionsExecutor(this.actions, parsed).execute();
   }
 
   /**
@@ -48,3 +66,4 @@ class ResourceRequest {
 }
 
 export { ResourceRequest };
+
