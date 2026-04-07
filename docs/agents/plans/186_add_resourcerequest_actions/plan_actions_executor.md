@@ -48,6 +48,9 @@ class ActionsExecutor {
 
     for (const item of items) {
       for (const action of this.#actions) {
+        // TODO: In the future, instead of executing actions synchronously,
+        // each action should be enqueued as a special Job. These jobs will
+        // not have retry rights (exhausted immediately on first failure).
         try {
           action.execute(item);
         } catch (error) {
