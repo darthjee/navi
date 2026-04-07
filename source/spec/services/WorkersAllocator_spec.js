@@ -115,8 +115,8 @@ describe('WorkersAllocator', () => {
     beforeEach(() => {
       job = jobRegistry.enqueue({});
       const picked = jobRegistry.pick();
-      picked.readyBy = Date.now() + 10_000;
       jobRegistry.fail(picked);
+      picked.setReadyBy(Date.now() + 10_000);
     });
 
     it('does not allocate any worker', () => {

@@ -10,6 +10,7 @@ class Job {
   #clients;
   #client;
   #attempts;
+  #readyBy;
 
   /**
    * Creates a new Job instance.
@@ -26,7 +27,7 @@ class Job {
     this.#clients = clients;
 
     this.#attempts = 0;
-    this.readyBy = 0;
+    this.#readyBy = 0;
   }
 
   /**
@@ -48,11 +49,28 @@ class Job {
   }
 
   /**
-   * Checks whether the job's cooldown period has elapsed.
-   * @returns {boolean} True if the job can be retried now.
+   * Returns the timestamp after which the job is eligible for retry.
+   * @returns {number} The readyBy timestamp in milliseconds.
    */
-  isReady() {
-    return Date.now() >= this.readyBy;
+  get readyBy() {
+    return this.#readyBy;
+  }
+
+  /**
+   * Sets the timestamp after which the job is eligible for retry.
+   * @param {number} time - The readyBy timestamp in milliseconds.
+   */
+  setReadyBy(time) {
+    this.#readyBy = time;
+  }
+
+  /**
+   * Checks whether the job's cooldown period has elapsed relative to the given time.
+   * @param {number} currentTime - The current timestamp in milliseconds.
+   * @returns {boolean} True if the job can be retried at the given time.
+   */
+  isReadyBy(currentTime) {
+    return currentTime >= this.#readyBy;
   }
 
   /**

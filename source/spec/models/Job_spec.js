@@ -103,30 +103,30 @@ describe('Job', () => {
     });
   });
 
-  describe('#isReady', () => {
+  describe('#isReadyBy', () => {
     describe('when readyBy is 0 (default)', () => {
       it('returns true', () => {
-        expect(job.isReady()).toBeTrue();
+        expect(job.isReadyBy(Date.now())).toBeTrue();
       });
     });
 
     describe('when readyBy is in the past', () => {
       beforeEach(() => {
-        job.readyBy = Date.now() - 1000;
+        job.setReadyBy(Date.now() - 1000);
       });
 
       it('returns true', () => {
-        expect(job.isReady()).toBeTrue();
+        expect(job.isReadyBy(Date.now())).toBeTrue();
       });
     });
 
     describe('when readyBy is in the future', () => {
       beforeEach(() => {
-        job.readyBy = Date.now() + 10_000;
+        job.setReadyBy(Date.now() + 10_000);
       });
 
       it('returns false', () => {
-        expect(job.isReady()).toBeFalse();
+        expect(job.isReadyBy(Date.now())).toBeFalse();
       });
     });
   });
