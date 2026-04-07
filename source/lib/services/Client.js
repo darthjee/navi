@@ -16,7 +16,7 @@ class Client {
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
    * @param {number} [attributes.timeout] Optional request timeout in milliseconds.
    */
-  constructor({ name, baseUrl, timeout }) {
+  constructor({ name, baseUrl, timeout = 5000 }) {
     this.name = name;
     this.baseUrl = baseUrl;
     this.timeout = timeout;
