@@ -40,9 +40,12 @@ workflows:
             branches:
               ignore: /.*/
       - update-description:
+          requires: [build-and-release]
           filters:
             tags:
-              only: /.*/
+              only: /\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
 
 jobs:
   jasmine:
