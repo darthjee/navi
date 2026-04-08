@@ -1,8 +1,8 @@
 import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
 import { JobFactory } from '../factories/JobFactory.js';
-import { IdentifyableCollection } from '../utils/IdentifyableCollection.js';
-import { Queue } from '../utils/Queue.js';
-import { SortedCollection } from '../utils/SortedCollection.js';
+import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
+import { Queue } from '../utils/collections/Queue.js';
+import { SortedCollection } from '../utils/collections/SortedCollection.js';
 
 const FAILED_SORT_BY = job => job.readyBy;
 

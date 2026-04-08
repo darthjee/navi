@@ -1,4 +1,4 @@
-import { ConsoleLogger } from '../utils/ConsoleLogger.js';
+import { ConsoleLogger } from '../utils/logging/ConsoleLogger.js';
 
 /**
  * Worker processes jobs pulled from a JobRegistry.

@@ -1,5 +1,5 @@
 import { Job } from './Job.js';
-import { Logger } from '../utils/Logger.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * ResourceRequestJob is a Job that performs an HTTP request for a ResourceRequest.
