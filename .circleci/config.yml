@@ -160,4 +160,4 @@ jobs:
       - checkout
       - run:
           name: Update Docker Hub description
-          command: make update-description
+          command: sh scripts/update-description.sh
