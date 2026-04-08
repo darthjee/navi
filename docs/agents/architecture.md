@@ -59,6 +59,55 @@ Collection managers built on a shared base class.
 
 Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property.
 
+### `utils/`
+
+Shared low-level utilities with no domain knowledge. Organized into three subfolders:
+
+#### `utils/logging/`
+
+The logging subsystem. All loggers extend `BaseLogger`, which controls which log levels are
+forwarded to `_output`.
+
+| Class | Responsibility |
+|-------|---------------|
+| `BaseLogger` | Abstract base; applies level filtering and suppression before calling `_output`. |
+| `ConsoleLogger` | Extends `BaseLogger`; writes to `console.warn` / `console.error`. |
+| `BufferedLogger` | Extends `BaseLogger`; stores log entries in a `LogBuffer` instead of printing. |
+| `Logger` | Singleton-style facade that delegates to a `ConsoleLogger` and an optional `LoggerGroup`. |
+| `LoggerGroup` | Manages a set of loggers and fans out log calls to all of them. |
+| `LogFactory` | Builds `Log` instances with auto-assigned incremental IDs. |
+| `Log` | Immutable log entry: `id`, `level`, `message`. |
+| `LogBuffer` | Fixed-capacity ring buffer of `Log` entries; used by `BufferedLogger`. |
+
+#### `utils/collections/`
+
+Generic data-structure building blocks used by registries and the engine.
+
+| Class | Responsibility |
+|-------|---------------|
+| `Collection` | Base array wrapper with `push`, `size`, `hasAny`, `hasItem`. |
+| `IdentifyableCollection` | Extends `Collection`; supports `get(id)`, `remove(id)`, `byIndex(n)` keyed by `item.id`. |
+| `Queue` | FIFO queue built on `Collection`; adds `pick()` to dequeue from the front. |
+| `SortedCollection` | Deferred-sort collection; merges new items with an already-sorted array on `list()`. Exposes range filters: `select`, `after`, `from`, `before`, `upTo`. |
+| `SortedArrayMerger` | Merges two sorted arrays in O(n+m). Used by `SortedCollection`. |
+| `SortedArraySearcher` | Binary-search helpers on a sorted array. Used by `SortedCollection`. |
+
+#### `utils/generators/`
+
+ID generation utilities.
+
+| Class | Responsibility |
+|-------|---------------|
+| `IdGenerator` | Abstract base; delegates to `UUidGenerator` by default. |
+| `UUidGenerator` | Generates RFC-4122 UUIDs via Node's `crypto.randomUUID()`. |
+| `IncrementalIdGenerator` | Generates sequential integer IDs starting from 1. Used by `LogFactory`. |
+
+#### `utils/` (flat)
+
+| Class | Responsibility |
+|-------|---------------|
+| `ResourceRequestCollector` | Iterates a `ResourceRegistry` and enqueues one job per resource+parameter combination. |
+
 ### `services/`
 
 Business logic and I/O layer.
@@ -75,6 +124,38 @@ Business logic and I/O layer.
 | `WorkersFactory` | Creates and initializes `Worker` instances for the pool   ← planned; not yet implemented. |
 | `WebServer` | Optional Express.js server that serves the monitoring web UI. Created via `WebServer.build()`; returns `null` when `webConfig` is absent. Listens on the port defined by `WebConfig`. |
 | `Router` | Defines the Express routes for the web UI. Exposes `GET /stats.json` returning combined job and worker statistics. |
+
+## Test Layout
+
+All specs live under `source/spec/`:
+
+```
+source/spec/
+  lib/                  ← mirrors source/lib/ exactly
+    exceptions/
+    factories/
+    models/
+    registry/
+    server/
+    services/
+    utils/
+      logging/          ← specs for utils/logging/
+      collections/      ← specs for utils/collections/
+      generators/       ← specs for utils/generators/
+      ResourceRequestCollector_spec.js
+  support/              ← shared test helpers (factories, dummies, fixtures)
+    dummies/
+    factories/
+    utils/
+```
+
+The naming convention for spec files is `<ClassName>_spec.js`, placed in the subfolder that
+mirrors the source file's location under `source/lib/`. For example:
+- `source/lib/models/Job.js` → `source/spec/lib/models/Job_spec.js`
+- `source/lib/utils/logging/Logger.js` → `source/spec/lib/utils/logging/Logger_spec.js`
+
+Support files (factories, dummies, fixtures) live under `source/spec/support/` and are never
+discovered by the test runner as specs.
 
 ## Module System
 
@@ -104,8 +185,8 @@ Enforced via ESLint (`source/eslint.config.mjs`):
 
 ## Quality and Tooling
 
-- Unit tests must use **Jasmine** (`spec/**/*_spec.js` naming convention).
-- Code coverage must use **c8** (`yarn test` runs `c8 jasmine spec/**/*.js`).
+- Unit tests must use **Jasmine** (`spec/lib/**/*_spec.js` naming convention).
+- Code coverage must use **c8** (`yarn test` runs `c8 jasmine spec/**/*.js`, which recursively covers `spec/lib/`).
 - Linting must use **ESLint** (`yarn lint`).
 - Copy/paste and duplication analysis must use **JSCPD** (`yarn report`).
 - API documentation must be generated with **JSDoc** (`yarn docs`; config: `source/jsdoc.json`).
