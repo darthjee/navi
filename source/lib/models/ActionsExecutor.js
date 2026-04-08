@@ -1,5 +1,5 @@
 import { NullResponse } from '../exceptions/NullResponse.js';
-import { Logger } from '../utils/Logger.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Receives an already-parsed response value and dispatches each action for every item.

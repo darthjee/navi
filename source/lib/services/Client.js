@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
-import { Logger } from '../utils/Logger.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Client performs HTTP requests for resource paths using a configured base URL.

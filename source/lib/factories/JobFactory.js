@@ -1,6 +1,6 @@
 import { Factory } from './Factory.js';
 import { ResourceRequestJob } from '../models/ResourceRequestJob.js';
-import { IdGenerator } from '../utils/IdGenerator.js';
+import { IdGenerator } from '../utils/generators/IdGenerator.js';
 
 /**
  * JobFactory is responsible for creating Job instances with unique identifiers.

@@ -1,6 +1,6 @@
 import { VariablesMapper } from './VariablesMapper.js';
 import { MissingActionResource } from '../exceptions/MissingActionResource.js';
-import { Logger } from '../utils/Logger.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Represents a single action to execute after a successful resource request response.

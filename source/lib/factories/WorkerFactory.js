@@ -1,6 +1,6 @@
 import { Factory } from './Factory.js';
 import { Worker } from '../models/Worker.js';
-import { IdGenerator } from '../utils/IdGenerator.js';
+import { IdGenerator } from '../utils/generators/IdGenerator.js';
 
 /**
  * WorkerFactory is responsible for creating Worker instances with unique identifiers.
