@@ -1,3 +1,4 @@
+// Integration tests: exercises the full application stack including the 404 middleware.
 import request from 'supertest';
 import buildApp from '../app.js';
 import { FixturesUtils } from './support/utils/FixturesUtils.js';

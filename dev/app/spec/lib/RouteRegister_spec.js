@@ -1,6 +1,7 @@
 import express from 'express';
 import request from 'supertest';
 import RouteRegister from '../../lib/RouteRegister.js';
+import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
@@ -35,7 +36,7 @@ describe('RouteRegister', () => {
       it('returns the matching item', async () => {
         const res = await request(app).get('/categories/1/items/1.json');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ id: 1, name: 'The Hobbit' });
+        expect(res.body).toEqual(HOBBIT_ITEM);
       });
 
       it('returns 404 for an unknown item', async () => {
@@ -53,11 +54,7 @@ describe('RouteRegister', () => {
       it('returns only the specified attributes for each element', async () => {
         const res = await request(app).get('/categories.json');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual([
-          { id: 1, name: 'Books' },
-          { id: 2, name: 'Movies' },
-          { id: 3, name: 'Music' },
-        ]);
+        expect(res.body).toEqual(ALL_CATEGORIES);
       });
     });
 
@@ -70,7 +67,7 @@ describe('RouteRegister', () => {
       it('returns only the specified attributes', async () => {
         const res = await request(app).get('/categories/1.json');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ id: 1, name: 'Books' });
+        expect(res.body).toEqual(BOOKS_CATEGORY);
       });
 
       it('returns 404 for an unknown id', async () => {

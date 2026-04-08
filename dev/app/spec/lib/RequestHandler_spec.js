@@ -2,6 +2,7 @@ import express from 'express';
 import request from 'supertest';
 import RequestHandler from '../../lib/RequestHandler.js';
 import Serializer from '../../lib/Serializer.js';
+import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
@@ -21,7 +22,7 @@ describe('RequestHandler', () => {
       it('returns the raw navigation result as JSON', async () => {
         const res = await request(app).get('/categories/1/items/1.json');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ id: 1, name: 'The Hobbit' });
+        expect(res.body).toEqual(HOBBIT_ITEM);
       });
 
       it('returns 404 when navigation returns null', async () => {
@@ -37,7 +38,7 @@ describe('RequestHandler', () => {
       it('returns the projected result', async () => {
         const res = await request(app).get('/categories/1.json');
         expect(res.status).toBe(200);
-        expect(res.body).toEqual({ id: 1, name: 'Books' });
+        expect(res.body).toEqual(BOOKS_CATEGORY);
       });
 
       it('returns 404 when navigation returns null', async () => {

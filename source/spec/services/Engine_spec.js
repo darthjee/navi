@@ -20,6 +20,12 @@ describe('Engine', () => {
 
   let busy;
 
+  const enqueueJobs = (n) => {
+    for (let i = 0; i < n; i++) {
+      jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+    }
+  };
+
   beforeEach(() => {
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
@@ -48,10 +54,7 @@ describe('Engine', () => {
     });
 
     describe('when there are jobs to process', () => {
-      beforeEach(() => {
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-      });
+      beforeEach(() => { enqueueJobs(2); });
 
       it('processes all jobs', async () => {
         expect(jobRegistry.hasJob()).toBeTrue();
@@ -62,12 +65,7 @@ describe('Engine', () => {
     });
 
     describe('when there more jobs than workers', () => {
-      beforeEach(() => {
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-      });
+      beforeEach(() => { enqueueJobs(4); });
 
       it('processes all jobs', async () => {
         expect(jobRegistry.hasJob()).toBeTrue();
@@ -81,7 +79,7 @@ describe('Engine', () => {
     describe('when jobs fail all the time', () => {
       beforeEach(() => {
         DummyJob.setSuccessRate(0);
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        enqueueJobs(1);
       });
 
       it('processes all jobs until they are in the dead queue', async () => {
@@ -96,10 +94,7 @@ describe('Engine', () => {
     describe('when jobs fails some times', () => {
       beforeEach(() => {
         DummyJob.setSuccessRate(0.1);
-
-        for (let i = 0; i < 20; i++) {
-          jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        }
+        enqueueJobs(20);
       });
 
       it('processes all jobs until they are in the finished or dead', async () => {
@@ -126,9 +121,7 @@ describe('Engine', () => {
           return result;
         });
 
-        for (let i = 0; i < 20; i++) {
-          jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        }
+        enqueueJobs(20);
       });
 
       it('processes all jobs until they are in the finished or dead', async () => {
@@ -141,8 +134,7 @@ describe('Engine', () => {
 
     describe('promoteReadyJobs is called every cycle', () => {
       beforeEach(() => {
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
-        jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        enqueueJobs(2);
         spyOn(jobRegistry, 'promoteReadyJobs').and.callThrough();
       });
 

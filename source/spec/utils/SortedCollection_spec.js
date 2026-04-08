@@ -119,9 +119,9 @@ describe('SortedCollection', () => {
     });
   });
 
-  // ─── #select ────────────────────────────────────────────────────────────────
+  // ─── filter methods (#select, #after, #from, #before, #upTo) ────────────────
 
-  describe('#select', () => {
+  describe('with a 4-element collection', () => {
     beforeEach(() => {
       collection = new SortedCollection(
         [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }],
@@ -129,127 +129,103 @@ describe('SortedCollection', () => {
       );
     });
 
-    it('returns elements matching the predicate', () => {
-      const result = collection.select(e => e.value % 2 === 0);
-      expect(result.map(e => e.value)).toEqual([2, 4]);
+    // ─── #select ──────────────────────────────────────────────────────────────
+
+    describe('#select', () => {
+      it('returns elements matching the predicate', () => {
+        const result = collection.select(e => e.value % 2 === 0);
+        expect(result.map(e => e.value)).toEqual([2, 4]);
+      });
+
+      it('returns empty array when nothing matches', () => {
+        const result = collection.select(e => e.value > 10);
+        expect(result).toEqual([]);
+      });
+
+      it('returns all elements when all match', () => {
+        const result = collection.select(e => e.value > 0);
+        expect(result.map(e => e.value)).toEqual([1, 2, 3, 4]);
+      });
     });
 
-    it('returns empty array when nothing matches', () => {
-      const result = collection.select(e => e.value > 10);
-      expect(result).toEqual([]);
+    // ─── #after ───────────────────────────────────────────────────────────────
+
+    describe('#after', () => {
+      it('returns elements strictly greater than the value', () => {
+        expect(collection.after(2).map(e => e.value)).toEqual([3, 4]);
+      });
+
+      it('excludes the element equal to the value', () => {
+        expect(collection.after(3).map(e => e.value)).toEqual([4]);
+      });
+
+      it('returns empty when value is >= max', () => {
+        expect(collection.after(4)).toEqual([]);
+      });
+
+      it('returns all when value is < min', () => {
+        expect(collection.after(0).map(e => e.value)).toEqual([1, 2, 3, 4]);
+      });
     });
 
-    it('returns all elements when all match', () => {
-      const result = collection.select(e => e.value > 0);
-      expect(result.map(e => e.value)).toEqual([1, 2, 3, 4]);
-    });
-  });
+    // ─── #from ────────────────────────────────────────────────────────────────
 
-  // ─── #after ─────────────────────────────────────────────────────────────────
+    describe('#from', () => {
+      it('returns elements greater than or equal to the value', () => {
+        expect(collection.from(2).map(e => e.value)).toEqual([2, 3, 4]);
+      });
 
-  describe('#after', () => {
-    beforeEach(() => {
-      collection = new SortedCollection(
-        [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }],
-        { sortBy }
-      );
-    });
+      it('includes the element equal to the value', () => {
+        expect(collection.from(4).map(e => e.value)).toEqual([4]);
+      });
 
-    it('returns elements strictly greater than the value', () => {
-      expect(collection.after(2).map(e => e.value)).toEqual([3, 4]);
-    });
+      it('returns empty when value is > max', () => {
+        expect(collection.from(5)).toEqual([]);
+      });
 
-    it('excludes the element equal to the value', () => {
-      expect(collection.after(3).map(e => e.value)).toEqual([4]);
+      it('returns all when value is <= min', () => {
+        expect(collection.from(1).map(e => e.value)).toEqual([1, 2, 3, 4]);
+      });
     });
 
-    it('returns empty when value is >= max', () => {
-      expect(collection.after(4)).toEqual([]);
+    // ─── #before ──────────────────────────────────────────────────────────────
+
+    describe('#before', () => {
+      it('returns elements strictly less than the value', () => {
+        expect(collection.before(3).map(e => e.value)).toEqual([1, 2]);
+      });
+
+      it('excludes the element equal to the value', () => {
+        expect(collection.before(2).map(e => e.value)).toEqual([1]);
+      });
+
+      it('returns empty when value is <= min', () => {
+        expect(collection.before(1)).toEqual([]);
+      });
+
+      it('returns all when value is > max', () => {
+        expect(collection.before(5).map(e => e.value)).toEqual([1, 2, 3, 4]);
+      });
     });
 
-    it('returns all when value is < min', () => {
-      expect(collection.after(0).map(e => e.value)).toEqual([1, 2, 3, 4]);
-    });
-  });
+    // ─── #upTo ────────────────────────────────────────────────────────────────
 
-  // ─── #from ──────────────────────────────────────────────────────────────────
+    describe('#upTo', () => {
+      it('returns elements less than or equal to the value', () => {
+        expect(collection.upTo(3).map(e => e.value)).toEqual([1, 2, 3]);
+      });
 
-  describe('#from', () => {
-    beforeEach(() => {
-      collection = new SortedCollection(
-        [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }],
-        { sortBy }
-      );
-    });
+      it('includes the element equal to the value', () => {
+        expect(collection.upTo(1).map(e => e.value)).toEqual([1]);
+      });
 
-    it('returns elements greater than or equal to the value', () => {
-      expect(collection.from(2).map(e => e.value)).toEqual([2, 3, 4]);
-    });
+      it('returns empty when value is < min', () => {
+        expect(collection.upTo(0)).toEqual([]);
+      });
 
-    it('includes the element equal to the value', () => {
-      expect(collection.from(4).map(e => e.value)).toEqual([4]);
-    });
-
-    it('returns empty when value is > max', () => {
-      expect(collection.from(5)).toEqual([]);
-    });
-
-    it('returns all when value is <= min', () => {
-      expect(collection.from(1).map(e => e.value)).toEqual([1, 2, 3, 4]);
-    });
-  });
-
-  // ─── #before ────────────────────────────────────────────────────────────────
-
-  describe('#before', () => {
-    beforeEach(() => {
-      collection = new SortedCollection(
-        [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }],
-        { sortBy }
-      );
-    });
-
-    it('returns elements strictly less than the value', () => {
-      expect(collection.before(3).map(e => e.value)).toEqual([1, 2]);
-    });
-
-    it('excludes the element equal to the value', () => {
-      expect(collection.before(2).map(e => e.value)).toEqual([1]);
-    });
-
-    it('returns empty when value is <= min', () => {
-      expect(collection.before(1)).toEqual([]);
-    });
-
-    it('returns all when value is > max', () => {
-      expect(collection.before(5).map(e => e.value)).toEqual([1, 2, 3, 4]);
-    });
-  });
-
-  // ─── #upTo ──────────────────────────────────────────────────────────────────
-
-  describe('#upTo', () => {
-    beforeEach(() => {
-      collection = new SortedCollection(
-        [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }],
-        { sortBy }
-      );
-    });
-
-    it('returns elements less than or equal to the value', () => {
-      expect(collection.upTo(3).map(e => e.value)).toEqual([1, 2, 3]);
-    });
-
-    it('includes the element equal to the value', () => {
-      expect(collection.upTo(1).map(e => e.value)).toEqual([1]);
-    });
-
-    it('returns empty when value is < min', () => {
-      expect(collection.upTo(0)).toEqual([]);
-    });
-
-    it('returns all when value is >= max', () => {
-      expect(collection.upTo(4).map(e => e.value)).toEqual([1, 2, 3, 4]);
+      it('returns all when value is >= max', () => {
+        expect(collection.upTo(4).map(e => e.value)).toEqual([1, 2, 3, 4]);
+      });
     });
   });
 

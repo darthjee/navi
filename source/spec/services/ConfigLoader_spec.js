@@ -12,16 +12,15 @@ describe('ConfigLoader', () => {
   let expectedWorkersConfig;
 
   describe('.fromFile', () => {
+    beforeEach(() => {
+      expectedResources = { categories: ResourceFactory.build() };
+    });
+
     describe('when the yaml file is valid', () => {
       let config;
 
       beforeEach(() => {
-        expectedResources = {
-          categories: ResourceFactory.build(),
-        };
-        expectedClients = {
-          default: ClientFactory.build({ timeout: 5000 }),
-        };
+        expectedClients = { default: ClientFactory.build({ timeout: 5000 }) };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
 
         const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
@@ -45,12 +44,7 @@ describe('ConfigLoader', () => {
       let config;
 
       beforeEach(() => {
-        expectedResources = {
-          categories: ResourceFactory.build(),
-        };
-        expectedClients = {
-          default: ClientFactory.build(),
-        };
+        expectedClients = { default: ClientFactory.build() };
         expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
 
         const configFilePath = FixturesUtils.getFixturePath('config/missing_workers_config.yml');
