@@ -2,7 +2,7 @@
 
 ## Overview
 
-Split the current `Job` model into two classes: a `BaseJob` that holds shared lifecycle methods and enforces the `perform` contract, and a `ResourceRequestJob` that extends it with the existing `ResourceRequest`-specific logic. Update all references throughout the codebase.
+Refactor the current `Job` class into a base class (keeping the name `Job`) that holds shared lifecycle methods and enforces the `perform` contract, then create a new `ResourceRequestJob` that extends `Job` with the existing `ResourceRequest`-specific logic. Update `JobFactory` to accept generic `attributes` instead of a specific `clients` parameter.
 
 ## Context
 
@@ -10,23 +10,28 @@ The `Job` class in `source/lib/models/` currently handles both generic job lifec
 
 ## Implementation Steps
 
-### Step 1 — Create `BaseJob`
+### Step 1 — Refactor `Job` into a base class
 
-Create `source/lib/models/BaseJob.js` with:
-- All lifecycle methods that are not specific to `ResourceRequest`: `readyBy`, `applyCooldown`, `isReadyBy`, `exhausted`, `_fail`.
-- An abstract `perform()` method that throws `Error('You must implement the perform method in a subclass')`.
-- JSDoc documentation for the class and all methods.
+Modify `source/lib/models/Job.js` to become the base class:
+- Keep all lifecycle methods: `readyBy`, `applyCooldown`, `isReadyBy`, `exhausted`, `_fail`.
+- Replace the `perform()` implementation with an abstract stub that throws if not overridden:
+
+```javascript
+perform() {
+  throw new Error('You must implement the perform method in a subclass');
+}
+```
+
+- Remove `ResourceRequest`-specific fields (`#resourceRequest`, `#parameters`, `#clients`, `#client`) from the constructor — those move to `ResourceRequestJob`.
+- Update JSDoc to reflect the new role as a base class.
 
 ### Step 2 — Create `ResourceRequestJob`
 
 Create `source/lib/models/ResourceRequestJob.js` with:
-- Extends `BaseJob`.
-- Contains only the `perform()` implementation (the existing `ResourceRequest`-specific logic from `Job`).
+- Extends `Job`.
+- Constructor receives `{ id, resourceRequest, parameters, clients }` and calls `super({ id })`.
+- Contains the `perform()` implementation and `#getClient()` private method from the current `Job`.
 - JSDoc documentation.
-
-### Step 3 — Remove the old `Job` class
-
-Delete (or empty and replace) `source/lib/models/Job.js`. The file can be removed since `BaseJob` and `ResourceRequestJob` replace it entirely.
 
 ### Step 4 — Refactor `JobFactory` to accept generic `attributes`
 
@@ -70,25 +75,26 @@ this.#factory = factory || new JobFactory({ attributes: { clients } });
 
 ### Step 5 — Update all other references
 
-Search for any remaining imports of `Job` across the codebase (registries, specs, etc.) and update them to use `BaseJob` or `ResourceRequestJob` as appropriate.
+Search for any remaining imports of `Job` across the codebase. Since `Job` keeps its name, most imports remain valid. Only places that instantiate `Job` directly to perform resource requests (e.g. test support factories, dummies) need to be updated to use `ResourceRequestJob`.
 
 ### Step 6 — Update specs
 
-- Rename / move the existing `Job` spec to `ResourceRequestJob` spec.
-- Add a spec for `BaseJob` covering the shared lifecycle methods and verifying that `perform()` throws when not overridden.
+- Keep the existing `Job` spec, updating it to test the base class contract (lifecycle methods + `perform()` throwing).
+- Add a new spec `ResourceRequestJob_spec.js` covering the `perform()` implementation.
+- Update any test dummy (`DummyJob`) that currently extends or instantiates `Job` if needed.
 
 ## Files to Change
 
-- `source/lib/models/Job.js` — remove (replaced by the two new files below)
-- `source/lib/models/BaseJob.js` — new file: shared lifecycle methods + abstract `perform`
-- `source/lib/models/ResourceRequestJob.js` — new file: `perform` implementation extending `BaseJob`
+- `source/lib/models/Job.js` — refactor into base class: keep lifecycle methods, replace `perform()` with abstract stub, remove `ResourceRequest`-specific fields
+- `source/lib/models/ResourceRequestJob.js` — new file: `perform` implementation and `#getClient()` extending `Job`
 - `source/lib/factories/JobFactory.js` — replace `clients` field with generic `attributes`; update default `klass` to `ResourceRequestJob`; update `build()` to spread `this.#attributes` into `super.build()`
 - `source/lib/registry/JobRegistry.js` — change `new JobFactory({ clients })` to `new JobFactory({ attributes: { clients } })`
-- `spec/` — rename Job spec → ResourceRequestJob spec, add BaseJob spec
-- Any other file importing `Job` — update import to the appropriate new class
+- `source/spec/models/Job_spec.js` — update to test base class contract
+- `source/spec/models/ResourceRequestJob_spec.js` — new spec for `perform()` logic
+- Any file instantiating `Job` directly for resource requests — update to `ResourceRequestJob`
 
 ## Notes
 
 - The project uses ES Modules (`import`/`export`), so use `export default` and `import` with `.js` extensions.
 - All custom exceptions must extend `AppError`, but the `perform` abstract guard can use a plain `Error` since it is a developer contract violation, not a runtime app error.
-- Each commit should be atomic: one logical change per commit (e.g., create `BaseJob`, then create `ResourceRequestJob`, then update references).
+- Each commit should be atomic: one logical change per commit (e.g., refactor `Job` into base, then create `ResourceRequestJob`, then refactor `JobFactory`, then update references).
