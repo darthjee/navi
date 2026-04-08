@@ -1,8 +1,10 @@
+// Unit tests: exercises the Router class in isolation inside a minimal Express wrapper.
 import express from 'express';
 import request from 'supertest';
 import { notFound } from '../../lib/not_found.js';
 import Router from '../../lib/Router.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
+import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
 
@@ -20,11 +22,7 @@ describe('Router', () => {
     it('returns all categories without items', async () => {
       const res = await request(app).get('/categories.json');
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([
-        { id: 1, name: 'Books' },
-        { id: 2, name: 'Movies' },
-        { id: 3, name: 'Music' },
-      ]);
+      expect(res.body).toEqual(ALL_CATEGORIES);
     });
   });
 
@@ -32,7 +30,7 @@ describe('Router', () => {
     it('returns the matching category', async () => {
       const res = await request(app).get('/categories/1.json');
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ id: 1, name: 'Books' });
+      expect(res.body).toEqual(BOOKS_CATEGORY);
     });
 
     it('returns 404 for an unknown id', async () => {
@@ -58,7 +56,7 @@ describe('Router', () => {
     it('returns the matching item', async () => {
       const res = await request(app).get('/categories/1/items/1.json');
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ id: 1, name: 'The Hobbit' });
+      expect(res.body).toEqual(HOBBIT_ITEM);
     });
 
     it('returns 404 for an unknown item', async () => {
