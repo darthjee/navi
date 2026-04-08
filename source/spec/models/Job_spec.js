@@ -1,117 +1,23 @@
-import axios from 'axios';
-import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
-import { Logger } from '../../lib/utils/Logger.js';
-import { ClientFactory } from '../support/factories/ClientFactory.js';
-import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
-import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
-
 
 describe('Job', () => {
-  let resourceRequest;
-  let clients;
-  let client;
-  let parameters;
   let job;
 
-  const baseUrl = 'http://example.com';
-  const url = '/categories.json';
-  const fullUrl = 'http://example.com/categories.json';
-  const status = 200;
-
-  let response;
-  let expectedError;
-
   beforeEach(() => {
-    resourceRequest = ResourceRequestFactory.build({ url, status });
-    client = ClientFactory.build({ baseUrl });
-    clients = ClientRegistryFactory.build({ default: client });
-    parameters = {};
-
-    job = new Job({ id: 'id', resourceRequest, clients, parameters });
+    job = new Job({ id: 'test-id' });
   });
 
   describe('#constructor', () => {
     it('stores the id', () => {
-      expect(job.id).toEqual('id');
+      expect(job.id).toEqual('test-id');
     });
   });
 
-  describe('#process', () => {
-    describe('when the client request is successful', () => {
-      beforeEach(() => {
-        response = { status: 200, data: '[]' };
-        const promise = Promise.resolve(response);
-
-        spyOn(axios, 'get').and.returnValue(promise);
-        spyOn(Logger, 'info').and.stub();
-        spyOn(resourceRequest, 'executeActions').and.stub();
-      });
-
-      it('performs the job', async () => {
-        expect(job.exhausted()).toBeFalse();
-        expect(job.lastError).toBeUndefined();
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
-        expect(job.exhausted()).toBeFalse();
-        expect(job.lastError).toBeUndefined();
-      });
-
-      it('calls executeActions with the response data', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(resourceRequest.executeActions).toHaveBeenCalledOnceWith(response.data);
-      });
-
-      it('logs info when performing', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(Logger.info).toHaveBeenCalledWith(`Job #${job.id} performing`);
-      });
-
-      it('does not exhaust after several attempts', async () => {
-        expect(job.exhausted()).toBeFalse();
-        expect(job.lastError).toBeUndefined();
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
-        expect(job.exhausted()).toBeFalse();
-        expect(job.lastError).toBeUndefined();
-      });
-    });
-
-    describe('when the client request fails', () => {
-      beforeEach(() => {
-        response = { status: 502, data: '[]' };
-        const promise = Promise.resolve(response);
-
-        expectedError = new RequestFailed(502, fullUrl);
-
-        spyOn(axios, 'get').and.returnValue(promise);
-        spyOn(Logger, 'error').and.stub();
-        spyOn(Logger, 'info').and.stub();
-        spyOn(resourceRequest, 'executeActions').and.stub();
-      });
-
-      it('does not call executeActions', async () => {
-        await job.perform().catch(() => {});
-        expect(resourceRequest.executeActions).not.toHaveBeenCalled();
-      });
-
-      it('register failure and attempt', async () => {
-        expect(job.lastError).toBeUndefined();
-        await job.perform().catch(() => {});
-        await job.perform().catch(() => {});
-        expect(job.exhausted()).toBeFalse();
-        expect(job.lastError).toEqual(expectedError);
-        await job.perform().catch(() => {});
-        expect(job.exhausted()).toBeTrue();
-        expect(job.lastError).toEqual(expectedError);
-      });
-
-      it('logs the error', async () => {
-        await job.perform().catch(() => {});
-        expect(Logger.error).toHaveBeenCalledWith(`Job #${job.id} failed: ${expectedError}`);
-      });
+  describe('#perform', () => {
+    it('throws when not overridden', async () => {
+      await expectAsync(job.perform()).toBeRejectedWithError(
+        'You must implement the perform method in a subclass'
+      );
     });
   });
 
@@ -123,9 +29,7 @@ describe('Job', () => {
     });
 
     describe('when cooldown is in the past', () => {
-      beforeEach(() => {
-        job.applyCooldown(-1000);
-      });
+      beforeEach(() => { job.applyCooldown(-1000); });
 
       it('returns true', () => {
         expect(job.isReadyBy(Date.now())).toBeTrue();
@@ -133,9 +37,7 @@ describe('Job', () => {
     });
 
     describe('when cooldown is in the future', () => {
-      beforeEach(() => {
-        job.applyCooldown(10_000);
-      });
+      beforeEach(() => { job.applyCooldown(10_000); });
 
       it('returns false', () => {
         expect(job.isReadyBy(Date.now())).toBeFalse();
@@ -144,23 +46,45 @@ describe('Job', () => {
   });
 
   describe('#exhausted', () => {
-    beforeEach(async () => {
-      spyOn(Logger, 'error').and.stub();
-      spyOn(Logger, 'info').and.stub();
-      await job.perform().catch(() => {});
-      await job.perform().catch(() => {});
-    });
+    const error = new Error('test error');
 
-    it('returns false if attempts are less than 3', () => {
+    it('returns false with zero attempts', () => {
       expect(job.exhausted()).toBeFalse();
     });
 
-    it('returns true if attempts are 3 or more', async () => {
-      await job.perform().catch(() => {});
-      expect(job.exhausted()).toBeTrue();
+    it('returns false with fewer than 3 attempts', () => {
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      expect(job.exhausted()).toBeFalse();
+    });
 
-      await job.perform().catch(() => {});
+    it('returns true after 3 attempts', () => {
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
       expect(job.exhausted()).toBeTrue();
+    });
+
+    it('remains true beyond 3 attempts', () => {
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      expect(job.exhausted()).toBeTrue();
+    });
+  });
+
+  describe('#_fail', () => {
+    const error = new Error('test error');
+
+    it('sets lastError', () => {
+      expect(job.lastError).toBeUndefined();
+      try { job._fail(error); } catch (_) { /* expected */ }
+      expect(job.lastError).toEqual(error);
+    });
+
+    it('rethrows the error', () => {
+      expect(() => job._fail(error)).toThrow(error);
     });
   });
 });
