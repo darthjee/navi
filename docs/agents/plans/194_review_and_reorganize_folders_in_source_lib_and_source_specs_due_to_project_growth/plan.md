@@ -2,60 +2,149 @@
 
 ## Overview
 
-Move all 55 spec files from `source/spec/<category>/` into `source/spec/lib/<category>/` so that
-the spec tree mirrors `source/lib/` and is clearly separated from `source/spec/support/`.
-Update all import paths inside the moved files. No production code is changed.
+Two changes in one PR:
 
-## Folder analysis
+1. Move all spec files from `source/spec/<category>/` into `source/spec/lib/<category>/` so the
+   spec tree mirrors `source/lib/` and is clearly separated from `source/spec/support/`.
+2. Split `source/lib/utils/` (and the matching `source/spec/lib/utils/`) into three focused
+   subfolders: `logging/`, `collections/`, `generators/`.
 
-The 7 existing subfolders all map cleanly to distinct concerns and are worth keeping:
+Update all import paths wherever they are affected. No production logic changes.
 
-| Folder | Count | Assessment |
-|--------|-------|------------|
-| `exceptions/` | 4 files | ✅ Clear concept, appropriate size |
-| `factories/` | 3 files | ✅ Clear concept, appropriate size |
-| `models/` | 12 files | ✅ Reflects domain model layer |
-| `registry/` | 6 files | ✅ Reflects registry pattern |
-| `server/` | 5 files | ✅ Groups web server components |
-| `services/` | 7 files | ✅ Groups service layer |
-| `utils/` | 18 files | ⚠️ Large — see note below |
-
-**Note on `utils/`:** Of the 18 files, 8 belong to the logging subsystem (`BaseLogger`,
-`BufferedLogger`, `ConsoleLogger`, `Log`, `LogBuffer`, `LogFactory`, `Logger`, `LoggerGroup`).
-Splitting them into a `logging/` subfolder would reduce `utils/` to 10 files and make the
-logging boundary explicit. However, this requires an equivalent split in `source/lib/utils/`,
-which is out of scope for this issue. This is flagged as a natural follow-up.
-
-**Conclusion:** No new folders are introduced in this issue. The existing 7 categories are kept
-as-is under the new `spec/lib/` parent.
+---
 
 ## Target structure
 
+### `source/lib/utils/`
+
 ```
-source/spec/
+utils/
+  logging/      ← BaseLogger, BufferedLogger, ConsoleLogger, Log,
+                ←   LogBuffer, LogFactory, Logger, LoggerGroup (8 files)
+  collections/  ← Collection, IdentifyableCollection, Queue,
+                ←   SortedArrayMerger, SortedArraySearcher, SortedCollection (6 files)
+  generators/   ← IdGenerator, IncrementalIdGenerator, UUidGenerator (3 files)
+  index.js      ← re-exports Logger and LoggerGroup (updated paths)
+  ResourceRequestCollector.js  ← stays flat (domain utility, 1 file)
+```
+
+### `source/spec/`
+
+```
+spec/
   lib/
-    exceptions/   ← was source/spec/exceptions/
-    factories/    ← was source/spec/factories/
-    models/       ← was source/spec/models/
-    registry/     ← was source/spec/registry/
-    server/       ← was source/spec/server/
-    services/     ← was source/spec/services/
-    utils/        ← was source/spec/utils/
-  support/        ← unchanged
+    exceptions/
+    factories/
+    models/
+    registry/
+    server/
+    services/
+    utils/
+      logging/      ← 8 spec files
+      collections/  ← 6 spec files
+      generators/   ← 3 spec files
+      ResourceRequestCollector_spec.js  ← stays flat
+  support/          ← unchanged
 ```
 
-## Import path changes
+---
 
-Each moved spec file gains one extra folder level (`lib/`), so all relative imports shift by one:
+## Import path reference
 
-| Import target | Before | After |
-|---------------|--------|-------|
-| `source/lib/…` | `../../lib/…` | `../../../lib/…` |
-| `source/spec/support/…` | `../support/…` | `../../support/…` |
+### Spec files in `spec/lib/<category>/` (not utils)
+
+| Import target | New path |
+|---------------|----------|
+| `source/lib/…` | `../../../lib/…` |
+| `source/spec/support/…` | `../../support/…` |
+
+### Spec files in `spec/lib/utils/` (flat, i.e. `ResourceRequestCollector_spec.js`)
+
+| Import target | New path |
+|---------------|----------|
+| `source/lib/utils/…` | `../../../lib/utils/…` |
+| `source/spec/support/…` | `../../support/…` |
+
+### Spec files in `spec/lib/utils/logging/`, `collections/`, or `generators/`
+
+| Import target | New path |
+|---------------|----------|
+| `source/lib/utils/logging/…` | `../../../../lib/utils/logging/…` |
+| `source/lib/utils/collections/…` | `../../../../lib/utils/collections/…` |
+| `source/lib/utils/generators/…` | `../../../../lib/utils/generators/…` |
+| `source/spec/support/…` | `../../../support/…` |
+
+---
 
 ## Complete file list
 
-### `exceptions/` — 4 files
+### Part 1 — `source/lib/utils/` reorganization
+
+#### Files moving to `source/lib/utils/logging/`
+
+| From | To |
+|------|----|
+| `source/lib/utils/BaseLogger.js` | `source/lib/utils/logging/BaseLogger.js` |
+| `source/lib/utils/BufferedLogger.js` | `source/lib/utils/logging/BufferedLogger.js` |
+| `source/lib/utils/ConsoleLogger.js` | `source/lib/utils/logging/ConsoleLogger.js` |
+| `source/lib/utils/Log.js` | `source/lib/utils/logging/Log.js` |
+| `source/lib/utils/LogBuffer.js` | `source/lib/utils/logging/LogBuffer.js` |
+| `source/lib/utils/LogFactory.js` | `source/lib/utils/logging/LogFactory.js` |
+| `source/lib/utils/Logger.js` | `source/lib/utils/logging/Logger.js` |
+| `source/lib/utils/LoggerGroup.js` | `source/lib/utils/logging/LoggerGroup.js` |
+
+#### Files moving to `source/lib/utils/collections/`
+
+| From | To |
+|------|----|
+| `source/lib/utils/Collection.js` | `source/lib/utils/collections/Collection.js` |
+| `source/lib/utils/IdentifyableCollection.js` | `source/lib/utils/collections/IdentifyableCollection.js` |
+| `source/lib/utils/Queue.js` | `source/lib/utils/collections/Queue.js` |
+| `source/lib/utils/SortedArrayMerger.js` | `source/lib/utils/collections/SortedArrayMerger.js` |
+| `source/lib/utils/SortedArraySearcher.js` | `source/lib/utils/collections/SortedArraySearcher.js` |
+| `source/lib/utils/SortedCollection.js` | `source/lib/utils/collections/SortedCollection.js` |
+
+#### Files moving to `source/lib/utils/generators/`
+
+| From | To |
+|------|----|
+| `source/lib/utils/IdGenerator.js` | `source/lib/utils/generators/IdGenerator.js` |
+| `source/lib/utils/IncrementalIdGenerator.js` | `source/lib/utils/generators/IncrementalIdGenerator.js` |
+| `source/lib/utils/UUidGenerator.js` | `source/lib/utils/generators/UUidGenerator.js` |
+
+#### Staying flat in `source/lib/utils/`
+
+| File | Reason |
+|------|--------|
+| `source/lib/utils/ResourceRequestCollector.js` | Domain utility, doesn't fit the other groups |
+| `source/lib/utils/index.js` | Re-export index — updated to new paths |
+
+---
+
+### Part 2 — `source/lib/` imports to update
+
+| File | Old import | New import |
+|------|-----------|-----------|
+| `source/lib/utils/index.js` | `./Logger.js` | `./logging/Logger.js` |
+| `source/lib/utils/index.js` | `./LoggerGroup.js` | `./logging/LoggerGroup.js` |
+| `source/lib/factories/JobFactory.js` | `../utils/IdGenerator.js` | `../utils/generators/IdGenerator.js` |
+| `source/lib/factories/WorkerFactory.js` | `../utils/IdGenerator.js` | `../utils/generators/IdGenerator.js` |
+| `source/lib/models/ActionsExecutor.js` | `../utils/Logger.js` | `../utils/logging/Logger.js` |
+| `source/lib/models/ResourceRequestAction.js` | `../utils/Logger.js` | `../utils/logging/Logger.js` |
+| `source/lib/models/ResourceRequestJob.js` | `../utils/Logger.js` | `../utils/logging/Logger.js` |
+| `source/lib/models/Worker.js` | `../utils/ConsoleLogger.js` | `../utils/logging/ConsoleLogger.js` |
+| `source/lib/registry/JobRegistry.js` | `../utils/IdentifyableCollection.js` | `../utils/collections/IdentifyableCollection.js` |
+| `source/lib/registry/JobRegistry.js` | `../utils/Queue.js` | `../utils/collections/Queue.js` |
+| `source/lib/registry/JobRegistry.js` | `../utils/SortedCollection.js` | `../utils/collections/SortedCollection.js` |
+| `source/lib/registry/WorkersRegistry.js` | `../utils/IdentifyableCollection.js` | `../utils/collections/IdentifyableCollection.js` |
+| `source/lib/services/Client.js` | `../utils/Logger.js` | `../utils/logging/Logger.js` |
+| `source/lib/services/ConfigLoader.js` | `../utils/Logger.js` | `../utils/logging/Logger.js` |
+
+---
+
+### Part 3 — Spec files: move to `spec/lib/` and update imports
+
+#### `exceptions/` — 4 files
 
 | From | To |
 |------|----|
@@ -64,7 +153,7 @@ Each moved spec file gains one extra folder level (`lib/`), so all relative impo
 | `source/spec/exceptions/MissingMappingVariable_spec.js` | `source/spec/lib/exceptions/MissingMappingVariable_spec.js` |
 | `source/spec/exceptions/NullResponse_spec.js` | `source/spec/lib/exceptions/NullResponse_spec.js` |
 
-### `factories/` — 3 files
+#### `factories/` — 3 files
 
 | From | To |
 |------|----|
@@ -72,7 +161,7 @@ Each moved spec file gains one extra folder level (`lib/`), so all relative impo
 | `source/spec/factories/JobFactory_spec.js` | `source/spec/lib/factories/JobFactory_spec.js` |
 | `source/spec/factories/WorkerFactory_spec.js` | `source/spec/lib/factories/WorkerFactory_spec.js` |
 
-### `models/` — 12 files
+#### `models/` — 12 files
 
 | From | To |
 |------|----|
@@ -85,12 +174,11 @@ Each moved spec file gains one extra folder level (`lib/`), so all relative impo
 | `source/spec/models/ResourceRequestJob_spec.js` | `source/spec/lib/models/ResourceRequestJob_spec.js` |
 | `source/spec/models/ResponseParser_spec.js` | `source/spec/lib/models/ResponseParser_spec.js` |
 | `source/spec/models/VariablesMapper_spec.js` | `source/spec/lib/models/VariablesMapper_spec.js` |
-| `source/spec/models/VariablesMapper_spec.js` | `source/spec/lib/models/VariablesMapper_spec.js` |
 | `source/spec/models/WebConfig_spec.js` | `source/spec/lib/models/WebConfig_spec.js` |
 | `source/spec/models/Worker_spec.js` | `source/spec/lib/models/Worker_spec.js` |
 | `source/spec/models/WorkersConfig_spec.js` | `source/spec/lib/models/WorkersConfig_spec.js` |
 
-### `registry/` — 6 files
+#### `registry/` — 6 files
 
 | From | To |
 |------|----|
@@ -101,7 +189,7 @@ Each moved spec file gains one extra folder level (`lib/`), so all relative impo
 | `source/spec/registry/ResourceRegistry_spec.js` | `source/spec/lib/registry/ResourceRegistry_spec.js` |
 | `source/spec/registry/WorkersRegistry_spec.js` | `source/spec/lib/registry/WorkersRegistry_spec.js` |
 
-### `server/` — 5 files
+#### `server/` — 5 files
 
 | From | To |
 |------|----|
@@ -111,7 +199,7 @@ Each moved spec file gains one extra folder level (`lib/`), so all relative impo
 | `source/spec/server/StatsRequestHandler_spec.js` | `source/spec/lib/server/StatsRequestHandler_spec.js` |
 | `source/spec/server/WebServer_spec.js` | `source/spec/lib/server/WebServer_spec.js` |
 
-### `services/` — 7 files
+#### `services/` — 7 files
 
 | From | To |
 |------|----|
@@ -123,50 +211,74 @@ Each moved spec file gains one extra folder level (`lib/`), so all relative impo
 | `source/spec/services/Engine_spec.js` | `source/spec/lib/services/Engine_spec.js` |
 | `source/spec/services/WorkersAllocator_spec.js` | `source/spec/lib/services/WorkersAllocator_spec.js` |
 
-### `utils/` — 18 files
+#### `utils/logging/` — 8 files
 
 | From | To |
 |------|----|
-| `source/spec/utils/BaseLogger_spec.js` | `source/spec/lib/utils/BaseLogger_spec.js` |
-| `source/spec/utils/BufferedLogger_spec.js` | `source/spec/lib/utils/BufferedLogger_spec.js` |
-| `source/spec/utils/Collection_spec.js` | `source/spec/lib/utils/Collection_spec.js` |
-| `source/spec/utils/ConsoleLogger_spec.js` | `source/spec/lib/utils/ConsoleLogger_spec.js` |
-| `source/spec/utils/IdentifyableCollection_spec.js` | `source/spec/lib/utils/IdentifyableCollection_spec.js` |
-| `source/spec/utils/IdGenerator_spec.js` | `source/spec/lib/utils/IdGenerator_spec.js` |
-| `source/spec/utils/IncrementalIdGenerator_spec.js` | `source/spec/lib/utils/IncrementalIdGenerator_spec.js` |
-| `source/spec/utils/Log_spec.js` | `source/spec/lib/utils/Log_spec.js` |
-| `source/spec/utils/LogBuffer_spec.js` | `source/spec/lib/utils/LogBuffer_spec.js` |
-| `source/spec/utils/LogFactory_spec.js` | `source/spec/lib/utils/LogFactory_spec.js` |
-| `source/spec/utils/Logger_spec.js` | `source/spec/lib/utils/Logger_spec.js` |
-| `source/spec/utils/LoggerGroup_spec.js` | `source/spec/lib/utils/LoggerGroup_spec.js` |
-| `source/spec/utils/Queue_spec.js` | `source/spec/lib/utils/Queue_spec.js` |
+| `source/spec/utils/BaseLogger_spec.js` | `source/spec/lib/utils/logging/BaseLogger_spec.js` |
+| `source/spec/utils/BufferedLogger_spec.js` | `source/spec/lib/utils/logging/BufferedLogger_spec.js` |
+| `source/spec/utils/ConsoleLogger_spec.js` | `source/spec/lib/utils/logging/ConsoleLogger_spec.js` |
+| `source/spec/utils/Log_spec.js` | `source/spec/lib/utils/logging/Log_spec.js` |
+| `source/spec/utils/LogBuffer_spec.js` | `source/spec/lib/utils/logging/LogBuffer_spec.js` |
+| `source/spec/utils/LogFactory_spec.js` | `source/spec/lib/utils/logging/LogFactory_spec.js` |
+| `source/spec/utils/Logger_spec.js` | `source/spec/lib/utils/logging/Logger_spec.js` |
+| `source/spec/utils/LoggerGroup_spec.js` | `source/spec/lib/utils/logging/LoggerGroup_spec.js` |
+
+#### `utils/collections/` — 6 files
+
+| From | To |
+|------|----|
+| `source/spec/utils/Collection_spec.js` | `source/spec/lib/utils/collections/Collection_spec.js` |
+| `source/spec/utils/IdentifyableCollection_spec.js` | `source/spec/lib/utils/collections/IdentifyableCollection_spec.js` |
+| `source/spec/utils/Queue_spec.js` | `source/spec/lib/utils/collections/Queue_spec.js` |
+| `source/spec/utils/SortedArrayMerger_spec.js` | `source/spec/lib/utils/collections/SortedArrayMerger_spec.js` |
+| `source/spec/utils/SortedArraySearcher_spec.js` | `source/spec/lib/utils/collections/SortedArraySearcher_spec.js` |
+| `source/spec/utils/SortedCollection_spec.js` | `source/spec/lib/utils/collections/SortedCollection_spec.js` |
+
+#### `utils/generators/` — 3 files
+
+| From | To |
+|------|----|
+| `source/spec/utils/IdGenerator_spec.js` | `source/spec/lib/utils/generators/IdGenerator_spec.js` |
+| `source/spec/utils/IncrementalIdGenerator_spec.js` | `source/spec/lib/utils/generators/IncrementalIdGenerator_spec.js` |
+| `source/spec/utils/UUidGenerator_spec.js` | `source/spec/lib/utils/generators/UUidGenerator_spec.js` |
+
+#### `utils/` (flat) — 1 file
+
+| From | To |
+|------|----|
 | `source/spec/utils/ResourceRequestCollector_spec.js` | `source/spec/lib/utils/ResourceRequestCollector_spec.js` |
-| `source/spec/utils/SortedArrayMerger_spec.js` | `source/spec/lib/utils/SortedArrayMerger_spec.js` |
-| `source/spec/utils/SortedArraySearcher_spec.js` | `source/spec/lib/utils/SortedArraySearcher_spec.js` |
-| `source/spec/utils/SortedCollection_spec.js` | `source/spec/lib/utils/SortedCollection_spec.js` |
-| `source/spec/utils/UUidGenerator_spec.js` | `source/spec/lib/utils/UUidGenerator_spec.js` |
+
+---
 
 ## Implementation Steps
 
-### Step 1 — Move the files
+### Step 1 — Reorganize `source/lib/utils/`
 
-Create `source/spec/lib/` and all 7 subfolders. Move each file according to the table above.
+Create subfolders `logging/`, `collections/`, `generators/` inside `source/lib/utils/`.
+Move the 17 files listed above. Update internal imports within moved files (e.g.
+`LogFactory.js` imports `Log.js` — both move to `logging/`, so the relative path stays `./Log.js`).
 
-### Step 2 — Update import paths in every moved file
+### Step 2 — Update `source/lib/utils/index.js`
 
-For each moved file, update every relative import:
-- `../../lib/` → `../../../lib/`
-- `../support/` → `../../support/`
+Update the two re-export paths:
+- `./Logger.js` → `./logging/Logger.js`
+- `./LoggerGroup.js` → `./logging/LoggerGroup.js`
 
-### Step 3 — Verify jasmine configuration
+### Step 3 — Update imports in `source/lib/`
 
-The `package.json` jasmine config uses `spec_dir: "spec"` with `spec_files: ["**/*[sS]pec.js"]`,
-which is recursive and will discover files under `spec/lib/` without changes.
-The npm scripts (`npx jasmine spec/**/*.js`) also cover the new location.
+Update the 14 import paths listed in Part 2 across 9 lib files.
 
-### Step 4 — Run lint and tests
+### Step 4 — Move spec files and update their imports
+
+Create `source/spec/lib/` with all subfolders. Move all 55 spec files. Update imports in each
+file using the path reference table above.
+
+### Step 5 — Run lint and tests
 
 Run `yarn lint` and `yarn test` inside the container to verify no regressions.
+
+---
 
 ## CI Checks
 
@@ -176,8 +288,6 @@ Before opening a PR, run inside the `navi_app` container:
 
 ## Notes
 
-- No production code (`source/lib/`) is changed.
-- `source/spec/support/` stays exactly where it is.
-- This is a pure move — no logic changes.
-- **Follow-up:** Split `source/lib/utils/` and `source/spec/lib/utils/` into
-  `utils/` + `utils/logging/` to reduce the 18-file flat list into two smaller, coherent groups.
+- Jasmine config (`spec_dir: "spec"`, `spec_files: ["**/*[sS]pec.js"]`) is recursive — no change needed.
+- `source/spec/support/` is untouched.
+- `ResourceRequestCollector` stays flat in `utils/` — its domain nature may warrant a move to `services/` in a future issue.
