@@ -1,39 +1,37 @@
 import { Factory } from './Factory.js';
-import { Job } from '../models/Job.js';
+import { ResourceRequestJob } from '../models/ResourceRequestJob.js';
 import { IdGenerator } from '../utils/IdGenerator.js';
 
 /**
  * JobFactory is responsible for creating Job instances with unique identifiers.
- * It uses the Factory base class to generate Job instances with specified attributes.
+ * Constructor-time attributes are merged with build-time params on every build call.
  * @author darthjee
  */
 class JobFactory extends Factory {
-  #clients;
+  #attributes;
 
   /**
-   * Creates a new JobFactory instance with default settings for Job creation.
+   * Creates a new JobFactory instance.
    * @param {object} options - Configuration options for the factory.
-   * @param {class} options.klass - The class to instantiate (default is Job).
+   * @param {class} options.klass - The class to instantiate (default is ResourceRequestJob).
    * @param {object} options.attributesGenerator - The generator for unique attributes (default is IdGenerator).
-   * @param {ClientRegistry} options.clients - The clients registry to be used in created Job instances.
+   * @param {object} options.attributes - Attributes injected into every built instance (e.g. { clients }).
    */
-  constructor({ klass = Job, attributesGenerator = new IdGenerator(), clients } = {}) {
+  constructor({ klass = ResourceRequestJob, attributesGenerator = new IdGenerator(), attributes = {} } = {}) {
     super({ klass, attributesGenerator });
-    this.#clients = clients;
+    this.#attributes = attributes;
   }
 
   /**
-   * Builds a new Job instance with a unique identifier and the clients registry.
-   * This method overrides the base Factory's build method to include the clients registry in the created Job instance.
-   *
+   * Builds a new Job instance, merging constructor-level attributes with the given params.
    * @param {object} params - The parameters for building a Job instance.
    * @param {ResourceRequest} params.resourceRequest - The resource request associated with the Job.
    * @param {object} params.parameters - Additional parameters for the Job.
-   * @returns {Job} A new Job instance with a unique identifier and the clients registry.
+   * @returns {Job} A new Job instance.
    * @override
    */
-  build({ resourceRequest, parameters }) {
-    return super.build({ clients: this.#clients, resourceRequest, parameters });
+  build(params) {
+    return super.build({ ...this.#attributes, ...params });
   }
 }
 
