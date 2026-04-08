@@ -2,8 +2,8 @@ import express from 'express';
 import request from 'supertest';
 import RequestHandler from '../../lib/RequestHandler.js';
 import Serializer from '../../lib/Serializer.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
 
