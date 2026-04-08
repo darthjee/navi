@@ -1,5 +1,3 @@
-import { Logger } from '../utils/Logger.js';
-
 /**
  * Job is the abstract base class for all units of work processed by a Worker.
  * Subclasses must implement the `perform` method.

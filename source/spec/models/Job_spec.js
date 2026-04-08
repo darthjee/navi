@@ -53,23 +53,23 @@ describe('Job', () => {
     });
 
     it('returns false with fewer than 3 attempts', () => {
-      try { job._fail(error); } catch (_) {}
-      try { job._fail(error); } catch (_) {}
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
       expect(job.exhausted()).toBeFalse();
     });
 
     it('returns true after 3 attempts', () => {
-      try { job._fail(error); } catch (_) {}
-      try { job._fail(error); } catch (_) {}
-      try { job._fail(error); } catch (_) {}
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
       expect(job.exhausted()).toBeTrue();
     });
 
     it('remains true beyond 3 attempts', () => {
-      try { job._fail(error); } catch (_) {}
-      try { job._fail(error); } catch (_) {}
-      try { job._fail(error); } catch (_) {}
-      try { job._fail(error); } catch (_) {}
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
       expect(job.exhausted()).toBeTrue();
     });
   });
@@ -79,7 +79,7 @@ describe('Job', () => {
 
     it('sets lastError', () => {
       expect(job.lastError).toBeUndefined();
-      try { job._fail(error); } catch (_) {}
+      try { job._fail(error); } catch (_) { /* expected */ }
       expect(job.lastError).toEqual(error);
     });
 
