@@ -44,7 +44,7 @@ class JobRegistry {
     this.#processing = processing || new IdentifyableCollection();
 
     this.#lockedBy = null;
-    this.#factory = factory || new JobFactory({ clients });
+    this.#factory = factory || new JobFactory({ attributes: { clients } });
     this.#cooldown = cooldown;
   }
 
