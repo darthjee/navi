@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { RequestFailed } from '../../lib/exceptions/RequestFailed.js';
 import { Job } from '../../lib/models/Job.js';
+import { ResourceRequestJob } from '../../lib/models/ResourceRequestJob.js';
 import { Worker } from '../../lib/models/Worker.js';
 import { JobRegistry } from '../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/registry/WorkersRegistry.js';
@@ -74,7 +75,7 @@ describe('Worker', () => {
       clients = ClientRegistryFactory.build({ default: client });
       parameters = {};
 
-      job = new Job({ id: 'id', resourceRequest, clients, parameters });
+      job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
       worker.assign(job);
 
       spyOn(console, 'error').and.stub();

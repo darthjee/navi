@@ -1,9 +1,9 @@
 import { JobFactory } from '../../lib/factories/JobFactory.js';
-import { Job } from '../../lib/models/Job.js';
+import { ResourceRequestJob } from '../../lib/models/ResourceRequestJob.js';
 import { ClientRegistryFactory } from '../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../support/factories/ResourceRequestFactory.js';
 
-describe('Factory', () => {
+describe('JobFactory', () => {
   describe('#build', () => {
     let factory;
     let resourceRequest;
@@ -11,15 +11,15 @@ describe('Factory', () => {
     let clients;
 
     beforeEach(() => {
-      factory = new JobFactory();
+      clients = ClientRegistryFactory.build({});
+      factory = new JobFactory({ attributes: { clients } });
       resourceRequest = ResourceRequestFactory.build({ url: '/test' });
       parameters = {};
-      clients = ClientRegistryFactory.build({});
     });
 
-    it('builds an instance of Job', () => {
-      const job = factory.build({ resourceRequest, parameters, clients });
-      expect(job).toBeInstanceOf(Job);
+    it('builds an instance of ResourceRequestJob', () => {
+      const job = factory.build({ resourceRequest, parameters });
+      expect(job).toBeInstanceOf(ResourceRequestJob);
     });
   });
 });
