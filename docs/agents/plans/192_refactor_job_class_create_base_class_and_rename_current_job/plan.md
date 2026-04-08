@@ -93,6 +93,11 @@ Search for any remaining imports of `Job` across the codebase. Since `Job` keeps
 - `source/spec/models/ResourceRequestJob_spec.js` — new spec for `perform()` logic
 - Any file instantiating `Job` directly for resource requests — update to `ResourceRequestJob`
 
+## Related Files
+
+- [snippets.md](snippets.md) — full code snippets for all changed/new files
+- [test_scenarios.md](test_scenarios.md) — spec structure and code snippets for all affected test files
+
 ## Notes
 
 - The project uses ES Modules (`import`/`export`), so use `export default` and `import` with `.js` extensions.
