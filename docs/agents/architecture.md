@@ -120,7 +120,7 @@ Business logic and I/O layer.
 | `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. |
 | `Engine` | Drives the main allocation loop. Continuously calls the `WorkersAllocator` to assign jobs to workers as long as there are jobs to process or busy workers. Stops when all jobs are processed and all workers are idle. |
 | `WorkersAllocator` | Handles the logic for assigning jobs to workers. Provides extensible methods for allocation, allowing custom strategies and easier testing. Used by `Engine` to decouple job assignment from engine control flow. |
-| `JobFactory` | Creates `Job` instances from a `ResourceRequest` and a parameter map. |
+| `JobFactory` | Creates `Job` instances from a `ResourceRequest` and a parameter map. Exposes three static methods for centralized factory management: `registry(name, factory)` registers a factory instance under a name, `get(name)` retrieves it, and `reset()` clears all registered factories (useful for test isolation). |
 | `WorkersFactory` | Creates and initializes `Worker` instances for the pool   ← planned; not yet implemented. |
 | `WebServer` | Optional Express.js server that serves the monitoring web UI. Created via `WebServer.build()`; returns `null` when `webConfig` is absent. Listens on the port defined by `WebConfig`. |
 | `Router` | Defines the Express routes for the web UI. Exposes `GET /stats.json` returning combined job and worker statistics. |

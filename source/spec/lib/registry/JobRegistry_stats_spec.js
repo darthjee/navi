@@ -1,3 +1,4 @@
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
@@ -9,6 +10,11 @@ describe('JobRegistry', () => {
 
   beforeEach(() => {
     clients = new ClientRegistry();
+    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
+  });
+
+  afterEach(() => {
+    JobFactory.reset();
   });
 
   describe('#stats', () => {
@@ -30,7 +36,6 @@ describe('JobRegistry', () => {
         finished: finishedCollection,
         dead: deadCollection,
         processing: processingCollection,
-        clients,
         cooldown: -1,
       });
     });
