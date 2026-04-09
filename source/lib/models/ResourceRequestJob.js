@@ -10,6 +10,7 @@ class ResourceRequestJob extends Job {
   #parameters;
   #clients;
   #client;
+  #jobRegistry;
 
   /**
    * Creates a new ResourceRequestJob instance.
@@ -18,12 +19,14 @@ class ResourceRequestJob extends Job {
    * @param {ResourceRequest} params.resourceRequest - The resource request associated with this job.
    * @param {object} params.parameters - Additional parameters for the request.
    * @param {ClientRegistry} params.clients - Clients registry to be used in a request.
+   * @param {JobRegistry} params.jobRegistry - The job registry used to enqueue action jobs.
    */
-  constructor({ id, resourceRequest, parameters, clients }) {
+  constructor({ id, resourceRequest, parameters, clients, jobRegistry }) {
     super({ id });
     this.#resourceRequest = resourceRequest;
     this.#parameters = parameters;
     this.#clients = clients;
+    this.#jobRegistry = jobRegistry;
   }
 
   /**
@@ -35,7 +38,7 @@ class ResourceRequestJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest);
-      this.#resourceRequest.executeActions(response.data);
+      this.#resourceRequest.enqueueActions(response.data, this.#jobRegistry);
       return response;
     } catch (error) {
       Logger.error(`Job #${this.id} failed: ${error}`);

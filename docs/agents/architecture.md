@@ -37,13 +37,16 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 |-------|---------------|
 | `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
-| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `executeActions(rawBody)` to process the response after a successful HTTP request. |
+| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `enqueueActions(rawBody, jobRegistry)` to enqueue action jobs after a successful HTTP request. |
 | `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `variables_map`). Uses `VariablesMapper` to transform a response item and logs the result. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
-| `ActionsExecutor` | Normalises a parsed response (object or array) and dispatches each `ResourceRequestAction` per item. Throws `NullResponse` for null responses. Catches and logs action-level errors. |
+| `ActionsEnqueuer` | Normalises a parsed response (object or array) and enqueues one `ActionProcessingJob` per `(item × action)` pair via `jobRegistry.enqueueAction`. Throws `NullResponse` for null responses. |
+| `ActionsExecutor` | (Legacy — kept for reference.) Normalises a parsed response and dispatches each `ResourceRequestAction` per item synchronously. No longer called by `ResourceRequestJob`; removal is a follow-up. |
 | `VariablesMapper` | Applies a `variables_map` to a response item, renaming fields as configured. When no map is provided, all fields pass through unchanged. Throws `MissingMappingVariable` when a source field is absent. |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
-| `Job` | Wraps a unit of work (payload) to be consumed from the queue. Tracks a failure counter and last exception. |
+| `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
+| `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, then calls `resourceRequest.enqueueActions(rawBody, jobRegistry)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
+| `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)`. Exhausted after the first failure — no retry rights. |
 | `WorkersConfig` | Holds the worker pool size (`quantity`, default 1) and the retry cooldown in milliseconds (`retryCooldown`, default 2000). |
 | `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 
@@ -54,7 +57,7 @@ Collection managers built on a shared base class.
 - **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
 - **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
 - **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
-- **`JobRegistry`** — FIFO job queue. Key methods: `enqueue(resourceRequest, params)`, `push(job)`, `pick()`, `hasJob()`, `lock(worker)`, `hasLock(worker)`. Also maintains `failed`, `finished`, and `deadJobs` queues.
+- **`JobRegistry`** — FIFO job queue. Key methods: `enqueue(resourceRequest, params)` (injects `jobRegistry: this` into every `ResourceRequestJob`), `enqueueAction({ action, item })` (creates an `ActionProcessingJob` via the `'Action'` factory), `pick()`, `hasJob()`, `lock(worker)`, `hasLock(worker)`. Also maintains `failed`, `finished`, and `deadJobs` queues.
 - **`WorkersRegistry`** — Worker pool manager. Tracks workers in `idle` and `busy` maps. Key methods: `initWorkers()`, `setBusy(workerId)`, `setIdle(workerId)`, `hasBusyWorker()`, `hasIdleWorker()`.
 
 Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property.
@@ -114,7 +117,7 @@ Business logic and I/O layer.
 
 | Class | Responsibility |
 |-------|---------------|
-| `Application` | Main orchestrator. `loadConfig(configPath)` initializes `config`, `jobRegistry`, and `workersRegistry`. Enqueues initial parameter-free resources on startup. Optionally starts the web UI when `web:` is present in configuration. |
+| `Application` | Main orchestrator. `loadConfig(configPath)` initializes `config`, `jobRegistry`, and `workersRegistry`. Registers the `'ResourceRequestJob'` and `'Action'` factories. Enqueues initial parameter-free resources on startup. Optionally starts the web UI when `web:` is present in configuration. |
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
 | `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. |

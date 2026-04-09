@@ -58,6 +58,12 @@ describe('Application', () => {
         expect(app.config.clientRegistry instanceof ClientRegistry).toBeTrue();
       });
 
+      it('registers the Action factory', () => {
+        app.loadConfig(configFilePath);
+
+        expect(JobFactory.get('Action')).toBeDefined();
+      });
+
       it('does not expose a clients property on config (uses clientRegistry instead)', () => {
         app.loadConfig(configFilePath);
 

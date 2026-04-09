@@ -1,6 +1,7 @@
 import { Engine } from './Engine.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
 import { JobFactory } from '../factories/JobFactory.js';
+import { ActionProcessingJob } from '../models/ActionProcessingJob.js';
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
@@ -85,6 +86,7 @@ class Application {
 
   #initRegistries({ jobRegistry, workersRegistry } = {}) {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
+    JobFactory.build('Action', { klass: ActionProcessingJob });
 
     this.jobRegistry = jobRegistry || new JobRegistry({
       cooldown: this.config.workersConfig.retryCooldown,

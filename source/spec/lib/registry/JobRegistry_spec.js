@@ -43,6 +43,46 @@ describe('JobRegistry', () => {
       expect(job).toBeInstanceOf(Job);
       expect(registry.hasJob()).toBeTrue();
     });
+
+    it('passes jobRegistry: this to the factory', () => {
+      const factory = JobFactory.get('ResourceRequestJob');
+      spyOn(factory, 'build').and.callThrough();
+
+      registry.enqueue({ resourceRequest, parameters: {} });
+
+      expect(factory.build).toHaveBeenCalledWith(
+        jasmine.objectContaining({ jobRegistry: registry })
+      );
+    });
+  });
+
+  describe('#enqueueAction', () => {
+    let action;
+    let item;
+    let actionFactory;
+
+    beforeEach(() => {
+      action = jasmine.createSpyObj('action', ['execute']);
+      item = { id: 1 };
+      actionFactory = JobFactory.build('Action', {});
+    });
+
+    it('creates and enqueues a job', () => {
+      expect(registry.hasJob()).toBeFalse();
+      const job = registry.enqueueAction({ action, item });
+      expect(job).toBeInstanceOf(Job);
+      expect(registry.hasJob()).toBeTrue();
+    });
+
+    it('passes action and item to the Action factory', () => {
+      spyOn(actionFactory, 'build').and.callThrough();
+
+      registry.enqueueAction({ action, item });
+
+      expect(actionFactory.build).toHaveBeenCalledWith(
+        jasmine.objectContaining({ action, item })
+      );
+    });
   });
 
   describe('#hasJob', () => {

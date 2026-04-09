@@ -55,7 +55,20 @@ class JobRegistry {
    * @returns {Job} The created and enqueued Job instance.
    */
   enqueue({ resourceRequest, parameters } = {}) {
-    const job = this.#factory.build({resourceRequest, parameters});
+    const job = this.#factory.build({ resourceRequest, parameters, jobRegistry: this });
+    this.#enqueued.push(job);
+    return job;
+  }
+
+  /**
+   * Enqueues a new ActionProcessingJob using the 'Action' factory.
+   * @param {object} jobAttributes - The attributes for the action job.
+   * @param {ResourceRequestAction} jobAttributes.action - The action to execute.
+   * @param {object} jobAttributes.item - The parsed response item to pass to the action.
+   * @returns {Job} The created and enqueued Job instance.
+   */
+  enqueueAction({ action, item }) {
+    const job = JobFactory.get('Action').build({ action, item });
     this.#enqueued.push(job);
     return job;
   }
