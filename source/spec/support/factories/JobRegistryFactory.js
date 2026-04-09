@@ -8,6 +8,8 @@ import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 class JobRegistryFactory {
   /**
    * Builds a JobRegistry instance.
+   * The factory is passed explicitly to bypass the global JobFactory registry,
+   * keeping each test instance self-contained and free from global state.
    * @param {object} [params={}] - Optional attributes.
    * @param {ClientRegistry} [params.clients] - The client registry. Defaults to ClientRegistryFactory.build().
    * @returns {JobRegistry} A new JobRegistry instance.
