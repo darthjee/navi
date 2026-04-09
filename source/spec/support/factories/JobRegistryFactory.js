@@ -1,4 +1,5 @@
 import { ClientRegistryFactory } from './ClientRegistryFactory.js';
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 
 /**
@@ -12,7 +13,8 @@ class JobRegistryFactory {
    * @returns {JobRegistry} A new JobRegistry instance.
    */
   static build({ clients = ClientRegistryFactory.build() } = {}) {
-    return new JobRegistry({ clients });
+    const factory = new JobFactory({ attributes: { clients } });
+    return new JobRegistry({ factory });
   }
 }
 

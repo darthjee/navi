@@ -4,6 +4,10 @@ import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFac
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
 describe('JobFactory', () => {
+  afterEach(() => {
+    JobFactory.reset();
+  });
+
   describe('#build', () => {
     let factory;
     let resourceRequest;
@@ -20,6 +24,33 @@ describe('JobFactory', () => {
     it('builds an instance of ResourceRequestJob', () => {
       const job = factory.build({ resourceRequest, parameters });
       expect(job).toBeInstanceOf(ResourceRequestJob);
+    });
+  });
+
+  describe('.registry / .get / .reset', () => {
+    let factory;
+
+    beforeEach(() => {
+      factory = new JobFactory({ attributes: { clients: ClientRegistryFactory.build({}) } });
+    });
+
+    describe('.registry and .get', () => {
+      it('registers and retrieves a factory by name', () => {
+        JobFactory.registry('MyFactory', factory);
+        expect(JobFactory.get('MyFactory')).toBe(factory);
+      });
+
+      it('returns undefined for an unregistered name', () => {
+        expect(JobFactory.get('Unknown')).toBeUndefined();
+      });
+    });
+
+    describe('.reset', () => {
+      it('clears all registered factories', () => {
+        JobFactory.registry('MyFactory', factory);
+        JobFactory.reset();
+        expect(JobFactory.get('MyFactory')).toBeUndefined();
+      });
     });
   });
 });
