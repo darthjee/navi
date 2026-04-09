@@ -36,7 +36,7 @@ describe('Worker', () => {
 
   beforeEach(() => {
     clients = ClientRegistryFactory.build({});
-    JobFactory.registry('ResourceRequestJob', new JobFactory({ attributes: { clients } }));
+    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     finished = new IdentifyableCollection();
     failed = new Queue();
     jobRegistry = new JobRegistry({ failed, finished });

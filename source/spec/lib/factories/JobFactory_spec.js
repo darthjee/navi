@@ -27,6 +27,16 @@ describe('JobFactory', () => {
     });
   });
 
+  describe('.build', () => {
+    it('creates and registers a factory under the given name', () => {
+      const clients = ClientRegistryFactory.build({});
+      const factory = JobFactory.build('MyFactory', { attributes: { clients } });
+
+      expect(factory).toBeInstanceOf(JobFactory);
+      expect(JobFactory.get('MyFactory')).toBe(factory);
+    });
+  });
+
   describe('.registry / .get / .reset', () => {
     let factory;
 
