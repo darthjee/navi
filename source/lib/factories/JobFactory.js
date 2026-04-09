@@ -8,6 +8,8 @@ import { IdGenerator } from '../utils/generators/IdGenerator.js';
  * @author darthjee
  */
 class JobFactory extends Factory {
+  static #factories = new Map();
+
   #attributes;
 
   /**
@@ -32,6 +34,33 @@ class JobFactory extends Factory {
    */
   build(params) {
     return super.build({ ...this.#attributes, ...params });
+  }
+
+  /**
+   * Registers a factory instance under the given name.
+   * @param {string} name - The name to register the factory under.
+   * @param {JobFactory} factory - The factory instance to register.
+   * @returns {void}
+   */
+  static registry(name, factory) {
+    JobFactory.#factories.set(name, factory);
+  }
+
+  /**
+   * Retrieves a registered factory by name.
+   * @param {string} name - The name of the factory to retrieve.
+   * @returns {JobFactory|undefined} The registered factory, or undefined if not found.
+   */
+  static get(name) {
+    return JobFactory.#factories.get(name);
+  }
+
+  /**
+   * Removes all registered factories. Useful for test isolation.
+   * @returns {void}
+   */
+  static reset() {
+    JobFactory.#factories.clear();
   }
 }
 
