@@ -62,8 +62,7 @@ In `#initRegistries`, create and register the `JobFactory` before building the `
 
 ```js
 #initRegistries({ jobRegistry, workersRegistry } = {}) {
-  const factory = new JobFactory({ attributes: { clients: this.config.clientRegistry } });
-  JobFactory.registry('ResourceRequestJob', factory);
+  JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
 
   this.jobRegistry = jobRegistry || new JobRegistry({ cooldown: this.config.workersConfig.retryCooldown });
   // ... rest unchanged

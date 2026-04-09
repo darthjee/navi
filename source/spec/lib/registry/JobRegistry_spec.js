@@ -20,7 +20,7 @@ describe('JobRegistry', () => {
 
   beforeEach(() => {
     clients = new ClientRegistry();
-    JobFactory.registry('ResourceRequestJob', new JobFactory({ attributes: { clients } }));
+    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     jobs = new Queue();
     retryQueue = new Queue();
     finished = new Queue();

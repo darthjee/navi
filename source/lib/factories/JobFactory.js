@@ -37,6 +37,21 @@ class JobFactory extends Factory {
   }
 
   /**
+   * Creates and registers a new JobFactory instance under the given name.
+   * @param {string} name - The name to register the factory under.
+   * @param {object} attributes - Options forwarded to the JobFactory constructor.
+   * @param {class} [attributes.klass] - The class to instantiate (default is ResourceRequestJob).
+   * @param {object} [attributes.attributesGenerator] - Generator for unique attributes (default is IdGenerator).
+   * @param {object} [attributes.attributes] - Attributes injected into every built instance (e.g. { clients }).
+   * @returns {JobFactory} The created and registered factory instance.
+   */
+  static build(name, attributes) {
+    const factory = new JobFactory(attributes);
+    JobFactory.registry(name, factory);
+    return factory;
+  }
+
+  /**
    * Registers a factory instance under the given name.
    * @param {string} name - The name to register the factory under.
    * @param {JobFactory} factory - The factory instance to register.
