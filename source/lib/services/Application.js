@@ -1,5 +1,6 @@
 import { Engine } from './Engine.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
+import { JobFactory } from '../factories/JobFactory.js';
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
@@ -83,8 +84,10 @@ class Application {
   }
 
   #initRegistries({ jobRegistry, workersRegistry } = {}) {
+    const factory = new JobFactory({ attributes: { clients: this.config.clientRegistry } });
+    JobFactory.registry('ResourceRequestJob', factory);
+
     this.jobRegistry = jobRegistry || new JobRegistry({
-      clients:  this.config.clientRegistry,
       cooldown: this.config.workersConfig.retryCooldown,
     });
     this.workersRegistry = workersRegistry || new WorkersRegistry({

@@ -24,18 +24,17 @@ class JobRegistry {
   /**
    * Creates a new JobRegistry instance with an empty job queue.
    *
-   * @param {object} options - The options for the JobRegistry.
-   * @param {ClientRegistry} options.clients - The clients to be used by the JobFactory.
+   * @param {object} [options={}] - The options for the JobRegistry.
    * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
    * @param {SortedCollection} [options.failed] - An optional sorted collection to use for failed jobs, sorted by readyBy. If not provided, a new SortedCollection will be created.
    * @param {Queue} [options.retryQueue] - An optional queue to use for jobs ready to retry. If not provided, a new Queue will be created.
    * @param {IdentifyableCollection} [options.finished] - An optional collection to use for finished jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.dead] - An optional collection to use for dead jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.processing] - An optional collection to use for jobs currently being processed. If not provided, a new IdentifyableCollection will be created.
-   * @param {JobFactory} [options.factory] - An optional JobFactory to use for creating jobs. If not provided, a new JobFactory will be created with the provided clients.
+   * @param {JobFactory} [options.factory] - An optional JobFactory to use for creating jobs. If not provided, uses the factory registered via JobFactory.registry(). Note: JobFactory.registry() must be called before instantiating a JobRegistry without an explicit factory.
    * @param {number} [options.cooldown=5000] - Milliseconds a failed job must wait before becoming retryable. Use a negative value to disable the cooldown (e.g. in tests).
    */
-  constructor({ queue, failed, retryQueue, finished, dead, processing, clients, factory, cooldown = 5000 }) {
+  constructor({ queue, failed, retryQueue, finished, dead, processing, factory, cooldown = 5000 } = {}) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new SortedCollection([], { sortBy: FAILED_SORT_BY });
     this.#retryQueue = retryQueue || new Queue();
@@ -44,7 +43,7 @@ class JobRegistry {
     this.#processing = processing || new IdentifyableCollection();
 
     this.#lockedBy = null;
-    this.#factory = factory || new JobFactory({ attributes: { clients } });
+    this.#factory = factory || JobFactory.get('ResourceRequestJob');
     this.#cooldown = cooldown;
   }
 

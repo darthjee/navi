@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Job } from '../../../lib/models/Job.js';
 import { ResourceRequestJob } from '../../../lib/models/ResourceRequestJob.js';
 import { Worker } from '../../../lib/models/Worker.js';
@@ -35,14 +36,19 @@ describe('Worker', () => {
 
   beforeEach(() => {
     clients = ClientRegistryFactory.build({});
+    JobFactory.registry('ResourceRequestJob', new JobFactory({ attributes: { clients } }));
     finished = new IdentifyableCollection();
     failed = new Queue();
-    jobRegistry = new JobRegistry({ failed, finished, clients });
+    jobRegistry = new JobRegistry({ failed, finished });
 
     idle = new IdentifyableCollection();
     workerRegistry = new WorkersRegistry({ quantity: 0, idle, jobRegistry });
 
     worker = new Worker({ id: 1, jobRegistry, workerRegistry });
+  });
+
+  afterEach(() => {
+    JobFactory.reset();
   });
 
   describe('#constructor', () => {
