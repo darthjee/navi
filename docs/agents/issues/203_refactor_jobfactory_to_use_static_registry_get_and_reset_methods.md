@@ -25,7 +25,9 @@ removing the need to pass factory references as constructor dependencies across 
 - Add `static registry(name, factory)`, `static get(name)`, and `static reset()` methods to `JobFactory`.
 - Update `Application` to remove the `jobRegistry` attribute and use `JobFactory.registry(...)` to register the factory on startup.
 - Update all consumers to call `JobFactory.get(...)` instead of using injected factory references.
+- Update `docs/agents/` documentation to reflect the new factory management pattern.
 - Add/update tests to cover the new static methods and the updated integration points.
+  - Use `JobFactory.reset()` in `beforeEach`/`afterEach` hooks to ensure a clean factory state for each test.
 
 ## Benefits
 
