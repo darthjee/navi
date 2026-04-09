@@ -30,7 +30,7 @@ class ActionProcessingJob extends Job {
   async perform() {
     try {
       this.lastError = undefined;
-      this.#action.execute(this.#item);
+      await this.#action.execute(this.#item);
     } catch (error) {
       this._fail(error);
     }

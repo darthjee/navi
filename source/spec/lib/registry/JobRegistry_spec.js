@@ -64,7 +64,8 @@ describe('JobRegistry', () => {
     beforeEach(() => {
       action = jasmine.createSpyObj('action', ['execute']);
       item = { id: 1 };
-      actionFactory = JobFactory.build('Action', {});
+      JobFactory.build('Action', {});
+      actionFactory = JobFactory.get('Action');
     });
 
     it('creates and enqueues a job', () => {
