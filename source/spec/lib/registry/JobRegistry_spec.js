@@ -1,4 +1,5 @@
 import { LockedByOtherWorker } from '../../../lib/exceptions/LockedByOtherWorker.js';
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Job } from '../../../lib/models/Job.js';
 import { Worker } from '../../../lib/models/Worker.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
@@ -19,12 +20,17 @@ describe('JobRegistry', () => {
 
   beforeEach(() => {
     clients = new ClientRegistry();
+    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     jobs = new Queue();
     retryQueue = new Queue();
     finished = new Queue();
     processing = new IdentifyableCollection();
-    registry = new JobRegistry({ queue: jobs, retryQueue, finished, processing, clients, cooldown: -1 });
+    registry = new JobRegistry({ queue: jobs, retryQueue, finished, processing, cooldown: -1 });
     resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
+  });
+
+  afterEach(() => {
+    JobFactory.reset();
   });
 
   describe('#enqueue', () => {
@@ -89,7 +95,7 @@ describe('JobRegistry', () => {
 
     describe('when only failed has items (cooldown not elapsed)', () => {
       beforeEach(() => {
-        const freshRegistry = new JobRegistry({ clients, cooldown: 5000 });
+        const freshRegistry = new JobRegistry({ cooldown: 5000 });
         const job = freshRegistry.enqueue({ parameters: { value: 1 } });
         freshRegistry.pick();
         freshRegistry.fail(job);
@@ -341,7 +347,7 @@ describe('JobRegistry', () => {
 
     describe('when the job is not exhausted', () => {
       it('sets readyBy using the configured cooldown', () => {
-        const registryWithCooldown = new JobRegistry({ clients, cooldown: 5000 });
+        const registryWithCooldown = new JobRegistry({ cooldown: 5000 });
         const j = registryWithCooldown.enqueue({ parameters: { value: 1 } });
         registryWithCooldown.pick();
 
@@ -354,7 +360,7 @@ describe('JobRegistry', () => {
       });
 
       it('moves the job to the failed queue, not retryQueue', () => {
-        const registryWithCooldown = new JobRegistry({ clients, cooldown: 5000 });
+        const registryWithCooldown = new JobRegistry({ cooldown: 5000 });
         const j = registryWithCooldown.enqueue({ parameters: { value: 1 } });
         registryWithCooldown.pick();
         registryWithCooldown.fail(j);
@@ -369,7 +375,7 @@ describe('JobRegistry', () => {
     let readyJob, waitingJob;
 
     beforeEach(() => {
-      const slowRegistry = new JobRegistry({ clients, cooldown: 5000 });
+      const slowRegistry = new JobRegistry({ cooldown: 5000 });
       readyJob = slowRegistry.enqueue({ parameters: { value: 1 } });
       waitingJob = slowRegistry.enqueue({ parameters: { value: 2 } });
 

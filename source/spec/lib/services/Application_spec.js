@@ -1,5 +1,6 @@
 import { ConfigurationFileNotFound } from '../../../lib/exceptions/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../../lib/exceptions/ConfigurationFileNotProvided.js';
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Config } from '../../../lib/models/Config.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
@@ -16,12 +17,15 @@ import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
 describe('Application', () => {
   let app;
   let configFilePath;
-  let config;
 
   let jobFactory;
   let workerFactory;
   let workersRegistry;
   let jobRegistry;
+
+  afterEach(() => {
+    JobFactory.reset();
+  });
 
   describe('#loadConfig', () => {
     beforeEach(() => {
@@ -97,10 +101,9 @@ describe('Application', () => {
       DummyJob.setSuccessRate(1);
 
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
-      config = Config.fromFile(configFilePath);
 
       jobFactory = new DummyJobFactory();
-      jobRegistry = new JobRegistry({ clients: config.clientRegistry, factory: jobFactory });
+      jobRegistry = new JobRegistry({ factory: jobFactory });
 
       workerFactory = new DummyWorkerFactory({ jobRegistry });
       workersRegistry = new WorkersRegistry({ quantity: 1, jobRegistry, factory: workerFactory });
