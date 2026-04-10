@@ -152,3 +152,5 @@ source/public/*
 frontend/node_modules
 
 **/*.orig
+
+output/
