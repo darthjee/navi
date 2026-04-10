@@ -12,12 +12,11 @@ class WebServer {
   /**
    * @param {object} params - Options for initializing the WebServer.
    * @param {number} params.port - Port to listen on.
-   * @param {object} params.workersRegistry - The workers registry instance.
    */
-  constructor({ port, workersRegistry }) {
+  constructor({ port }) {
     this.#port = port;
     this.#app = express();
-    this.#app.use(new Router({ workersRegistry }).build());
+    this.#app.use(new Router().build());
   }
 
   /**
@@ -33,12 +32,11 @@ class WebServer {
    * Factory method. Returns a WebServer when webConfig is present, null otherwise.
    * @param {object} params - Options for building the WebServer.
    * @param {object|null} params.webConfig - The web configuration object.
-   * @param {object} params.workersRegistry - The workers registry instance.
    * @returns {WebServer|null} A WebServer instance if webConfig is provided, otherwise null.
    */
-  static build({ webConfig, workersRegistry }) {
+  static build({ webConfig }) {
     if (!webConfig) return null;
-    return new WebServer({ port: webConfig.port, workersRegistry });
+    return new WebServer({ port: webConfig.port });
   }
 }
 

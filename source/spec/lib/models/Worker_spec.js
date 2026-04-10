@@ -13,7 +13,6 @@ import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFac
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
 describe('Worker', () => {
-  let workerRegistry;
   let worker;
   let clients;
   let finished;
@@ -41,23 +40,20 @@ describe('Worker', () => {
     JobRegistry.build({ failed, finished });
 
     idle = new IdentifyableCollection();
-    workerRegistry = new WorkersRegistry({ quantity: 0, idle });
+    WorkersRegistry.build({ quantity: 0, idle });
 
-    worker = new Worker({ id: 1, workerRegistry });
+    worker = new Worker({ id: 1 });
   });
 
   afterEach(() => {
     JobRegistry.reset();
     JobFactory.reset();
+    WorkersRegistry.reset();
   });
 
   describe('#constructor', () => {
     it('stores the id', () => {
       expect(worker.id).toEqual(1);
-    });
-
-    it('stores the worker registry', () => {
-      expect(worker.workerRegistry).toEqual(workerRegistry);
     });
   });
 
@@ -85,7 +81,7 @@ describe('Worker', () => {
 
     describe('when no job is assigned', () => {
       it('throws an error', async () => {
-        const unassignedWorker = new Worker({ id: 2, workerRegistry });
+        const unassignedWorker = new Worker({ id: 2 });
         expectedError = new Error('No job assigned to worker');
         await expectAsync(unassignedWorker.perform()).toBeRejectedWith(expectedError);
       });

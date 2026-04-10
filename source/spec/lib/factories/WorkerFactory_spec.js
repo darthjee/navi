@@ -1,21 +1,21 @@
 import { WorkerFactory } from '../../../lib/factories/WorkerFactory.js';
 import { Worker } from '../../../lib/models/Worker.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
-import { WorkersRegistryFactory } from '../../support/factories/WorkersRegistryFactory.js';
+import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 
 describe('WorkerFactory', () => {
   describe('#build', () => {
     let factory;
-    let workerRegistry;
 
     beforeEach(() => {
       JobRegistry.build({ cooldown: -1 });
-      workerRegistry = WorkersRegistryFactory.build();
-      factory = new WorkerFactory({ workerRegistry });
+      WorkersRegistry.build({ quantity: 0 });
+      factory = new WorkerFactory();
     });
 
     afterEach(() => {
       JobRegistry.reset();
+      WorkersRegistry.reset();
     });
 
     it('builds an instance of Worker', () => {
