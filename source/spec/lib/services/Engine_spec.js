@@ -11,7 +11,6 @@ import { DummyWorkersAllocator } from '../../support/dummies/services/DummyWorke
 describe('Engine', () => {
   let engine;
   let jobFactory;
-  let jobRegistry;
   let workerFactory;
   let workersRegistry;
   let allocator;
@@ -23,7 +22,7 @@ describe('Engine', () => {
 
   const enqueueJobs = (n) => {
     for (let i = 0; i < n; i++) {
-      jobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
+      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
     }
   };
 
@@ -32,29 +31,30 @@ describe('Engine', () => {
     finished = new IdentifyableCollection();
     dead = new IdentifyableCollection();
     JobFactory.registry('ResourceRequestJob', jobFactory);
-    jobRegistry = new JobRegistry({ finished, dead, cooldown: -1 });
+    JobRegistry.build({ finished, dead, cooldown: -1 });
 
-    workerFactory = new DummyWorkerFactory({ jobRegistry });
+    workerFactory = new DummyWorkerFactory();
     busy = new IdentifyableCollection();
     workersRegistry = new WorkersRegistry({ busy, quantity: 2, factory: workerFactory });
     workersRegistry.initWorkers();
 
     DummyJob.setSuccessRate(1);
-    engine = new Engine({ jobRegistry, workersRegistry, sleepMs: -1 });
+    engine = new Engine({ workersRegistry, sleepMs: -1 });
 
     spyOn(console, 'error').and.stub();
   });
 
   afterEach(() => {
+    JobRegistry.reset();
     JobFactory.reset();
   });
 
   describe('start', () => {
     describe('when there are no jobs to process', () => {
       it('does nothing', async () => {
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         await engine.start();
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(0);
       });
     });
@@ -63,9 +63,9 @@ describe('Engine', () => {
       beforeEach(() => { enqueueJobs(2); });
 
       it('processes all jobs', async () => {
-        expect(jobRegistry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
         await engine.start();
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(2);
       });
     });
@@ -74,9 +74,9 @@ describe('Engine', () => {
       beforeEach(() => { enqueueJobs(4); });
 
       it('processes all jobs', async () => {
-        expect(jobRegistry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
         await engine.start();
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(4);
         expect(dead.size()).toBe(0);
       });
@@ -89,9 +89,9 @@ describe('Engine', () => {
       });
 
       it('processes all jobs until they are in the dead queue', async () => {
-        expect(jobRegistry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
         await engine.start();
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         expect(finished.size()).toBe(0);
         expect(dead.size()).toBe(1);
       });
@@ -104,9 +104,9 @@ describe('Engine', () => {
       });
 
       it('processes all jobs until they are in the finished or dead', async () => {
-        expect(jobRegistry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
         await engine.start();
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         expect(finished.size() + dead.size()).toBe(20);
         expect(finished.size()).not.toBe(0);
         expect(dead.size()).not.toBe(0);
@@ -115,13 +115,13 @@ describe('Engine', () => {
 
     describe('when jobs take some time to be processed', () => {
       beforeEach(() => {
-        allocator = new DummyWorkersAllocator({ jobRegistry, workersRegistry });
-        engine = new Engine({ jobRegistry, workersRegistry, allocator, sleepMs: -1 });
+        allocator = new DummyWorkersAllocator({ workersRegistry });
+        engine = new Engine({ workersRegistry, allocator, sleepMs: -1 });
         DummyJob.setSuccessRate(0.1);
 
         spyOn(workersRegistry, 'hasIdleWorker').and.callFake(() => {
           const result = workersRegistry.hasIdleWorker.and.originalFn.call(workersRegistry);
-          if (!result || !jobRegistry.hasJob()) {
+          if (!result || !JobRegistry.hasJob()) {
             busy.list().forEach(worker => worker.perform());
           }
           return result;
@@ -131,9 +131,9 @@ describe('Engine', () => {
       });
 
       it('processes all jobs until they are in the finished or dead', async () => {
-        expect(jobRegistry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
         await engine.start();
-        expect(jobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
         expect(finished.size() + dead.size()).toBe(20);
       });
     });
@@ -141,33 +141,32 @@ describe('Engine', () => {
     describe('promoteReadyJobs is called every cycle', () => {
       beforeEach(() => {
         enqueueJobs(2);
-        spyOn(jobRegistry, 'promoteReadyJobs').and.callThrough();
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callThrough();
       });
 
       it('calls promoteReadyJobs at least once per job processed', async () => {
         await engine.start();
-        expect(jobRegistry.promoteReadyJobs).toHaveBeenCalled();
+        expect(JobRegistry.promoteReadyJobs).toHaveBeenCalled();
       });
     });
 
     describe('when all remaining jobs are in cooldown', () => {
-      let slowRegistry;
-
       beforeEach(() => {
-        slowRegistry = new JobRegistry({ finished, dead, cooldown: 5000 });
-        engine = new Engine({ jobRegistry: slowRegistry, workersRegistry, sleepMs: -1 });
+        JobRegistry.reset();
+        JobRegistry.build({ finished, dead, cooldown: 5000 });
+        engine = new Engine({ workersRegistry, sleepMs: -1 });
         DummyJob.setSuccessRate(0);
-        slowRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
       });
 
       it('does not allocate a worker while job is in cooldown', async () => {
         spyOn(engine.allocator, 'allocate').and.callThrough();
 
         let callCount = 0;
-        spyOn(slowRegistry, 'promoteReadyJobs').and.callFake(() => {
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
           callCount++;
           if (callCount > 3) {
-            slowRegistry.promoteReadyJobs.and.callThrough();
+            JobRegistry.promoteReadyJobs.and.callThrough();
           }
         });
 

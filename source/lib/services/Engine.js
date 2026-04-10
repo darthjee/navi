@@ -1,4 +1,5 @@
 import { WorkersAllocator } from './WorkersAllocator.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
 
 /**
  * Engine is responsible for managing the job processing workflow.
@@ -7,25 +8,21 @@ import { WorkersAllocator } from './WorkersAllocator.js';
  * jobs to workers until there are no more jobs and no more busy workers.
  */
 class Engine {
-  #jobRegistry;
   #workersRegistry;
   #sleepMs;
 
   /**
    * Creates an instance of Engine.
    * @param {object} param0 - The parameters for creating an Engine instance.
-   * @param {JobRegistry} param0.jobRegistry - The job registry to allocate jobs from.
    * @param {WorkersRegistry} param0.workersRegistry - The workers registry to allocate workers from.
    * @param {WorkersAllocator} param0.allocator - The workers allocator to manage job allocation.
    * @param {number} [param0.sleepMs=500] - Milliseconds to wait when all jobs are in cooldown. Use a negative value to disable sleeping (e.g. in tests).
    */
-  constructor({ jobRegistry, workersRegistry, allocator, sleepMs = 500 }) {
-    this.#jobRegistry = jobRegistry;
+  constructor({ workersRegistry, allocator, sleepMs = 500 }) {
     this.#workersRegistry = workersRegistry;
     this.#sleepMs = sleepMs;
 
     this.allocator = allocator || new WorkersAllocator({
-      jobRegistry: this.#jobRegistry,
       workersRegistry: this.#workersRegistry,
     });
   }
@@ -39,9 +36,9 @@ class Engine {
    */
   async start() {
     while (this.#continueAllocating()) {
-      this.#jobRegistry.promoteReadyJobs();
+      JobRegistry.promoteReadyJobs();
 
-      if (this.#jobRegistry.hasReadyJob()) {
+      if (JobRegistry.hasReadyJob()) {
         this.allocator.allocate();
       } else {
         await this.#sleep(this.#sleepMs);
@@ -54,7 +51,7 @@ class Engine {
    * @returns {boolean} True if there are jobs to process or busy workers, false otherwise.
    */
   #continueAllocating() {
-    return this.#jobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
+    return JobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
   }
 
   /**

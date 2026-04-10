@@ -12,17 +12,14 @@ import { NullResponse } from '../exceptions/NullResponse.js';
 class ActionsEnqueuer {
   #actions;
   #parsed;
-  #jobRegistry;
 
   /**
    * @param {Array} actions List of ResourceRequestAction instances.
    * @param {*} parsed The already-parsed response value (object, array, or null).
-   * @param {JobRegistry} jobRegistry The registry used to enqueue action jobs.
    */
-  constructor(actions, parsed, jobRegistry) {
+  constructor(actions, parsed) {
     this.#actions = actions;
     this.#parsed = parsed;
-    this.#jobRegistry = jobRegistry;
   }
 
   /**
@@ -35,7 +32,7 @@ class ActionsEnqueuer {
 
     const items = Array.isArray(this.#parsed) ? this.#parsed : [this.#parsed];
     for (const action of this.#actions) {
-      new ActionEnqueuer(action, items, this.#jobRegistry).enqueue();
+      new ActionEnqueuer(action, items).enqueue();
     }
   }
 }

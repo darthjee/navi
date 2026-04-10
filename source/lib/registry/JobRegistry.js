@@ -1,170 +1,110 @@
-import { LockedByOtherWorker } from '../exceptions/LockedByOtherWorker.js';
-import { JobFactory } from '../factories/JobFactory.js';
-import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
-import { Queue } from '../utils/collections/Queue.js';
-import { SortedCollection } from '../utils/collections/SortedCollection.js';
-
-const FAILED_SORT_BY = job => job.readyBy;
+import { JobRegistryInstance } from './JobRegistryInstance.js';
 
 /**
- * JobRegistry manages a queue of jobs for Workers to consume.
+ * JobRegistry is a static singleton facade for managing the application's job queues.
+ *
+ * Call `JobRegistry.build(options)` once during application bootstrap.
+ * Use `JobRegistry.reset()` in tests to restore a clean state between examples.
  * @author darthjee
  */
 class JobRegistry {
-  #enqueued;
-  #failed;
-  #retryQueue;
-  #finished;
-  #dead;
-  #processing;
-  #lockedBy;
-  #cooldown;
+  static #instance = null;
 
   /**
-   * Creates a new JobRegistry instance with an empty job queue.
-   *
-   * @param {object} [options={}] - The options for the JobRegistry.
-   * @param {Queue} [options.queue] - An optional queue to use for enqueued jobs. If not provided, a new Queue will be created.
-   * @param {SortedCollection} [options.failed] - An optional sorted collection to use for failed jobs, sorted by readyBy. If not provided, a new SortedCollection will be created.
-   * @param {Queue} [options.retryQueue] - An optional queue to use for jobs ready to retry. If not provided, a new Queue will be created.
-   * @param {IdentifyableCollection} [options.finished] - An optional collection to use for finished jobs. If not provided, a new IdentifyableCollection will be created.
-   * @param {IdentifyableCollection} [options.dead] - An optional collection to use for dead jobs. If not provided, a new IdentifyableCollection will be created.
-   * @param {IdentifyableCollection} [options.processing] - An optional collection to use for jobs currently being processed. If not provided, a new IdentifyableCollection will be created.
-   * @param {number} [options.cooldown=5000] - Milliseconds a failed job must wait before becoming retryable. Use a negative value to disable the cooldown (e.g. in tests).
+   * Creates and stores the singleton instance.
+   * @param {object} [options={}] - Forwarded to `JobRegistryInstance` constructor.
+   * @returns {JobRegistryInstance} The created instance.
+   * @throws {Error} If `build()` has already been called without a preceding `reset()`.
    */
-  constructor({ queue, failed, retryQueue, finished, dead, processing, cooldown = 5000 } = {}) {
-    this.#enqueued = queue || new Queue();
-    this.#failed = failed || new SortedCollection([], { sortBy: FAILED_SORT_BY });
-    this.#retryQueue = retryQueue || new Queue();
-    this.#finished = finished || new IdentifyableCollection();
-    this.#dead = dead || new IdentifyableCollection();
-    this.#processing = processing || new IdentifyableCollection();
+  static build(options = {}) {
+    if (JobRegistry.#instance) {
+      throw new Error('JobRegistry.build() has already been called. Call reset() first.');
+    }
+    JobRegistry.#instance = new JobRegistryInstance(options);
+    return JobRegistry.#instance;
+  }
 
-    this.#lockedBy = null;
-    this.#cooldown = cooldown;
+  /**
+   * Destroys the singleton instance. Intended for test teardown.
+   * @returns {void}
+   */
+  static reset() {
+    JobRegistry.#instance = null;
   }
 
   /**
    * Enqueues a new job using the factory registered under the given key.
-   * @param {string} factoryKey - The name of the factory to use (e.g. `'ResourceRequestJob'`, `'Action'`).
-   * @param {object} [params={}] - The build params forwarded to the factory's `build` method.
+   * @param {string} factoryKey - The factory key to use.
+   * @param {object} [params={}] - Build params forwarded to the factory.
    * @returns {Job} The created and enqueued Job instance.
    */
-  enqueue(factoryKey, params = {}) {
-    const job = JobFactory.get(factoryKey).build(params);
-    this.#enqueued.push(job);
-    return job;
+  static enqueue(factoryKey, params = {}) {
+    return JobRegistry.#getInstance().enqueue(factoryKey, params);
   }
 
   /**
    * Marks a job as failed.
-   * Removes the job from processing before queuing it for retry or marking it as dead.
    * @param {Job} job - The job to mark as failed.
    * @returns {void}
    */
-  fail(job) {
-    if (!job) return;
-    this.#processing.remove(job.id);
-    if (job.exhausted()) {
-      this.#dead.push(job);
-    } else {
-      job.applyCooldown(this.#cooldown);
-      this.#failed.push(job);
-    }
+  static fail(job) {
+    return JobRegistry.#getInstance().fail(job);
   }
 
   /**
    * Marks a job as finished.
-   * Removes the job from processing before adding it to the finished collection.
    * @param {Job} job - The job to mark as finished.
    * @returns {void}
    */
-  finish(job) {
-    if (!job) return;
-    this.#processing.remove(job.id);
-    this.#finished.push(job);
+  static finish(job) {
+    return JobRegistry.#getInstance().finish(job);
   }
 
   /**
-   * Picks (removes and returns) the first job from the enqueued or retryQueue and adds it to processing.
-   * @returns {Job|undefined} The first available job, or undefined if none are ready.
+   * Picks the next ready job and moves it to processing.
+   * @returns {Job|undefined} The next ready job, or undefined if none are ready.
    */
-  pick() {
-    const job = this.#enqueued.pick() || this.#retryQueue.pick();
-    if (job) {
-      this.#processing.push(job);
-    }
-    return job;
+  static pick() {
+    return JobRegistry.#getInstance().pick();
   }
 
   /**
-   * Promotes jobs from the failed queue to the retryQueue once their cooldown has elapsed.
-   * Uses binary search on the SortedCollection (sorted by readyBy) to efficiently
-   * split ready vs still-cooling jobs in O(log n) rather than a full O(n) scan.
+   * Promotes cooling-down failed jobs that are ready to retry.
    * @returns {void}
    */
-  promoteReadyJobs() {
-    const now = Date.now();
-    const ready = this.#failed.upTo(now);
-    const waiting = this.#failed.after(now);
-
-    this.#failed = new SortedCollection(waiting, { sortBy: FAILED_SORT_BY });
-    ready.forEach(job => this.#retryQueue.push(job));
+  static promoteReadyJobs() {
+    return JobRegistry.#getInstance().promoteReadyJobs();
   }
 
   /**
-   * Returns whether the registry has any jobs pending (including those in cooldown).
-   * @returns {boolean} True if any of enqueued, failed, or retryQueue is non-empty.
+   * Returns whether any jobs exist (including those in cooldown).
+   * @returns {boolean} True if any jobs exist.
    */
-  hasJob() {
-    return this.#enqueued.hasItem() || this.#failed.hasItem() || this.#retryQueue.hasItem();
+  static hasJob() {
+    return JobRegistry.#getInstance().hasJob();
   }
 
   /**
-   * Returns whether there is a job ready to be picked by a worker right now.
-   * @returns {boolean} True if enqueued or retryQueue is non-empty.
+   * Returns whether any jobs are immediately ready to be picked.
+   * @returns {boolean} True if any jobs are ready.
    */
-  hasReadyJob() {
-    return this.#enqueued.hasItem() || this.#retryQueue.hasItem();
-  }
-
-  /**
-   * Locks the registry for the given worker.
-   * If the registry is already locked by another worker, throws LockedByOtherWorker.
-   * @param {Worker} worker - The worker attempting to acquire the lock.
-   * @returns {void}
-   * @throws {LockedByOtherWorker} When the registry is already locked by another worker.
-   */
-  lock(worker) {
-    if (this.#lockedBy === null) {
-      this.#lockedBy = worker.id;
-    } else {
-      throw new LockedByOtherWorker();
-    }
-  }
-
-  /**
-   * Returns whether the given worker holds the lock on this registry.
-   * @param {Worker} worker - The worker to check.
-   * @returns {boolean} True if the worker holds the lock, false otherwise.
-   */
-  hasLock(worker) {
-    return this.#lockedBy === worker.id;
+  static hasReadyJob() {
+    return JobRegistry.#getInstance().hasReadyJob();
   }
 
   /**
    * Returns counts of jobs in each state.
-   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Counts of jobs in each state.
+   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Job counts per state.
    */
-  stats() {
-    return {
-      enqueued:   this.#enqueued.size(),
-      processing: this.#processing.size(),
-      failed:     this.#failed.size(),
-      retryQueue: this.#retryQueue.size(),
-      finished:   this.#finished.size(),
-      dead:       this.#dead.size(),
-    };
+  static stats() {
+    return JobRegistry.#getInstance().stats();
+  }
+
+  static #getInstance() {
+    if (!JobRegistry.#instance) {
+      throw new Error('JobRegistry has not been built. Call JobRegistry.build() first.');
+    }
+    return JobRegistry.#instance;
   }
 }
 

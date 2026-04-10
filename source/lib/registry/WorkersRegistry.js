@@ -7,7 +7,6 @@ import { IdentifyableCollection } from '../utils/collections/IdentifyableCollect
  */
 class WorkersRegistry {
   #factory;
-  #jobRegistry;
   #quantity;
   #workers;
   #busy;
@@ -16,7 +15,6 @@ class WorkersRegistry {
   /**
    * Creates a new WorkersRegistry instance.
    * @param {object} params - The parameters for creating a WorkersRegistry instance.
-   * @param {JobRegistry} params.jobRegistry - The job registry shared among all workers.
    * @param {WorkerFactory} [params.factory] - The factory for creating Worker instances (injected for testing).
    * @param {number} params.quantity - The number of workers to be built.
    * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
@@ -24,14 +22,12 @@ class WorkersRegistry {
    * @param {IdentifyableCollection} [params.idle] - The collection of idle workers (injected for testing).
    */
   constructor({
-    jobRegistry,
     quantity,
-    factory = new WorkerFactory({ jobRegistry, workerRegistry: this }),
+    factory = new WorkerFactory({ workerRegistry: this }),
     workers = new IdentifyableCollection(),
     busy = new IdentifyableCollection(),
     idle = new IdentifyableCollection()
   }) {
-    this.#jobRegistry = jobRegistry;
     this.#factory = factory;
     this.#quantity = quantity;
     this.#workers = workers;
