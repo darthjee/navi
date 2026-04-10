@@ -13,16 +13,13 @@ const publicDir = path.join(__dirname, '../../public');
  * @author darthjee
  */
 class Router {
-  #jobRegistry;
   #workersRegistry;
 
   /**
    * @param {object} params - Options for initializing the Router.
-   * @param {object} params.jobRegistry - The job registry instance.
    * @param {object} params.workersRegistry - The workers registry instance.
    */
-  constructor({ jobRegistry, workersRegistry }) {
-    this.#jobRegistry = jobRegistry;
+  constructor({ workersRegistry }) {
     this.#workersRegistry = workersRegistry;
   }
 
@@ -37,7 +34,6 @@ class Router {
     register.register({
       route:   '/stats.json',
       handler: new StatsRequestHandler({
-        jobRegistry:     this.#jobRegistry,
         workersRegistry: this.#workersRegistry,
       }),
     });

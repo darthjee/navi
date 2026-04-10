@@ -5,7 +5,6 @@ import { IdentifyableCollection } from '../../../lib/utils/collections/Identifya
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 
 describe('JobRegistry', () => {
-  let registry;
   let clients;
 
   beforeEach(() => {
@@ -14,10 +13,11 @@ describe('JobRegistry', () => {
   });
 
   afterEach(() => {
+    JobRegistry.reset();
     JobFactory.reset();
   });
 
-  describe('#stats', () => {
+  describe('.stats', () => {
     let queue;
     let retryQueue;
     let finishedCollection;
@@ -30,7 +30,7 @@ describe('JobRegistry', () => {
       finishedCollection = new IdentifyableCollection();
       deadCollection = new IdentifyableCollection();
       processingCollection = new IdentifyableCollection();
-      registry = new JobRegistry({
+      JobRegistry.build({
         queue,
         retryQueue,
         finished: finishedCollection,
@@ -42,7 +42,7 @@ describe('JobRegistry', () => {
 
     describe('when no jobs have been added', () => {
       it('returns zero counts for all states', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued: 0,
           processing: 0,
           failed: 0,
@@ -55,11 +55,11 @@ describe('JobRegistry', () => {
 
     describe('when a job has been enqueued', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
       });
 
       it('returns enqueued count of 1', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued: 1,
           processing: 0,
           failed: 0,
@@ -72,12 +72,12 @@ describe('JobRegistry', () => {
 
     describe('when a job is being processed', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        registry.pick();
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
       });
 
       it('returns processing count of 1', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued: 0,
           processing: 1,
           failed: 0,
@@ -90,13 +90,13 @@ describe('JobRegistry', () => {
 
     describe('when a job has finished', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        const job = registry.pick();
-        registry.finish(job);
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        const job = JobRegistry.pick();
+        JobRegistry.finish(job);
       });
 
       it('returns finished count of 1', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued: 0,
           processing: 0,
           failed: 0,
@@ -109,13 +109,13 @@ describe('JobRegistry', () => {
 
     describe('when a non-exhausted job has failed', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        const job = registry.pick();
-        registry.fail(job);
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        const job = JobRegistry.pick();
+        JobRegistry.fail(job);
       });
 
       it('returns failed count of 1', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued: 0,
           processing: 0,
           failed: 1,
@@ -128,16 +128,16 @@ describe('JobRegistry', () => {
 
     describe('when an exhausted job has failed', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        const job = registry.pick();
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        const job = JobRegistry.pick();
         try { job._fail(new Error()); } catch { /* expected */ }
         try { job._fail(new Error()); } catch { /* expected */ }
         try { job._fail(new Error()); } catch { /* expected */ }
-        registry.fail(job);
+        JobRegistry.fail(job);
       });
 
       it('returns dead count of 1', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued: 0,
           processing: 0,
           failed: 0,
@@ -150,14 +150,14 @@ describe('JobRegistry', () => {
 
     describe('when a job has been promoted to retryQueue', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        const job = registry.pick();
-        registry.fail(job);
-        registry.promoteReadyJobs();
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        const job = JobRegistry.pick();
+        JobRegistry.fail(job);
+        JobRegistry.promoteReadyJobs();
       });
 
       it('returns retryQueue count of 1 and failed count of 0', () => {
-        expect(registry.stats()).toEqual({
+        expect(JobRegistry.stats()).toEqual({
           enqueued:   0,
           processing: 0,
           failed:     0,

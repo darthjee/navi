@@ -1,4 +1,5 @@
 import { Worker } from '../../../../lib/models/Worker.js';
+import { JobRegistry } from '../../../../lib/registry/JobRegistry.js';
 
 class DummyWorker extends Worker {
   perform() {
@@ -8,9 +9,9 @@ class DummyWorker extends Worker {
 
     try {
       this.job.perform();
-      this.jobRegistry.finish(this.job);
+      JobRegistry.finish(this.job);
     } catch (error) {
-      this.jobRegistry.fail(this.job);
+      JobRegistry.fail(this.job);
     } finally {
       this.job = undefined;
       this.workerRegistry.setIdle(this.id);

@@ -11,7 +11,6 @@ describe('ResourceRequestJob', () => {
   let clients;
   let client;
   let parameters;
-  let jobRegistry;
   let job;
 
   const baseUrl = 'http://example.com';
@@ -27,9 +26,8 @@ describe('ResourceRequestJob', () => {
     client = ClientFactory.build({ baseUrl });
     clients = ClientRegistryFactory.build({ default: client });
     parameters = {};
-    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
 
-    job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters, jobRegistry });
+    job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
   });
 
   describe('#constructor', () => {
@@ -52,9 +50,9 @@ describe('ResourceRequestJob', () => {
         expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
       });
 
-      it('calls enqueueActions with the response data and jobRegistry', async () => {
+      it('calls enqueueActions with the response data', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(resourceRequest.enqueueActions).toHaveBeenCalledOnceWith(response.data, jobRegistry);
+        expect(resourceRequest.enqueueActions).toHaveBeenCalledOnceWith(response.data);
       });
 
       it('logs info when performing', async () => {

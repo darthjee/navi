@@ -2,7 +2,6 @@ import { ConfigurationFileNotFound } from '../../../lib/exceptions/Configuration
 import { ConfigurationFileNotProvided } from '../../../lib/exceptions/ConfigurationFileNotProvided.js';
 import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Config } from '../../../lib/models/Config.js';
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
@@ -21,9 +20,9 @@ describe('Application', () => {
   let jobFactory;
   let workerFactory;
   let workersRegistry;
-  let jobRegistry;
 
   afterEach(() => {
+    JobRegistry.reset();
     JobFactory.reset();
   });
 
@@ -44,18 +43,9 @@ describe('Application', () => {
       });
 
       it('initializes job registry', () => {
-        expect(app.jobRegistry).toBeUndefined();
-
         app.loadConfig(configFilePath);
 
-        expect(app.jobRegistry instanceof JobRegistry).toBeTrue();
-      });
-
-      it('initializes job registry with clientRegistry from config', () => {
-        app.loadConfig(configFilePath);
-
-        expect(app.jobRegistry instanceof JobRegistry).toBeTrue();
-        expect(app.config.clientRegistry instanceof ClientRegistry).toBeTrue();
+        expect(() => JobRegistry.hasJob()).not.toThrow();
       });
 
       it('registers the Action factory', () => {
@@ -109,19 +99,17 @@ describe('Application', () => {
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
       jobFactory = new DummyJobFactory();
-      jobRegistry = new JobRegistry({});
-
-      workerFactory = new DummyWorkerFactory({ jobRegistry });
-      workersRegistry = new WorkersRegistry({ quantity: 1, jobRegistry, factory: workerFactory });
+      workerFactory = new DummyWorkerFactory();
+      workersRegistry = new WorkersRegistry({ quantity: 1, factory: workerFactory });
 
       app = new Application();
-      app.loadConfig(configFilePath, { workersRegistry, jobRegistry });
+      app.loadConfig(configFilePath, { workersRegistry });
       JobFactory.registry('ResourceRequestJob', jobFactory);
     });
 
     it('processes all initial parameter-free jobs', async () => {
       await app.run();
-      expect(jobRegistry.hasJob()).toBeFalse();
+      expect(JobRegistry.hasJob()).toBeFalse();
     });
 
     it('sets webServer to null when no web config present', async () => {

@@ -55,7 +55,6 @@ class Application {
    */
   buildEngine() {
     return new Engine({
-      jobRegistry: this.jobRegistry,
       workersRegistry: this.workersRegistry
     });
   }
@@ -67,7 +66,6 @@ class Application {
   buildWebServer() {
     return WebServer.build({
       webConfig:       this.config.webConfig,
-      jobRegistry:     this.jobRegistry,
       workersRegistry: this.workersRegistry,
     });
   }
@@ -80,19 +78,17 @@ class Application {
    */
   enqueueFirstJobs() {
     new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
-      this.jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {}, jobRegistry: this.jobRegistry });
+      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
     });
   }
 
-  #initRegistries({ jobRegistry, workersRegistry } = {}) {
+  #initRegistries({ workersRegistry } = {}) {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
 
-    this.jobRegistry = jobRegistry || new JobRegistry({
-      cooldown: this.config.workersConfig.retryCooldown,
-    });
+    JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown });
+
     this.workersRegistry = workersRegistry || new WorkersRegistry({
-      jobRegistry: this.jobRegistry,
       workers: this.#workers,
       ...this.config.workersConfig
     });

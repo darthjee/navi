@@ -1,9 +1,8 @@
+import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
-import { JobRegistryFactory } from '../../support/factories/JobRegistryFactory.js';
 
 describe('WorkersRegistry', () => {
-  let jobRegistry;
   let workerRegistry;
   let worker;
   let worker_id;
@@ -12,30 +11,28 @@ describe('WorkersRegistry', () => {
   let idle;
 
   beforeEach(() => {
-    jobRegistry = JobRegistryFactory.build();
+    JobRegistry.build({ cooldown: -1 });
     workers = new IdentifyableCollection();
     busy = new IdentifyableCollection();
     idle = new IdentifyableCollection();
-    workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers, busy, idle });
+    workerRegistry = new WorkersRegistry({ quantity: 1, workers, busy, idle });
     workerRegistry.initWorkers();
     worker = workers.byIndex(0);
     worker_id = worker.id;
   });
 
+  afterEach(() => {
+    JobRegistry.reset();
+  });
+
   describe('#constructor', () => {
     beforeEach(() => {
       workers = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers });
+      workerRegistry = new WorkersRegistry({ quantity: 3, workers });
     });
 
     it('initializes an empty workers list', () => {
       expect(workers).toEqual(new IdentifyableCollection());
-    });
-
-    it('uses the job registry for created workers', () => {
-      workerRegistry.initWorkers();
-
-      expect(workers.byIndex(0).jobRegistry).toEqual(jobRegistry);
     });
 
     it('initializes with the specified quantity', () => {
@@ -50,21 +47,13 @@ describe('WorkersRegistry', () => {
       workers = new IdentifyableCollection();
       busy = new IdentifyableCollection();
       idle = new IdentifyableCollection();
-      workerRegistry = new WorkersRegistry({ jobRegistry, quantity: 3, workers, busy, idle });
+      workerRegistry = new WorkersRegistry({ quantity: 3, workers, busy, idle });
     });
 
     it('builds the specified number of workers', () => {
       workerRegistry.initWorkers();
 
       expect(workers.size()).toEqual(3);
-    });
-
-    it('assigns the job registry to the worker', () => {
-      workerRegistry.initWorkers();
-
-      const createdWorker = workers.byIndex(0);
-
-      expect(createdWorker.jobRegistry).toEqual(jobRegistry);
     });
 
     it('creates the workers as idle', () => {

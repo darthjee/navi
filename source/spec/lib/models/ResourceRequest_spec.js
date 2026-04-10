@@ -1,4 +1,5 @@
 import { ResourceRequest } from '../../../lib/models/ResourceRequest.js';
+import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ResourceRequestActionFactory } from '../../support/factories/ResourceRequestActionFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
@@ -84,25 +85,29 @@ describe('ResourceRequest', () => {
   describe('#enqueueActions', () => {
     let action;
     let request;
-    let jobRegistry;
 
     beforeEach(() => {
       spyOn(Logger, 'info').and.stub();
       spyOn(Logger, 'error').and.stub();
       action = ResourceRequestActionFactory.build({ resource: 'products' });
-      jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
+      JobRegistry.build({ cooldown: -1 });
+      spyOn(JobRegistry, 'enqueue').and.stub();
+    });
+
+    afterEach(() => {
+      JobRegistry.reset();
     });
 
     describe('when there are no actions', () => {
       it('returns immediately without parsing', () => {
         request = ResourceRequestFactory.build();
-        expect(() => request.enqueueActions('not valid json', jobRegistry)).not.toThrow();
+        expect(() => request.enqueueActions('not valid json')).not.toThrow();
       });
 
       it('does not call enqueue', () => {
         request = ResourceRequestFactory.build();
-        request.enqueueActions('[]', jobRegistry);
-        expect(jobRegistry.enqueue).not.toHaveBeenCalled();
+        request.enqueueActions('[]');
+        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });
 
@@ -113,10 +118,10 @@ describe('ResourceRequest', () => {
       });
 
       it('calls enqueue once per element', () => {
-        request.enqueueActions('[{"id":1},{"id":2}]', jobRegistry);
-        expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
+        request.enqueueActions('[{"id":1},{"id":2}]');
+        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
       });
     });
 
@@ -127,8 +132,8 @@ describe('ResourceRequest', () => {
       });
 
       it('calls enqueue once with the item', () => {
-        request.enqueueActions('{"id":1}', jobRegistry);
-        expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action, item: { id: 1 } });
+        request.enqueueActions('{"id":1}');
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action, item: { id: 1 } });
       });
     });
   });

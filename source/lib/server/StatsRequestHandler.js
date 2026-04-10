@@ -1,21 +1,19 @@
 import { RequestHandler } from './RequestHandler.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
 
 /**
  * Handles GET /stats.json requests.
  * @author darthjee
  */
 class StatsRequestHandler extends RequestHandler {
-  #jobRegistry;
   #workersRegistry;
 
   /**
    * @param {object} params - Options for initializing the StatsRequestHandler.
-   * @param {object} params.jobRegistry - The job registry instance.
    * @param {object} params.workersRegistry - The workers registry instance.
    */
-  constructor({ jobRegistry, workersRegistry }) {
+  constructor({ workersRegistry }) {
     super();
-    this.#jobRegistry = jobRegistry;
     this.#workersRegistry = workersRegistry;
   }
 
@@ -26,7 +24,7 @@ class StatsRequestHandler extends RequestHandler {
    */
   handle(_req, res) {
     res.json({
-      jobs:    this.#jobRegistry.stats(),
+      jobs:    JobRegistry.stats(),
       workers: this.#workersRegistry.stats(),
     });
   }
