@@ -19,6 +19,7 @@ class ActionEnqueuer {
 
   /**
    * Enqueues one ActionProcessingJob per item for the configured action.
+   * @returns {void}
    */
   enqueue() {
     for (const item of this.#items) {

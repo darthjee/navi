@@ -28,6 +28,7 @@ class ActionsExecutor {
 
   /**
    * Normalises the parsed response to an array and dispatches each action per item.
+   * @returns {void}
    * @throws {NullResponse} If the parsed response is null.
    */
   execute() {

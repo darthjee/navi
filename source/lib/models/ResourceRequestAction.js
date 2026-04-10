@@ -31,6 +31,7 @@ class ResourceRequestAction {
   /**
    * Applies the variables_map to the response item and logs the result.
    * @param {object} item A single parsed response item.
+   * @returns {void}
    */
   execute(item) {
     const vars = this.#mapper.map(item);

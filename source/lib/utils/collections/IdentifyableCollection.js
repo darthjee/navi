@@ -1,5 +1,9 @@
 import { Collection } from './Collection.js';
 
+/**
+ * An identifiable collection that stores items keyed by their id property.
+ * @author darthjee
+ */
 class IdentifyableCollection extends Collection {
   #items;
   #size = null;
@@ -15,6 +19,7 @@ class IdentifyableCollection extends Collection {
   /**
    * Adds an item to the collection.
    * @param {object} item - The item to add, must have a unique id.
+   * @returns {void}
    */
   push(item) {
     this.#size = null;
@@ -24,6 +29,7 @@ class IdentifyableCollection extends Collection {
   /**
    * Removes an item from the collection by id.
    * @param {string|number} id - The id of the item to remove.
+   * @returns {void}
    */
   remove(id) {
     this.#size = null;

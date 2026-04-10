@@ -1,5 +1,6 @@
 /**
  * Represents the configuration for workers in the application.
+ * @author darthjee
  */
 class WorkersConfig {
   /**
