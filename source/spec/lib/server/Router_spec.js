@@ -1,18 +1,19 @@
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
 
 describe('Router', () => {
   let router;
-  let workersRegistry;
 
   beforeEach(() => {
     JobRegistry.build({ cooldown: -1 });
-    workersRegistry = { stats: () => ({}) };
-    router = new Router({ workersRegistry });
+    WorkersRegistry.build({ quantity: 0 });
+    router = new Router();
   });
 
   afterEach(() => {
     JobRegistry.reset();
+    WorkersRegistry.reset();
   });
 
   describe('#build', () => {

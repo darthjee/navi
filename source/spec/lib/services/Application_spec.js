@@ -19,11 +19,11 @@ describe('Application', () => {
 
   let jobFactory;
   let workerFactory;
-  let workersRegistry;
 
   afterEach(() => {
     JobRegistry.reset();
     JobFactory.reset();
+    WorkersRegistry.reset();
   });
 
   describe('#loadConfig', () => {
@@ -66,11 +66,8 @@ describe('Application', () => {
 
         app = new Application({ workers });
 
-        expect(app.workersRegistry).toBeUndefined();
-
         app.loadConfig(configFilePath);
 
-        expect(app.workersRegistry instanceof WorkersRegistry).toBeTrue();
         expect(workers.size()).toEqual(5);
       });
     });
@@ -100,10 +97,12 @@ describe('Application', () => {
 
       jobFactory = new DummyJobFactory();
       workerFactory = new DummyWorkerFactory();
-      workersRegistry = new WorkersRegistry({ quantity: 1, factory: workerFactory });
 
       app = new Application();
-      app.loadConfig(configFilePath, { workersRegistry });
+      app.loadConfig(configFilePath);
+      WorkersRegistry.reset();
+      WorkersRegistry.build({ quantity: 1, factory: workerFactory });
+      WorkersRegistry.initWorkers();
       JobFactory.registry('ResourceRequestJob', jobFactory);
     });
 

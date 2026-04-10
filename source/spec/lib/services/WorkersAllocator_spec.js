@@ -8,7 +8,6 @@ import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
 
 describe('WorkersAllocator', () => {
-  let workersRegistry;
   let allocator;
   let job;
   let worker;
@@ -21,20 +20,21 @@ describe('WorkersAllocator', () => {
     JobFactory.registry('ResourceRequestJob', jobFactory);
     JobRegistry.build({});
     workers = new IdentifyableCollection();
-    workersRegistry = new WorkersRegistry({ quantity: 1, workers });
-    workersRegistry.initWorkers();
+    WorkersRegistry.build({ quantity: 1, workers });
+    WorkersRegistry.initWorkers();
     worker = workers.byIndex(0);
     spyOn(worker, 'perform');
     DummyJob.setSuccessRate(1);
 
     job = new Job({});
 
-    allocator = new WorkersAllocator({ workersRegistry });
+    allocator = new WorkersAllocator();
   });
 
   afterEach(() => {
     JobRegistry.reset();
     JobFactory.reset();
+    WorkersRegistry.reset();
   });
 
   describe('when there when there is a single worker and no job', () => {
@@ -44,7 +44,7 @@ describe('WorkersAllocator', () => {
       allocator.allocate();
 
       expect(worker.job).toBeUndefined();
-      expect(workersRegistry.hasIdleWorker()).toBeTrue();
+      expect(WorkersRegistry.hasIdleWorker()).toBeTrue();
       expect(JobRegistry.hasJob()).toBeFalse();
       expect(worker.perform).not.toHaveBeenCalled();
     });
@@ -56,13 +56,13 @@ describe('WorkersAllocator', () => {
     });
 
     it('allocates all workers for the jobs', () => {
-      expect(workersRegistry.hasIdleWorker()).toBeTrue();
+      expect(WorkersRegistry.hasIdleWorker()).toBeTrue();
       expect(JobRegistry.hasJob()).toBeTrue();
 
       allocator.allocate();
 
       expect(worker.job).toEqual(job);
-      expect(workersRegistry.hasIdleWorker()).toBeFalse();
+      expect(WorkersRegistry.hasIdleWorker()).toBeFalse();
       expect(JobRegistry.hasJob()).toBeFalse();
       expect(worker.perform).toHaveBeenCalled();
     });
@@ -76,13 +76,13 @@ describe('WorkersAllocator', () => {
     });
 
     it('allocates all workers for the jobs they can', () => {
-      expect(workersRegistry.hasIdleWorker()).toBeTrue();
+      expect(WorkersRegistry.hasIdleWorker()).toBeTrue();
       expect(JobRegistry.hasJob()).toBeTrue();
 
       allocator.allocate();
 
       expect(worker.job).toEqual(job);
-      expect(workersRegistry.hasIdleWorker()).toBeFalse();
+      expect(WorkersRegistry.hasIdleWorker()).toBeFalse();
       expect(JobRegistry.hasJob()).toBeTrue();
       expect(worker.perform).toHaveBeenCalled();
     });
@@ -90,12 +90,12 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there are several workers', () => {
     beforeEach(() => {
+      WorkersRegistry.reset();
       workers = new IdentifyableCollection();
-      workersRegistry = new WorkersRegistry({ quantity: 3, workers });
-      workersRegistry.initWorkers();
+      WorkersRegistry.build({ quantity: 3, workers });
+      WorkersRegistry.initWorkers();
       worker = workers.byIndex(0);
       spyOn(worker, 'perform');
-      allocator = new WorkersAllocator({ workersRegistry });
 
       job = JobRegistry.enqueue('ResourceRequestJob', {});
       JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
@@ -103,13 +103,13 @@ describe('WorkersAllocator', () => {
     });
 
     it('allocates all workers for the jobs they can', () => {
-      expect(workersRegistry.hasIdleWorker()).toBeTrue();
+      expect(WorkersRegistry.hasIdleWorker()).toBeTrue();
       expect(JobRegistry.hasJob()).toBeTrue();
 
       allocator.allocate();
 
       expect(worker.job).toEqual(job);
-      expect(workersRegistry.hasIdleWorker()).toBeFalse();
+      expect(WorkersRegistry.hasIdleWorker()).toBeFalse();
       expect(JobRegistry.hasJob()).toBeFalse();
       expect(worker.perform).toHaveBeenCalled();
     });
@@ -123,7 +123,7 @@ describe('WorkersAllocator', () => {
     });
 
     it('does not allocate any worker', () => {
-      expect(workersRegistry.hasIdleWorker()).toBeTrue();
+      expect(WorkersRegistry.hasIdleWorker()).toBeTrue();
       expect(JobRegistry.hasJob()).toBeTrue();
       expect(JobRegistry.hasReadyJob()).toBeFalse();
 

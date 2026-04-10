@@ -27,14 +27,14 @@ class Application {
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
    * @returns {void}
    */
-  loadConfig(configPath, ...options) {
+  loadConfig(configPath) {
     if (!configPath) {
       throw new ConfigurationFileNotProvided();
     }
 
     // Load the configuration from the specified path.
     this.config = Config.fromFile(configPath);
-    this.#initRegistries(...options);
+    this.#initRegistries();
   }
 
   /**
@@ -54,9 +54,7 @@ class Application {
    * @returns {Engine} The created Engine instance.
    */
   buildEngine() {
-    return new Engine({
-      workersRegistry: this.workersRegistry
-    });
+    return new Engine();
   }
 
   /**
@@ -65,8 +63,7 @@ class Application {
    */
   buildWebServer() {
     return WebServer.build({
-      webConfig:       this.config.webConfig,
-      workersRegistry: this.workersRegistry,
+      webConfig: this.config.webConfig,
     });
   }
 
@@ -82,18 +79,17 @@ class Application {
     });
   }
 
-  #initRegistries({ workersRegistry } = {}) {
+  #initRegistries() {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown });
 
-    this.workersRegistry = workersRegistry || new WorkersRegistry({
+    WorkersRegistry.build({
       workers: this.#workers,
-      ...this.config.workersConfig
+      ...this.config.workersConfig,
     });
-
-    this.workersRegistry.initWorkers();
+    WorkersRegistry.initWorkers();
   }
 }
 
