@@ -25,6 +25,7 @@ function concatenate_files() {
             echo "Error: File '$file' does not exist." >&2
             exit 1
         fi
+        echo "" >> "$output_file"
         echo "// File: $file" >> "$output_file"
         cat "$file" >> "$output_file"
         echo "" >> "$output_file"  # Add a newline after each file
