@@ -15,12 +15,14 @@ navi.js (CLI entrypoint — project root)
        └─ WorkersRegistry ─ idle/busy worker pool (created via WorkersFactory)
             └─ Worker[]  ──── each processes one Job at a time (async)
                  └─ Job.perform()
-                      ├─ Client.perform(resourceRequest)  → raw response body
-                      └─ resourceRequest.executeActions(rawBody)
-                           ├─ ResponseParser   → parse JSON once
-                           └─ ActionsExecutor  → normalise + dispatch per item
-                                └─ ResourceRequestAction.execute(item)
-                                     └─ VariablesMapper.map(item) → log vars
+                      ├─ [ResourceRequestJob] Client.perform(resourceRequest)  → raw response body
+                      │    └─ resourceRequest.enqueueActions(rawBody, jobRegistry)
+                      │         ├─ ResponseParser   → parse JSON once
+                      │         └─ ActionsEnqueuer  → normalise + enqueue per (item × action)
+                      │              └─ jobRegistry.enqueueAction({ action, item })
+                      └─ [ActionProcessingJob] action.execute(item)
+                           └─ ResourceRequestAction.execute(item)
+                                └─ VariablesMapper.map(item) → log vars
 ```
 
 ---
@@ -146,25 +148,24 @@ Each `Worker` processes one job at a time asynchronously:
 1. **Resolve client** — look up the client named in `ResourceRequest` (or `default`) from `ClientRegistry`.
 2. **Resolve URL** — expand `{:placeholder}` tokens in the URL template using the job's parameter map.
 3. **Perform request** — call `Client.perform(resourceRequest, params)`; throws `RequestFailed` if the response status does not match the expected status. The response body is returned as raw text (`responseType: 'text'`).
-4. **Execute actions** — call `resourceRequest.executeActions(rawBody)` to process the response and dispatch each configured action (see section 7).
+4. **Enqueue action jobs** — call `resourceRequest.enqueueActions(rawBody, jobRegistry)` to parse the response and enqueue one `ActionProcessingJob` per `(item × action)` pair (see section 7).
 5. **Finish** — mark the job as finished and store it in `JobRegistry`'s finished list; call `WorkersRegistry.setIdle(workerId)` so the worker re-enters the idle pool.
 
 ---
 
 ## 7. Response Processing & Actions
 
-After `Client.perform()` resolves, `Job` passes the raw response body to `resourceRequest.executeActions(rawBody)`.
+After `Client.perform()` resolves, `ResourceRequestJob` passes the raw response body to `resourceRequest.enqueueActions(rawBody, jobRegistry)`.
 
-- `ResourceRequest.executeActions` returns immediately if there are no configured actions.
+- `ResourceRequest.enqueueActions` returns immediately if there are no configured actions.
 - **`ResponseParser`** parses the raw JSON body once. Throws `InvalidResponseBody` if the body cannot be parsed.
-- **`ActionsExecutor`** receives the parsed value. Throws `NullResponse` if the parsed value is `null`. Normalises the value to an array (wrapping a single object), then iterates over items × actions.
-- Per item, **`ResourceRequestAction`** calls **`VariablesMapper.map(item)`** to produce transformed variables, then logs:
+- **`ActionsEnqueuer`** receives the parsed value. Throws `NullResponse` if the parsed value is `null`. Normalises the value to an array (wrapping a single object), then iterates over items × actions, calling `jobRegistry.enqueueAction({ action, item })` for each pair.
+- `JobRegistry.enqueueAction` builds an **`ActionProcessingJob`** via the `'Action'` factory and pushes it onto the enqueued queue.
+- **`ActionProcessingJob.perform()`** calls `action.execute(item)`, which uses **`VariablesMapper.map(item)`** to produce transformed variables and logs:
   ```
   Executing action <resource> for <variables>
   ```
-- Action-level errors (`MissingMappingVariable`, `MissingActionResource`) are caught per action, logged, and execution continues with the next action.
-
-> **Future:** actions will be enqueued as special `Job` instances for async processing (no retry rights) instead of being executed inline.
+- `ActionProcessingJob` has no retry rights — it is exhausted immediately on the first failure.
 
 ### Example
 
@@ -178,7 +179,7 @@ actions:
   - resource: category_information
 ```
 
-For each item in the response array, each action is executed — **4 executions in total** (2 items × 2 actions):
+`ResourceRequestJob` enqueues **4** `ActionProcessingJob` instances (2 items × 2 actions). Each job then executes its action:
 
 ```
 Executing action products for { category_id: 1 }

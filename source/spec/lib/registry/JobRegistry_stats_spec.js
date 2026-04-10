@@ -55,7 +55,7 @@ describe('JobRegistry', () => {
 
     describe('when a job has been enqueued', () => {
       beforeEach(() => {
-        registry.enqueue({ parameters: { value: 1 } });
+        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
       });
 
       it('returns enqueued count of 1', () => {
@@ -72,7 +72,7 @@ describe('JobRegistry', () => {
 
     describe('when a job is being processed', () => {
       beforeEach(() => {
-        registry.enqueue({ parameters: { value: 1 } });
+        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
         registry.pick();
       });
 
@@ -90,7 +90,7 @@ describe('JobRegistry', () => {
 
     describe('when a job has finished', () => {
       beforeEach(() => {
-        registry.enqueue({ parameters: { value: 1 } });
+        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
         const job = registry.pick();
         registry.finish(job);
       });
@@ -109,7 +109,7 @@ describe('JobRegistry', () => {
 
     describe('when a non-exhausted job has failed', () => {
       beforeEach(() => {
-        registry.enqueue({ parameters: { value: 1 } });
+        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
         const job = registry.pick();
         registry.fail(job);
       });
@@ -128,7 +128,7 @@ describe('JobRegistry', () => {
 
     describe('when an exhausted job has failed', () => {
       beforeEach(() => {
-        registry.enqueue({ parameters: { value: 1 } });
+        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
         const job = registry.pick();
         try { job._fail(new Error()); } catch { /* expected */ }
         try { job._fail(new Error()); } catch { /* expected */ }
@@ -150,7 +150,7 @@ describe('JobRegistry', () => {
 
     describe('when a job has been promoted to retryQueue', () => {
       beforeEach(() => {
-        registry.enqueue({ parameters: { value: 1 } });
+        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
         const job = registry.pick();
         registry.fail(job);
         registry.promoteReadyJobs();

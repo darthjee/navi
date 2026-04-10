@@ -1,6 +1,7 @@
 import { Engine } from './Engine.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
 import { JobFactory } from '../factories/JobFactory.js';
+import { ActionProcessingJob } from '../models/ActionProcessingJob.js';
 import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
@@ -79,12 +80,13 @@ class Application {
    */
   enqueueFirstJobs() {
     new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
-      this.jobRegistry.enqueue({ resourceRequest, parameters: {} });
+      this.jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {}, jobRegistry: this.jobRegistry });
     });
   }
 
   #initRegistries({ jobRegistry, workersRegistry } = {}) {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
+    JobFactory.build('Action', { klass: ActionProcessingJob });
 
     this.jobRegistry = jobRegistry || new JobRegistry({
       cooldown: this.config.workersConfig.retryCooldown,

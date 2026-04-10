@@ -1,3 +1,4 @@
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { Engine } from '../../../lib/services/Engine.js';
@@ -22,7 +23,7 @@ describe('Engine', () => {
 
   const enqueueJobs = (n) => {
     for (let i = 0; i < n; i++) {
-      jobRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+      jobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
     }
   };
 
@@ -30,7 +31,8 @@ describe('Engine', () => {
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
     dead = new IdentifyableCollection();
-    jobRegistry = new JobRegistry({ finished, dead, factory: jobFactory, cooldown: -1 });
+    JobFactory.registry('ResourceRequestJob', jobFactory);
+    jobRegistry = new JobRegistry({ finished, dead, cooldown: -1 });
 
     workerFactory = new DummyWorkerFactory({ jobRegistry });
     busy = new IdentifyableCollection();
@@ -41,6 +43,10 @@ describe('Engine', () => {
     engine = new Engine({ jobRegistry, workersRegistry, sleepMs: -1 });
 
     spyOn(console, 'error').and.stub();
+  });
+
+  afterEach(() => {
+    JobFactory.reset();
   });
 
   describe('start', () => {
@@ -148,10 +154,10 @@ describe('Engine', () => {
       let slowRegistry;
 
       beforeEach(() => {
-        slowRegistry = new JobRegistry({ finished, dead, factory: jobFactory, cooldown: 5000 });
+        slowRegistry = new JobRegistry({ finished, dead, cooldown: 5000 });
         engine = new Engine({ jobRegistry: slowRegistry, workersRegistry, sleepMs: -1 });
         DummyJob.setSuccessRate(0);
-        slowRegistry.enqueue({ resourceRequest: {}, parameters: {} });
+        slowRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
       });
 
       it('does not allocate a worker while job is in cooldown', async () => {

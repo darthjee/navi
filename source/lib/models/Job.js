@@ -62,6 +62,15 @@ class Job {
   }
 
   /**
+   * Returns the number of failed attempts so far.
+   * @returns {number} The current attempt count.
+   * @protected
+   */
+  get _attempts() {
+    return this.#attempts;
+  }
+
+  /**
    * Handles a failed job attempt.
    * @param {Error} error - The error that caused the job to fail.
    * @protected

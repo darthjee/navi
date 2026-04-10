@@ -87,4 +87,23 @@ describe('Job', () => {
       expect(() => job._fail(error)).toThrow(error);
     });
   });
+
+  describe('#_attempts', () => {
+    const error = new Error('test error');
+
+    it('returns 0 before any failures', () => {
+      expect(job._attempts).toEqual(0);
+    });
+
+    it('returns 1 after one failure', () => {
+      try { job._fail(error); } catch (_) { /* expected */ }
+      expect(job._attempts).toEqual(1);
+    });
+
+    it('increments with each failure', () => {
+      try { job._fail(error); } catch (_) { /* expected */ }
+      try { job._fail(error); } catch (_) { /* expected */ }
+      expect(job._attempts).toEqual(2);
+    });
+  });
 });
