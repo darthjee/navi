@@ -51,6 +51,10 @@ class SortedArrayMerger {
     return this.#result.concat(this.#first.slice(this.#i), this.#second.slice(this.#j));
   }
 
+  /**
+   * Picks the next element from the first or second array based on sort order.
+   * @returns {void}
+   */
   #pickNext() {
     if (this.#firstComesFirst()) {
       this.#result.push(this.#first[this.#i++]);
@@ -59,10 +63,19 @@ class SortedArrayMerger {
     }
   }
 
+  /**
+   * Checks whether both arrays still have unprocessed elements.
+   * @returns {boolean} True if both pointers are within bounds.
+   */
   #bothHaveMore() {
     return this.#i < this.#first.length && this.#j < this.#second.length;
   }
 
+  /**
+   * Determines whether the current element of the first array should come before
+   * the current element of the second array.
+   * @returns {boolean} True if the first element comes first.
+   */
   #firstComesFirst() {
     return this.#sortBy(this.#first[this.#i]) <= this.#sortBy(this.#second[this.#j]);
   }

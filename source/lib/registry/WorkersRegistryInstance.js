@@ -51,6 +51,7 @@ class WorkersRegistryInstance {
   /**
    * Sets a worker as busy.
    * @param {string} worker_id - The ID of the worker to set as busy.
+   * @returns {void}
    */
   setBusy(worker_id) {
     const worker = this.#workers.get(worker_id);
@@ -64,6 +65,7 @@ class WorkersRegistryInstance {
   /**
    * Sets a worker as idle.
    * @param {string} worker_id - The ID of the worker to set as idle.
+   * @returns {void}
    */
   setIdle(worker_id) {
     const worker = this.#workers.get(worker_id);

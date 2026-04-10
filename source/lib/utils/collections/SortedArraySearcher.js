@@ -65,6 +65,10 @@ class SortedArraySearcher {
     return this.#lo;
   }
 
+  /**
+   * Performs one binary search step, narrowing the search range.
+   * @returns {void}
+   */
   #step() {
     if (this.#shouldAdvanceLo()) {
       this.#lo = this.#mid + 1;
@@ -73,6 +77,10 @@ class SortedArraySearcher {
     }
   }
 
+  /**
+   * Determines whether the lower bound should advance past the midpoint.
+   * @returns {boolean} True if the lower bound should be moved forward.
+   */
   #shouldAdvanceLo() {
     const item = this.#array[this.#mid];
     const sortedValue = this.#sortBy(item);
@@ -81,6 +89,10 @@ class SortedArraySearcher {
     return this.#isExclusiveMode();
   }
 
+  /**
+   * Checks whether the current mode is exclusive ('after' or 'upTo').
+   * @returns {boolean} True if the mode is exclusive.
+   */
   #isExclusiveMode() {
     return this.#mode === 'after' || this.#mode === 'upTo';
   }

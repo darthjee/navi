@@ -39,6 +39,7 @@ class Job {
    * Sets the cooldown duration in milliseconds after which the job is eligible for retry.
    * Stores the absolute timestamp (Date.now() + ms) internally.
    * @param {number} ms - Cooldown duration in milliseconds. Use a negative value to mark ready immediately.
+   * @returns {void}
    */
   applyCooldown(ms) {
     this.#readyBy = Date.now() + ms;
@@ -73,6 +74,7 @@ class Job {
   /**
    * Handles a failed job attempt.
    * @param {Error} error - The error that caused the job to fail.
+   * @throws {Error} Re-throws the error after recording the failure.
    * @protected
    */
   _fail(error) {

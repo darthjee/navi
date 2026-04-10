@@ -36,6 +36,7 @@ class SortedCollection extends Collection {
   /**
    * Adds an element to the pending (non-sorted) list.
    * @param {*} item - The element to add.
+   * @returns {void}
    */
   push(item) {
     this.#nonSorted.push(item);
@@ -112,11 +113,19 @@ class SortedCollection extends Collection {
     return this.#sorted.slice(0, i);
   }
 
+  /**
+   * Flushes pending elements and returns the sorted array.
+   * @returns {Array} The internal sorted array.
+   */
   #flushedSorted() {
     this.#flush();
     return this.#sorted;
   }
 
+  /**
+   * Merges pending elements into the sorted array if any are buffered.
+   * @returns {void}
+   */
   #flush() {
     if (this.#nonSorted.length === 0) return;
 
@@ -125,6 +134,10 @@ class SortedCollection extends Collection {
     this.#nonSorted = [];
   }
 
+  /**
+   * Sorts the pending non-sorted array in place using the sortBy function.
+   * @returns {void}
+   */
   #sortNonSorted() {
     this.#nonSorted.sort((a, b) => {
       const va = this.#sortBy(a);
@@ -133,10 +146,20 @@ class SortedCollection extends Collection {
     });
   }
 
+  /**
+   * Merges the sorted and non-sorted arrays using a two-pointer algorithm.
+   * @returns {Array} The merged sorted array.
+   */
   #merge() {
     return SortedArrayMerger.merge(this.#sorted, this.#nonSorted, this.#sortBy);
   }
 
+  /**
+   * Performs a binary search on the flushed sorted array.
+   * @param {*} value - The boundary value to search for.
+   * @param {'after'|'from'|'before'|'upTo'} mode - The range mode.
+   * @returns {number} The boundary index.
+   */
   #binarySearch(value, mode) {
     return SortedArraySearcher.search(this.#flushedSorted(), this.#sortBy, value, mode);
   }

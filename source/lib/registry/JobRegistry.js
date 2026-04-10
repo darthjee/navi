@@ -100,6 +100,11 @@ class JobRegistry {
     return JobRegistry.#getInstance().stats();
   }
 
+  /**
+   * Returns the singleton instance, throwing if not yet built.
+   * @returns {JobRegistryInstance} The singleton instance.
+   * @throws {Error} If `build()` has not been called.
+   */
   static #getInstance() {
     if (!JobRegistry.#instance) {
       throw new Error('JobRegistry has not been built. Call JobRegistry.build() first.');
