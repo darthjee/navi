@@ -12,7 +12,6 @@ describe('Engine', () => {
   let engine;
   let jobFactory;
   let workerFactory;
-  let workersRegistry;
   let allocator;
 
   let finished;
@@ -35,11 +34,11 @@ describe('Engine', () => {
 
     workerFactory = new DummyWorkerFactory();
     busy = new IdentifyableCollection();
-    workersRegistry = new WorkersRegistry({ busy, quantity: 2, factory: workerFactory });
-    workersRegistry.initWorkers();
+    WorkersRegistry.build({ busy, quantity: 2, factory: workerFactory });
+    WorkersRegistry.initWorkers();
 
     DummyJob.setSuccessRate(1);
-    engine = new Engine({ workersRegistry, sleepMs: -1 });
+    engine = new Engine({ sleepMs: -1 });
 
     spyOn(console, 'error').and.stub();
   });
@@ -47,6 +46,7 @@ describe('Engine', () => {
   afterEach(() => {
     JobRegistry.reset();
     JobFactory.reset();
+    WorkersRegistry.reset();
   });
 
   describe('start', () => {
@@ -114,13 +114,19 @@ describe('Engine', () => {
     });
 
     describe('when jobs take some time to be processed', () => {
+      let workers;
+
       beforeEach(() => {
-        allocator = new DummyWorkersAllocator({ workersRegistry });
-        engine = new Engine({ workersRegistry, allocator, sleepMs: -1 });
+        workers = new IdentifyableCollection();
+        WorkersRegistry.reset();
+        WorkersRegistry.build({ busy, quantity: 2, workers, factory: workerFactory });
+        WorkersRegistry.initWorkers();
+        allocator = new DummyWorkersAllocator();
+        engine = new Engine({ allocator, sleepMs: -1 });
         DummyJob.setSuccessRate(0.1);
 
-        spyOn(workersRegistry, 'hasIdleWorker').and.callFake(() => {
-          const result = workersRegistry.hasIdleWorker.and.originalFn.call(workersRegistry);
+        spyOn(WorkersRegistry, 'hasIdleWorker').and.callFake(() => {
+          const result = WorkersRegistry.hasIdleWorker.and.originalFn.call(WorkersRegistry);
           if (!result || !JobRegistry.hasJob()) {
             busy.list().forEach(worker => worker.perform());
           }
@@ -154,7 +160,7 @@ describe('Engine', () => {
       beforeEach(() => {
         JobRegistry.reset();
         JobRegistry.build({ finished, dead, cooldown: 5000 });
-        engine = new Engine({ workersRegistry, sleepMs: -1 });
+        engine = new Engine({ sleepMs: -1 });
         DummyJob.setSuccessRate(0);
         JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
       });

@@ -13,15 +13,10 @@ const publicDir = path.join(__dirname, '../../public');
  * @author darthjee
  */
 class Router {
-  #workersRegistry;
-
   /**
-   * @param {object} params - Options for initializing the Router.
-   * @param {object} params.workersRegistry - The workers registry instance.
+   * Creates a new Router instance.
    */
-  constructor({ workersRegistry }) {
-    this.#workersRegistry = workersRegistry;
-  }
+  constructor() {}
 
   /**
    * Creates and returns an Express Router with all routes registered.
@@ -33,9 +28,7 @@ class Router {
 
     register.register({
       route:   '/stats.json',
-      handler: new StatsRequestHandler({
-        workersRegistry: this.#workersRegistry,
-      }),
+      handler: new StatsRequestHandler(),
     });
 
     router.use(express.static(publicDir));

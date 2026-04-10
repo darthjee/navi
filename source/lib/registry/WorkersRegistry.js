@@ -2,10 +2,10 @@ import { WorkerFactory } from '../factories/WorkerFactory.js';
 import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
 
 /**
- * WorkersRegistry manages the creation and tracking of Worker instances.
+ * WorkersRegistryInstance manages the creation and tracking of Worker instances.
  * @author darthjee
  */
-class WorkersRegistry {
+class WorkersRegistryInstance {
   #factory;
   #quantity;
   #workers;
@@ -13,8 +13,8 @@ class WorkersRegistry {
   #idle;
 
   /**
-   * Creates a new WorkersRegistry instance.
-   * @param {object} params - The parameters for creating a WorkersRegistry instance.
+   * Creates a new WorkersRegistryInstance.
+   * @param {object} params - The parameters for creating a WorkersRegistryInstance.
    * @param {WorkerFactory} [params.factory] - The factory for creating Worker instances (injected for testing).
    * @param {number} params.quantity - The number of workers to be built.
    * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
@@ -23,7 +23,7 @@ class WorkersRegistry {
    */
   constructor({
     quantity,
-    factory = new WorkerFactory({ workerRegistry: this }),
+    factory = new WorkerFactory(),
     workers = new IdentifyableCollection(),
     busy = new IdentifyableCollection(),
     idle = new IdentifyableCollection()
@@ -121,12 +121,110 @@ class WorkersRegistry {
    * @returns {Worker} The newly created Worker instance.
    */
   #buildWorker() {
-    const worker = this.#factory.build({ workerRegistry: this });
+    const worker = this.#factory.build();
 
     this.#workers.push(worker);
     this.#idle.push(worker);
 
     return worker;
+  }
+}
+
+/**
+ * WorkersRegistry is a static singleton facade for managing the application's worker pool.
+ *
+ * Call `WorkersRegistry.build(options)` once during application bootstrap.
+ * Use `WorkersRegistry.reset()` in tests to restore a clean state between examples.
+ * @author darthjee
+ */
+class WorkersRegistry {
+  static #instance = null;
+
+  /**
+   * Creates and stores the singleton instance.
+   * @param {object} [options={}] - Forwarded to `WorkersRegistryInstance` constructor.
+   * @returns {WorkersRegistryInstance} The created instance.
+   * @throws {Error} If `build()` has already been called without a preceding `reset()`.
+   */
+  static build(options = {}) {
+    if (WorkersRegistry.#instance) {
+      throw new Error('WorkersRegistry.build() has already been called. Call reset() first.');
+    }
+    WorkersRegistry.#instance = new WorkersRegistryInstance(options);
+    return WorkersRegistry.#instance;
+  }
+
+  /**
+   * Destroys the singleton instance. Intended for test teardown.
+   * @returns {void}
+   */
+  static reset() {
+    WorkersRegistry.#instance = null;
+  }
+
+  /**
+   * Initializes the specified number of workers.
+   * @returns {void}
+   */
+  static initWorkers() {
+    return WorkersRegistry.#getInstance().initWorkers();
+  }
+
+  /**
+   * Sets a worker as busy.
+   * @param {string} id - The ID of the worker to set as busy.
+   * @returns {void}
+   */
+  static setBusy(id) {
+    return WorkersRegistry.#getInstance().setBusy(id);
+  }
+
+  /**
+   * Sets a worker as idle.
+   * @param {string} id - The ID of the worker to set as idle.
+   * @returns {void}
+   */
+  static setIdle(id) {
+    return WorkersRegistry.#getInstance().setIdle(id);
+  }
+
+  /**
+   * Checks if there is at least one busy worker.
+   * @returns {boolean} True if there is at least one busy worker, false otherwise.
+   */
+  static hasBusyWorker() {
+    return WorkersRegistry.#getInstance().hasBusyWorker();
+  }
+
+  /**
+   * Checks if there is at least one idle worker.
+   * @returns {boolean} True if there is at least one idle worker, false otherwise.
+   */
+  static hasIdleWorker() {
+    return WorkersRegistry.#getInstance().hasIdleWorker();
+  }
+
+  /**
+   * Gets an idle worker if available.
+   * @returns {Worker|null} An idle worker if available, or null if no idle workers are present.
+   */
+  static getIdleWorker() {
+    return WorkersRegistry.#getInstance().getIdleWorker();
+  }
+
+  /**
+   * Returns counts of workers in each state.
+   * @returns {{ idle: number, busy: number }} Counts of workers in each state.
+   */
+  static stats() {
+    return WorkersRegistry.#getInstance().stats();
+  }
+
+  static #getInstance() {
+    if (!WorkersRegistry.#instance) {
+      throw new Error('WorkersRegistry has not been built. Call WorkersRegistry.build() first.');
+    }
+    return WorkersRegistry.#instance;
   }
 }
 
