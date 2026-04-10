@@ -1,15 +1,11 @@
-import { LockedByOtherWorker } from '../../../lib/exceptions/LockedByOtherWorker.js';
 import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Job } from '../../../lib/models/Job.js';
-import { Worker } from '../../../lib/models/Worker.js';
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
 describe('JobRegistry', () => {
-  let registry;
   let resourceRequest;
   let clients;
 
@@ -19,39 +15,39 @@ describe('JobRegistry', () => {
   let processing;
 
   beforeEach(() => {
-    clients = new ClientRegistry();
     JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     jobs = new Queue();
     retryQueue = new Queue();
     finished = new Queue();
     processing = new IdentifyableCollection();
-    registry = new JobRegistry({ queue: jobs, retryQueue, finished, processing, cooldown: -1 });
+    JobRegistry.build({ queue: jobs, retryQueue, finished, processing, cooldown: -1 });
     resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
   });
 
   afterEach(() => {
+    JobRegistry.reset();
     JobFactory.reset();
   });
 
-  describe('#enqueue', () => {
+  describe('.enqueue', () => {
     it('creates and enqueues a job', () => {
-      expect(registry.hasJob()).toBeFalse();
+      expect(JobRegistry.hasJob()).toBeFalse();
 
-      const jobAttributes = { resourceRequest, parameters: { id: 20 }, jobRegistry: registry };
-      const job = registry.enqueue('ResourceRequestJob', jobAttributes);
+      const jobAttributes = { resourceRequest, parameters: { id: 20 } };
+      const job = JobRegistry.enqueue('ResourceRequestJob', jobAttributes);
 
       expect(job).toBeInstanceOf(Job);
-      expect(registry.hasJob()).toBeTrue();
+      expect(JobRegistry.hasJob()).toBeTrue();
     });
 
     it('passes params to the factory', () => {
       const factory = JobFactory.get('ResourceRequestJob');
       spyOn(factory, 'build').and.callThrough();
 
-      registry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {}, jobRegistry: registry });
+      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
 
       expect(factory.build).toHaveBeenCalledWith(
-        jasmine.objectContaining({ jobRegistry: registry })
+        jasmine.objectContaining({ resourceRequest })
       );
     });
 
@@ -68,16 +64,16 @@ describe('JobRegistry', () => {
       });
 
       it('creates and enqueues a job', () => {
-        expect(registry.hasJob()).toBeFalse();
-        const job = registry.enqueue('Action', { action, item });
+        expect(JobRegistry.hasJob()).toBeFalse();
+        const job = JobRegistry.enqueue('Action', { action, item });
         expect(job).toBeInstanceOf(Job);
-        expect(registry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
       });
 
       it('passes params to the named factory', () => {
         spyOn(actionFactory, 'build').and.callThrough();
 
-        registry.enqueue('Action', { action, item });
+        JobRegistry.enqueue('Action', { action, item });
 
         expect(actionFactory.build).toHaveBeenCalledWith(
           jasmine.objectContaining({ action, item })
@@ -86,90 +82,90 @@ describe('JobRegistry', () => {
     });
   });
 
-  describe('#hasJob', () => {
+  describe('.hasJob', () => {
     describe('when the queue is empty', () => {
       it('returns false', () => {
-        expect(registry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
       });
     });
 
     describe('when the queue has jobs', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', {});
+        JobRegistry.enqueue('ResourceRequestJob', {});
       });
 
       it('returns true', () => {
-        expect(registry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
       });
     });
 
     describe('when only the retryQueue has items', () => {
       beforeEach(() => {
-        const job = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        registry.pick();
-        registry.fail(job);
-        registry.promoteReadyJobs();
+        const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
+        JobRegistry.fail(job);
+        JobRegistry.promoteReadyJobs();
       });
 
       it('returns true', () => {
-        expect(registry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
       });
     });
   });
 
-  describe('#hasReadyJob', () => {
+  describe('.hasReadyJob', () => {
     describe('when all queues are empty', () => {
       it('returns false', () => {
-        expect(registry.hasReadyJob()).toBeFalse();
+        expect(JobRegistry.hasReadyJob()).toBeFalse();
       });
     });
 
     describe('when enqueued has items', () => {
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
       });
 
       it('returns true', () => {
-        expect(registry.hasReadyJob()).toBeTrue();
+        expect(JobRegistry.hasReadyJob()).toBeTrue();
       });
     });
 
     describe('when only failed has items (cooldown not elapsed)', () => {
       beforeEach(() => {
-        const freshRegistry = new JobRegistry({ cooldown: 5000 });
-        const job = freshRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        freshRegistry.pick();
-        freshRegistry.fail(job);
-        registry = freshRegistry;
+        JobRegistry.reset();
+        JobRegistry.build({ cooldown: 5000 });
+        const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
+        JobRegistry.fail(job);
       });
 
       it('returns false', () => {
-        expect(registry.hasReadyJob()).toBeFalse();
+        expect(JobRegistry.hasReadyJob()).toBeFalse();
       });
     });
 
     describe('when retryQueue has items', () => {
       beforeEach(() => {
-        const job = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        registry.pick();
-        registry.fail(job);
-        registry.promoteReadyJobs();
+        const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
+        JobRegistry.fail(job);
+        JobRegistry.promoteReadyJobs();
       });
 
       it('returns true', () => {
-        expect(registry.hasReadyJob()).toBeTrue();
+        expect(JobRegistry.hasReadyJob()).toBeTrue();
       });
     });
   });
 
-  describe('#pick', () => {
+  describe('.pick', () => {
     describe('when the queue is empty', () => {
       it('returns undefined', () => {
-        expect(registry.pick()).toBeUndefined();
+        expect(JobRegistry.pick()).toBeUndefined();
       });
 
       it('does not add anything to processing', () => {
-        registry.pick();
+        JobRegistry.pick();
 
         expect(processing.hasAny()).toBeFalse();
       });
@@ -179,32 +175,32 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        job2 = registry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
+        job1 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        job2 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
       });
 
       it('returns the first job', () => {
-        expect(registry.pick()).toEqual(job1);
+        expect(JobRegistry.pick()).toEqual(job1);
       });
 
       it('removes the job from the queue', () => {
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.pick()).toEqual(job2);
+        expect(JobRegistry.pick()).toEqual(job2);
       });
 
       it('decreases the queue size', () => {
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
 
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
       });
 
       it('adds the picked job to processing', () => {
-        const job = registry.pick();
+        const job = JobRegistry.pick();
 
         expect(processing.has(job.id)).toBeTrue();
       });
@@ -214,28 +210,28 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        job1 = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        job2 = registry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
+        job1 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        job2 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
       });
 
       it('returns the first job', () => {
-        expect(registry.pick()).toEqual(job1);
+        expect(JobRegistry.pick()).toEqual(job1);
       });
 
       it('removes the job from the queue', () => {
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.pick()).toEqual(job2);
+        expect(JobRegistry.pick()).toEqual(job2);
       });
 
       it('decreases the queue size', () => {
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
 
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
       });
     });
 
@@ -243,31 +239,31 @@ describe('JobRegistry', () => {
       let job1, job2;
 
       beforeEach(() => {
-        registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        job1 = registry.pick();
-        job2 = registry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
-        registry.fail(job1);
-        registry.promoteReadyJobs();
+        JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        job1 = JobRegistry.pick();
+        job2 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
+        JobRegistry.fail(job1);
+        JobRegistry.promoteReadyJobs();
       });
 
       it('returns the first not failed job', () => {
-        expect(registry.pick()).toEqual(job2);
+        expect(JobRegistry.pick()).toEqual(job2);
       });
 
       it('removes the job from the queue', () => {
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.pick()).toEqual(job1);
+        expect(JobRegistry.pick()).toEqual(job1);
       });
 
       it('decreases the queue size', () => {
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.hasJob()).toBeTrue();
+        expect(JobRegistry.hasJob()).toBeTrue();
 
-        registry.pick();
+        JobRegistry.pick();
 
-        expect(registry.hasJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeFalse();
       });
     });
 
@@ -275,125 +271,62 @@ describe('JobRegistry', () => {
       let failedJob;
 
       beforeEach(() => {
-        failedJob = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        registry.pick();
-        registry.fail(failedJob);
-        registry.promoteReadyJobs();
+        failedJob = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
+        JobRegistry.fail(failedJob);
+        JobRegistry.promoteReadyJobs();
       });
 
       it('returns the job from retryQueue', () => {
-        expect(registry.pick()).toEqual(failedJob);
+        expect(JobRegistry.pick()).toEqual(failedJob);
       });
 
       it('adds the job to processing', () => {
-        registry.pick();
+        JobRegistry.pick();
         expect(processing.has(failedJob.id)).toBeTrue();
       });
 
       it('empties retryQueue afterwards', () => {
-        registry.pick();
-        expect(registry.hasReadyJob()).toBeFalse();
+        JobRegistry.pick();
+        expect(JobRegistry.hasReadyJob()).toBeFalse();
       });
     });
   });
 
-  describe('#lock', () => {
-    let worker;
-
-    beforeEach(() => {
-      worker = new Worker({ id: 1, jobRegistry: registry });
-    });
-
-    describe('when the registry is not locked', () => {
-      it('sets lockedBy to the worker id', () => {
-        registry.lock(worker);
-
-        expect(registry.hasLock(worker)).toBeTrue();
-      });
-    });
-
-    describe('when the registry is already locked', () => {
-      beforeEach(() => {
-        registry.lock(worker);
-      });
-
-      it('throws LockedByOtherWorker', () => {
-        const otherWorker = new Worker({ id: 2, jobRegistry: registry });
-
-        expect(() => registry.lock(otherWorker)).toThrowError(LockedByOtherWorker);
-      });
-    });
-  });
-
-  describe('#hasLock', () => {
-    let worker;
-
-    beforeEach(() => {
-      worker = new Worker({ id: 1, jobRegistry: registry });
-    });
-
-    describe('when the worker holds the lock', () => {
-      beforeEach(() => {
-        registry.lock(worker);
-      });
-
-      it('returns true', () => {
-        expect(registry.hasLock(worker)).toBeTrue();
-      });
-    });
-
-    describe('when another worker holds the lock', () => {
-      beforeEach(() => {
-        registry.lock(worker);
-      });
-
-      it('returns false', () => {
-        const otherWorker = new Worker({ id: 2, jobRegistry: registry });
-
-        expect(registry.hasLock(otherWorker)).toBeFalse();
-      });
-    });
-
-    describe('when the registry is not locked', () => {
-      it('returns false', () => {
-        expect(registry.hasLock(worker)).toBeFalse();
-      });
-    });
-  });
-
-  describe('#fail', () => {
+  describe('.fail', () => {
     it('moves the failed job to the failed queue for later retry', () => {
-      const job = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+      const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
 
-      const picked = registry.pick();
+      const picked = JobRegistry.pick();
       expect(picked).toBe(job);
 
-      registry.fail(picked);
+      JobRegistry.fail(picked);
 
-      expect(registry.hasJob()).toBeTrue();
-      registry.promoteReadyJobs();
-      expect(registry.pick()).toEqual(job);
+      expect(JobRegistry.hasJob()).toBeTrue();
+      JobRegistry.promoteReadyJobs();
+      expect(JobRegistry.pick()).toEqual(job);
     });
 
     it('removes the job from processing', () => {
-      const job = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-      const picked = registry.pick();
+      const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+      const picked = JobRegistry.pick();
 
       expect(processing.has(picked.id)).toBeTrue();
 
-      registry.fail(job);
+      JobRegistry.fail(job);
 
       expect(processing.has(picked.id)).toBeFalse();
     });
 
     describe('when the job is not exhausted', () => {
       it('sets readyBy using the configured cooldown', () => {
-        const registryWithCooldown = new JobRegistry({ cooldown: 5000 });
-        const j = registryWithCooldown.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        registryWithCooldown.pick();
+        JobRegistry.reset();
+        JobRegistry.build({ cooldown: 5000 });
+        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
 
         const before = Date.now() + 4900;
-        registryWithCooldown.fail(j);
+        JobRegistry.fail(j);
         const after = Date.now() + 5100;
 
         expect(j.readyBy).toBeGreaterThanOrEqual(before);
@@ -401,86 +334,86 @@ describe('JobRegistry', () => {
       });
 
       it('moves the job to the failed queue, not retryQueue', () => {
-        const registryWithCooldown = new JobRegistry({ cooldown: 5000 });
-        const j = registryWithCooldown.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        registryWithCooldown.pick();
-        registryWithCooldown.fail(j);
+        JobRegistry.reset();
+        JobRegistry.build({ cooldown: 5000 });
+        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.pick();
+        JobRegistry.fail(j);
 
-        expect(registryWithCooldown.hasReadyJob()).toBeFalse();
-        expect(registryWithCooldown.hasJob()).toBeTrue();
+        expect(JobRegistry.hasReadyJob()).toBeFalse();
+        expect(JobRegistry.hasJob()).toBeTrue();
       });
     });
   });
 
-  describe('#promoteReadyJobs', () => {
+  describe('.promoteReadyJobs', () => {
     let readyJob, waitingJob;
 
     beforeEach(() => {
-      const slowRegistry = new JobRegistry({ cooldown: 5000 });
-      readyJob = slowRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-      waitingJob = slowRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
+      JobRegistry.reset();
+      JobRegistry.build({ cooldown: 5000 });
+      readyJob   = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+      waitingJob = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
 
-      slowRegistry.pick();
-      slowRegistry.pick();
+      JobRegistry.pick();
+      JobRegistry.pick();
 
-      slowRegistry.fail(readyJob);
-      slowRegistry.fail(waitingJob);
+      JobRegistry.fail(readyJob);
+      JobRegistry.fail(waitingJob);
 
       readyJob.applyCooldown(-1000);
       waitingJob.applyCooldown(10_000);
-
-      registry = slowRegistry;
     });
 
     it('moves the ready job to retryQueue', () => {
-      registry.promoteReadyJobs();
+      JobRegistry.promoteReadyJobs();
 
-      expect(registry.hasReadyJob()).toBeTrue();
+      expect(JobRegistry.hasReadyJob()).toBeTrue();
     });
 
     it('keeps the waiting job in failed queue', () => {
-      registry.promoteReadyJobs();
+      JobRegistry.promoteReadyJobs();
 
-      expect(registry.hasJob()).toBeTrue();
-      expect(registry.pick()).toEqual(readyJob);
-      expect(registry.pick()).toBeUndefined();
+      expect(JobRegistry.hasJob()).toBeTrue();
+      expect(JobRegistry.pick()).toEqual(readyJob);
+      expect(JobRegistry.pick()).toBeUndefined();
     });
 
     describe('when called repeatedly', () => {
       it('is idempotent when no new jobs become ready', () => {
-        registry.promoteReadyJobs();
-        registry.promoteReadyJobs();
+        JobRegistry.promoteReadyJobs();
+        JobRegistry.promoteReadyJobs();
 
-        registry.pick();
-        expect(registry.pick()).toBeUndefined();
+        JobRegistry.pick();
+        expect(JobRegistry.pick()).toBeUndefined();
       });
     });
   });
 
-  describe('#finish', () => {
+  describe('.finish', () => {
     it('does not re-queue a picked job', () => {
-      const job = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+      const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
 
-      const picked = registry.pick();
+      const picked = JobRegistry.pick();
       expect(picked).toBe(job);
 
-      registry.finish(picked);
+      JobRegistry.finish(picked);
 
-      expect(registry.hasJob()).toBeFalse();
-      expect(registry.pick()).toBeUndefined();
+      expect(JobRegistry.hasJob()).toBeFalse();
+      expect(JobRegistry.pick()).toBeUndefined();
     });
 
     it('is safe to call with undefined', () => {
-      expect(() => registry.finish(undefined)).not.toThrow();
+      expect(() => JobRegistry.finish(undefined)).not.toThrow();
     });
 
     it('removes the job from processing', () => {
-      const job = registry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-      const picked = registry.pick();
+      const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+      const picked = JobRegistry.pick();
 
       expect(processing.has(picked.id)).toBeTrue();
 
-      registry.finish(job);
+      JobRegistry.finish(job);
 
       expect(processing.has(picked.id)).toBeFalse();
     });

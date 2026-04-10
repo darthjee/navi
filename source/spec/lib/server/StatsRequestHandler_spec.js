@@ -1,18 +1,23 @@
+import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { StatsRequestHandler } from '../../../lib/server/StatsRequestHandler.js';
 
 describe('StatsRequestHandler', () => {
   let handler;
-  let jobRegistry;
   let workersRegistry;
   let res;
   const jobStats = { enqueued: 1, processing: 0, failed: 0, finished: 5, dead: 0 };
   const workerStats = { idle: 3, busy: 1 };
 
   beforeEach(() => {
-    jobRegistry = { stats: () => jobStats };
+    JobRegistry.build({ cooldown: -1 });
+    spyOn(JobRegistry, 'stats').and.returnValue(jobStats);
     workersRegistry = { stats: () => workerStats };
     res = { json: jasmine.createSpy('json') };
-    handler = new StatsRequestHandler({ jobRegistry, workersRegistry });
+    handler = new StatsRequestHandler({ workersRegistry });
+  });
+
+  afterEach(() => {
+    JobRegistry.reset();
   });
 
   describe('#handle', () => {

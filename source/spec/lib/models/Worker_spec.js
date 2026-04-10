@@ -13,7 +13,6 @@ import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFac
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
 describe('Worker', () => {
-  let jobRegistry;
   let workerRegistry;
   let worker;
   let clients;
@@ -39,25 +38,22 @@ describe('Worker', () => {
     JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     finished = new IdentifyableCollection();
     failed = new Queue();
-    jobRegistry = new JobRegistry({ failed, finished });
+    JobRegistry.build({ failed, finished });
 
     idle = new IdentifyableCollection();
-    workerRegistry = new WorkersRegistry({ quantity: 0, idle, jobRegistry });
+    workerRegistry = new WorkersRegistry({ quantity: 0, idle });
 
-    worker = new Worker({ id: 1, jobRegistry, workerRegistry });
+    worker = new Worker({ id: 1, workerRegistry });
   });
 
   afterEach(() => {
+    JobRegistry.reset();
     JobFactory.reset();
   });
 
   describe('#constructor', () => {
     it('stores the id', () => {
       expect(worker.id).toEqual(1);
-    });
-
-    it('stores the job registry', () => {
-      expect(worker.jobRegistry).toEqual(jobRegistry);
     });
 
     it('stores the worker registry', () => {
@@ -89,7 +85,7 @@ describe('Worker', () => {
 
     describe('when no job is assigned', () => {
       it('throws an error', async () => {
-        const unassignedWorker = new Worker({ id: 2, jobRegistry, workerRegistry });
+        const unassignedWorker = new Worker({ id: 2, workerRegistry });
         expectedError = new Error('No job assigned to worker');
         await expectAsync(unassignedWorker.perform()).toBeRejectedWith(expectedError);
       });

@@ -1,3 +1,5 @@
+import { JobRegistry } from '../registry/JobRegistry.js';
+
 /**
  * ActionEnqueuer enqueues one ActionProcessingJob per item for a single Action.
  * @author darthjee
@@ -5,17 +7,14 @@
 class ActionEnqueuer {
   #action;
   #items;
-  #jobRegistry;
 
   /**
    * @param {ResourceRequestAction} action The action to enqueue for each item.
    * @param {Array} items List of parsed response items.
-   * @param {JobRegistry} jobRegistry The registry used to enqueue action jobs.
    */
-  constructor(action, items, jobRegistry) {
+  constructor(action, items) {
     this.#action = action;
     this.#items = items;
-    this.#jobRegistry = jobRegistry;
   }
 
   /**
@@ -23,7 +22,7 @@ class ActionEnqueuer {
    */
   enqueue() {
     for (const item of this.#items) {
-      this.#jobRegistry.enqueue('Action', { action: this.#action, item });
+      JobRegistry.enqueue('Action', { action: this.#action, item });
     }
   }
 }
