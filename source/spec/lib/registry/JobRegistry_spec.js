@@ -70,7 +70,7 @@ describe('JobRegistry', () => {
 
     it('creates and enqueues a job', () => {
       expect(registry.hasJob()).toBeFalse();
-      const job = registry.enqueueAction({ action, item });
+      const job = registry.enqueueAction('Action', { action, item });
       expect(job).toBeInstanceOf(Job);
       expect(registry.hasJob()).toBeTrue();
     });
@@ -78,7 +78,7 @@ describe('JobRegistry', () => {
     it('passes action and item to the Action factory', () => {
       spyOn(actionFactory, 'build').and.callThrough();
 
-      registry.enqueueAction({ action, item });
+      registry.enqueueAction('Action', { action, item });
 
       expect(actionFactory.build).toHaveBeenCalledWith(
         jasmine.objectContaining({ action, item })

@@ -115,8 +115,8 @@ describe('ResourceRequest', () => {
       it('calls enqueueAction once per element', () => {
         request.enqueueActions('[{"id":1},{"id":2}]', jobRegistry);
         expect(jobRegistry.enqueueAction).toHaveBeenCalledTimes(2);
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action, item: { id: 1 } });
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action, item: { id: 2 } });
+        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
       });
     });
 
@@ -128,7 +128,7 @@ describe('ResourceRequest', () => {
 
       it('calls enqueueAction once with the item', () => {
         request.enqueueActions('{"id":1}', jobRegistry);
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledOnceWith({ action, item: { id: 1 } });
+        expect(jobRegistry.enqueueAction).toHaveBeenCalledOnceWith('Action', { action, item: { id: 1 } });
       });
     });
   });

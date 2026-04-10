@@ -27,7 +27,7 @@ describe('ActionsEnqueuer', () => {
 
       it('calls enqueueAction once with the action and item', () => {
         new ActionsEnqueuer(actions, parsed, jobRegistry).enqueue();
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledOnceWith({ action, item: parsed });
+        expect(jobRegistry.enqueueAction).toHaveBeenCalledOnceWith('Action', { action, item: parsed });
       });
     });
 
@@ -37,8 +37,8 @@ describe('ActionsEnqueuer', () => {
       it('calls enqueueAction once per element', () => {
         new ActionsEnqueuer(actions, parsed, jobRegistry).enqueue();
         expect(jobRegistry.enqueueAction).toHaveBeenCalledTimes(2);
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action, item: { id: 1 } });
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action, item: { id: 2 } });
+        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
       });
 
       describe('with multiple actions', () => {
@@ -52,10 +52,10 @@ describe('ActionsEnqueuer', () => {
         it('calls enqueueAction for each action × item combination', () => {
           new ActionsEnqueuer(actions, parsed, jobRegistry).enqueue();
           expect(jobRegistry.enqueueAction).toHaveBeenCalledTimes(4);
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action, item: { id: 1 } });
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action, item: { id: 2 } });
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action: secondAction, item: { id: 1 } });
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith({ action: secondAction, item: { id: 2 } });
+          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
+          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action: secondAction, item: { id: 1 } });
+          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action: secondAction, item: { id: 2 } });
         });
       });
     });
