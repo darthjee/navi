@@ -59,10 +59,18 @@ class ConfigParser {
     };
   }
 
+  /**
+   * Creates a WorkersConfig from the parsed YAML workers section.
+   * @returns {WorkersConfig} The workers configuration instance.
+   */
   #workersConfig() {
     return new WorkersConfig(this.config.workers);
   }
 
+  /**
+   * Creates a WebConfig from the parsed YAML web section, or null if absent.
+   * @returns {WebConfig|null} The web configuration instance or null.
+   */
   #webConfig() {
     if (!this.config.web) return null;
     return new WebConfig(this.config.web);

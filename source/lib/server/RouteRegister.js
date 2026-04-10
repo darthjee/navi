@@ -17,6 +17,7 @@ class RouteRegister {
    * @param {object} params - Options for registering a route.
    * @param {string} params.route - The route path (e.g. '/stats.json').
    * @param {object} params.handler - The handler whose handle method is called.
+   * @returns {void}
    */
   register({ route, handler }) {
     this.#router.get(route, (req, res) => handler.handle(req, res));

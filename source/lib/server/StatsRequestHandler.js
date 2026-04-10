@@ -18,6 +18,7 @@ class StatsRequestHandler extends RequestHandler {
    * Responds with combined job and worker stats.
    * @param {object} _req - The Express request object.
    * @param {object} res - The Express response object.
+   * @returns {void}
    */
   handle(_req, res) {
     res.json({

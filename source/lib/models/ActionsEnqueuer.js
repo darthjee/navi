@@ -25,6 +25,7 @@ class ActionsEnqueuer {
   /**
    * Normalises the parsed response to an array and enqueues one ActionProcessingJob
    * per (action × item) pair, delegating per-action item enqueueing to ActionEnqueuer.
+   * @returns {void}
    * @throws {NullResponse} If the parsed response is null.
    */
   enqueue() {

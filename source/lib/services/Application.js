@@ -8,6 +8,11 @@ import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 import { WebServer } from '../server/WebServer.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
+/**
+ * Application orchestrates the startup of Navi by loading configuration,
+ * building registries, and running the Engine loop together with the WebServer.
+ * @author darthjee
+ */
 class Application {
   #workers;
 
@@ -79,6 +84,10 @@ class Application {
     });
   }
 
+  /**
+   * Initializes the job factory, job registry, and workers registry from the loaded configuration.
+   * @returns {void}
+   */
   #initRegistries() {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
     JobFactory.build('Action', { klass: ActionProcessingJob });

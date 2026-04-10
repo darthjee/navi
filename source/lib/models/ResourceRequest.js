@@ -37,6 +37,7 @@ class ResourceRequest {
    * Enqueues one ActionProcessingJob per action associated with the resource request.
    * Returns immediately if there are no actions, skipping JSON parsing entirely.
    * @param {string} rawBody The raw response body string.
+   * @returns {void}
    */
   enqueueActions(rawBody) {
     if (this.actions.length === 0) return;
@@ -49,6 +50,7 @@ class ResourceRequest {
    * Executes all configured actions against the raw response body.
    * Returns immediately if there are no actions, skipping JSON parsing entirely.
    * @param {string} rawBody The raw response body string.
+   * @returns {void}
    */
   executeActions(rawBody) {
     if (this.actions.length === 0) return;
