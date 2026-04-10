@@ -15,6 +15,8 @@ PROD_IMAGE := darthjee/navi
 PLATFORM := linux/amd64
 DOCKER_HUB_SCRIPT ?= /home/scripts/sbin/docker_hub.sh
 
+SOURCE_FILES=source/bin/navi.js source/lib/**/*.js
+
 help:
 	@echo "Usage:"
 	@echo "  make setup      Prepare dev environment (.env + compose build)"
@@ -66,3 +68,6 @@ update-description:
 
 .env:
 	cp .env.sample .env
+
+output/source.js: $(SOURCE_FILES)
+	./scripts/export_js.sh -o output/source.js $(SOURCE_FILES) 
