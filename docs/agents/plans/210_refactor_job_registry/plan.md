@@ -2,7 +2,7 @@ Navi Project
 
 Implementation Plan: Refactor JobRegistry to Singleton Pattern with Static Delegation
 
-A surgical approach to enhance JobRegistry accessibility and reduce coupling
+A complete removal of JobRegistry dependency injection across the entire codebase.
 
 10 de abril de 2026
 
@@ -10,639 +10,389 @@ A surgical approach to enhance JobRegistry accessibility and reduce coupling
 
 ### 1. Current Context
 
-The `JobRegistry` class in the Navi project is currently instantiated and passed as a dependency to various parts of the application. Based on the provided code, the typical flow is:
+`JobRegistry` is currently instantiated once in `Application.#initRegistries` and threaded through
+virtually every layer of the system as a constructor argument:
 
-*   The `Application` service creates an instance of `JobRegistry`.
-*   This `jobRegistry` instance is then passed to `WorkersRegistry`.
-*   `WorkersRegistry` further passes it to `WorkerFactory.build()`.
-*   Individual `Worker` instances receive `jobRegistry` in their constructors.
-*   `ResourceRequestJob` also receives `jobRegistry` in its constructor, which is then used by `enqueueActions`.
-
-**Example Dependency Chain:**
-
+```
 Application
-  ├─ jobRegistry = new JobRegistry({ cooldown })  // Instance created here
-  ├─ workersRegistry = new WorkersRegistry({ jobRegistry })  // Passed here
-  │   └─ WorkerFactory.build({ jobRegistry })  // Passed to factory
-  │       └─ Worker({ jobRegistry, workerRegistry })  // Injected into constructor
-  │
-  └─ ResourceRequestJob({ jobRegistry })  // Injected into build method
+  ├─ jobRegistry = new JobRegistry({ cooldown })
+  ├─ Engine({ jobRegistry })
+  │   └─ WorkersAllocator({ jobRegistry })
+  ├─ WebServer({ jobRegistry })
+  │   └─ Router({ jobRegistry })
+  │       └─ StatsRequestHandler({ jobRegistry })
+  ├─ WorkersRegistry({ jobRegistry })
+  │   └─ WorkerFactory({ jobRegistry })
+  │       └─ Worker({ jobRegistry })
+  └─ enqueueFirstJobs → this.jobRegistry.enqueue(...)
+       └─ ResourceRequestJob({ jobRegistry })
+           └─ resourceRequest.enqueueActions(data, jobRegistry)
+               └─ ActionsEnqueuer(actions, parsed, jobRegistry)
+                   └─ ActionEnqueuer(action, items, jobRegistry)
+```
 
 ### 2. The Problem
 
-This pattern of passing the `JobRegistry` instance through multiple layers of the application leads to:
+Every component above carries `jobRegistry` solely to forward it to the next layer or to call
+methods on a globally shared object. This creates unnecessary coupling without real benefit.
 
-*   **Tight Coupling:** Components become tightly coupled to the `JobRegistry` instance, requiring it to be threaded through constructors and method signatures even when not directly used by an intermediate component.
-*   **Boilerplate Code:** Excessive constructor parameters and property assignments for `jobRegistry` across multiple classes.
-*   **Reduced Readability:** The core logic can be obscured by dependency management.
-*   **Testing Challenges:** While dependency injection is good for testing, the pervasive passing of a global-like service can make setup more complex than necessary for unit tests that don't directly interact with the registry.
-
-The goal is to simplify access to `JobRegistry` methods, making it a globally accessible service without sacrificing testability.
+The solution is to make `JobRegistry` a self-managing singleton accessible via static methods,
+eliminating all constructor threading.
 
 ### 3. Implementation Plan
 
-The refactoring will be executed in 5 surgical steps to minimize disruption and ensure a smooth transition. The core idea is to transform `JobRegistry` into a singleton accessible via static methods, while retaining an internal instance for state management.
+The refactoring is executed in 12 steps, working from the inside out.
 
-#### 3.1. Step 1: Create the Static Singleton Wrapper for JobRegistry
-Rename the existing `JobRegistry` class to `JobRegistryInstance` and create a new `JobRegistry` class that acts as a static wrapper, managing the singleton instance and delegating calls.
-
-#### 3.2. Step 2: Update Application.js to Call `JobRegistry.build()`
-Modify the `Application` service to be responsible for initializing the `JobRegistry` singleton using the new `JobRegistry.build()` static method.
-
-#### 3.3. Step 3: Update Worker.js to Use Static JobRegistry Methods
-Refactor the `Worker` class to directly call the static `JobRegistry.finish()` and `JobRegistry.fail()` methods, removing the need to inject `jobRegistry` into its constructor.
-
-#### 3.4. Step 4: Update ResourceRequestJob.js to Use Static JobRegistry Methods
-Modify `ResourceRequestJob` to use the static `JobRegistry` when enqueueing actions, removing `jobRegistry` from its constructor.
-
-#### 3.5. Step 5: Update Application.js `enqueueFirstJobs()` to Use Static JobRegistry Methods
-Adjust the `enqueueFirstJobs()` method in `Application.js` to use the static `JobRegistry.enqueue()` method.
-
-### 4. Step-by-Step Instructions
-
-#### 4.1. Step 1: Create the Static Singleton Wrapper for JobRegistry
+#### Step 1 — Refactor `JobRegistry.js`
 
 **File:** `source/lib/registry/JobRegistry.js`
 
-**Changes:**
-1.  Rename the existing `JobRegistry` class to `JobRegistryInstance`.
-2.  Create a new `JobRegistry` class that will serve as the static wrapper.
-3.  Implement `static #instance` to hold the singleton.
-4.  Add `static build()` for initial setup.
-5.  Add `static #getInstance()` for internal access.
-6.  Add `static reset()` for testing purposes.
-7.  Implement static delegation methods for `enqueue`, `fail`, `finish`, `pick`, `promoteReadyJobs`, `hasReadyJob`, `hasJob`, and `stats`.
+- Rename the existing `JobRegistry` class to `JobRegistryInstance` (not exported).
+- Create a new `JobRegistry` class as a static-only wrapper.
+- Remove `lock()` and `hasLock()` from `JobRegistryInstance` — they have no production callers.
+- Export only `JobRegistry`.
 
 ```javascript
-// source/lib/registry/JobRegistry.js
+import { JobFactory } from '../factories/JobFactory.js';
+import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
+import { Queue } from '../utils/collections/Queue.js';
+import { SortedCollection } from '../utils/collections/SortedCollection.js';
 
-/**
- * @class JobRegistry
- * @description Static wrapper for the JobRegistryInstance, implementing a singleton pattern
- *              with static method delegation.
- */
+const FAILED_SORT_BY = job => job.readyBy;
+
+class JobRegistryInstance {
+  #enqueued;
+  #failed;
+  #retryQueue;
+  #finished;
+  #dead;
+  #processing;
+  #cooldown;
+
+  constructor({ queue, failed, retryQueue, finished, dead, processing, cooldown = 5000 } = {}) {
+    this.#enqueued   = queue      || new Queue();
+    this.#failed     = failed     || new SortedCollection([], { sortBy: FAILED_SORT_BY });
+    this.#retryQueue = retryQueue || new Queue();
+    this.#finished   = finished   || new IdentifyableCollection();
+    this.#dead       = dead       || new IdentifyableCollection();
+    this.#processing = processing || new IdentifyableCollection();
+    this.#cooldown   = cooldown;
+  }
+
+  enqueue(factoryKey, params = {}) { ... }   // unchanged
+  fail(job)            { ... }                // unchanged
+  finish(job)          { ... }                // unchanged
+  pick()               { ... }                // unchanged
+  promoteReadyJobs()   { ... }                // unchanged
+  hasJob()             { ... }                // unchanged
+  hasReadyJob()        { ... }                // unchanged
+  stats()              { ... }                // unchanged
+  // lock() and hasLock() REMOVED
+}
+
 class JobRegistry {
-  /**
-   * @private
-   * @static
-   * @type {JobRegistryInstance|null}
-   * @description Holds the single instance of JobRegistryInstance.
-   */
   static #instance = null;
 
-  /**
-   * @static
-   * @param {object} [options={}] - Options to pass to the JobRegistryInstance constructor.
-   * @returns {JobRegistryInstance} The singleton instance of JobRegistryInstance.
-   * @throws {Error} If JobRegistry.build() has already been called.
-   * @description Initializes and stores the singleton instance of JobRegistryInstance.
-   *              This method should be called exactly once during application bootstrap.
-   */
   static build(options = {}) {
     if (JobRegistry.#instance) {
-      throw new Error('JobRegistry.build() has already been called. Use JobRegistry.instance() to access it.');
+      throw new Error('JobRegistry.build() has already been called. Call reset() first.');
     }
     JobRegistry.#instance = new JobRegistryInstance(options);
-    console.log('[JobRegistry] Singleton instance built.');
     return JobRegistry.#instance;
   }
 
-  /**
-   * @private
-   * @static
-   * @returns {JobRegistryInstance} The singleton instance of JobRegistryInstance.
-   * @throws {Error} If JobRegistry.build() has not been called yet.
-   * @description Retrieves the stored singleton instance. This method is intended for
-   *              internal use by the static delegation methods.
-   */
   static #getInstance() {
     if (!JobRegistry.#instance) {
-      throw new Error('JobRegistry has not been built. Call JobRegistry.build() first during application bootstrap.');
+      throw new Error('JobRegistry has not been built. Call JobRegistry.build() first.');
     }
     return JobRegistry.#instance;
   }
 
-  /**
-   * @static
-   * @returns {void}
-   * @description Resets the singleton instance. This method is primarily for testing
-   *              purposes to ensure isolation between test runs.
-   */
   static reset() {
     JobRegistry.#instance = null;
-    console.log('[JobRegistry] Singleton instance reset.');
   }
 
-  // ===== STATIC DELEGATION METHODS =====
-
-  /**
-   * @static
-   * @param {string} factoryKey - The key of the job factory.
-   * @param {object} [params={}] - Parameters for the job.
-   * @returns {Job} The enqueued job.
-   * @description Delegates the call to the enqueue method of the JobRegistryInstance.
-   */
-  static enqueue(factoryKey, params = {}) {
-    return JobRegistry.#getInstance().enqueue(factoryKey, params);
-  }
-
-  /**
-   * @static
-   * @param {Job} job - The job to mark as failed.
-   * @returns {void}
-   * @description Delegates the call to the fail method of the JobRegistryInstance.
-   */
-  static fail(job) {
-    return JobRegistry.#getInstance().fail(job);
-  }
-
-  /**
-   * @static
-   * @param {Job} job - The job to mark as finished.
-   * @returns {void}
-   * @description Delegates the call to the finish method of the JobRegistryInstance.
-   */
-  static finish(job) {
-    return JobRegistry.#getInstance().finish(job);
-  }
-
-  /**
-   * @static
-   * @returns {Job|undefined} A ready job, or undefined if none are available.
-   * @description Delegates the call to the pick method of the JobRegistryInstance.
-   */
-  static pick() {
-    return JobRegistry.#getInstance().pick();
-  }
-
-  /**
-   * @static
-   * @returns {void}
-   * @description Delegates the call to the promoteReadyJobs method of the JobRegistryInstance.
-   */
-  static promoteReadyJobs() {
-    return JobRegistry.#getInstance().promoteReadyJobs();
-  }
-
-  /**
-   * @static
-   * @returns {boolean} True if there is at least one job ready to be picked.
-   * @description Delegates the call to the hasReadyJob method of the JobRegistryInstance.
-   */
-  static hasReadyJob() {
-    return JobRegistry.#getInstance().hasReadyJob();
-  }
-
-  /**
-   * @static
-   * @returns {boolean} True if there are any jobs (ready, pending, or in progress).
-   * @description Delegates the call to the hasJob method of the JobRegistryInstance.
-   */
-  static hasJob() {
-    return JobRegistry.#getInstance().hasJob();
-  }
-
-  /**
-   * @static
-   * @returns {object} Statistics about the job registry.
-   * @description Delegates the call to the stats method of the JobRegistryInstance.
-   */
-  static stats() {
-    return JobRegistry.#getInstance().stats();
-  }
-
-  // Note: Methods like lock() and hasLock() will be audited.
-  // If confirmed unused, they should be removed from JobRegistryInstance.
-  // If used, static delegation methods should be added here.
+  static enqueue(factoryKey, params = {}) { return JobRegistry.#getInstance().enqueue(factoryKey, params); }
+  static fail(job)                        { return JobRegistry.#getInstance().fail(job); }
+  static finish(job)                      { return JobRegistry.#getInstance().finish(job); }
+  static pick()                           { return JobRegistry.#getInstance().pick(); }
+  static promoteReadyJobs()               { return JobRegistry.#getInstance().promoteReadyJobs(); }
+  static hasJob()                         { return JobRegistry.#getInstance().hasJob(); }
+  static hasReadyJob()                    { return JobRegistry.#getInstance().hasReadyJob(); }
+  static stats()                          { return JobRegistry.#getInstance().stats(); }
 }
 
-/**
- * @class JobRegistryInstance
- * @description The original JobRegistry class, now renamed to be the actual instance
- *              managed by the static JobRegistry wrapper.
- */
-class JobRegistryInstance {
-  // ... ALL EXISTING CODE OF THE ORIGINAL JobRegistry CLASS GOES HERE ...
-  // Example:
-  #cooldown;
-  #jobs = new Map();
-  #readyJobs = [];
-  #inProgressJobs = new Map();
-  #failedJobs = [];
-  #finishedJobs = [];
-
-  constructor({ cooldown }) {
-    this.#cooldown = cooldown;
-    // ... rest of original constructor logic ...
-  }
-
-  enqueue(factoryKey, params = {}) {
-    // ... original enqueue logic ...
-    const job = { id: Date.now(), factoryKey, params, status: 'pending' }; // Simplified
-    this.#jobs.set(job.id, job);
-    this.#readyJobs.push(job);
-    return job;
-  }
-
-  fail(job) {
-    // ... original fail logic ...
-    job.status = 'failed';
-    this.#failedJobs.push(job);
-    this.#inProgressJobs.delete(job.id);
-  }
-
-  finish(job) {
-    // ... original finish logic ...
-    job.status = 'finished';
-    this.#finishedJobs.push(job);
-    this.#inProgressJobs.delete(job.id);
-  }
-
-  pick() {
-    // ... original pick logic ...
-    if (this.#readyJobs.length > 0) {
-      const job = this.#readyJobs.shift();
-      job.status = 'in_progress';
-      this.#inProgressJobs.set(job.id, job);
-      return job;
-    }
-    return undefined;
-  }
-
-  promoteReadyJobs() {
-    // ... original promoteReadyJobs logic ...
-  }
-
-  hasReadyJob() {
-    return this.#readyJobs.length > 0;
-  }
-
-  hasJob() {
-    return this.#jobs.size > 0;
-  }
-
-  stats() {
-    return {
-      total: this.#jobs.size,
-      ready: this.#readyJobs.length,
-      inProgress: this.#inProgressJobs.size,
-      failed: this.#failedJobs.length,
-      finished: this.#finishedJobs.length,
-    };
-  }
-
-  // lock() and hasLock() - To be removed if audit confirms they are unused.
-  // If used, their logic should remain here, and static delegation added to JobRegistry.
-}
-
-export { JobRegistry, JobRegistryInstance };
+export { JobRegistry };
 ```
 
-#### 4.2. Step 2: Update Application.js to Call `JobRegistry.build()`
+Note: `console.log` debug lines in `build()`/`reset()` should NOT be added.
+
+---
+
+#### Step 2 — Update `Application.js`
 
 **File:** `source/lib/services/Application.js`
 
-**Changes:**
-1.  Import the new `JobRegistry` class.
-2.  Modify the `#initRegistries` method to use `JobRegistry.build()` for initialization. The `jobRegistry ||` part is kept to allow dependency injection for testing purposes.
+- `#initRegistries`: replace `new JobRegistry(...)` with `JobRegistry.build(...)`. Remove `jobRegistry`
+  from the method signature — no more injection.
+- `buildEngine()`: remove `jobRegistry` from the Engine constructor call.
+- `buildWebServer()`: remove `jobRegistry` from the WebServer call.
+- `enqueueFirstJobs()`: replace `this.jobRegistry.enqueue(...)` with `JobRegistry.enqueue(...)`.
+  Remove `jobRegistry: this.jobRegistry` from the params object.
+- Remove `this.jobRegistry` property entirely (it is no longer needed by anything else).
 
 ```javascript
-// source/lib/services/Application.js
+#initRegistries() {
+  JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
+  JobFactory.build('Action', { klass: ActionProcessingJob });
 
-import { JobRegistry } from '../registry/JobRegistry.js'; // Ensure this import is present
+  JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown });
 
-class Application {
-  // ... existing code ...
+  this.workersRegistry = new WorkersRegistry({
+    workers: this.#workers,
+    ...this.config.workersConfig
+  });
+  this.workersRegistry.initWorkers();
+}
 
-  /**
-   * @private
-   * @param {object} [options={}] - Options for initialization.
-   * @param {JobRegistryInstance} [options.jobRegistry] - Optional JobRegistry instance for testing.
-   * @param {WorkersRegistry} [options.workersRegistry] - Optional WorkersRegistry instance for testing.
-   * @returns {void}
-   * @description Initializes the job and worker registries.
-   */
-  #initRegistries({ jobRegistry, workersRegistry } = {}) {
-    // Existing JobFactory builds
-    JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
-    JobFactory.build('Action', { klass: ActionProcessingJob });
+buildEngine() {
+  return new Engine({ workersRegistry: this.workersRegistry });
+}
 
-    // ✅ MODIFIED: Initialize JobRegistry using the static build method.
-    // The 'jobRegistry ||' part allows injecting a mock instance for testing.
-    this.jobRegistry = jobRegistry || JobRegistry.build({
-      cooldown: this.config.workersConfig.retryCooldown,
+buildWebServer() {
+  return WebServer.build({
+    webConfig:       this.config.webConfig,
+    workersRegistry: this.workersRegistry,
+  });
+}
+
+enqueueFirstJobs() {
+  new ResourceRequestCollector(this.config.resourceRegistry)
+    .requestsNeedingNoParams()
+    .forEach((resourceRequest) => {
+      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
     });
-
-    this.workersRegistry = workersRegistry || new WorkersRegistry({
-      jobRegistry: this.jobRegistry, // Keep passing for WorkersRegistry's internal use/testing
-      workers: this.#workers,
-      ...this.config.workersConfig
-    });
-    this.workersRegistry.initWorkers();
-  }
-
-  // ... rest of the class ...
 }
 ```
 
-#### 4.3. Step 3: Update Worker.js to Use Static JobRegistry Methods
+---
+
+#### Step 3 — Update `Worker.js`
 
 **File:** `source/lib/models/Worker.js`
 
-**Changes:**
-1.  Import the new `JobRegistry` class.
-2.  Remove `jobRegistry` from the constructor parameters and the `this.jobRegistry` assignment.
-3.  Update calls to `this.jobRegistry.finish()` and `this.jobRegistry.fail()` to `JobRegistry.finish()` and `JobRegistry.fail()`.
+- Import `JobRegistry`.
+- Remove `jobRegistry` from constructor params and remove `this.jobRegistry` assignment.
+- Replace `this.jobRegistry.finish(this.job)` → `JobRegistry.finish(this.job)`.
+- Replace `this.jobRegistry.fail(this.job)` → `JobRegistry.fail(this.job)`.
+
+---
+
+#### Step 4 — Update `DummyWorker.js`
+
+**File:** `source/spec/support/dummies/models/DummyWorker.js`
+
+- Import `JobRegistry`.
+- Replace `this.jobRegistry.finish(this.job)` → `JobRegistry.finish(this.job)`.
+- Replace `this.jobRegistry.fail(this.job)` → `JobRegistry.fail(this.job)`.
+
+---
+
+#### Step 5 — Update `WorkerFactory.js`
+
+**File:** `source/lib/factories/WorkerFactory.js`
+
+- Remove `#jobRegistry` private field.
+- Remove `jobRegistry` from constructor params.
+- Remove `jobRegistry: this.#jobRegistry` from the `super.build(...)` call.
+
+---
+
+#### Step 6 — Update `WorkersRegistry.js`
+
+**File:** `source/lib/registry/WorkersRegistry.js`
+
+- Remove `#jobRegistry` private field.
+- Remove `jobRegistry` from constructor params and from the default `factory` creation.
 
 ```javascript
-// source/lib/models/Worker.js
-
-import { JobRegistry } from '../registry/JobRegistry.js'; // Ensure this import is present
-import ConsoleLogger from '../utils/ConsoleLogger.js'; // Assuming this is the logger
-
-/**
- * @class Worker
- * @description Represents a worker that performs jobs from the JobRegistry.
- */
-class Worker {
-  #logger;
-  #workerRegistry; // Keep this for its own logic
-  job; // The current job being processed
-
-  /**
-   * @param {object} options - Worker options.
-   * @param {string} options.id - Unique ID of the worker.
-   * @param {WorkersRegistry} options.workerRegistry - The WorkersRegistry instance.
-   * @description Constructor for the Worker class.
-   */
-  constructor({ id, workerRegistry }) { // ✅ MODIFIED: Removed jobRegistry from constructor
-    this.id = id;
-    this.#workerRegistry = workerRegistry;
-    this.#logger = new ConsoleLogger();
-  }
-
-  /**
-   * @async
-   * @returns {Promise}
-   * @description Performs the assigned job, handles success or failure, and updates the JobRegistry.
-   * @throws {Error} If no job is assigned to the worker.
-   */
-  async perform() {
-    if (!this.job) {
-      throw new Error('No job assigned to worker');
-    }
-    try {
-      await this.job.perform();
-      JobRegistry.finish(this.job); // ✅ MODIFIED: Use static JobRegistry.finish()
-    } catch (error) {
-      this.#logger.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
-      JobRegistry.fail(this.job); // ✅ MODIFIED: Use static JobRegistry.fail()
-    } finally {
-      this.job = undefined;
-      this.#workerRegistry.setIdle(this.id);
-    }
-  }
-
-  // ... rest of the class ...
-}
-
-export default Worker;
+constructor({
+  quantity,
+  factory = new WorkerFactory({ workerRegistry: this }),
+  workers = new IdentifyableCollection(),
+  busy    = new IdentifyableCollection(),
+  idle    = new IdentifyableCollection()
+}) { ... }
 ```
 
-#### 4.4. Step 4: Update ResourceRequestJob.js to Use Static JobRegistry Methods
+---
+
+#### Step 7 — Update `WorkersAllocator.js`
+
+**File:** `source/lib/services/WorkersAllocator.js`
+
+- Import `JobRegistry`.
+- Remove `jobRegistry` from constructor params and remove `this.jobRegistry` assignment.
+- Replace `this.jobRegistry.pick()` → `JobRegistry.pick()`.
+- Replace `this.jobRegistry.hasReadyJob()` → `JobRegistry.hasReadyJob()`.
+
+---
+
+#### Step 8 — Update `Engine.js`
+
+**File:** `source/lib/services/Engine.js`
+
+- Import `JobRegistry`.
+- Remove `#jobRegistry` private field.
+- Remove `jobRegistry` from constructor params and from the `WorkersAllocator` construction.
+- Replace `this.#jobRegistry.promoteReadyJobs()` → `JobRegistry.promoteReadyJobs()`.
+- Replace `this.#jobRegistry.hasReadyJob()` → `JobRegistry.hasReadyJob()`.
+- Replace `this.#jobRegistry.hasJob()` → `JobRegistry.hasJob()`.
+
+---
+
+#### Step 9 — Update `ActionEnqueuer.js`
+
+**File:** `source/lib/models/ActionEnqueuer.js`
+
+- Import `JobRegistry`.
+- Remove `#jobRegistry` private field and `jobRegistry` constructor param.
+- Replace `this.#jobRegistry.enqueue(...)` → `JobRegistry.enqueue(...)`.
+
+---
+
+#### Step 10 — Update `ActionsEnqueuer.js`
+
+**File:** `source/lib/models/ActionsEnqueuer.js`
+
+- Remove `#jobRegistry` private field and `jobRegistry` constructor param.
+- Remove the `jobRegistry` argument passed to `new ActionEnqueuer(...)`.
+
+---
+
+#### Step 11 — Update `ResourceRequest.js`
+
+**File:** `source/lib/models/ResourceRequest.js`
+
+- Remove the `jobRegistry` parameter from `enqueueActions(rawBody, jobRegistry)`.
+- Remove the `jobRegistry` argument passed to `new ActionsEnqueuer(...)`.
+
+---
+
+#### Step 12 — Update `ResourceRequestJob.js`
 
 **File:** `source/lib/models/ResourceRequestJob.js`
 
-**Changes:**
-1.  Import the new `JobRegistry` class.
-2.  Remove `jobRegistry` from the constructor parameters and the `#jobRegistry` private field.
-3.  Update the call to `this.#resourceRequest.enqueueActions()` to pass the static `JobRegistry` class instead of the instance.
+- Remove `#jobRegistry` private field.
+- Remove `jobRegistry` from constructor params.
+- Update the `enqueueActions` call to `this.#resourceRequest.enqueueActions(response.data)`.
+
+---
+
+#### Step 13 — Update `StatsRequestHandler.js`
+
+**File:** `source/lib/server/StatsRequestHandler.js`
+
+- Import `JobRegistry`.
+- Remove `#jobRegistry` private field and `jobRegistry` constructor param.
+- Replace `this.#jobRegistry.stats()` → `JobRegistry.stats()`.
+
+---
+
+#### Step 14 — Update `Router.js`
+
+**File:** `source/lib/server/Router.js`
+
+- Remove `#jobRegistry` private field and `jobRegistry` constructor param.
+- Remove `jobRegistry` from the `new StatsRequestHandler(...)` call.
+
+---
+
+#### Step 15 — Update `WebServer.js`
+
+**File:** `source/lib/server/WebServer.js`
+
+- Remove `jobRegistry` from constructor params, `new Router(...)` call, and `static build(...)`.
+
+---
+
+### 4. Test Updates
+
+All tests that currently instantiate `JobRegistry` directly or inject it must be updated to use the
+singleton. The general pattern is:
 
 ```javascript
-// source/lib/models/ResourceRequestJob.js
+import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 
-import { JobRegistry } from '../registry/JobRegistry.js'; // Ensure this import is present
-import Job from './Job.js'; // Assuming Job is the base class
-import Logger from '../utils/ConsoleLogger.js'; // Assuming this is the logger
+beforeEach(() => {
+  JobRegistry.reset();
+  JobRegistry.build({ cooldown: -1 }); // negative cooldown disables wait in tests
+});
 
-/**
- * @class ResourceRequestJob
- * @extends Job
- * @description Represents a job for processing resource requests.
- */
-class ResourceRequestJob extends Job {
-  #resourceRequest;
-  #parameters;
-  #clients;
-  // ✅ MODIFIED: Removed #jobRegistry private field
-
-  /**
-   * @param {object} options - Job options.
-   * @param {string} options.id - Unique ID of the job.
-   * @param {ResourceRequest} options.resourceRequest - The resource request to process.
-   * @param {object} options.parameters - Parameters for the request.
-   * @param {ClientRegistry} options.clients - The client registry.
-   * @description Constructor for the ResourceRequestJob.
-   */
-  constructor({ id, resourceRequest, parameters, clients }) { // ✅ MODIFIED: Removed jobRegistry from constructor
-    super({ id });
-    this.#resourceRequest = resourceRequest;
-    this.#parameters = parameters;
-    this.#clients = clients;
-    // ✅ MODIFIED: Removed assignment to #jobRegistry
-  }
-
-  /**
-   * @async
-   * @returns {Promise}
-   * @description Performs the resource request and enqueues subsequent actions.
-   */
-  async perform() {
-    Logger.info(`Job #${this.id} performing`);
-    try {
-      this.lastError = undefined;
-      const response = await this.#getClient().perform(
-        this.#resourceRequest,
-        this.#parameters
-      );
-      // ✅ MODIFIED: Pass the static JobRegistry class
-      this.#resourceRequest.enqueueActions(response, JobRegistry);
-    } catch (error) {
-      this._fail(error);
-    }
-  }
-
-  // ... rest of the class, including #getClient() and _fail() ...
-}
-
-export default ResourceRequestJob;
+afterEach(() => {
+  JobRegistry.reset();
+});
 ```
 
-#### 4.5. Step 5: Update Application.js `enqueueFirstJobs()` to Use Static JobRegistry Methods
+File-by-file changes:
 
-**File:** `source/lib/services/Application.js`
-
-**Changes:**
-1.  Ensure `JobRegistry` is imported (already done in Step 2).
-2.  Modify the `JobRegistry.enqueue()` call to remove the `jobRegistry` parameter from the job's `params` object, as it's no longer needed.
-
-```javascript
-// source/lib/services/Application.js
-
-import { JobRegistry } from '../registry/JobRegistry.js'; // Ensure this import is present
-import ResourceRequestCollector from '../models/ResourceRequestCollector.js'; // Assuming this import is present
-
-class Application {
-  // ... existing code ...
-
-  /**
-   * @description Enqueues the initial set of jobs based on resource requests.
-   * @returns {void}
-   */
-  enqueueFirstJobs() {
-    new ResourceRequestCollector(this.config.resourceRegistry)
-      .requestsNeedingNoParams()
-      .forEach((resourceRequest) => {
-        // ✅ MODIFIED: Use static JobRegistry.enqueue() and remove jobRegistry from params
-        JobRegistry.enqueue('ResourceRequestJob', {
-          resourceRequest,
-          parameters: {},
-          // ✅ REMOVED: jobRegistry: this.jobRegistry, // No longer needed
-        });
-      });
-  }
-
-  // ... rest of the class ...
-}
-```
+| File | Change |
+|------|--------|
+| `spec/lib/registry/JobRegistry_spec.js` | Remove all `lock()`/`hasLock()` tests. Update remaining tests to use `JobRegistry.build()`/`reset()` and call static methods. |
+| `spec/lib/models/Worker_spec.js` | Remove `jobRegistry` from `new Worker(...)` and `new WorkersRegistry(...)`. Add `JobRegistry.build()`/`reset()` lifecycle. Remove the "stores the job registry" constructor test. Observe `finished`/`failed` state via the collections passed to `JobRegistry.build()`. |
+| `spec/lib/factories/WorkerFactory_spec.js` | Remove `jobRegistry` from factory and `WorkersRegistryFactory.build()`. Add `JobRegistry.build()`/`reset()` lifecycle. |
+| `spec/lib/registry/WorkersRegistry_spec.js` | Remove `jobRegistry` from `new WorkersRegistry(...)`. Add `JobRegistry.build()`/`reset()` lifecycle. Remove assertion `expect(workers.byIndex(0).jobRegistry).toEqual(jobRegistry)`. |
+| `spec/lib/services/WorkersAllocator_spec.js` | Remove `jobRegistry` from allocator and registry construction. Add `JobRegistry.build()`/`reset()` lifecycle. Use `JobRegistry.enqueue()`, `JobRegistry.hasJob()`, etc. for setup and assertions. |
+| `spec/lib/services/Engine_spec.js` | Remove `jobRegistry` from `new Engine(...)`. Add `JobRegistry.build()`/`reset()` lifecycle. Use `JobRegistry.enqueue()` for setup and `JobRegistry.hasJob()` for assertions. |
+| `spec/lib/services/Application_spec.js` | Remove `jobRegistry` injection from `loadConfig(...)`. Add `JobRegistry.reset()` in `afterEach`. Use `JobRegistry.hasJob()` for assertions. |
+| `spec/lib/models/ResourceRequestJob_spec.js` | Remove `jobRegistry` from constructor. Update `enqueueActions` call expectation (no second arg). |
+| `spec/lib/models/ResourceRequest_spec.js` | Remove `jobRegistry` spy from `enqueueActions(rawBody, jobRegistry)` calls. Update to `enqueueActions(rawBody)`. Spy on `JobRegistry.enqueue` for assertions. Add `JobRegistry.build()`/`reset()` lifecycle. |
+| `spec/lib/models/ActionsEnqueuer_spec.js` | Remove `jobRegistry` spy from constructor. Spy on `JobRegistry.enqueue` instead. Add `JobRegistry.build()`/`reset()` lifecycle. |
+| `spec/lib/models/ActionEnqueuer_spec.js` | Same as above. |
+| `spec/lib/server/StatsRequestHandler_spec.js` | Remove `jobRegistry` mock from constructor. Add `JobRegistry.build()`/`reset()` lifecycle. Use `JobRegistry.stats()` for verification or spy on it. |
+| `spec/lib/server/WebServer_spec.js` | Remove `jobRegistry` from `WebServer.build(...)` calls. Add `JobRegistry.build()`/`reset()` lifecycle where stats are needed. |
+| `spec/lib/server/Router_spec.js` | Remove `jobRegistry` from `new Router(...)`. |
+| `spec/support/factories/WorkersRegistryFactory.js` | Remove `jobRegistry` param and `JobRegistryFactory.build()` default. |
 
 ### 5. Implementation Checklist
 
-*   [ ] **Refactor `JobRegistry.js`:**
-    *   [ ] Rename `JobRegistry` to `JobRegistryInstance`.
-    *   [ ] Create new `JobRegistry` class as the static wrapper.
-    *   [ ] Implement `static #instance`, `static build()`, `static #getInstance()`, `static reset()`.
-    *   [ ] Implement all static delegated methods (`enqueue`, `fail`, `finish`, `pick`, `promoteReadyJobs`, `hasReadyJob`, `hasJob`, `stats`).
-    *   [ ] Export both `JobRegistry` and `JobRegistryInstance`.
-*   [ ] **Update `Application.js` (`#initRegistries`):**
-    *   [ ] Change `new JobRegistry(...)` to `JobRegistry.build(...)`.
-*   [ ] **Update `Worker.js`:**
-    *   [ ] Remove `jobRegistry` from constructor parameters.
-    *   [ ] Remove `this.jobRegistry` assignment.
-    *   [ ] Replace `this.jobRegistry.finish()` with `JobRegistry.finish()`.
-    *   [ ] Replace `this.jobRegistry.fail()` with `JobRegistry.fail()`.
-*   [ ] **Update `ResourceRequestJob.js`:**
-    *   [ ] Remove `jobRegistry` from constructor parameters.
-    *   [ ] Remove `#jobRegistry` private field.
-    *   [ ] Replace `this.#resourceRequest.enqueueActions(response, this.#jobRegistry)` with `this.#resourceRequest.enqueueActions(response, JobRegistry)`.
-*   [ ] **Update `Application.js` (`enqueueFirstJobs`):**
-    *   [ ] Remove `jobRegistry: this.jobRegistry` from the `JobRegistry.enqueue` call's parameters.
-*   [ ] **Audit `lock()` and `hasLock()` methods:**
-    *   [ ] Run `grep -r -E "\.lock\(|\.hasLock\(" source/` to find usage.
-    *   [ ] If no usage is found, remove these methods from `JobRegistryInstance`.
-    *   [ ] If usage is found, implement static delegation for them in `JobRegistry` and update call sites.
-*   [ ] **Update Tests:**
-    *   [ ] For any test files that directly instantiate `JobRegistry` or inject it, update them to use `JobRegistry.build()` or `JobRegistry.reset()` as appropriate.
-    *   [ ] Add `JobRegistry.reset()` to `beforeEach` or `afterEach` blocks in relevant Jasmine test suites to ensure test isolation.
-    *   [ ] Remove `jobRegistry` injection from `Worker` and `ResourceRequestJob` constructors in tests where it's no longer needed.
-*   [ ] **Code Review:** Ensure all changes align with project coding standards and functionality.
+**Source files:**
+- [ ] `source/lib/registry/JobRegistry.js` — singleton wrapper, remove `lock()`/`hasLock()`, no `JobRegistryInstance` export
+- [ ] `source/lib/services/Application.js` — use `JobRegistry.build()`, remove all `jobRegistry` passing
+- [ ] `source/lib/models/Worker.js` — static `JobRegistry.finish()`/`fail()`, remove constructor param
+- [ ] `source/spec/support/dummies/models/DummyWorker.js` — same as Worker
+- [ ] `source/lib/factories/WorkerFactory.js` — remove `#jobRegistry` entirely
+- [ ] `source/lib/registry/WorkersRegistry.js` — remove `#jobRegistry` entirely
+- [ ] `source/lib/services/WorkersAllocator.js` — static `JobRegistry.pick()`/`hasReadyJob()`, remove constructor param
+- [ ] `source/lib/services/Engine.js` — static `JobRegistry.*`, remove constructor param
+- [ ] `source/lib/models/ActionEnqueuer.js` — static `JobRegistry.enqueue()`, remove constructor param
+- [ ] `source/lib/models/ActionsEnqueuer.js` — remove `jobRegistry` forwarding
+- [ ] `source/lib/models/ResourceRequest.js` — remove `jobRegistry` param from `enqueueActions`
+- [ ] `source/lib/models/ResourceRequestJob.js` — remove `#jobRegistry`, update `enqueueActions` call
+- [ ] `source/lib/server/StatsRequestHandler.js` — static `JobRegistry.stats()`, remove constructor param
+- [ ] `source/lib/server/Router.js` — remove `#jobRegistry`, update `StatsRequestHandler` construction
+- [ ] `source/lib/server/WebServer.js` — remove `jobRegistry` from constructor and `build()`
 
-### 6. Minimal Impact Analysis
+**Test files:**
+- [ ] `spec/lib/registry/JobRegistry_spec.js` — remove lock/hasLock tests, update to static API
+- [ ] `spec/lib/models/Worker_spec.js` — remove `jobRegistry`, add singleton lifecycle
+- [ ] `spec/lib/factories/WorkerFactory_spec.js` — remove `jobRegistry`
+- [ ] `spec/lib/registry/WorkersRegistry_spec.js` — remove `jobRegistry`
+- [ ] `spec/lib/services/WorkersAllocator_spec.js` — use singleton
+- [ ] `spec/lib/services/Engine_spec.js` — use singleton
+- [ ] `spec/lib/services/Application_spec.js` — remove injection, use singleton
+- [ ] `spec/lib/models/ResourceRequestJob_spec.js` — remove `jobRegistry`
+- [ ] `spec/lib/models/ResourceRequest_spec.js` — update `enqueueActions`, spy on `JobRegistry.enqueue`
+- [ ] `spec/lib/models/ActionsEnqueuer_spec.js` — spy on `JobRegistry.enqueue`
+- [ ] `spec/lib/models/ActionEnqueuer_spec.js` — spy on `JobRegistry.enqueue`
+- [ ] `spec/lib/server/StatsRequestHandler_spec.js` — use singleton, remove mock
+- [ ] `spec/lib/server/WebServer_spec.js` — remove `jobRegistry`
+- [ ] `spec/lib/server/Router_spec.js` — remove `jobRegistry`
+- [ ] `spec/support/factories/WorkersRegistryFactory.js` — remove `jobRegistry`
 
-This plan is designed to be surgical, focusing only on the necessary changes.
+### 6. Rollback Plan
 
-*   **`WorkersRegistry`:** Will continue to receive `jobRegistry` in its constructor. This is acceptable as `WorkersRegistry` directly interacts with the `JobRegistryInstance` (e.g., `jobRegistry.pick()`, `jobRegistry.promoteReadyJobs()`). Keeping this as a dependency allows for easier testing of `WorkersRegistry` itself by injecting a mock `JobRegistryInstance`.
-*   **`Engine`, `WorkersAllocator`:** These components likely interact with `jobRegistry` (e.g., `jobRegistry.pick()`, `jobRegistry.hasReadyJob()`). Their usage will remain largely unchanged, as they will continue to receive the `JobRegistryInstance` (via `WorkersRegistry` or direct injection if applicable).
-*   **`WebServer`, `StatsRequestHandler`:** If these components receive `jobRegistry` as a parameter, they can continue to do so, or be updated to use `JobRegistry.stats()` directly if appropriate. The current plan does not force this change, allowing for incremental adoption.
-*   **`ResourceRequest.enqueueActions()`:** This method currently takes `JobRegistry` as a parameter. The plan updates `ResourceRequestJob` to pass the static `JobRegistry` class. This is a minor change to the parameter type (instance vs. static class) and maintains the explicit dependency for `enqueueActions`.
-
-### 7. Testing Strategy
-
-Given that Navi uses Jasmine for testing, the key to maintaining testability with a singleton is the `JobRegistry.reset()` method.
-
-*   **Unit Tests:**
-    *   For tests that need a clean `JobRegistry` state, ensure `JobRegistry.reset()` is called in a `beforeEach` or `afterEach` block.
-    *   Example:
-        ```javascript
-        // spec/lib/models/Worker.spec.js
-        import { JobRegistry } from '../../../source/lib/registry/JobRegistry.js';
-        import Worker from '../../../source/lib/models/Worker.js';
-        import { JobRegistryInstance } from '../../../source/lib/registry/JobRegistry.js'; // For mocking
-
-        describe('Worker', () => {
-          let mockWorkerRegistry;
-
-          beforeEach(() => {
-            JobRegistry.reset(); // Ensure a clean slate for each test
-            // Build a default instance if needed for tests that use static methods
-            JobRegistry.build({ cooldown: 1000 });
-
-            mockWorkerRegistry = jasmine.createSpyObj('WorkersRegistry', ['setIdle']);
-          });
-
-          it('should finish a job successfully', async () => {
-            const worker = new Worker({ id: 'worker-1', workerRegistry: mockWorkerRegistry });
-            const mockJob = { id: 'job-1', perform: async () => {}, status: 'in_progress' };
-            worker.job = mockJob;
-
-            spyOn(JobRegistry, 'finish').and.callThrough(); // Spy on the static method
-
-            await worker.perform();
-
-            expect(JobRegistry.finish).toHaveBeenCalledWith(mockJob);
-            expect(mockWorkerRegistry.setIdle).toHaveBeenCalledWith('worker-1');
-            expect(worker.job).toBeUndefined();
-          });
-
-          // ... other tests ...
-        });
-        ```
-    *   For tests that need to mock `JobRegistry` behavior (e.g., testing `Application`'s interaction with `JobRegistry.build()`), you can still pass a mock `JobRegistryInstance` to `Application.#initRegistries()` as the `jobRegistry` parameter.
-*   **Integration Tests:**
-    *   Integration tests should primarily use the `JobRegistry.build()` and static methods as they would be used in production.
-    *   Ensure `JobRegistry.reset()` is called before/after integration test suites to prevent state leakage.
-
-### 8. Audit for `lock()` and `hasLock()`
-
-To determine if the `lock()` and `hasLock()` methods of `JobRegistryInstance` are currently in use, execute the following command from the project root:
-
-```bash
-grep -r -E "\.lock\(|\.hasLock\(" source/
-```
-
-*   **If no results are found:** These methods are unused and should be removed from `JobRegistryInstance` to simplify the codebase.
-*   **If results are found:**
-    *   Analyze the usage to understand their purpose.
-    *   Implement static delegation methods for `lock()` and `hasLock()` in the `JobRegistry` wrapper class.
-    *   Update all call sites to use `JobRegistry.lock()` and `JobRegistry.hasLock()`.
-
-### 9. Rollback Plan
-
-In case of unforeseen issues or critical failures during or after the deployment of these changes, the following rollback procedure can be followed:
-
-1.  **Revert Code Changes:**
-    *   Revert the changes in `source/lib/registry/JobRegistry.js`:
-        *   Rename `JobRegistryInstance` back to `JobRegistry`.
-        *   Remove the static `JobRegistry` wrapper class entirely.
-    *   Revert changes in `source/lib/services/Application.js`:
-        *   Change `JobRegistry.build(...)` back to `new JobRegistry(...)`.
-        *   Re-add `jobRegistry: this.jobRegistry` to `JobRegistry.enqueue` call parameters.
-    *   Revert changes in `source/lib/models/Worker.js`:
-        *   Re-add `jobRegistry` to the constructor and `this.jobRegistry` assignment.
-        *   Change `JobRegistry.finish()` back to `this.jobRegistry.finish()`.
-        *   Change `JobRegistry.fail()` back to `this.jobRegistry.fail()`.
-    *   Revert changes in `source/lib/models/ResourceRequestJob.js`:
-        *   Re-add `jobRegistry` to the constructor and `#jobRegistry` private field.
-        *   Change `this.#resourceRequest.enqueueActions(response, JobRegistry)` back to `this.#resourceRequest.enqueueActions(response, this.#jobRegistry)`.
-2.  **Revert Test Changes:** Revert any modifications made to test files related to `JobRegistry.reset()` or static method usage.
-3.  **Redeploy:** Deploy the reverted codebase.
-4.  **Monitor:** Closely monitor the application for stability.
-
-### 10. Next Steps
-
-1.  **Execute Audit:** Perform the `grep` command to audit `lock()` and `hasLock()` usage.
-2.  **Implement Step 1:** Modify `source/lib/registry/JobRegistry.js` as described.
-3.  **Implement Steps 2-5:** Apply the changes to `Application.js`, `Worker.js`, and `ResourceRequestJob.js`.
-4.  **Update Tests:** Adjust existing Jasmine tests and add new ones to cover the static `JobRegistry` behavior and ensure `reset()` is used correctly.
-5.  **Thorough Testing:** Conduct unit, integration, and end-to-end testing to validate the refactoring.
-6.  **Code Review:** Submit changes for peer review.
+This refactoring is large but purely mechanical — every change is a removal of a parameter or a
+substitution of `this.x.method()` → `X.method()`. If any step introduces a regression, revert
+the affected file(s) individually via git and re-run the test suite to isolate the failure.
+The git history should have one commit per step to make targeted reversion easy.
