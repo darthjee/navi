@@ -8,7 +8,7 @@ class WorkersRegistryFactory {
    * Builds a WorkersRegistry singleton instance.
    * @param {object} [params={}] - Optional attributes.
    * @param {number} [params.quantity=1] - Number of workers.
-   * @returns {WorkersRegistryInstance} The singleton instance.
+   * @returns {WorkersRegistry} The singleton instance.
    */
   static build({ quantity = 1 } = {}) {
     return WorkersRegistry.build({ quantity });
