@@ -18,7 +18,6 @@ class JobRegistry {
   #dead;
   #processing;
   #lockedBy;
-  #factory;
   #cooldown;
 
   /**
@@ -31,10 +30,9 @@ class JobRegistry {
    * @param {IdentifyableCollection} [options.finished] - An optional collection to use for finished jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.dead] - An optional collection to use for dead jobs. If not provided, a new IdentifyableCollection will be created.
    * @param {IdentifyableCollection} [options.processing] - An optional collection to use for jobs currently being processed. If not provided, a new IdentifyableCollection will be created.
-   * @param {JobFactory} [options.factory] - An optional JobFactory to use for creating jobs. If not provided, uses the factory registered via JobFactory.registry(). Note: JobFactory.registry() must be called before instantiating a JobRegistry without an explicit factory.
    * @param {number} [options.cooldown=5000] - Milliseconds a failed job must wait before becoming retryable. Use a negative value to disable the cooldown (e.g. in tests).
    */
-  constructor({ queue, failed, retryQueue, finished, dead, processing, factory, cooldown = 5000 } = {}) {
+  constructor({ queue, failed, retryQueue, finished, dead, processing, cooldown = 5000 } = {}) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new SortedCollection([], { sortBy: FAILED_SORT_BY });
     this.#retryQueue = retryQueue || new Queue();
@@ -43,30 +41,16 @@ class JobRegistry {
     this.#processing = processing || new IdentifyableCollection();
 
     this.#lockedBy = null;
-    this.#factory = factory || JobFactory.get('ResourceRequestJob');
     this.#cooldown = cooldown;
   }
 
   /**
-   * Enqueues a new job using the JobFactory.
-   * @param {object} jobAttributes - The attributes for the job (resourceRequest, parameters, etc).
-   * @param {object} jobAttributes.resourceRequest - The resource request associated with the job.
-   * @param {object} jobAttributes.parameters - The parameters for the job execution.
-   * @returns {Job} The created and enqueued Job instance.
-   */
-  enqueue({ resourceRequest, parameters } = {}) {
-    const job = this.#factory.build({ resourceRequest, parameters, jobRegistry: this });
-    this.#enqueued.push(job);
-    return job;
-  }
-
-  /**
    * Enqueues a new job using the factory registered under the given key.
-   * @param {string} factoryKey - The name of the factory to use (e.g. `'Action'`).
-   * @param {object} params - The build params forwarded to the factory's `build` method.
+   * @param {string} factoryKey - The name of the factory to use (e.g. `'ResourceRequestJob'`, `'Action'`).
+   * @param {object} [params={}] - The build params forwarded to the factory's `build` method.
    * @returns {Job} The created and enqueued Job instance.
    */
-  enqueueAction(factoryKey, params) {
+  enqueue(factoryKey, params = {}) {
     const job = JobFactory.get(factoryKey).build(params);
     this.#enqueued.push(job);
     return job;

@@ -9,7 +9,7 @@ describe('ActionsEnqueuer', () => {
   beforeEach(() => {
     action = jasmine.createSpyObj('action', ['execute']);
     actions = [action];
-    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueueAction']);
+    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
   });
 
   describe('#enqueue', () => {
@@ -25,20 +25,20 @@ describe('ActionsEnqueuer', () => {
     describe('when the parsed response is a single object', () => {
       const parsed = { id: 1, name: 'Electronics' };
 
-      it('calls enqueueAction once with the action and item', () => {
+      it('calls enqueue once with the action and item', () => {
         new ActionsEnqueuer(actions, parsed, jobRegistry).enqueue();
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledOnceWith('Action', { action, item: parsed });
+        expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action, item: parsed });
       });
     });
 
     describe('when the parsed response is an array', () => {
       const parsed = [{ id: 1 }, { id: 2 }];
 
-      it('calls enqueueAction once per element', () => {
+      it('calls enqueue once per element', () => {
         new ActionsEnqueuer(actions, parsed, jobRegistry).enqueue();
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledTimes(2);
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
-        expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
+        expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
       });
 
       describe('with multiple actions', () => {
@@ -49,13 +49,13 @@ describe('ActionsEnqueuer', () => {
           actions = [action, secondAction];
         });
 
-        it('calls enqueueAction for each action × item combination', () => {
+        it('calls enqueue for each action × item combination', () => {
           new ActionsEnqueuer(actions, parsed, jobRegistry).enqueue();
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledTimes(4);
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action: secondAction, item: { id: 1 } });
-          expect(jobRegistry.enqueueAction).toHaveBeenCalledWith('Action', { action: secondAction, item: { id: 2 } });
+          expect(jobRegistry.enqueue).toHaveBeenCalledTimes(4);
+          expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+          expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
+          expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: secondAction, item: { id: 1 } });
+          expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: secondAction, item: { id: 2 } });
         });
       });
     });

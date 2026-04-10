@@ -80,7 +80,7 @@ class Application {
    */
   enqueueFirstJobs() {
     new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
-      this.jobRegistry.enqueue({ resourceRequest, parameters: {} });
+      this.jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {}, jobRegistry: this.jobRegistry });
     });
   }
 

@@ -23,7 +23,7 @@ class ActionEnqueuer {
    */
   enqueue() {
     for (const item of this.#items) {
-      this.#jobRegistry.enqueueAction('Action', { action: this.#action, item });
+      this.#jobRegistry.enqueue('Action', { action: this.#action, item });
     }
   }
 }

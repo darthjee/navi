@@ -27,7 +27,7 @@ describe('ResourceRequestJob', () => {
     client = ClientFactory.build({ baseUrl });
     clients = ClientRegistryFactory.build({ default: client });
     parameters = {};
-    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueueAction']);
+    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
 
     job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters, jobRegistry });
   });
