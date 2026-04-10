@@ -16,6 +16,7 @@ PLATFORM := linux/amd64
 DOCKER_HUB_SCRIPT ?= /home/scripts/sbin/docker_hub.sh
 
 SOURCE_FILES=source/bin/navi.js source/lib/**/*.js
+MD_FILES=AGENTS.md docs/agents/*.md
 
 help:
 	@echo "Usage:"
@@ -71,3 +72,6 @@ update-description:
 
 output/source.js: $(SOURCE_FILES)
 	./scripts/export_js.sh -o output/source.js $(SOURCE_FILES) 
+
+output/doc.md: $(MD_FILES)
+	./scripts/export_md.sh -o output/doc.md $(MD_FILES) 
