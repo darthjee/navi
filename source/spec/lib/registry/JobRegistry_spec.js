@@ -352,7 +352,7 @@ describe('JobRegistry', () => {
     beforeEach(() => {
       JobRegistry.reset();
       JobRegistry.build({ cooldown: 5000 });
-      readyJob   = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+      readyJob = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
       waitingJob = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
 
       JobRegistry.pick();

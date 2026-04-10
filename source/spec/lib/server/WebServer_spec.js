@@ -1,5 +1,5 @@
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WebConfig } from '../../../lib/models/WebConfig.js';
+import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 
 describe('WebServer', () => {

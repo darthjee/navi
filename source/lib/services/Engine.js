@@ -1,5 +1,5 @@
-import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersAllocator } from './WorkersAllocator.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
 
 /**
  * Engine is responsible for managing the job processing workflow.

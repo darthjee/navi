@@ -1,5 +1,5 @@
-import { JobRegistry } from '../../../../lib/registry/JobRegistry.js';
 import { Worker } from '../../../../lib/models/Worker.js';
+import { JobRegistry } from '../../../../lib/registry/JobRegistry.js';
 
 class DummyWorker extends Worker {
   perform() {
