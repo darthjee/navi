@@ -58,6 +58,12 @@ describe('Application', () => {
         expect(app.config.clientRegistry instanceof ClientRegistry).toBeTrue();
       });
 
+      it('registers the Action factory', () => {
+        app.loadConfig(configFilePath);
+
+        expect(JobFactory.get('Action')).toBeDefined();
+      });
+
       it('does not expose a clients property on config (uses clientRegistry instead)', () => {
         app.loadConfig(configFilePath);
 
@@ -103,13 +109,14 @@ describe('Application', () => {
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
       jobFactory = new DummyJobFactory();
-      jobRegistry = new JobRegistry({ factory: jobFactory });
+      jobRegistry = new JobRegistry({});
 
       workerFactory = new DummyWorkerFactory({ jobRegistry });
       workersRegistry = new WorkersRegistry({ quantity: 1, jobRegistry, factory: workerFactory });
 
       app = new Application();
       app.loadConfig(configFilePath, { workersRegistry, jobRegistry });
+      JobFactory.registry('ResourceRequestJob', jobFactory);
     });
 
     it('processes all initial parameter-free jobs', async () => {

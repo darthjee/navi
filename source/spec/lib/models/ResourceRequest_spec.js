@@ -81,6 +81,58 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#enqueueActions', () => {
+    let action;
+    let request;
+    let jobRegistry;
+
+    beforeEach(() => {
+      spyOn(Logger, 'info').and.stub();
+      spyOn(Logger, 'error').and.stub();
+      action = ResourceRequestActionFactory.build({ resource: 'products' });
+      jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
+    });
+
+    describe('when there are no actions', () => {
+      it('returns immediately without parsing', () => {
+        request = ResourceRequestFactory.build();
+        expect(() => request.enqueueActions('not valid json', jobRegistry)).not.toThrow();
+      });
+
+      it('does not call enqueue', () => {
+        request = ResourceRequestFactory.build();
+        request.enqueueActions('[]', jobRegistry);
+        expect(jobRegistry.enqueue).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when the response is a JSON array', () => {
+      beforeEach(() => {
+        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
+        request.actions = [action];
+      });
+
+      it('calls enqueue once per element', () => {
+        request.enqueueActions('[{"id":1},{"id":2}]', jobRegistry);
+        expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
+      });
+    });
+
+    describe('when the response is a JSON object', () => {
+      beforeEach(() => {
+        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
+        request.actions = [action];
+      });
+
+      it('calls enqueue once with the item', () => {
+        request.enqueueActions('{"id":1}', jobRegistry);
+        expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action, item: { id: 1 } });
+      });
+    });
+  });
+
   describe('#executeActions', () => {
     let action;
     let request;

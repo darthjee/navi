@@ -11,6 +11,7 @@ describe('ResourceRequestJob', () => {
   let clients;
   let client;
   let parameters;
+  let jobRegistry;
   let job;
 
   const baseUrl = 'http://example.com';
@@ -26,8 +27,9 @@ describe('ResourceRequestJob', () => {
     client = ClientFactory.build({ baseUrl });
     clients = ClientRegistryFactory.build({ default: client });
     parameters = {};
+    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
 
-    job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+    job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters, jobRegistry });
   });
 
   describe('#constructor', () => {
@@ -42,7 +44,7 @@ describe('ResourceRequestJob', () => {
         response = { status: 200, data: '[]' };
         spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
         spyOn(Logger, 'info').and.stub();
-        spyOn(resourceRequest, 'executeActions').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
       it('resolves with the response', async () => {
@@ -50,9 +52,9 @@ describe('ResourceRequestJob', () => {
         expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
       });
 
-      it('calls executeActions with the response data', async () => {
+      it('calls enqueueActions with the response data and jobRegistry', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(resourceRequest.executeActions).toHaveBeenCalledOnceWith(response.data);
+        expect(resourceRequest.enqueueActions).toHaveBeenCalledOnceWith(response.data, jobRegistry);
       });
 
       it('logs info when performing', async () => {
@@ -76,12 +78,12 @@ describe('ResourceRequestJob', () => {
         spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
         spyOn(Logger, 'error').and.stub();
         spyOn(Logger, 'info').and.stub();
-        spyOn(resourceRequest, 'executeActions').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
-      it('does not call executeActions', async () => {
+      it('does not call enqueueActions', async () => {
         await job.perform().catch(() => {});
-        expect(resourceRequest.executeActions).not.toHaveBeenCalled();
+        expect(resourceRequest.enqueueActions).not.toHaveBeenCalled();
       });
 
       it('registers failure and increments attempts', async () => {

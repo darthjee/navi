@@ -1,3 +1,4 @@
+import { ActionsEnqueuer } from './ActionsEnqueuer.js';
 import { ActionsExecutor } from './ActionsExecutor.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
 import { ResponseParser } from './ResponseParser.js';
@@ -30,6 +31,19 @@ class ResourceRequest {
    */
   get clientName() {
     return this.#clientName;
+  }
+
+  /**
+   * Enqueues one ActionProcessingJob per action associated with the resource request.
+   * Returns immediately if there are no actions, skipping JSON parsing entirely.
+   * @param {string} rawBody The raw response body string.
+   * @param {JobRegistry} jobRegistry The registry used to enqueue action jobs.
+   */
+  enqueueActions(rawBody, jobRegistry) {
+    if (this.actions.length === 0) return;
+
+    const parsed = new ResponseParser(rawBody).parse();
+    new ActionsEnqueuer(this.actions, parsed, jobRegistry).enqueue();
   }
 
   /**

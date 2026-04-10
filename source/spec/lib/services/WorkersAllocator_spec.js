@@ -1,3 +1,4 @@
+import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Job } from '../../../lib/models/Job.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
@@ -5,7 +6,6 @@ import { WorkersAllocator } from '../../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
-import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 
 describe('WorkersAllocator', () => {
   let jobRegistry;
@@ -18,9 +18,9 @@ describe('WorkersAllocator', () => {
   let jobFactory;
 
   beforeEach(() => {
-    const clients = ClientRegistryFactory.build({});
     jobFactory = new DummyJobFactory();
-    jobRegistry = new JobRegistry({ clients, factory: jobFactory });
+    JobFactory.registry('ResourceRequestJob', jobFactory);
+    jobRegistry = new JobRegistry({});
     workers = new IdentifyableCollection();
     workersRegistry = new WorkersRegistry({ jobRegistry, quantity: 1, workers });
     workersRegistry.initWorkers();
@@ -31,6 +31,10 @@ describe('WorkersAllocator', () => {
     job = new Job({});
 
     allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
+  });
+
+  afterEach(() => {
+    JobFactory.reset();
   });
 
   describe('when there when there is a single worker and no job', () => {
@@ -48,7 +52,7 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there is a single worker and a single job', () => {
     beforeEach(() => {
-      job = jobRegistry.enqueue({});
+      job = jobRegistry.enqueue('ResourceRequestJob', {});
     });
 
     it('allocates all workers for the jobs', () => {
@@ -66,9 +70,9 @@ describe('WorkersAllocator', () => {
 
   describe('when there when there is a single worker and several jobs', () => {
     beforeEach(() => {
-      job = jobRegistry.enqueue({});
-      jobRegistry.enqueue({ parameters: { value: 2 } });
-      jobRegistry.enqueue({ parameters: { value: 3 } });
+      job = jobRegistry.enqueue('ResourceRequestJob', {});
+      jobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
+      jobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 3 } });
     });
 
     it('allocates all workers for the jobs they can', () => {
@@ -93,9 +97,9 @@ describe('WorkersAllocator', () => {
       spyOn(worker, 'perform');
       allocator = new WorkersAllocator({ jobRegistry, workersRegistry });
 
-      job = jobRegistry.enqueue({});
-      jobRegistry.enqueue({ parameters: { value: 2 } });
-      jobRegistry.enqueue({ parameters: { value: 3 } });
+      job = jobRegistry.enqueue('ResourceRequestJob', {});
+      jobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
+      jobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 3 } });
     });
 
     it('allocates all workers for the jobs they can', () => {
@@ -113,7 +117,7 @@ describe('WorkersAllocator', () => {
 
   describe('when there is an idle worker and only a failed (cooling-down) job', () => {
     beforeEach(() => {
-      job = jobRegistry.enqueue({});
+      job = jobRegistry.enqueue('ResourceRequestJob', {});
       const picked = jobRegistry.pick();
       jobRegistry.fail(picked);
     });
