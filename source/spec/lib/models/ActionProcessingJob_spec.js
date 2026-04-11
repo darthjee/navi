@@ -1,5 +1,6 @@
 import { ActionProcessingJob } from '../../../lib/models/ActionProcessingJob.js';
 import { Job } from '../../../lib/models/Job.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('ActionProcessingJob', () => {
   let action;
@@ -7,6 +8,7 @@ describe('ActionProcessingJob', () => {
   let job;
 
   beforeEach(() => {
+    Logger.suppress();
     action = jasmine.createSpyObj('action', ['execute']);
     item = { id: 1, name: 'Electronics' };
     job = new ActionProcessingJob({ id: 'test-id', action, item });
