@@ -32,7 +32,6 @@ class Engine {
    * @returns {Promise<void>}
    */
   async start() {
-    const intervalMs = 1000; // run loop body once every 1000ms
     while (this.#continueAllocating()) {
       Logger.debug('Promoting ready jobs and allocating to idle workers if available...');
       JobRegistry.promoteReadyJobs();
@@ -42,7 +41,7 @@ class Engine {
       }
 
       // wait before next iteration so the block runs ~once per second
-      await this.#sleep(intervalMs);
+      await this.#sleep();
     }
   }
 
@@ -59,7 +58,8 @@ class Engine {
    * @param {number} ms - Duration in milliseconds to sleep.
    * @returns {Promise<void>}
    */
-  #sleep(ms) {
+  #sleep() {
+    let ms = this.#sleepMs;
     if (ms < 0) return Promise.resolve();
     return new Promise(resolve => setTimeout(resolve, ms));
   }
