@@ -55,6 +55,38 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#resolveUrl', () => {
+    it('returns the URL unchanged when there are no placeholders and no parameters', () => {
+      const request = ResourceRequestFactory.build({ url: '/categories.json' });
+      expect(request.resolveUrl({})).toEqual('/categories.json');
+    });
+
+    it('replaces a single placeholder with the matching parameter', () => {
+      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
+      expect(request.resolveUrl({ id: 1 })).toEqual('/categories/1.json');
+    });
+
+    it('replaces multiple placeholders with matching parameters', () => {
+      const request = ResourceRequestFactory.build({ url: '/categories/{:cat}/items/{:item}' });
+      expect(request.resolveUrl({ cat: 5, item: 3 })).toEqual('/categories/5/items/3');
+    });
+
+    it('leaves placeholders unchanged when no matching key exists', () => {
+      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
+      expect(request.resolveUrl({})).toEqual('/categories/{:id}.json');
+    });
+
+    it('returns the URL unchanged when there are no placeholders but extra parameters', () => {
+      const request = ResourceRequestFactory.build({ url: '/categories.json' });
+      expect(request.resolveUrl({ id: 1 })).toEqual('/categories.json');
+    });
+
+    it('returns the URL unchanged when called with no arguments', () => {
+      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
+      expect(request.resolveUrl()).toEqual('/categories/{:id}.json');
+    });
+  });
+
   describe('#needsParams', () => {
     it('returns false when the URL has no placeholders', () => {
       const request = ResourceRequestFactory.build();
