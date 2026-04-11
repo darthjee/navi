@@ -4,10 +4,9 @@ import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { WorkersAllocator } from '../../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
-import { ActionProcessingJob } from '../../../lib/models/ActionProcessingJob.js';
 
 describe('WorkersAllocator', () => {
   let allocator;
@@ -22,7 +21,7 @@ describe('WorkersAllocator', () => {
     JobRegistry.build({});
     jobFactory = new DummyJobFactory();
     JobFactory.registry('ResourceRequestJob', jobFactory);
-    JobFactory.build('Action', { klass: ActionProcessingJob });
+
     workers = new IdentifyableCollection();
     WorkersRegistry.build({ quantity: 1, workers });
     WorkersRegistry.initWorkers();
@@ -119,7 +118,7 @@ describe('WorkersAllocator', () => {
     });
   });
 
-  xdescribe('when there is an idle worker and only a failed (cooling-down) job', () => {
+  describe('when there is an idle worker and only a failed (cooling-down) job', () => {
     beforeEach(() => {
       job = JobRegistry.enqueue('ResourceRequestJob', {});
       const picked = JobRegistry.pick();
