@@ -5,6 +5,7 @@ workers:
 clients:
   default:
     base_url: http://remote_host:80
+    timeout: 5000
 resources:
   categories:
     - url: /categories.json
