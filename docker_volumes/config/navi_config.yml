@@ -1,3 +1,5 @@
+web:
+  port: 3000
 workers:
   quantity: 5
 clients:
