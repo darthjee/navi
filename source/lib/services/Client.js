@@ -124,11 +124,18 @@ class Client {
    * @returns {string} Resolved value.
    */
   static #resolveValue(value) {
-    if (typeof value !== 'string') return value;
+    if (typeof value !== 'string') return String(value);
 
     return value.replace(/\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g, (_match, braced, bare) => {
       const varName = braced || bare;
-      return process.env[varName] ?? '';
+      const resolved = process.env[varName];
+
+      if (resolved === undefined) {
+        Logger.warn(`Header references undefined environment variable: ${varName}`);
+        return '';
+      }
+
+      return resolved;
     });
   }
 }

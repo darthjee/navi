@@ -191,7 +191,8 @@ describe('Client', () => {
     });
 
     describe('when an env var is not set', () => {
-      it('replaces the reference with an empty string', () => {
+      it('replaces the reference with an empty string and logs a warning', () => {
+        spyOn(Logger, 'warn').and.stub();
         const config = {
           base_url: 'https://example.com',
           headers: { Authorization: 'Bearer $NAVI_UNDEFINED_VAR' },
@@ -200,6 +201,9 @@ describe('Client', () => {
         const result = Client.fromObject('api', config);
 
         expect(result.headers).toEqual({ Authorization: 'Bearer ' });
+        expect(Logger.warn).toHaveBeenCalledWith(
+          'Header references undefined environment variable: NAVI_UNDEFINED_VAR'
+        );
       });
     });
   });
