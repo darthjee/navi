@@ -1,14 +1,12 @@
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
-import { ConsoleLogger } from '../utils/logging/ConsoleLogger.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Worker processes jobs pulled from a JobRegistry.
  * @author darthjee
  */
 class Worker {
-  #logger;
-
   /**
    * Creates a new Worker instance.
    * @param {object} params - The parameters for creating a Worker instance.
@@ -16,7 +14,6 @@ class Worker {
    */
   constructor({ id }) {
     this.id = id;
-    this.#logger = new ConsoleLogger();
   }
 
   /**
@@ -43,7 +40,7 @@ class Worker {
       await this.job.perform();
       JobRegistry.finish(this.job);
     } catch (error) {
-      this.#logger.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
+      Logger.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
       JobRegistry.fail(this.job);
     } finally {
       this.job = undefined;
