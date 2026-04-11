@@ -1,4 +1,5 @@
 import { Job } from './Job.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * ActionProcessingJob is a Job that processes a single Action for a given item.
@@ -28,6 +29,7 @@ class ActionProcessingJob extends Job {
    * @returns {Promise<void>}
    */
   async perform() {
+    Logger.info(`ActionProcessingJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       await this.#action.execute(this.#item);
