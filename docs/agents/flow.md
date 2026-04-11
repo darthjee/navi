@@ -5,32 +5,45 @@
 Navi is a queue-based cache-warmer. It reads a YAML configuration file, enqueues HTTP requests as jobs, and processes them concurrently using a pool of workers.
 
 ```
-navi.js (CLI entrypoint — project root)
+source/bin/navi.js
+  └─ ArgumentsParser.parse()          — --config / -c → configPath
   └─ Application.loadConfig(configPath)
-       ├─ Config  ──────────────────────────────────────── clients + resources
-       │    ├─ ClientRegistry   (named HTTP clients)
-       │    ├─ ResourceRegistry (named resource groups)
-       │    └─ WorkersConfig    (pool size)
-       ├─ JobRegistry  ──── main queue + failed queue + deadJobs + finished list
-       └─ WorkersRegistry ─ idle/busy worker pool (created via WorkersFactory)
-            └─ Worker[]  ──── each processes one Job at a time (async)
-                 └─ Job.perform()
-                      ├─ [ResourceRequestJob] Client.perform(resourceRequest)  → raw response body
-                      │    └─ resourceRequest.enqueueActions(rawBody, jobRegistry)
-                      │         ├─ ResponseParser   → parse JSON once
-                      │         └─ ActionsEnqueuer  → normalise + enqueue per (item × action)
-                      │              └─ jobRegistry.enqueueAction({ action, item })
-                      └─ [ActionProcessingJob] action.execute(item)
-                           └─ ResourceRequestAction.execute(item)
-                                └─ VariablesMapper.map(item) → log vars
+       ├─ Config  ────────────────────────────────── clients + resources + workers + web
+       │    ├─ ClientRegistry    (named HTTP clients)
+       │    ├─ ResourceRegistry  (named resource groups)
+       │    ├─ WorkersConfig     (pool size + retry cooldown)
+       │    └─ WebConfig         (web server port — optional)
+       ├─ JobFactory.build()     — registers 'ResourceRequestJob' and 'Action' factories
+       ├─ JobRegistry.build()    — singleton: enqueued / processing / failed /
+       │                                       retryQueue / finished / dead
+       └─ WorkersRegistry.build() + initWorkers()
+            └─ WorkerFactory → Worker[]  (all start idle)
+  └─ Application.run()
+       ├─ buildEngine()          — Engine + WorkersAllocator
+       ├─ buildWebServer()       — WebServer (null if web: absent)
+       ├─ enqueueFirstJobs()     — parameter-free ResourceRequests → JobRegistry
+       ├─ webServer?.start()     — Express on configured port
+       └─ engine.start()         — allocation loop
+            └─ WorkersAllocator.allocate()
+                 └─ Worker.perform(job)
+                      ├─ [ResourceRequestJob]
+                      │    └─ Client.perform()              → raw response body
+                      │    └─ ResponseParser.parse()        → JS value
+                      │    └─ ActionsEnqueuer.enqueue()     — item × action cross-product
+                      │         └─ ActionEnqueuer.enqueue() (per action)
+                      │              └─ JobRegistry.enqueue('Action', { action, item })
+                      └─ [ActionProcessingJob]
+                           └─ action.execute(item)          ← TODO: enqueue ResourceRequestJob
+                                └─ VariablesMapper.map(item) → log vars (current behaviour)
 ```
 
 ---
 
-## 1. Entrypoint — `navi.js`
+## 1. Entrypoint — `source/bin/navi.js`
 
-The CLI script `navi.js` (project root) reads command-line arguments to determine which YAML configuration file to load.
-It instantiates `Application`, calls `loadConfig(configPath)`, and then starts the `Engine`.
+`source/bin/navi.js` uses `ArgumentsParser.parse(process.argv.slice(2))` to read the
+`--config <path>` / `-c <path>` option (default: `config/navi_config.yml`).
+It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `run()`.
 
 ---
 
@@ -39,12 +52,16 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then starts t
 `Application.loadConfig(configPath)` orchestrates initialization:
 
 1. `ConfigLoader` reads the YAML file from disk (`fs.readFileSync` + `yaml` library).
+   Throws `ConfigurationFileNotProvided` if `configPath` is falsy.
+   Throws `ConfigurationFileNotFound` if the file does not exist.
 2. `ConfigParser` validates required top-level keys and builds:
    - `ClientRegistry` — named HTTP client definitions (`base_url`, optional headers/auth).
    - `ResourceRegistry` — named resource groups, each containing one or more `ResourceRequest` entries.
-   - `WorkersConfig` — worker pool size (`workers.quantity`, default 1).
-3. `JobRegistry` is created (empty queues).
-4. `WorkersRegistry` is created and `initWorkers()` is called, which uses **`WorkersFactory`** (planned — not yet implemented) to instantiate the configured number of `Worker` instances (each with a UUID).
+   - `WorkersConfig` — worker pool size (`workers.quantity`, default 1) and `retryCooldown`.
+   - `WebConfig` — web server port (`web.port`); `null` when the `web:` key is absent.
+3. `JobFactory.build('ResourceRequestJob', ...)` and `JobFactory.build('Action', ...)` register the two job factories.
+4. `JobRegistry.build({ cooldown })` creates the singleton with empty queues.
+5. `WorkersRegistry.build(workersConfig)` creates the singleton; `WorkersRegistry.initWorkers()` calls `WorkerFactory` to create the configured number of `Worker` instances (all start idle).
 
 ---
 
@@ -107,12 +124,17 @@ The optional top-level `web:` key configures the monitoring web UI:
 
 ## 4. Initial Enqueueing
 
-After `loadConfig`, `Application` iterates over all `ResourceRequest` entries across all resources and enqueues those that **require no parameters** (i.e., their URL contains no `{:placeholder}` tokens).
+After `loadConfig`, `Application.run()` calls `enqueueFirstJobs()`:
 
-`JobRegistry.enqueue(resourceRequest, params)`:
+`ResourceRequestCollector.requestsNeedingNoParams()` returns all `ResourceRequest` entries
+whose URL template contains no `{:placeholder}` tokens. Each one is pushed as a
+`ResourceRequestJob` via `JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} })`.
 
-1. Delegates to **`JobFactory`** to create a new `Job` wrapping the `ResourceRequest` and parameter map.
-2. Calls `push(job)` to add the job to the tail of the main queue.
+`JobRegistry.enqueue(factoryKey, params)`:
+
+1. Retrieves the factory registered under `factoryKey` from `JobFactory`.
+2. Calls `factory.build(params)` to create a new `Job` instance.
+3. Pushes the job to the tail of the `enqueued` queue.
 
 ---
 
@@ -122,22 +144,23 @@ After `loadConfig`, `Application` iterates over all `ResourceRequest` entries ac
 
 ### Main allocation loop
 
-The Engine continuously calls the `WorkersAllocator` to assign jobs to workers as long as there is remaining work:
+```
+while (JobRegistry.hasJob() || WorkersRegistry.hasBusyWorker())
+  JobRegistry.promoteReadyJobs()    ← move cooled-down failed jobs → retryQueue
+  if JobRegistry.hasReadyJob()
+    WorkersAllocator.allocate()     ← assign enqueued/retryQueue jobs to idle workers
+  else
+    await sleep(sleepMs)            ← all pending jobs still in cooldown; wait
+```
 
-- Remaining work means: at least one busy worker **or** at least one job in the queue.
-  - `WorkersRegistry.hasBusyWorker()` — returns `true` if any worker is currently processing.
-  - `JobRegistry.hasJob()` — returns `true` if there are jobs to process (main or failed queue).
+`hasJob()` returns `true` when any of `enqueued`, `failed`, or `retryQueue` is non-empty.
+`hasReadyJob()` returns `true` only when `enqueued` or `retryQueue` is non-empty.
 
-The allocation loop:
+`WorkersAllocator.allocate()` repeatedly pairs `WorkersRegistry.getIdleWorker()` with
+`JobRegistry.pick()` until either pool is exhausted for the current tick. `getIdleWorker()`
+atomically moves a worker from idle to busy and returns it.
 
-1. While there is remaining work, the Engine calls `WorkersAllocator.allocate()`.
-2. The `WorkersAllocator` assigns jobs to idle workers as long as both are available, using extensible allocation logic.
-3. If no idle workers are available but work remains, the Engine may sleep for a configurable duration before retrying (future: configurable sleep).
-4. The loop stops when all jobs are processed and all workers are idle.
-
-This design decouples the engine's control flow from the job assignment logic, making it easier to test and extend allocation strategies.
-
-When the main queue is empty, the inner loop may promote jobs from the failed queue back to the main queue, giving previously failed requests a retry window after the rest of the work has been attempted.
+The loop stops when all jobs have been processed or moved to dead, and all workers are idle.
 
 ---
 
@@ -155,16 +178,24 @@ Each `Worker` processes one job at a time asynchronously:
 
 ## 7. Response Processing & Actions
 
-After `Client.perform()` resolves, `ResourceRequestJob` passes the raw response body to `resourceRequest.enqueueActions(rawBody, jobRegistry)`.
+After `Client.perform()` resolves, `ResourceRequestJob` passes the raw response body to
+`resourceRequest.enqueueActions(rawBody)`.
 
 - `ResourceRequest.enqueueActions` returns immediately if there are no configured actions.
-- **`ResponseParser`** parses the raw JSON body once. Throws `InvalidResponseBody` if the body cannot be parsed.
-- **`ActionsEnqueuer`** receives the parsed value. Throws `NullResponse` if the parsed value is `null`. Normalises the value to an array (wrapping a single object), then iterates over items × actions, calling `jobRegistry.enqueueAction({ action, item })` for each pair.
-- `JobRegistry.enqueueAction` builds an **`ActionProcessingJob`** via the `'Action'` factory and pushes it onto the enqueued queue.
-- **`ActionProcessingJob.perform()`** calls `action.execute(item)`, which uses **`VariablesMapper.map(item)`** to produce transformed variables and logs:
+- **`ResponseParser`** parses the raw JSON body once. Throws `InvalidResponseBody` if it cannot be parsed.
+- **`ActionsEnqueuer`** receives the parsed value. Throws `NullResponse` if the value is `null`.
+  Normalises the value to an array (wrapping a single object), then, for each action, creates an
+  **`ActionEnqueuer`** and calls `enqueue()`.
+- **`ActionEnqueuer.enqueue()`** iterates over all items and calls
+  `JobRegistry.enqueue('Action', { action, item })` for each one, creating an `ActionProcessingJob`.
+- **`ActionProcessingJob.perform()`** calls `action.execute(item)`.
+- **`ResourceRequestAction.execute(item)`** applies `VariablesMapper.map(item)` and currently **logs**:
   ```
   Executing action <resource> for <variables>
   ```
+  > **TODO:** This method should instead enqueue a new `ResourceRequestJob` for the resource named
+  > by `this.resource`, passing the mapped variables as job parameters. This is the missing step
+  > that closes the resource-chaining cycle.
 - `ActionProcessingJob` has no retry rights — it is exhausted immediately on the first failure.
 
 ### Example
@@ -195,28 +226,26 @@ Executing action category_information for { id: 2 }
 When a job fails (e.g., `RequestFailed` is thrown):
 
 1. The job's **failure counter** is incremented and the **last exception** is stored on the job.
-2. If the failure count is within the configured maximum, the job is moved to the **failed queue**.
-3. If the failure count exceeds the configured maximum, the job is moved to **`deadJobs`**.
+2. `job.exhausted()` is checked:
+   - `ResourceRequestJob`: not exhausted until the failure count exceeds the configured maximum.
+   - `ActionProcessingJob`: exhausted after the **first** failure (no retry rights).
+3. If not exhausted: `job.applyCooldown(cooldown)` sets `job.readyBy = Date.now() + cooldown`.
+   The job is inserted into the `failed` `SortedCollection` (sorted by `readyBy`).
+4. If exhausted: the job is moved to the `dead` collection.
 
-The failed queue is only promoted to the main queue **after the main queue is empty**, giving the server time to recover from transient errors before retrying.
+`JobRegistry.promoteReadyJobs()` (called at the start of each engine tick) moves all
+`failed` jobs whose `readyBy ≤ Date.now()` into `retryQueue`, where they are treated as
+regular ready jobs on the next allocation.
 
-All queues (`main`, `failed`, `finished`, `deadJobs`) are managed inside `JobRegistry`.
+All queues (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`) are
+managed inside `JobRegistryInstance`, accessed via the `JobRegistry` singleton facade.
 
 ---
 
 ## 9. Web UI
 
-When the `web:` key is present in the configuration, `Application` starts a local **read-only monitoring web UI** built with React + React Bootstrap. It is served by an Express.js `WebServer` on the configured port.
-
-The web UI displays:
-
-- Jobs currently in queue.
-- Jobs being processed.
-- Finished jobs.
-- Failed jobs (with last failure reason).
-- Dead jobs (exceeded retry limit).
-
-To enable it, add the following to your configuration file:
+When the `web:` key is present in the configuration, `Application` starts a local
+**read-only monitoring web UI** built with React, served by an Express.js `WebServer`.
 
 ```yaml
 web:
@@ -224,3 +253,37 @@ web:
 ```
 
 Omit the `web:` key entirely to run Navi in headless mode (no web server).
+
+### Current routes
+
+| Route | Handler | Description |
+|-------|---------|-------------|
+| `GET /stats.json` | `StatsRequestHandler` | Returns `{ jobs, workers }` with counts per state. |
+| `GET /*` | static + SPA fallback | Serves the React app from `source/public/`. |
+
+### `jobs` object (from `JobRegistry.stats()`)
+
+```json
+{
+  "enqueued":   0,
+  "processing": 0,
+  "failed":     0,
+  "retryQueue": 0,
+  "finished":   0,
+  "dead":       0
+}
+```
+
+### `workers` object (from `WorkersRegistry.stats()`)
+
+```json
+{ "idle": 5, "busy": 0 }
+```
+
+### Planned web UI features
+
+- List individual jobs per queue/state (URL, status, failure reason).
+- List individual workers with their current state and active job.
+- Display jobs in cooldown with time remaining until retry.
+- View application logs (`BufferedLogger` / `LogBuffer`).
+- Real-time updates (polling or WebSocket).

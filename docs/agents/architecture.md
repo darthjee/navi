@@ -20,10 +20,12 @@ AppError (base)
 │   └── MissingResourceConfig
 ├── RequestFailed
 ├── LockedByOtherWorker
-├── InvalidResponseBody   ← raw JSON response body could not be parsed
-├── NullResponse          ← parsed response body is null
-├── MissingActionResource ← action config entry has no "resource" field
-└── MissingMappingVariable ← variables_map references a field absent from the response
+├── InvalidResponseBody          ← raw JSON response body could not be parsed
+├── NullResponse                 ← parsed response body is null
+├── MissingActionResource        ← action config entry has no "resource" field
+├── MissingMappingVariable       ← variables_map references a field absent from the response
+├── ConfigurationFileNotFound    ← YAML config file does not exist at the given path
+└── ConfigurationFileNotProvided ← no config file path was supplied to Application
 ```
 
 All custom exceptions must extend `AppError` (directly or via an intermediate class); never extend `Error` directly.
@@ -40,7 +42,8 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `enqueueActions(rawBody, jobRegistry)` to enqueue action jobs after a successful HTTP request. |
 | `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `variables_map`). Uses `VariablesMapper` to transform a response item and logs the result. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
-| `ActionsEnqueuer` | Normalises a parsed response (object or array) and enqueues one `ActionProcessingJob` per `(item × action)` pair via `jobRegistry.enqueueAction`. Throws `NullResponse` for null responses. |
+| `ActionsEnqueuer` | Normalises a parsed response (object or array) and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null responses. Delegates per-action enqueueing to `ActionEnqueuer`. |
+| `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
 | `ActionsExecutor` | (Legacy — kept for reference.) Normalises a parsed response and dispatches each `ResourceRequestAction` per item synchronously. No longer called by `ResourceRequestJob`; removal is a follow-up. |
 | `VariablesMapper` | Applies a `variables_map` to a response item, renaming fields as configured. When no map is provided, all fields pass through unchanged. Throws `MissingMappingVariable` when a source field is absent. |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
@@ -57,8 +60,10 @@ Collection managers built on a shared base class.
 - **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
 - **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
 - **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
-- **`JobRegistry`** — FIFO job queue. Key methods: `enqueue(resourceRequest, params)` (injects `jobRegistry: this` into every `ResourceRequestJob`), `enqueueAction({ action, item })` (creates an `ActionProcessingJob` via the `'Action'` factory), `pick()`, `hasJob()`, `lock(worker)`, `hasLock(worker)`. Also maintains `failed`, `finished`, and `deadJobs` queues.
-- **`WorkersRegistry`** — Worker pool manager. Tracks workers in `idle` and `busy` maps. Key methods: `initWorkers()`, `setBusy(workerId)`, `setIdle(workerId)`, `hasBusyWorker()`, `hasIdleWorker()`.
+- **`JobRegistry`** — Static singleton facade for the job queues. Call `JobRegistry.build(options)` once during bootstrap; call `JobRegistry.reset()` in tests. Delegates all operations to a `JobRegistryInstance`. Key static methods: `enqueue(factoryKey, params)`, `fail(job)`, `finish(job)`, `pick()`, `hasJob()`, `hasReadyJob()`, `promoteReadyJobs()`, `stats()`.
+- **`JobRegistryInstance`** — Holds the actual queues: `enqueued` (FIFO), `processing` (`IdentifyableCollection`), `failed` (`SortedCollection` sorted by `readyBy` timestamp), `retryQueue` (FIFO), `finished`, and `dead`. `promoteReadyJobs()` moves cooled-down failed jobs to `retryQueue`. Not exported; accessed only via `JobRegistry`.
+- **`WorkersRegistry`** — Static singleton facade for the worker pool. Call `WorkersRegistry.build(options)` once during bootstrap; call `WorkersRegistry.reset()` in tests. Delegates to a `WorkersRegistryInstance`. Key static methods: `initWorkers()`, `setBusy(id)`, `setIdle(id)`, `hasBusyWorker()`, `hasIdleWorker()`, `getIdleWorker()`, `stats()`.
+- **`WorkersRegistryInstance`** — Holds the actual worker collections: `workers` (all), `idle`, `busy`. `getIdleWorker()` atomically moves a worker from idle to busy and returns it. Not exported; accessed only via `WorkersRegistry`.
 
 Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property.
 
@@ -117,16 +122,34 @@ Business logic and I/O layer.
 
 | Class | Responsibility |
 |-------|---------------|
-| `Application` | Main orchestrator. `loadConfig(configPath)` initializes `config`, `jobRegistry`, and `workersRegistry`. Registers the `'ResourceRequestJob'` and `'Action'` factories. Enqueues initial parameter-free resources on startup. Optionally starts the web UI when `web:` is present in configuration. |
+| `Application` | Main orchestrator. `loadConfig(configPath)` builds `Config`, registers factories, and initialises `JobRegistry` and `WorkersRegistry` singletons. `run()` creates the engine and optional web server, enqueues initial jobs, then starts both. |
+| `ArgumentsParser` | Parses CLI arguments using Node's `parseArgs`. Supports `--config <path>` / `-c <path>`; defaults to `config/navi_config.yml`. Returns `{ config }`. |
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
 | `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. |
-| `Engine` | Drives the main allocation loop. Continuously calls the `WorkersAllocator` to assign jobs to workers as long as there are jobs to process or busy workers. Stops when all jobs are processed and all workers are idle. |
-| `WorkersAllocator` | Handles the logic for assigning jobs to workers. Provides extensible methods for allocation, allowing custom strategies and easier testing. Used by `Engine` to decouple job assignment from engine control flow. |
-| `JobFactory` | Creates `Job` instances from a `ResourceRequest` and a parameter map. Exposes three static methods for centralized factory management: `registry(name, factory)` registers a factory instance under a name, `get(name)` retrieves it, and `reset()` clears all registered factories (useful for test isolation). |
-| `WorkersFactory` | Creates and initializes `Worker` instances for the pool   ← planned; not yet implemented. |
-| `WebServer` | Optional Express.js server that serves the monitoring web UI. Created via `WebServer.build()`; returns `null` when `webConfig` is absent. Listens on the port defined by `WebConfig`. |
-| `Router` | Defines the Express routes for the web UI. Exposes `GET /stats.json` returning combined job and worker statistics. |
+| `Engine` | Drives the main allocation loop. Each tick calls `JobRegistry.promoteReadyJobs()` then delegates to `WorkersAllocator.allocate()` while jobs or busy workers exist. Sleeps for `sleepMs` (default 500 ms) when all pending jobs are in cooldown. |
+| `WorkersAllocator` | Assigns ready jobs to idle workers. On each `allocate()` call, repeatedly pairs `WorkersRegistry.getIdleWorker()` with `JobRegistry.pick()` until either pool is exhausted. |
+| `JobFactory` | Static registry of named job factories. `JobFactory.build(name, options)` registers a factory; `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears all entries (test teardown). |
+
+### `server/`
+
+Express-based web server and request handlers.
+
+| Class | Responsibility |
+|-------|---------------|
+| `WebServer` | Optional Express.js server. `WebServer.build({ webConfig })` returns `null` when `webConfig` is absent; otherwise creates an instance listening on `webConfig.port`. Serves the React SPA from `source/public/`. |
+| `Router` | Builds the Express `Router`: registers `GET /stats.json` via `RouteRegister`, serves static files from `source/public/`, and falls back to `index.html` for SPA navigation. |
+| `RouteRegister` | Helper that wires a route path to a `RequestHandler` instance on an Express router. |
+| `RequestHandler` | Abstract base class for route handlers. Subclasses implement `handle(req, res)`. |
+| `StatsRequestHandler` | Extends `RequestHandler`. Responds to `GET /stats.json` with `{ jobs: JobRegistry.stats(), workers: WorkersRegistry.stats() }`. |
+
+### `factories/`
+
+| Class | Responsibility |
+|-------|---------------|
+| `Factory` | Base factory class. Generates instances via `build(params)`, merging static `attributes` with an `attributesGenerator` result and caller-supplied params. |
+| `JobFactory` | Static facade (see `services/` above). |
+| `WorkerFactory` | Extends `Factory`. Creates `Worker` instances with unique IDs via `IdGenerator`. Used by `WorkersRegistryInstance.initWorkers()`. |
 
 ## Test Layout
 
