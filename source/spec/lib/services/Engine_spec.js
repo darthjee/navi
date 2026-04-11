@@ -3,11 +3,11 @@ import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { Engine } from '../../../lib/services/Engine.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../support/dummies/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
 import { DummyWorkersAllocator } from '../../support/dummies/services/DummyWorkersAllocator.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('Engine', () => {
   let engine;
