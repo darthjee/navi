@@ -16,7 +16,7 @@ class Config {
    * @param {WebConfig|null} [params.webConfig] - Optional web server configuration.
    */
   constructor({ resources, clients, workersConfig, webConfig }) {
-    this.resourceRegistry = new ResourceRegistry(resources);
+    this.resourceRegistry = ResourceRegistry.build(resources);
     this.clientRegistry = new ClientRegistry(clients);
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;

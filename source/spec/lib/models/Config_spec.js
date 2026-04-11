@@ -19,6 +19,10 @@ describe('Config', () => {
     let config;
     let resource;
 
+    afterEach(() => {
+      ResourceRegistry.reset();
+    });
+
     beforeEach(() => {
       resource = ResourceFactory.build();
       config = new Config({
@@ -43,6 +47,10 @@ describe('Config', () => {
   describe('#getClient', () => {
     let defaultClient;
     let otherClient;
+
+    afterEach(() => {
+      ResourceRegistry.reset();
+    });
 
     beforeEach(() => {
       defaultClient = ClientFactory.build();
@@ -141,6 +149,10 @@ describe('Config', () => {
   });
 
   describe('.fromFile', () => {
+    afterEach(() => {
+      ResourceRegistry.reset();
+    });
+
     describe('when the yaml file is valid', () => {
       beforeEach(() => {
         expectedResources = {
