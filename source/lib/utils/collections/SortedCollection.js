@@ -22,9 +22,10 @@ class SortedCollection extends Collection {
 
   /**
    * @param {Array} initialSet - Optional initial elements (default `[]`).
-   * @param {object} options
+   * @param {object} options - Configuration options.
    * @param {Function} options.sortBy - Function that extracts a comparable value from an element.
    * @throws {Error} If `sortBy` is not a function.
+   * @returns {SortedCollection} A new SortedCollection instance.
    */
   constructor(initialSet = [], { sortBy } = {}) {
     super();
@@ -53,7 +54,7 @@ class SortedCollection extends Collection {
 
   /**
    * Returns the total number of elements (sorted + pending).
-   * @returns {number}
+   * @returns {number} The total size of the collection.
    */
   size() {
     return this.#sorted.length + this.#nonSorted.length;
@@ -63,7 +64,7 @@ class SortedCollection extends Collection {
    * Returns elements for which `fn(element)` is truthy.
    * Triggers a flush first.
    * @param {Function} fn - Predicate function.
-   * @returns {Array}
+   * @returns {Array} Elements that satisfy the predicate.
    */
   select(fn) {
     return this.#flushedSorted().filter(fn);
@@ -73,7 +74,7 @@ class SortedCollection extends Collection {
    * Returns elements whose sort field is strictly greater than `value`.
    * Uses binary search for O(log n) cut-off detection.
    * @param {*} value - The exclusive lower bound.
-   * @returns {Array}
+   * @returns {Array} Elements with sort field greater than `value`.
    */
   after(value) {
     const i = this.#binarySearch(value, 'after');
@@ -84,7 +85,7 @@ class SortedCollection extends Collection {
    * Returns elements whose sort field is greater than or equal to `value`.
    * Uses binary search for O(log n) cut-off detection.
    * @param {*} value - The inclusive lower bound.
-   * @returns {Array}
+   * @returns {Array} Elements with sort field greater than or equal to `value`.
    */
   from(value) {
     const i = this.#binarySearch(value, 'from');
@@ -95,7 +96,7 @@ class SortedCollection extends Collection {
    * Returns elements whose sort field is strictly less than `value`.
    * Uses binary search for O(log n) cut-off detection.
    * @param {*} value - The exclusive upper bound.
-   * @returns {Array}
+   * @returns {Array} Elements with sort field less than `value`.
    */
   before(value) {
     const i = this.#binarySearch(value, 'before');
@@ -106,7 +107,7 @@ class SortedCollection extends Collection {
    * Returns elements whose sort field is less than or equal to `value`.
    * Uses binary search for O(log n) cut-off detection.
    * @param {*} value - The inclusive upper bound.
-   * @returns {Array}
+   * @returns {Array} Elements with sort field less than or equal to `value`.
    */
   upTo(value) {
     const i = this.#binarySearch(value, 'upTo');
