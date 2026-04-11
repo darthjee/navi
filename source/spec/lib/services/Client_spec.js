@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Client } from '../../../lib/services/Client.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
@@ -25,7 +26,7 @@ describe('Client', () => {
     spyOn(Logger, 'info').and.stub();
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
-    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
+    expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
     expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${fullUrl}`);
   });
 
@@ -97,7 +98,74 @@ describe('Client', () => {
       spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
-      expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
+      expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+    });
+  });
+
+  describe('when headers are configured', () => {
+    const headers = { Authorization: 'Bearer token123', 'X-Custom': 'value' };
+
+    beforeEach(() => {
+      client = ClientFactory.build({ baseUrl, headers });
+      spyOn(Logger, 'info').and.stub();
+    });
+
+    it('passes the headers to the axios request', async () => {
+      const response = { status: 200 };
+      spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+
+      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+      expect(axios.get).toHaveBeenCalledWith(fullUrl, {
+        timeout: 5000,
+        responseType: 'text',
+        headers: { Authorization: 'Bearer token123', 'X-Custom': 'value' },
+      });
+    });
+  });
+
+  describe('.fromObject', () => {
+    describe('when headers are provided', () => {
+      it('creates a client with the configured headers', () => {
+        const config = {
+          base_url: 'https://api.example.com',
+          headers: { 'X-Api-Key': 'abc123' },
+        };
+
+        const result = Client.fromObject('api', config);
+
+        expect(result.headers).toEqual({ 'X-Api-Key': 'abc123' });
+      });
+    });
+
+    describe('when headers are not provided', () => {
+      it('creates a client with empty headers', () => {
+        const config = { base_url: 'https://example.com' };
+
+        const result = Client.fromObject('default', config);
+
+        expect(result.headers).toEqual({});
+      });
+    });
+
+    describe('when header values reference environment variables', () => {
+      beforeEach(() => {
+        process.env.NAVI_TEST_TOKEN = 'secret-token-value';
+      });
+
+      afterEach(() => {
+        delete process.env.NAVI_TEST_TOKEN;
+      });
+
+      it('resolves env var references via EnvResolver', () => {
+        const config = {
+          base_url: 'https://example.com',
+          headers: { 'X-Token': '$NAVI_TEST_TOKEN' },
+        };
+
+        const result = Client.fromObject('api', config);
+
+        expect(result.headers).toEqual({ 'X-Token': 'secret-token-value' });
+      });
     });
   });
 });

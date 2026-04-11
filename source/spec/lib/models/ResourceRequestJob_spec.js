@@ -47,7 +47,7 @@ describe('ResourceRequestJob', () => {
 
       it('resolves with the response', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text' });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
       });
 
       it('calls enqueueActions with the response data', async () => {
