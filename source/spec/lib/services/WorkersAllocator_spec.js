@@ -6,6 +6,7 @@ import { WorkersAllocator } from '../../../lib/services/WorkersAllocator.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('WorkersAllocator', () => {
   let allocator;
@@ -16,6 +17,7 @@ describe('WorkersAllocator', () => {
   let jobFactory;
 
   beforeEach(() => {
+    Logger.suppress();
     jobFactory = new DummyJobFactory();
     JobFactory.registry('ResourceRequestJob', jobFactory);
     JobRegistry.build({});
