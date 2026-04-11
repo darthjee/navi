@@ -3,6 +3,7 @@ import { ConfigurationFileNotProvided } from '../../../lib/exceptions/Configurat
 import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Config } from '../../../lib/models/Config.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Application } from '../../../lib/services/Application.js';
@@ -24,6 +25,7 @@ describe('Application', () => {
     JobRegistry.reset();
     JobFactory.reset();
     WorkersRegistry.reset();
+    ResourceRegistry.reset();
   });
 
   describe('#loadConfig', () => {
