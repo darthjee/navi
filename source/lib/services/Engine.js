@@ -59,7 +59,7 @@ class Engine {
    * @returns {Promise<void>}
    */
   #sleep() {
-    let ms = this.#sleepMs;
+    const ms = this.#sleepMs;
     if (ms < 0) return Promise.resolve();
     return new Promise(resolve => setTimeout(resolve, ms));
   }
