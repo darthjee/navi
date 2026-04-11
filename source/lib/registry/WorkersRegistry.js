@@ -17,9 +17,6 @@ class WorkersRegistry {
    * @throws {Error} If `build()` has already been called without a preceding `reset()`.
    */
   static build(options = {}) {
-    if (WorkersRegistry.#instance) {
-      throw new Error('WorkersRegistry.build() has already been called. Call reset() first.');
-    }
     WorkersRegistry.#instance = new WorkersRegistryInstance(options);
     return WorkersRegistry.#instance;
   }
