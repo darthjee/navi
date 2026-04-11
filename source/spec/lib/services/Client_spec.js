@@ -156,29 +156,7 @@ describe('Client', () => {
         delete process.env.NAVI_TEST_TOKEN;
       });
 
-      it('resolves $VAR syntax from process.env', () => {
-        const config = {
-          base_url: 'https://example.com',
-          headers: { Authorization: 'Bearer $NAVI_TEST_TOKEN' },
-        };
-
-        const result = Client.fromObject('api', config);
-
-        expect(result.headers).toEqual({ Authorization: 'Bearer secret-token-value' });
-      });
-
-      it('resolves ${VAR} syntax from process.env', () => {
-        const config = {
-          base_url: 'https://example.com',
-          headers: { Authorization: 'Bearer ${NAVI_TEST_TOKEN}' },
-        };
-
-        const result = Client.fromObject('api', config);
-
-        expect(result.headers).toEqual({ Authorization: 'Bearer secret-token-value' });
-      });
-
-      it('resolves env var when value is only the variable reference', () => {
+      it('resolves env var references via EnvResolver', () => {
         const config = {
           base_url: 'https://example.com',
           headers: { 'X-Token': '$NAVI_TEST_TOKEN' },
@@ -187,23 +165,6 @@ describe('Client', () => {
         const result = Client.fromObject('api', config);
 
         expect(result.headers).toEqual({ 'X-Token': 'secret-token-value' });
-      });
-    });
-
-    describe('when an env var is not set', () => {
-      it('replaces the reference with an empty string and logs a warning', () => {
-        spyOn(Logger, 'warn').and.stub();
-        const config = {
-          base_url: 'https://example.com',
-          headers: { Authorization: 'Bearer $NAVI_UNDEFINED_VAR' },
-        };
-
-        const result = Client.fromObject('api', config);
-
-        expect(result.headers).toEqual({ Authorization: 'Bearer ' });
-        expect(Logger.warn).toHaveBeenCalledWith(
-          'Header references undefined environment variable: NAVI_UNDEFINED_VAR'
-        );
       });
     });
   });

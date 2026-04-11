@@ -114,6 +114,7 @@ ID generation utilities.
 
 | Class | Responsibility |
 |-------|---------------|
+| `EnvResolver` | Resolves environment variable references (`$VAR` / `${VAR}`) in string values. Used by `Client.fromObject()` to interpolate header values at parse time. |
 | `ResourceRequestCollector` | Iterates a `ResourceRegistry` and enqueues one job per resource+parameter combination. |
 
 ### `services/`

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
+import { EnvResolver } from '../utils/EnvResolver.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -36,7 +37,7 @@ class Client {
    * @returns {Client} A new Client instance.
    */
   static fromObject(name, config) {
-    const headers = Client.#resolveHeaders(config.headers || {});
+    const headers = EnvResolver.resolveObject(config.headers || {});
     return new Client({ name, baseUrl: config.base_url, timeout: config.timeout, headers });
   }
 
@@ -100,43 +101,6 @@ class Client {
    */
   #buildUrl(resourceUrl) {
     return `${this.baseUrl}${resourceUrl}`;
-  }
-
-  /**
-   * Resolves environment variable references in header values.
-   * Values matching `$VAR` or `${VAR}` are replaced with the corresponding
-   * environment variable. Unmatched values are passed through unchanged.
-   *
-   * @param {object} headers Raw headers map from config.
-   * @returns {object} Headers with environment variable references resolved.
-   */
-  static #resolveHeaders(headers) {
-    return Object.fromEntries(
-      Object.entries(headers).map(([key, value]) => [key, Client.#resolveValue(value)])
-    );
-  }
-
-  /**
-   * Resolves a single header value, replacing env var references.
-   * Supports `$VAR_NAME` and `${VAR_NAME}` syntax.
-   *
-   * @param {string} value Raw header value.
-   * @returns {string} Resolved value.
-   */
-  static #resolveValue(value) {
-    if (typeof value !== 'string') return String(value);
-
-    return value.replace(/\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g, (_match, braced, bare) => {
-      const varName = braced || bare;
-      const resolved = process.env[varName];
-
-      if (resolved === undefined) {
-        Logger.warn(`Header references undefined environment variable: ${varName}`);
-        return '';
-      }
-
-      return resolved;
-    });
   }
 }
 
