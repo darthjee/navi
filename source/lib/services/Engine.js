@@ -55,7 +55,6 @@ class Engine {
 
   /**
    * Waits for the given number of milliseconds.
-   * @param {number} ms - Duration in milliseconds to sleep.
    * @returns {Promise<void>}
    */
   #sleep() {
