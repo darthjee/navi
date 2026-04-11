@@ -1,6 +1,7 @@
 import { WorkersAllocator } from './WorkersAllocator.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Engine is responsible for managing the job processing workflow.
@@ -32,13 +33,15 @@ class Engine {
    */
   async start() {
     while (this.#continueAllocating()) {
+      Logger.debug('Promoting ready jobs and allocating to idle workers if available...');
       JobRegistry.promoteReadyJobs();
 
       if (JobRegistry.hasReadyJob()) {
         this.allocator.allocate();
-      } else {
-        await this.#sleep(this.#sleepMs);
       }
+
+      // wait before next iteration so the block runs ~once per second
+      await this.#sleep();
     }
   }
 
@@ -52,10 +55,10 @@ class Engine {
 
   /**
    * Waits for the given number of milliseconds.
-   * @param {number} ms - Duration in milliseconds to sleep.
    * @returns {Promise<void>}
    */
-  #sleep(ms) {
+  #sleep() {
+    const ms = this.#sleepMs;
     if (ms < 0) return Promise.resolve();
     return new Promise(resolve => setTimeout(resolve, ms));
   }

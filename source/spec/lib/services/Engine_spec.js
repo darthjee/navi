@@ -3,6 +3,7 @@ import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { Engine } from '../../../lib/services/Engine.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../support/dummies/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
@@ -26,6 +27,7 @@ describe('Engine', () => {
   };
 
   beforeEach(() => {
+    Logger.suppress();
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
     dead = new IdentifyableCollection();
@@ -159,7 +161,7 @@ describe('Engine', () => {
     describe('when all remaining jobs are in cooldown', () => {
       beforeEach(() => {
         JobRegistry.reset();
-        JobRegistry.build({ finished, dead, cooldown: 5000 });
+        JobRegistry.build({ finished, dead, cooldown: 0 });
         engine = new Engine({ sleepMs: -1 });
         DummyJob.setSuccessRate(0);
         JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });

@@ -22,6 +22,7 @@ describe('Application', () => {
   let workerFactory;
 
   afterEach(() => {
+    Logger.suppress();
     JobRegistry.reset();
     JobFactory.reset();
     WorkersRegistry.reset();
@@ -102,7 +103,6 @@ describe('Application', () => {
 
       app = new Application();
       app.loadConfig(configFilePath);
-      WorkersRegistry.reset();
       WorkersRegistry.build({ quantity: 1, factory: workerFactory });
       WorkersRegistry.initWorkers();
       JobFactory.registry('ResourceRequestJob', jobFactory);

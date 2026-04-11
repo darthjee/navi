@@ -57,7 +57,7 @@ describe('ResourceRequestJob', () => {
 
       it('logs info when performing', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(Logger.info).toHaveBeenCalledWith(`Job #${job.id} performing`);
+        expect(Logger.info).toHaveBeenCalledWith(`ResourceRequestJob #${job.id} performing`);
       });
 
       it('does not exhaust after several successful attempts', async () => {

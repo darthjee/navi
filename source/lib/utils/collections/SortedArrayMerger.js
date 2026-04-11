@@ -29,7 +29,7 @@ class SortedArrayMerger {
    * @param {Array} first - The first sorted array.
    * @param {Array} second - The second sorted array.
    * @param {Function} sortBy - Function that extracts a comparable value from an element.
-   * @returns {Array}
+   * @returns {Array} A new sorted array containing all elements from both arrays.
    */
   static merge(first, second, sortBy) {
     return new SortedArrayMerger(first, second, sortBy).merge();
@@ -37,7 +37,7 @@ class SortedArrayMerger {
 
   /**
    * Returns a new sorted array containing all elements from both arrays.
-   * @returns {Array}
+   * @returns {Array} The merged sorted array.
    */
   merge() {
     this.#result = [];

@@ -2,9 +2,11 @@ import { WebConfig } from '../../../lib/models/WebConfig.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('WebServer', () => {
   beforeEach(() => {
+    Logger.suppress();
     JobRegistry.build({ cooldown: -1 });
     WorkersRegistry.build({ quantity: 0 });
   });

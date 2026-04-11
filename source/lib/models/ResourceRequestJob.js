@@ -31,7 +31,7 @@ class ResourceRequestJob extends Job {
    * @returns {Promise} A promise that resolves with the HTTP response.
    */
   async perform() {
-    Logger.info(`Job #${this.id} performing`);
+    Logger.info(`ResourceRequestJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);

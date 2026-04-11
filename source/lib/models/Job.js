@@ -21,7 +21,7 @@ class Job {
   /**
    * Performs the job. Must be overridden by subclasses.
    * @throws {Error} Always throws — subclasses must implement this method.
-   * @returns {Promise}
+   * @returns {Promise} A promise that resolves when the job is complete.
    */
   async perform() {
     throw new Error('You must implement the perform method in a subclass');
