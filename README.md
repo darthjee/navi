@@ -8,9 +8,9 @@
 
 Cache Warmer Tool
 
-**Current Version:** [0.0.1](https://github.com/darthjee/navi/releases/tag/0.0.1)
+**Current Version:** [0.1.0](https://github.com/darthjee/navi/releases/tag/0.1.0)
 
-**Next Release:** [0.0.2](https://github.com/darthjee/navi/compare/0.0.1...main)
+**Next Release:** [0.1.1](https://github.com/darthjee/navi/compare/0.1.0...main)
 
 ---
 
