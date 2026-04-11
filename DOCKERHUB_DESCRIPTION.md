@@ -94,6 +94,14 @@ resources:
 
 ---
 
+## Resource Chaining
+
+Navi supports multi-level resource chaining. After a successful response, each configured action extracts variables from the response body (via `variables_map`) and enqueues new jobs for the target resource. The extracted variables resolve `{:placeholder}` tokens in the target URL templates.
+
+For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and mapping `id → id`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`.
+
+---
+
 ## Source
 
 GitHub repository: [darthjee/navi](https://github.com/darthjee/navi)

@@ -34,7 +34,7 @@ class ResourceRequestJob extends Job {
     Logger.info(`Job #${this.id} performing`);
     try {
       this.lastError = undefined;
-      const response = await this.#getClient().perform(this.#resourceRequest);
+      const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
       this.#resourceRequest.enqueueActions(response.data);
       return response;
     } catch (error) {

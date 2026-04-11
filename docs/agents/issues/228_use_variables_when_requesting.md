@@ -7,8 +7,8 @@ When `ResourceRequestAction` enqueues a new `ResourceRequestJob`, it passes alon
 ## Problem
 
 - `ResourceRequestAction` correctly enqueues `ResourceRequestJob` with variables (e.g., `id: 1`, `id: 2`)
-- `ResourceRequestJob` performs the HTTP request using the raw URL template (e.g., `/categories/:id.json`) instead of interpolating the variables
-- As a result, the request is made to `/categories/:id.json` instead of `/categories/1.json` and `/categories/2.json`
+- `ResourceRequestJob` performs the HTTP request using the raw URL template (e.g., `/categories/{:id}.json`) instead of interpolating the variables
+- As a result, the request is made to `/categories/{:id}.json` instead of `/categories/1.json` and `/categories/2.json`
 
 ## Example
 
@@ -25,21 +25,21 @@ And a chained resource configured as:
 
 ```yaml
 category:
-  - url: /categories/:id.json
+  - url: /categories/{:id}.json
     status: 200
 ```
 
-Currently, both enqueued jobs request `/categories/:id.json` (uninterpolated). They should request `/categories/1.json` and `/categories/2.json` respectively.
+Currently, both enqueued jobs request `/categories/{:id}.json` (uninterpolated). They should request `/categories/1.json` and `/categories/2.json` respectively.
 
 ## Expected Behavior
 
 - `ResourceRequestJob` interpolates the variables passed by `ResourceRequestAction` into the URL path before making the HTTP request
-- Each job uses its own set of variables to resolve path parameters (e.g., `:id`)
+- Each job uses its own set of variables to resolve path parameters (e.g., `{:id}`)
 
 ## Solution
 
 - In `ResourceRequestJob`, apply variable interpolation to the URL before performing the request
-- Use the variables passed during enqueueing to replace named path parameters (`:param`) in the URL template
+- Use the variables passed during enqueueing to replace named path parameters (`{:param}`) in the URL template
 
 ## Benefits
 

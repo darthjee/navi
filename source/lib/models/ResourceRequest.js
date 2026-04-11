@@ -60,6 +60,17 @@ class ResourceRequest {
   }
 
   /**
+   * Returns the URL with every {:placeholder} token replaced by the
+   * corresponding value from the parameters object.
+   * Tokens with no matching key are left unchanged.
+   * @param {object} [parameters={}] Key-value map of URL parameters.
+   * @returns {string} The resolved URL.
+   */
+  resolveUrl(parameters = {}) {
+    return this.url.replace(/\{:(\w+)\}/g, (_, key) => parameters[key] ?? `{:${key}}`);
+  }
+
+  /**
    * Returns true if the URL template contains any {:placeholder} tokens,
    * indicating that parameter substitution is required before the request can be made.
    * @returns {boolean} true if the URL requires parameters, false otherwise.

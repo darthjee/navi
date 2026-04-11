@@ -123,6 +123,25 @@ describe('Client', () => {
     });
   });
 
+  describe('when the url has parameters', () => {
+    const paramUrl = '/categories/{:id}.json';
+    const resolvedFullUrl = 'http://example.com/categories/42.json';
+
+    beforeEach(() => {
+      resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
+      spyOn(Logger, 'info').and.stub();
+    });
+
+    it('resolves placeholders and requests the resolved URL', async () => {
+      const response = { status: 200 };
+      spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+
+      await expectAsync(client.perform(resourceRequest, { id: 42 })).toBeResolvedTo(response);
+      expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+      expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${resolvedFullUrl}`);
+    });
+  });
+
   describe('.fromObject', () => {
     describe('when headers are provided', () => {
       it('creates a client with the configured headers', () => {

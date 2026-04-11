@@ -212,20 +212,11 @@ For each action, the `variables_map` is applied to the response item to produce 
 - **With `variables_map`**: only the explicitly mapped fields are included, renamed as configured.
 - **Without `variables_map`**: all response fields are passed through unchanged.
 
-**Current behaviour:** actions log a message of the form:
-```
-Executing action <resource> for <variables>
-```
+The mapped variables are then used to resolve `{:placeholder}` tokens in the target resource's URL templates. For example, if the response contains `{ "id": 1 }` and the action maps `id` → `id`, the target resource's URL `/categories/{:id}.json` resolves to `/categories/1.json`.
+
+Each action is enqueued as an `ActionProcessingJob`, which looks up the target resource, creates a `ResourceRequestJob` for each URL entry in that resource with the resolved parameters, and enqueues them for processing by the worker pool. This enables multi-level resource chaining — a response can trigger further requests whose responses trigger even more requests.
 
 **Error handling:** an action whose `resource` field is missing is skipped and logged. An action that references a field absent from the response item is also skipped and logged. Other actions continue normally. A response body that is not valid JSON raises an error for the whole request.
-
-### Evolution
-
-| Phase | What happens with an action |
-|-------|-----------------------------|
-| **Now** | Executed synchronously; logs `Executing action <resource> for <vars>` |
-| **Near future** | Enqueued as a special Job — async processing, no retry rights |
-| **Far future** | Creates a real Job referencing the named resource with the mapped variables as parameters |
 
 ---
 
@@ -234,9 +225,6 @@ Executing action <resource> for <variables>
 The following features are planned but not yet implemented:
 
 - **WorkersFactory** — the factory responsible for instantiating `Worker` instances is planned but not yet implemented. Workers are currently initialized directly inside `WorkersRegistry`.
-- **Action queue** — actions will be enqueued as special Jobs for async processing (no retry rights) instead of being executed synchronously.
-- **Action job generation** — instead of logging, each action will create a real Job referencing the named resource and passing the mapped variables as parameters.
-- **First release (v0.0.1)** — the project has not yet had a tagged release.
 
 ### Web UI
 
