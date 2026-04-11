@@ -7,6 +7,7 @@ import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory
 import { DummyWorkerFactory } from '../../support/dummies/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../../support/dummies/models/DummyJob.js';
 import { DummyWorkersAllocator } from '../../support/dummies/services/DummyWorkersAllocator.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('Engine', () => {
   let engine;
@@ -26,6 +27,7 @@ describe('Engine', () => {
   };
 
   beforeEach(() => {
+    Logger.suppress()
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
     dead = new IdentifyableCollection();
