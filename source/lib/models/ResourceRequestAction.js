@@ -1,16 +1,16 @@
 import { VariablesMapper } from './VariablesMapper.js';
 import { MissingActionResource } from '../exceptions/MissingActionResource.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
+import { ResourceRegistry } from '../registry/ResourceRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Represents a single action to execute after a successful resource request response.
  *
  * Each action holds a reference to a resource name and an optional variables_map
- * that renames response fields into job parameters.
- *
- * TODO: In the future, instead of logging, this method should create a new Job
- * referencing the resource named by this.resource, passing vars as the job
- * parameters. The job will be enqueued for async processing.
+ * that renames response fields into job parameters. When executed, it looks up the
+ * target resource and enqueues one ResourceRequestJob per ResourceRequest in that
+ * resource, passing the mapped variables as job parameters.
  * @author darthjee
  */
 class ResourceRequestAction {
@@ -29,13 +29,18 @@ class ResourceRequestAction {
   }
 
   /**
-   * Applies the variables_map to the response item and logs the result.
+   * Maps the response item to variables, looks up the target resource, and
+   * enqueues one ResourceRequestJob per ResourceRequest in that resource.
    * @param {object} item A single parsed response item.
    * @returns {void}
    */
   execute(item) {
     const vars = this.#mapper.map(item);
-    Logger.info(`Executing action ${this.resource} for ${JSON.stringify(vars)}`);
+    const resource = ResourceRegistry.getItem(this.resource);
+
+    for (const resourceRequest of resource.resourceRequests) {
+      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: vars });
+    }
   }
 
   /**

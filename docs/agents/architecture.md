@@ -40,7 +40,7 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
 | `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `enqueueActions(rawBody, jobRegistry)` to enqueue action jobs after a successful HTTP request. |
-| `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `variables_map`). Uses `VariablesMapper` to transform a response item and logs the result. |
+| `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `variables_map`). Uses `VariablesMapper` to transform a response item, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
 | `ActionsEnqueuer` | Normalises a parsed response (object or array) and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null responses. Delegates per-action enqueueing to `ActionEnqueuer`. |
 | `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
