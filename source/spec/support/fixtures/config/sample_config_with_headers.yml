@@ -1,0 +1,15 @@
+workers:
+  quantity: 5
+clients:
+  default:
+    base_url: https://example.com
+    timeout: 5000
+  auth_api:
+    base_url: https://api.example.com
+    headers:
+      Authorization: Bearer my-token
+      X-Custom-Header: custom-value
+resources:
+  categories:
+    - url: /categories.json
+      status: 200

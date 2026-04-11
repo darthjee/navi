@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
+import { EnvResolver } from '../utils/EnvResolver.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -15,11 +16,13 @@ class Client {
    * @param {string} attributes.name Name identifying this client.
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
    * @param {number} [attributes.timeout] Optional request timeout in milliseconds.
+   * @param {object} [attributes.headers] Optional HTTP headers sent with every request.
    */
-  constructor({ name, baseUrl, timeout = 5000 }) {
+  constructor({ name, baseUrl, timeout = 5000, headers = {} }) {
     this.name = name;
     this.baseUrl = baseUrl;
     this.timeout = timeout;
+    this.headers = headers;
   }
 
   /**
@@ -29,10 +32,13 @@ class Client {
    * @param {object} config Client configuration object.
    * @param {string} config.base_url Base URL for the client.
    * @param {number} [config.timeout] Optional request timeout in milliseconds.
+   * @param {object} [config.headers] Optional HTTP headers. Values matching
+   *   `$VAR` or `${VAR}` are resolved from `process.env` at parse time.
    * @returns {Client} A new Client instance.
    */
   static fromObject(name, config) {
-    return new Client({ name, baseUrl: config.base_url, timeout: config.timeout });
+    const headers = EnvResolver.resolveObject(config.headers || {});
+    return new Client({ name, baseUrl: config.base_url, timeout: config.timeout, headers });
   }
 
   /**
@@ -75,7 +81,11 @@ class Client {
    * @throws {RequestFailed} Throws an error if the response status does not match.
    */
   async #request(resourceRequest, requestUrl) {
-    const response = await axios.get(requestUrl, { timeout: this.timeout, responseType: 'text' });
+    const response = await axios.get(requestUrl, {
+      timeout: this.timeout,
+      responseType: 'text',
+      headers: this.headers,
+    });
 
     if (response.status !== resourceRequest.status) {
       throw new RequestFailed(response.status, requestUrl);
