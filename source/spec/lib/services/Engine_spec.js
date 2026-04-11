@@ -27,7 +27,7 @@ describe('Engine', () => {
   };
 
   beforeEach(() => {
-    Logger.suppress()
+    Logger.suppress();
     jobFactory = new DummyJobFactory();
     finished = new IdentifyableCollection();
     dead = new IdentifyableCollection();

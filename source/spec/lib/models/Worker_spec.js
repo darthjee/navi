@@ -11,6 +11,7 @@ import { Queue } from '../../../lib/utils/collections/Queue.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('Worker', () => {
   let worker;
@@ -33,6 +34,7 @@ describe('Worker', () => {
   const status = 200;
 
   beforeEach(() => {
+    Logger.suppress();
     clients = ClientRegistryFactory.build({});
     JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     finished = new IdentifyableCollection();
