@@ -9,102 +9,54 @@ as job parameters. This enables cascading resource requests driven by YAML confi
 ## Context
 
 `ResourceRequestAction` already holds a `resource` name and a `VariablesMapper`.
-The full dependency chain (`jobRegistry` and `resourceRegistry`) is available at the point
-where actions are executed, but it is not yet threaded through. This plan wires it up
-end-to-end and updates the architecture documentation to reflect the changes.
+Both `JobRegistry` and `ResourceRegistry` are static singletons, so `execute()` can
+call them directly without any parameter threading through the call chain.
 
 ## Implementation Steps
 
 ### Step 1 — Update `ResourceRequestAction.execute()`
 
-Change the signature from `execute(item)` to `execute(item, jobRegistry, resourceRegistry)`.
+Keep the signature as `execute(item)` (no extra parameters needed — registries are static singletons).
 
 Replace the `Logger.info(...)` call with:
 
 1. Map the item to variables: `const vars = this.#mapper.map(item)`
-2. Look up the resource: `const resource = resourceRegistry.getItem(this.resource)`
+2. Look up the resource: `const resource = ResourceRegistry.getItem(this.resource)`
 3. For each `ResourceRequest` in `resource.resourceRequests`, call:
-   `jobRegistry.enqueue('ResourceRequest', { resourceRequest, parameters: vars, jobRegistry })`
+   `JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: vars })`
 
 Remove the TODO comment and update JSDoc.
 
-### Step 2 — Update `ActionProcessingJob`
+### ~~Steps 2–7 — Threading registries through the call chain~~
 
-Add `resourceRegistry` as a stored constructor parameter alongside `jobRegistry`.
-
-Update `perform()` to pass both registries to `action.execute()`:
-
-```js
-async perform() {
-  this.#action.execute(this.#item, this.#jobRegistry, this.#resourceRegistry);
-}
-```
-
-Update JSDoc.
-
-### Step 3 — Update `ActionEnqueuer`
-
-`ActionEnqueuer` is the class that calls `JobRegistry.enqueueAction(...)`. It must accept and
-forward `resourceRegistry` when building `ActionProcessingJob` instances.
-
-Update its constructor to receive `resourceRegistry` and pass it through when enqueueing.
-
-### Step 4 — Update `ActionsEnqueuer`
-
-`ActionsEnqueuer` creates `ActionEnqueuer` instances. It must accept `resourceRegistry` and
-forward it to each `ActionEnqueuer`.
-
-### Step 5 — Update `ResourceRequest.enqueueActions()`
-
-`ResourceRequest.enqueueActions(rawBody, jobRegistry)` creates the `ActionsEnqueuer`.
-It must accept `resourceRegistry` and pass it to `ActionsEnqueuer`.
-
-### Step 6 — Update `ResourceRequestJob.perform()`
-
-`ResourceRequestJob` calls `resourceRequest.enqueueActions(rawBody, jobRegistry)`.
-It must also pass `resourceRegistry` — which it already receives at build time — to this call.
-
-### Step 7 — Update `JobRegistry.enqueueAction()`
-
-Update `enqueueAction({ action, item, resourceRegistry })` to accept and forward `resourceRegistry`
-to the `ActionProcessingJob` factory.
+**Not needed.** The original plan assumed `jobRegistry` and `resourceRegistry` needed to be
+passed as parameters through `ActionProcessingJob`, `ActionEnqueuer`, `ActionsEnqueuer`,
+`ResourceRequest`, `ResourceRequestJob`, and `JobRegistry.enqueueAction()`. Since both
+registries are static singletons, `execute()` accesses them directly and the call chain
+remains unchanged.
 
 ### Step 8 — Update `docs/agents/architecture.md`
 
-Update the table entries for the affected classes (`ResourceRequestAction`, `ActionProcessingJob`,
-`ActionsEnqueuer`, `ActionEnqueuer`, `ResourceRequestJob`) to reflect their new signatures and
-responsibilities.
+Update the `ResourceRequestAction` table entry to reflect the new behaviour.
 
-## Files to Change
+## Files Changed
 
 ### Source
 
-- `source/lib/models/ResourceRequestAction.js` — implement job enqueuing; update `execute()` signature and JSDoc; remove TODO
-- `source/lib/models/ActionProcessingJob.js` — add `resourceRegistry` to constructor and `perform()`; update JSDoc
-- `source/lib/models/ActionEnqueuer.js` — accept and forward `resourceRegistry`; update JSDoc
-- `source/lib/models/ActionsEnqueuer.js` — accept and forward `resourceRegistry`; update JSDoc
-- `source/lib/models/ResourceRequest.js` — accept and forward `resourceRegistry` in `enqueueActions()`; update JSDoc
-- `source/lib/models/ResourceRequestJob.js` — pass `resourceRegistry` to `enqueueActions()`; update JSDoc
-- `source/lib/registry/JobRegistry.js` — update `enqueueAction()` to accept and forward `resourceRegistry`; update JSDoc
+- `source/lib/models/ResourceRequestAction.js` — implement job enqueuing via static `ResourceRegistry` and `JobRegistry`; remove TODO and Logger import for execute; update JSDoc
 
 ### Specs
 
-- `source/spec/lib/models/ResourceRequestAction_spec.js` — add tests for job enqueuing; cover `ResourceNotFound` and `MissingMappingVariable`
-- `source/spec/lib/models/ActionProcessingJob_spec.js` — update tests to verify `resourceRegistry` is passed to `action.execute()`
-- `source/spec/lib/models/ActionEnqueuer_spec.js` — update tests to verify `resourceRegistry` forwarding
-- `source/spec/lib/models/ActionsEnqueuer_spec.js` — update tests to verify `resourceRegistry` forwarding
-- `source/spec/lib/models/ResourceRequest_spec.js` — update tests to verify `resourceRegistry` forwarding in `enqueueActions()`
-- `source/spec/lib/models/ResourceRequestJob_spec.js` — update tests to verify `resourceRegistry` is passed to `enqueueActions()`
-- `source/spec/lib/registry/JobRegistry_spec.js` — update tests for `enqueueAction()` to include `resourceRegistry`
+- `source/spec/lib/models/ResourceRequestAction_spec.js` — rewrite `#execute` tests: verify job enqueuing, multiple ResourceRequests, `ResourceNotFound`, `MissingMappingVariable`
 
 ### Docs
 
-- `docs/agents/architecture.md` — update class descriptions for all modified classes
+- `docs/agents/architecture.md` — update `ResourceRequestAction` description
 
 ## Notes
 
-- Dependency injection happens at runtime (passed into `execute()`) because actions are built
-  from YAML config before `JobRegistry` exists. No constructor changes to `ResourceRequestAction`.
+- Both `JobRegistry` and `ResourceRegistry` are static singletons, so no parameter threading
+  is needed through the action-processing chain.
 - One `ResourceRequestJob` is enqueued per `ResourceRequest` in the target resource, enabling
   parallel processing and independent retry logic.
 - This is a non-breaking change for YAML configs: existing configs without actions continue to

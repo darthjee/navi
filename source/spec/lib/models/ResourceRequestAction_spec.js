@@ -1,8 +1,13 @@
 import { MissingActionResource } from '../../../lib/exceptions/MissingActionResource.js';
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
+import { ResourceNotFound } from '../../../lib/exceptions/ResourceNotFound.js';
 import { ResourceRequestAction } from '../../../lib/models/ResourceRequestAction.js';
+import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
+import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { ResourceRequestActionFactory } from '../../support/factories/ResourceRequestActionFactory.js';
+import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
 describe('ResourceRequestAction', () => {
   beforeEach(() => {
@@ -58,28 +63,104 @@ describe('ResourceRequestAction', () => {
   describe('#execute', () => {
     const item = { id: 1, name: 'Electronics' };
 
+    beforeEach(() => {
+      JobRegistry.build({ cooldown: -1 });
+      spyOn(JobRegistry, 'enqueue').and.stub();
+    });
+
+    afterEach(() => {
+      JobRegistry.reset();
+      ResourceRegistry.reset();
+    });
+
     describe('without variables_map', () => {
-      it('logs the item as-is', () => {
+      let resourceRequest;
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
+        const resource = ResourceFactory.build({ name: 'products', resourceRequests: [resourceRequest] });
+        ResourceRegistry.build({ products: resource });
+      });
+
+      it('enqueues a ResourceRequestJob with the item as parameters', () => {
         ResourceRequestActionFactory.build({ resource: 'products' }).execute(item);
-        expect(Logger.info).toHaveBeenCalledWith(
-          `Executing action products for ${JSON.stringify(item)}`
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+          'ResourceRequestJob',
+          { resourceRequest, parameters: item }
         );
       });
     });
 
     describe('with variables_map', () => {
-      it('logs the mapped variables', () => {
+      let resourceRequest;
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
+        const resource = ResourceFactory.build({ name: 'products', resourceRequests: [resourceRequest] });
+        ResourceRegistry.build({ products: resource });
+      });
+
+      it('enqueues a ResourceRequestJob with the mapped variables as parameters', () => {
         ResourceRequestActionFactory.build({
           resource: 'products',
           variables_map: { id: 'category_id' },
         }).execute(item);
-        expect(Logger.info).toHaveBeenCalledWith(
-          'Executing action products for {"category_id":1}'
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+          'ResourceRequestJob',
+          { resourceRequest, parameters: { category_id: 1 } }
         );
       });
     });
 
+    describe('when the target resource has multiple ResourceRequests', () => {
+      let resourceRequest1;
+      let resourceRequest2;
+
+      beforeEach(() => {
+        resourceRequest1 = ResourceRequestFactory.build({ url: '/products.json' });
+        resourceRequest2 = ResourceRequestFactory.build({ url: '/products/{:category_id}.json' });
+        const resource = ResourceFactory.build({
+          name: 'products',
+          resourceRequests: [resourceRequest1, resourceRequest2],
+        });
+        ResourceRegistry.build({ products: resource });
+      });
+
+      it('enqueues one ResourceRequestJob per ResourceRequest', () => {
+        ResourceRequestActionFactory.build({
+          resource: 'products',
+          variables_map: { id: 'category_id' },
+        }).execute(item);
+        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: resourceRequest1, parameters: { category_id: 1 } }
+        );
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: resourceRequest2, parameters: { category_id: 1 } }
+        );
+      });
+    });
+
+    describe('when the target resource is not found', () => {
+      beforeEach(() => {
+        ResourceRegistry.build({});
+      });
+
+      it('throws ResourceNotFound', () => {
+        const action = ResourceRequestActionFactory.build({ resource: 'unknown' });
+        expect(() => action.execute(item))
+          .toThrowMatching((error) => error instanceof ResourceNotFound);
+      });
+    });
+
     describe('when a mapped variable is missing from the item', () => {
+      beforeEach(() => {
+        const resource = ResourceFactory.build({ name: 'products' });
+        ResourceRegistry.build({ products: resource });
+      });
+
       it('throws MissingMappingVariable', () => {
         const action = ResourceRequestActionFactory.build({
           resource: 'products',
