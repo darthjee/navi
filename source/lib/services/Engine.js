@@ -32,17 +32,17 @@ class Engine {
    * @returns {Promise<void>}
    */
   async start() {
-    Logger.debug('Engine loop started, checking for ready jobs and idle workers...');
+    const intervalMs = 1000; // run loop body once every 1000ms
     while (this.#continueAllocating()) {
       Logger.debug('Promoting ready jobs and allocating to idle workers if available...');
       JobRegistry.promoteReadyJobs();
 
       if (JobRegistry.hasReadyJob()) {
         this.allocator.allocate();
-      } else {
-        await this.#sleep(this.#sleepMs);
       }
 
+      // wait before next iteration so the block runs ~once per second
+      await this.#sleep(intervalMs);
     }
   }
 
