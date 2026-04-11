@@ -61,7 +61,7 @@ describe('EnvResolver', () => {
         expect(EnvResolver.resolveValue('Bearer $NAVI_UNDEFINED_VAR'))
           .toEqual('Bearer ');
         expect(Logger.warn).toHaveBeenCalledWith(
-          'Header references undefined environment variable: NAVI_UNDEFINED_VAR'
+          'Environment variable not defined: NAVI_UNDEFINED_VAR'
         );
       });
     });

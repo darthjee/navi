@@ -41,7 +41,7 @@ class EnvResolver {
       const resolved = process.env[varName];
 
       if (resolved === undefined) {
-        Logger.warn(`Header references undefined environment variable: ${varName}`);
+        Logger.warn(`Environment variable not defined: ${varName}`);
         return '';
       }
 
