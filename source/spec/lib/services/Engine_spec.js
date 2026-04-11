@@ -161,7 +161,7 @@ describe('Engine', () => {
     describe('when all remaining jobs are in cooldown', () => {
       beforeEach(() => {
         JobRegistry.reset();
-        JobRegistry.build({ finished, dead, cooldown: 5000 });
+        JobRegistry.build({ finished, dead, cooldown: 0 });
         engine = new Engine({ sleepMs: -1 });
         DummyJob.setSuccessRate(0);
         JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
