@@ -12,5 +12,5 @@ resources:
           variables_map:
             id: id
   category:
-    - url: /categories/:id.json
+    - url: /categories/{:id}.json
       status: 200
