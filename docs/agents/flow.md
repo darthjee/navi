@@ -189,13 +189,11 @@ After `Client.perform()` resolves, `ResourceRequestJob` passes the raw response 
 - **`ActionEnqueuer.enqueue()`** iterates over all items and calls
   `JobRegistry.enqueue('Action', { action, item })` for each one, creating an `ActionProcessingJob`.
 - **`ActionProcessingJob.perform()`** calls `action.execute(item)`.
-- **`ResourceRequestAction.execute(item)`** applies `VariablesMapper.map(item)` and currently **logs**:
-  ```
-  Executing action <resource> for <variables>
-  ```
-  > **TODO:** This method should instead enqueue a new `ResourceRequestJob` for the resource named
-  > by `this.resource`, passing the mapped variables as job parameters. This is the missing step
-  > that closes the resource-chaining cycle.
+- **`ResourceRequestAction.execute(item)`** applies `VariablesMapper.map(item)` to obtain
+  the parameters, looks up the target resource in `ResourceRegistry`, and enqueues one
+  `ResourceRequestJob` per `ResourceRequest` in that resource, passing the mapped variables
+  as job parameters. The URL `{:placeholder}` tokens are resolved at request time inside
+  `Client.perform()` via `ResourceRequest.resolveUrl(parameters)`.
 - `ActionProcessingJob` has no retry rights — it is exhausted immediately on the first failure.
 
 ### Example
@@ -210,14 +208,16 @@ actions:
   - resource: category_information
 ```
 
-`ResourceRequestJob` enqueues **4** `ActionProcessingJob` instances (2 items × 2 actions). Each job then executes its action:
+`ResourceRequestJob` enqueues **4** `ActionProcessingJob` instances (2 items × 2 actions). Each job then executes its action, which enqueues `ResourceRequestJob` instances with resolved URLs:
 
 ```
-Executing action products for { category_id: 1 }
-Executing action category_information for { id: 1 }
-Executing action products for { category_id: 2 }
-Executing action category_information for { id: 2 }
+ResourceRequestJob for /products/{:category_id}.json with { category_id: 1 }
+ResourceRequestJob for /category_information/{:id}.json with { id: 1 }
+ResourceRequestJob for /products/{:category_id}.json with { category_id: 2 }
+ResourceRequestJob for /category_information/{:id}.json with { id: 2 }
 ```
+
+When each `ResourceRequestJob` performs, `Client.perform()` calls `resolveUrl(parameters)` to produce the final request URLs (e.g., `/products/1.json`, `/category_information/1.json`).
 
 ---
 

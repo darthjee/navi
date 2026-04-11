@@ -55,11 +55,12 @@ class Client {
    * Performs the HTTP request and checks the response status.
    * @param {ResourceRequest} resourceRequest Information about the URL path to request
    * and the expected status code.
+   * @param {object} [parameters={}] Key-value map used to resolve {:placeholder} tokens in the URL.
    * @returns {Promise<boolean>} Returns true if the response status matches the expected status.
    * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
    */
-  async perform(resourceRequest) {
-    const requestUrl = this.#buildUrl(resourceRequest.url);
+  async perform(resourceRequest, parameters = {}) {
+    const requestUrl = this.#buildUrl(resourceRequest.resolveUrl(parameters));
     Logger.info(`[Client:${this.name}] Requesting ${requestUrl}`);
     try {
       return await this.#request(resourceRequest, requestUrl);

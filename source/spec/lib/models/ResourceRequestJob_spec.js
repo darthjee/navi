@@ -100,5 +100,46 @@ describe('ResourceRequestJob', () => {
         expect(Logger.error).toHaveBeenCalledWith(`Job #${job.id} failed: ${expectedError}`);
       });
     });
+    describe('when the resource request has a parameterized URL', () => {
+      const paramUrl = '/categories/{:id}.json';
+      const resolvedFullUrl = 'http://example.com/categories/7.json';
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
+        parameters = { id: 7 };
+        job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+
+        response = { status: 200, data: '[]' };
+        spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+        spyOn(Logger, 'info').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
+      });
+
+      it('resolves placeholders and requests the resolved URL', async () => {
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+      });
+    });
+
+    describe('when parameters are empty and URL has placeholders', () => {
+      const paramUrl = '/categories/{:id}.json';
+      const unresolvedFullUrl = 'http://example.com/categories/{:id}.json';
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
+        parameters = {};
+        job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+
+        response = { status: 200, data: '[]' };
+        spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+        spyOn(Logger, 'info').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
+      });
+
+      it('leaves placeholders unchanged in the URL', async () => {
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        expect(axios.get).toHaveBeenCalledWith(unresolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+      });
+    });
   });
 });

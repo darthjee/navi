@@ -7,3 +7,10 @@ resources:
   categories:
     - url: /categories.json
       status: 200
+      actions:
+        - resource: category
+          variables_map:
+            id: id
+  category:
+    - url: /categories/{:id}.json
+      status: 200
