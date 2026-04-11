@@ -1,6 +1,7 @@
 import { WorkersAllocator } from './WorkersAllocator.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Engine is responsible for managing the job processing workflow.
@@ -31,7 +32,9 @@ class Engine {
    * @returns {Promise<void>}
    */
   async start() {
+    Logger.debug('Engine loop started, checking for ready jobs and idle workers...');
     while (this.#continueAllocating()) {
+      Logger.debug('Promoting ready jobs and allocating to idle workers if available...');
       JobRegistry.promoteReadyJobs();
 
       if (JobRegistry.hasReadyJob()) {
@@ -39,6 +42,7 @@ class Engine {
       } else {
         await this.#sleep(this.#sleepMs);
       }
+
     }
   }
 
