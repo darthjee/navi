@@ -126,7 +126,7 @@ Business logic and I/O layer.
 | `ArgumentsParser` | Parses CLI arguments using Node's `parseArgs`. Supports `--config <path>` / `-c <path>`; defaults to `config/navi_config.yml`. Returns `{ config }`. |
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
-| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. |
+| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. Supports per-client headers (including environment variable interpolation via `$VAR` / `${VAR}` syntax, resolved at parse time). |
 | `Engine` | Drives the main allocation loop. Each tick calls `JobRegistry.promoteReadyJobs()` then delegates to `WorkersAllocator.allocate()` while jobs or busy workers exist. Sleeps for `sleepMs` (default 500 ms) when all pending jobs are in cooldown. |
 | `WorkersAllocator` | Assigns ready jobs to idle workers. On each `allocate()` call, repeatedly pairs `WorkersRegistry.getIdleWorker()` with `JobRegistry.pick()` until either pool is exhausted. |
 | `JobFactory` | Static registry of named job factories. `JobFactory.build(name, options)` registers a factory; `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears all entries (test teardown). |

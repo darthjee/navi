@@ -59,7 +59,8 @@ clients:
   auth_api:
     base_url: https://api.example.com
     headers:
-      Authorization: Bearer <token>
+      Authorization: Bearer $API_TOKEN
+      X-Custom-Header: static-value
 
 resources:
   categories:
@@ -94,7 +95,7 @@ resources:
 | `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
-| `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. |
+| `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), which are resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
