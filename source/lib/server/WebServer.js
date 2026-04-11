@@ -1,5 +1,6 @@
 import express from 'express';
 import { Router } from './Router.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Express web server for the Navi monitoring interface.
@@ -25,6 +26,7 @@ class WebServer {
    * @returns {http.Server} The http.Server instance.
    */
   start() {
+    Logger.info(`Listening to port ${this.#port}`);
     return this.#app.listen(this.#port);
   }
 
