@@ -166,5 +166,26 @@ describe('ConfigParser', () => {
         expect(result.webConfig).toBeNull();
       });
     });
+
+    describe('when client config includes headers', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_headers.yml');
+      });
+
+      it('returns clients with parsed headers', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.clients.auth_api.headers).toEqual({
+          Authorization: 'Bearer my-token',
+          'X-Custom-Header': 'custom-value',
+        });
+      });
+
+      it('returns a client without headers as empty object', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.clients.default.headers).toEqual({});
+      });
+    });
   });
 });
