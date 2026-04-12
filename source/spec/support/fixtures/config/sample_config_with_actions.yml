@@ -10,8 +10,8 @@ resources:
       status: 200
       actions:
         - resource: products
-          variables_map:
-            id: category_id
+          parameters:
+            category_id: parsed_body.id
         - resource: category_information
   products:
     - url: /categories/:category_id/products.json
@@ -21,8 +21,8 @@ resources:
       status: 200
       actions:
         - resource: kind
-          variables_map:
-            kind_id: id
+          parameters:
+            id: parsed_body.kind_id
   kind:
     - url: /kinds/:id.json
       status: 200

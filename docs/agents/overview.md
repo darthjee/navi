@@ -28,7 +28,9 @@ ResourceRequest (no params)           ← enqueued at startup
 ```
 
 Actions define how response fields are mapped to parameters for the next request via
-`variables_map`. A resource with no actions is a leaf node and ends the chain.
+`parameters`. Each value in the `parameters` map is a path expression (e.g. `parsed_body.id`,
+`headers['page']`) resolved against a response wrapper that exposes the parsed JSON body and
+HTTP headers. A resource with no actions is a leaf node and ends the chain.
 
 ---
 
@@ -48,7 +50,7 @@ Actions define how response fields are mapped to parameters for the next request
 - [x] `Worker` execution of `ResourceRequestJob` (HTTP via Axios)
 - [x] Response parsing (`ResponseParser`) — raw JSON body → JS value
 - [x] `ActionsEnqueuer` + `ActionEnqueuer` — (item × action) cross-product → `ActionProcessingJob` queue
-- [x] `ActionProcessingJob` execution with `VariablesMapper`
+- [x] `ActionProcessingJob` execution with `ParametersMapper`
 - [x] Retry with cooldown for failed `ResourceRequestJob`s
 - [x] Dead job tracking (jobs that exhaust retry allowance)
 
