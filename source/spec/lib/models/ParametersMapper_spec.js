@@ -71,6 +71,27 @@ describe('ParametersMapper', () => {
       });
     });
 
+    describe('when parameters map uses parameters namespace', () => {
+      const wrapper = {
+        parsed_body: { id: 5 },
+        headers: {},
+        parameters: { category_id: 3 },
+      };
+
+      it('resolves a parameters path expression', () => {
+        const mapper = new ParametersMapper({ category_id: 'parameters.category_id' });
+        expect(mapper.map(wrapper)).toEqual({ category_id: 3 });
+      });
+
+      it('supports mixing parameters and parsed_body expressions', () => {
+        const mapper = new ParametersMapper({
+          id: 'parsed_body.id',
+          category_id: 'parameters.category_id',
+        });
+        expect(mapper.map(wrapper)).toEqual({ id: 5, category_id: 3 });
+      });
+    });
+
     describe('when a path expression cannot be resolved', () => {
       const wrapper = {
         parsed_body: { id: 1 },
