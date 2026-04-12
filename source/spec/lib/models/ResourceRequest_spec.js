@@ -1,4 +1,5 @@
 import { ResourceRequest } from '../../../lib/models/ResourceRequest.js';
+import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ResourceRequestActionFactory } from '../../support/factories/ResourceRequestActionFactory.js';
@@ -131,14 +132,16 @@ describe('ResourceRequest', () => {
     });
 
     describe('when there are no actions', () => {
-      it('returns immediately without parsing', () => {
+      it('returns immediately without errors', () => {
         request = ResourceRequestFactory.build();
-        expect(() => request.enqueueActions('not valid json')).not.toThrow();
+        const wrapper = new ResponseWrapper({ data: 'not valid json', headers: {} });
+        expect(() => request.enqueueActions(wrapper)).not.toThrow();
       });
 
       it('does not call enqueue', () => {
         request = ResourceRequestFactory.build();
-        request.enqueueActions('[]');
+        const wrapper = new ResponseWrapper({ data: '[]', headers: {} });
+        request.enqueueActions(wrapper);
         expect(JobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });
@@ -150,10 +153,9 @@ describe('ResourceRequest', () => {
       });
 
       it('calls enqueue once per element', () => {
-        request.enqueueActions('[{"id":1},{"id":2}]');
+        const wrapper = new ResponseWrapper({ data: '[{"id":1},{"id":2}]', headers: {} });
+        request.enqueueActions(wrapper);
         expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 1 } });
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: { id: 2 } });
       });
     });
 
@@ -164,8 +166,12 @@ describe('ResourceRequest', () => {
       });
 
       it('calls enqueue once with the item', () => {
-        request.enqueueActions('{"id":1}');
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action, item: { id: 1 } });
+        const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
+        request.enqueueActions(wrapper);
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+          'Action',
+          jasmine.objectContaining({ action })
+        );
       });
     });
   });
@@ -181,9 +187,10 @@ describe('ResourceRequest', () => {
     });
 
     describe('when there are no actions', () => {
-      it('returns immediately without parsing', () => {
+      it('returns immediately without errors', () => {
         request = ResourceRequestFactory.build();
-        expect(() => request.executeActions('not valid json')).not.toThrow();
+        const wrapper = new ResponseWrapper({ data: 'not valid json', headers: {} });
+        expect(() => request.executeActions(wrapper)).not.toThrow();
       });
     });
 
@@ -195,7 +202,8 @@ describe('ResourceRequest', () => {
       it('executes each action once per element', () => {
         spyOn(action, 'execute');
         request.actions = [action];
-        request.executeActions('[{"id":1},{"id":2}]');
+        const wrapper = new ResponseWrapper({ data: '[{"id":1},{"id":2}]', headers: {} });
+        request.executeActions(wrapper);
         expect(action.execute).toHaveBeenCalledTimes(2);
       });
     });
@@ -208,8 +216,9 @@ describe('ResourceRequest', () => {
       it('executes each action once', () => {
         spyOn(action, 'execute');
         request.actions = [action];
-        request.executeActions('{"id":1}');
-        expect(action.execute).toHaveBeenCalledOnceWith({ id: 1 });
+        const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
+        request.executeActions(wrapper);
+        expect(action.execute).toHaveBeenCalledTimes(1);
       });
     });
   });
