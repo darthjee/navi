@@ -35,8 +35,8 @@ Create `source/spec/lib/utils/PromiseAggregator_spec.js` covering:
 In `source/lib/services/Application.js`:
 
 - Instantiate a `PromiseAggregator`.
-- `add` the result of `engine.run()`.
-- `add` the result of `webServer.run()` when the web server is present.
+- `add` the result of `engine.start()`.
+- `add` the result of `webServer.start()` when the web server is present.
 - `await aggregator.wait()` instead of awaiting either promise individually.
 
 ### Step 4 — Update `Application` specs
