@@ -91,6 +91,17 @@ class JobRegistryInstance {
   }
 
   /**
+   * Moves a job from processing back to the enqueued queue.
+   * @param {Job} job - The job to re-enqueue.
+   * @returns {void}
+   */
+  requeue(job) {
+    if (!job) return;
+    this.#processing.remove(job.id);
+    this.#enqueued.push(job);
+  }
+
+  /**
    * Promotes jobs from the failed queue to the retryQueue once their cooldown has elapsed.
    * @returns {void}
    */

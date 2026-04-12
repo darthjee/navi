@@ -136,4 +136,49 @@ describe('WorkersAllocator', () => {
       expect(worker.perform).not.toHaveBeenCalled();
     });
   });
+
+  describe('when pick returns null unexpectedly', () => {
+    beforeEach(() => {
+      job = JobRegistry.enqueue('ResourceRequestJob', {});
+      spyOn(JobRegistry, 'pick').and.returnValue(undefined);
+    });
+
+    it('does not throw and does not allocate', () => {
+      expect(() => allocator._allocateNext()).not.toThrow();
+      expect(worker.job).toBeUndefined();
+      expect(worker.perform).not.toHaveBeenCalled();
+    });
+
+    it('does not get a worker', () => {
+      spyOn(WorkersRegistry, 'getIdleWorker');
+
+      allocator._allocateNext();
+
+      expect(WorkersRegistry.getIdleWorker).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when getIdleWorker returns null unexpectedly', () => {
+    beforeEach(() => {
+      job = JobRegistry.enqueue('ResourceRequestJob', {});
+      spyOn(WorkersRegistry, 'getIdleWorker').and.returnValue(null);
+    });
+
+    it('does not throw', () => {
+      expect(() => allocator._allocateNext()).not.toThrow();
+    });
+
+    it('does not allocate any worker', () => {
+      allocator._allocateNext();
+
+      expect(worker.job).toBeUndefined();
+      expect(worker.perform).not.toHaveBeenCalled();
+    });
+
+    it('requeues the job', () => {
+      allocator._allocateNext();
+
+      expect(JobRegistry.hasReadyJob()).toBeTrue();
+    });
+  });
 });
