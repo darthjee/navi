@@ -1,12 +1,12 @@
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
-import { VariablesMapper } from '../../../lib/models/VariablesMapper.js';
+import { ParametersMapper } from '../../../lib/models/ParametersMapper.js';
 
-describe('VariablesMapper', () => {
+describe('ParametersMapper', () => {
   describe('#map', () => {
     describe('when parameters map is empty', () => {
       it('returns the item unchanged', () => {
         const item = { id: 1, name: 'Electronics' };
-        const mapper = new VariablesMapper({});
+        const mapper = new ParametersMapper({});
         expect(mapper.map(item)).toBe(item);
       });
     });
@@ -14,7 +14,7 @@ describe('VariablesMapper', () => {
     describe('when no parameters map is provided', () => {
       it('returns the item unchanged', () => {
         const item = { id: 1, name: 'Electronics' };
-        const mapper = new VariablesMapper();
+        const mapper = new ParametersMapper();
         expect(mapper.map(item)).toBe(item);
       });
     });
@@ -26,12 +26,12 @@ describe('VariablesMapper', () => {
       };
 
       it('resolves a single path expression', () => {
-        const mapper = new VariablesMapper({ category_id: 'parsed_body.id' });
+        const mapper = new ParametersMapper({ category_id: 'parsed_body.id' });
         expect(mapper.map(wrapper)).toEqual({ category_id: 1 });
       });
 
       it('supports multiple mappings', () => {
-        const mapper = new VariablesMapper({
+        const mapper = new ParametersMapper({
           category_id: 'parsed_body.id',
           id: 'parsed_body.kind_id',
         });
@@ -46,12 +46,12 @@ describe('VariablesMapper', () => {
       };
 
       it('resolves header values via bracket notation', () => {
-        const mapper = new VariablesMapper({ page: "headers['page']" });
+        const mapper = new ParametersMapper({ page: "headers['page']" });
         expect(mapper.map(wrapper)).toEqual({ page: '3' });
       });
 
       it('resolves header values with double quotes', () => {
-        const mapper = new VariablesMapper({ total: 'headers["x-total"]' });
+        const mapper = new ParametersMapper({ total: 'headers["x-total"]' });
         expect(mapper.map(wrapper)).toEqual({ total: '100' });
       });
     });
@@ -63,7 +63,7 @@ describe('VariablesMapper', () => {
       };
 
       it('resolves both body and header expressions', () => {
-        const mapper = new VariablesMapper({
+        const mapper = new ParametersMapper({
           id: 'parsed_body.id',
           page: "headers['page']",
         });
@@ -78,7 +78,7 @@ describe('VariablesMapper', () => {
       };
 
       it('throws MissingMappingVariable for a missing body field', () => {
-        const mapper = new VariablesMapper({ dest: 'parsed_body.missing_field' });
+        const mapper = new ParametersMapper({ dest: 'parsed_body.missing_field' });
         expect(() => mapper.map(wrapper)).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
             && error.variable === 'parsed_body.missing_field'
@@ -86,7 +86,7 @@ describe('VariablesMapper', () => {
       });
 
       it('throws MissingMappingVariable for a missing header', () => {
-        const mapper = new VariablesMapper({ dest: "headers['missing']" });
+        const mapper = new ParametersMapper({ dest: "headers['missing']" });
         expect(() => mapper.map(wrapper)).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
             && error.variable === "headers['missing']"
@@ -101,7 +101,7 @@ describe('VariablesMapper', () => {
       };
 
       it('resolves deeply nested dot notation', () => {
-        const mapper = new VariablesMapper({ city: 'parsed_body.user.address.city' });
+        const mapper = new ParametersMapper({ city: 'parsed_body.user.address.city' });
         expect(mapper.map(wrapper)).toEqual({ city: 'Paris' });
       });
     });

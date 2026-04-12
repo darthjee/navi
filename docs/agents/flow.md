@@ -34,7 +34,7 @@ source/bin/navi.js
                       │              └─ JobRegistry.enqueue('Action', { action, item })
                       └─ [ActionProcessingJob]
                            └─ action.execute(item)          ← TODO: enqueue ResourceRequestJob
-                                └─ VariablesMapper.map(item) → log vars (current behaviour)
+                                └─ ParametersMapper.map(item) → log vars (current behaviour)
 ```
 
 ---
@@ -189,7 +189,7 @@ After `Client.perform()` resolves, `ResourceRequestJob` passes the raw response 
 - **`ActionEnqueuer.enqueue()`** iterates over all items and calls
   `JobRegistry.enqueue('Action', { action, item })` for each one, creating an `ActionProcessingJob`.
 - **`ActionProcessingJob.perform()`** calls `action.execute(item)`.
-- **`ResourceRequestAction.execute(item)`** applies `VariablesMapper.map(item)` to obtain
+- **`ResourceRequestAction.execute(item)`** applies `ParametersMapper.map(item)` to obtain
   the parameters, looks up the target resource in `ResourceRegistry`, and enqueues one
   `ResourceRequestJob` per `ResourceRequest` in that resource, passing the mapped variables
   as job parameters. The URL `{:placeholder}` tokens are resolved at request time inside

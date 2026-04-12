@@ -71,6 +71,7 @@ resources:
         - resource: products
           parameters:
             category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
+            page: headers['x-next-page']  # extract "x-next-page" from response headers → variable "page"
   category_information:
     - url: /categories/{:id}.json
       status: 200
@@ -80,7 +81,7 @@ resources:
           parameters:
             id: parsed_body.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
-    - url: /categories/{:category_id}/products.json
+    - url: /categories/{:category_id}/products/{:page}.json
       status: 200
   kind:
     - url: /kinds/{:id}.json

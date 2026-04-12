@@ -1,4 +1,4 @@
-import { VariablesMapper } from './VariablesMapper.js';
+import { ParametersMapper } from './ParametersMapper.js';
 import { MissingActionResource } from '../exceptions/MissingActionResource.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { ResourceRegistry } from '../registry/ResourceRegistry.js';
@@ -27,7 +27,7 @@ class ResourceRequestAction {
   constructor({ resource, parameters = {} }) {
     if (!resource) throw new MissingActionResource();
     this.resource = resource;
-    this.#mapper = new VariablesMapper(parameters);
+    this.#mapper = new ParametersMapper(parameters);
   }
 
   /**
