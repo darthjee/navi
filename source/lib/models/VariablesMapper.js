@@ -52,9 +52,14 @@ class VariablesMapper {
     let current = obj;
 
     for (const segment of segments) {
-      if (current === null || current === undefined || !(segment in Object(current))) {
+      if (current === null || current === undefined || typeof current !== 'object') {
         throw new MissingMappingVariable(pathExpr);
       }
+
+      if (!(segment in current)) {
+        throw new MissingMappingVariable(pathExpr);
+      }
+
       current = current[segment];
     }
 
