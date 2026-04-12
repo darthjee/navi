@@ -98,7 +98,7 @@ describe('WorkersAllocator', () => {
       WorkersRegistry.build({ quantity: 3, workers });
       WorkersRegistry.initWorkers();
       worker = workers.byIndex(0);
-      spyOn(worker, 'perform');
+      workers.list().forEach((w) => spyOn(w, 'perform'));
 
       job = JobRegistry.enqueue('ResourceRequestJob', {});
       JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });

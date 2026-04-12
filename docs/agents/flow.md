@@ -34,7 +34,7 @@ source/bin/navi.js
                       │              └─ JobRegistry.enqueue('Action', { action, item })
                       └─ [ActionProcessingJob]
                            └─ action.execute(item)          ← TODO: enqueue ResourceRequestJob
-                                └─ VariablesMapper.map(item) → log vars (current behaviour)
+                                └─ ParametersMapper.map(item) → log vars (current behaviour)
 ```
 
 ---
@@ -89,18 +89,18 @@ resources:
     - url: /categories.json
       status: 200
       actions:
-        - resource: category_information  # no variables_map → all fields pass through
+        - resource: category_information  # no parameters → all fields pass through
         - resource: products
-          variables_map:
-            id: category_id   # response field "id" → variable "category_id"
+          parameters:
+            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
   category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api      # use a specific named client for this request
       actions:
         - resource: kind
-          variables_map:
-            kind_id: id       # response field "kind_id" → variable "id"
+          parameters:
+            id: parsed_body.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
     - url: /categories/{:category_id}/products.json
       status: 200
@@ -189,7 +189,7 @@ After `Client.perform()` resolves, `ResourceRequestJob` passes the raw response 
 - **`ActionEnqueuer.enqueue()`** iterates over all items and calls
   `JobRegistry.enqueue('Action', { action, item })` for each one, creating an `ActionProcessingJob`.
 - **`ActionProcessingJob.perform()`** calls `action.execute(item)`.
-- **`ResourceRequestAction.execute(item)`** applies `VariablesMapper.map(item)` to obtain
+- **`ResourceRequestAction.execute(item)`** applies `ParametersMapper.map(item)` to obtain
   the parameters, looks up the target resource in `ResourceRegistry`, and enqueues one
   `ResourceRequestJob` per `ResourceRequest` in that resource, passing the mapped variables
   as job parameters. The URL `{:placeholder}` tokens are resolved at request time inside
@@ -203,8 +203,8 @@ Given a response body `[{ "id": 1 }, { "id": 2 }]` and the following actions con
 ```yaml
 actions:
   - resource: products
-    variables_map:
-      id: category_id   # response field "id" → variable "category_id"
+    parameters:
+      category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
   - resource: category_information
 ```
 

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResourceRequestJob } from '../../../lib/models/ResourceRequestJob.js';
+import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
@@ -50,9 +51,11 @@ describe('ResourceRequestJob', () => {
         expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
       });
 
-      it('calls enqueueActions with the response data', async () => {
+      it('calls enqueueActions with a ResponseWrapper', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(resourceRequest.enqueueActions).toHaveBeenCalledOnceWith(response.data);
+        expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
+        const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
+        expect(wrapper).toBeInstanceOf(ResponseWrapper);
       });
 
       it('logs info when performing', async () => {

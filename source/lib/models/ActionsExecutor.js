@@ -2,9 +2,9 @@ import { NullResponse } from '../exceptions/NullResponse.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
- * Receives an already-parsed response value and dispatches each action for every item.
+ * Receives a list of ResponseWrapper items and dispatches each action for every item.
  *
- * This class is the single place that knows how to handle both array and object responses.
+ * This class is the single place that knows how to handle item iteration.
  * Action-level errors are caught per action so that a failing action does not prevent
  * the remaining actions from executing.
  *
@@ -15,28 +15,26 @@ import { Logger } from '../utils/logging/Logger.js';
  */
 class ActionsExecutor {
   #actions;
-  #parsed;
+  #items;
 
   /**
    * @param {Array} actions List of ResourceRequestAction instances.
-   * @param {*} parsed The already-parsed response value (object, array, or null).
+   * @param {Array} items List of ResponseWrapper instances (one per response item).
    */
-  constructor(actions, parsed) {
+  constructor(actions, items) {
     this.#actions = actions;
-    this.#parsed = parsed;
+    this.#items = items;
   }
 
   /**
-   * Normalises the parsed response to an array and dispatches each action per item.
+   * Dispatches each action per item.
    * @returns {void}
-   * @throws {NullResponse} If the parsed response is null.
+   * @throws {NullResponse} If the items list is null.
    */
   execute() {
-    if (this.#parsed === null) throw new NullResponse();
+    if (this.#items === null) throw new NullResponse();
 
-    const items = Array.isArray(this.#parsed) ? this.#parsed : [this.#parsed];
-
-    for (const item of items) {
+    for (const item of this.#items) {
       for (const action of this.#actions) {
         try {
           action.execute(item);
