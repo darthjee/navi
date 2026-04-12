@@ -6,6 +6,7 @@ import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 import { WebServer } from '../server/WebServer.js';
+import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
 /**
@@ -47,11 +48,16 @@ class Application {
    * @returns {Promise<void>}
    */
   async run() {
+    const aggregator = new PromiseAggregator();
+
     this.engine = this.buildEngine();
     this.webServer = this.buildWebServer();
     this.enqueueFirstJobs();
-    this.webServer?.start();
-    await this.engine.start();
+
+    aggregator.add(this.webServer?.start());
+    aggregator.add(this.engine.start());
+
+    await aggregator.wait();
   }
 
   /**
