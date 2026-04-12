@@ -62,16 +62,17 @@ resources:
     - url: /categories.json
       status: 200
       actions:
-        - resource: category_information
+        - resource: category_information  # passes all response fields as-is
         - resource: products
-          variables_map:
-            id: category_id   # response field "id" → variable "category_id"
+          parameters:
+            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
+            page: headers['x-next-page']  # extract "x-next-page" from response headers → variable "page"
   category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api
   products:
-    - url: /categories/{:category_id}/products.json
+    - url: /categories/{:category_id}/products/{:page}.json
       status: 200
 ```
 
@@ -83,22 +84,22 @@ resources:
 | `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
-| `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. |
+| `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
-| `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `variables_map`. |
+| `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
-| `actions[].variables_map` | Optional key-value map renaming response fields to variable names. When absent, all response fields pass through unchanged. |
+| `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response (e.g. `parsed_body.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
 
 ---
 
 ## Resource Chaining
 
-Navi supports multi-level resource chaining. After a successful response, each configured action extracts variables from the response body (via `variables_map`) and enqueues new jobs for the target resource. The extracted variables resolve `{:placeholder}` tokens in the target URL templates.
+Navi supports multi-level resource chaining. After a successful response, each configured action uses `parameters` path expressions to extract variables from the response body or headers and enqueues new jobs for the target resource. The extracted variables resolve `{:placeholder}` tokens in the target URL templates.
 
-For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and mapping `id → id`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`.
+For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and `parameters: { id: parsed_body.id }`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`. Header values can also be extracted, e.g. `page: headers['x-next-page']`.
 
 ---
 
