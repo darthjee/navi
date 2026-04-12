@@ -12,15 +12,18 @@ class ResponseWrapper {
   #response;
   #parsedBody;
   #headers;
+  #parameters;
 
   /**
    * @param {object} response The raw HTTP response object (e.g. from axios).
    * @param {string} response.data The raw response body string.
    * @param {object} response.headers The response headers map.
+   * @param {object} [parameters={}] The parameters used in the originating request.
    */
-  constructor(response) {
+  constructor(response, parameters = {}) {
     this.#response = response;
     this.#headers = response.headers;
+    this.#parameters = parameters;
   }
 
   /**
@@ -45,6 +48,14 @@ class ResponseWrapper {
   }
 
   /**
+   * Returns the parameters of the originating request.
+   * @returns {object} The request parameters.
+   */
+  get parameters() {
+    return this.#parameters;
+  }
+
+  /**
    * Returns an array of per-item ResponseWrapper instances.
    * If the parsed body is an array, one wrapper is created per element.
    * If it is a single object, a single-element array is returned.
@@ -55,17 +66,18 @@ class ResponseWrapper {
     const body = this.parsed_body;
     const items = Array.isArray(body) ? body : [body];
 
-    return items.map((item) => ResponseWrapper.#fromItem(item, this.#headers));
+    return items.map((item) => ResponseWrapper.#fromItem(item, this.#headers, this.#parameters));
   }
 
   /**
-   * Creates a per-item ResponseWrapper with a pre-parsed body and shared headers.
+   * Creates a per-item ResponseWrapper with a pre-parsed body, shared headers and parameters.
    * @param {*} parsedBody The already-parsed item value.
    * @param {object} headers The response headers to share.
+   * @param {object} parameters The request parameters to share.
    * @returns {ResponseWrapper} A wrapper whose parsed_body is the given item.
    */
-  static #fromItem(parsedBody, headers) {
-    const wrapper = new ResponseWrapper({ data: null, headers });
+  static #fromItem(parsedBody, headers, parameters) {
+    const wrapper = new ResponseWrapper({ data: null, headers }, parameters);
     wrapper.#parsedBody = parsedBody;
     return wrapper;
   }
