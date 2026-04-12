@@ -69,16 +69,16 @@ resources:
       actions:
         - resource: category_information  # passes all response fields as-is
         - resource: products
-          variables_map:
-            id: category_id   # response field "id" → variable "category_id"
+          parameters:
+            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
   category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api      # use a specific named client for this request
       actions:
         - resource: kind
-          variables_map:
-            kind_id: id       # response field "kind_id" → variable "id"
+          parameters:
+            id: parsed_body.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
     - url: /categories/{:category_id}/products.json
       status: 200
@@ -100,9 +100,9 @@ resources:
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
-| `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `variables_map`. |
+| `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
-| `actions[].variables_map` | Optional key-value map. Each entry renames a response field: `<response_field>: <new_variable_name>`. When absent, all response fields are passed through unchanged. |
+| `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response wrapper (e.g. `parsed_body.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
 
 ### Providing the config file
 
@@ -207,16 +207,16 @@ yarn docs    # generate JSDoc API documentation
 
 After a successful HTTP response, Navi executes each configured `action` for every item in the response body. If the body is a JSON array, each action runs once per element; if it is a single object, each action runs once.
 
-For each action, the `variables_map` is applied to the response item to produce a set of named variables:
+For each action, the `parameters` map is applied to the response wrapper to produce a set of named variables:
 
-- **With `variables_map`**: only the explicitly mapped fields are included, renamed as configured.
-- **Without `variables_map`**: all response fields are passed through unchanged.
+- **With `parameters`**: each value is a path expression (e.g. `parsed_body.id`, `headers['page']`) resolved against a wrapper exposing the parsed JSON body and response headers. Only the explicitly mapped fields are included.
+- **Without `parameters`**: the parsed body item is passed through unchanged.
 
-The mapped variables are then used to resolve `{:placeholder}` tokens in the target resource's URL templates. For example, if the response contains `{ "id": 1 }` and the action maps `id` → `id`, the target resource's URL `/categories/{:id}.json` resolves to `/categories/1.json`.
+The mapped variables are then used to resolve `{:placeholder}` tokens in the target resource's URL templates. For example, if the response body contains `{ "id": 1 }` and the action has `parameters: { id: parsed_body.id }`, the target resource's URL `/categories/{:id}.json` resolves to `/categories/1.json`. Header values can also be extracted, e.g. `page: headers['page']`.
 
 Each action is enqueued as an `ActionProcessingJob`, which looks up the target resource, creates a `ResourceRequestJob` for each URL entry in that resource with the resolved parameters, and enqueues them for processing by the worker pool. This enables multi-level resource chaining — a response can trigger further requests whose responses trigger even more requests.
 
-**Error handling:** an action whose `resource` field is missing is skipped and logged. An action that references a field absent from the response item is also skipped and logged. Other actions continue normally. A response body that is not valid JSON raises an error for the whole request.
+**Error handling:** an action whose `resource` field is missing is skipped and logged. An action whose path expression cannot be resolved against the response is also skipped and logged. Other actions continue normally. A response body that is not valid JSON raises an error for the whole request.
 
 ---
 

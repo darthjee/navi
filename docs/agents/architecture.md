@@ -23,7 +23,7 @@ AppError (base)
 ├── InvalidResponseBody          ← raw JSON response body could not be parsed
 ├── NullResponse                 ← parsed response body is null
 ├── MissingActionResource        ← action config entry has no "resource" field
-├── MissingMappingVariable       ← variables_map references a field absent from the response
+├── MissingMappingVariable       ← parameters path expression cannot be resolved against the response
 ├── ConfigurationFileNotFound    ← YAML config file does not exist at the given path
 └── ConfigurationFileNotProvided ← no config file path was supplied to Application
 ```
@@ -39,17 +39,18 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 |-------|---------------|
 | `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
-| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(rawBody)` to enqueue action jobs after a successful HTTP request. |
-| `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `variables_map`). Uses `VariablesMapper` to transform a response item, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
+| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(responseWrapper)` to enqueue action jobs after a successful HTTP request. |
+| `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `parameters`). Uses `VariablesMapper` to evaluate path expressions against a `ResponseWrapper`, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
-| `ActionsEnqueuer` | Normalises a parsed response (object or array) and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null responses. Delegates per-action enqueueing to `ActionEnqueuer`. |
+| `ResponseWrapper` | Wraps an HTTP response, exposing `parsed_body` (lazily-parsed JSON body) and `headers`. Provides `toItemWrappers()` to split an array response into per-item wrappers sharing the same headers. |
+| `ActionsEnqueuer` | Receives a list of per-item `ResponseWrapper` instances and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null items list. Delegates per-action enqueueing to `ActionEnqueuer`. |
 | `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
-| `ActionsExecutor` | (Legacy — kept for reference.) Normalises a parsed response and dispatches each `ResourceRequestAction` per item synchronously. No longer called by `ResourceRequestJob`; removal is a follow-up. |
-| `VariablesMapper` | Applies a `variables_map` to a response item, renaming fields as configured. When no map is provided, all fields pass through unchanged. Throws `MissingMappingVariable` when a source field is absent. |
+| `ActionsExecutor` | (Legacy — kept for reference.) Receives per-item wrappers and dispatches each `ResourceRequestAction` per item synchronously. No longer called by `ResourceRequestJob`; removal is a follow-up. |
+| `VariablesMapper` | Applies a `parameters` map to a response wrapper, evaluating path expressions (e.g. `parsed_body.id`, `headers['page']`) to extract values. When no map is provided, the item passes through unchanged. Throws `MissingMappingVariable` when a path expression cannot be resolved. |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
 | `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
-| `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, then calls `resourceRequest.enqueueActions(rawBody, jobRegistry)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
-| `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)`. Exhausted after the first failure — no retry rights. |
+| `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
+| `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)` where `item` is a per-item `ResponseWrapper`. Exhausted after the first failure — no retry rights. |
 | `WorkersConfig` | Holds the worker pool size (`quantity`, default 1) and the retry cooldown in milliseconds (`retryCooldown`, default 2000). |
 | `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 

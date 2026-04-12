@@ -89,18 +89,18 @@ resources:
     - url: /categories.json
       status: 200
       actions:
-        - resource: category_information  # no variables_map → all fields pass through
+        - resource: category_information  # no parameters → all fields pass through
         - resource: products
-          variables_map:
-            id: category_id   # response field "id" → variable "category_id"
+          parameters:
+            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
   category_information:
     - url: /categories/{:id}.json
       status: 200
       client: auth_api      # use a specific named client for this request
       actions:
         - resource: kind
-          variables_map:
-            kind_id: id       # response field "kind_id" → variable "id"
+          parameters:
+            id: parsed_body.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
     - url: /categories/{:category_id}/products.json
       status: 200
@@ -203,8 +203,8 @@ Given a response body `[{ "id": 1 }, { "id": 2 }]` and the following actions con
 ```yaml
 actions:
   - resource: products
-    variables_map:
-      id: category_id   # response field "id" → variable "category_id"
+    parameters:
+      category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
   - resource: category_information
 ```
 
