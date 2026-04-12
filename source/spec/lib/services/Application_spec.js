@@ -117,6 +117,58 @@ describe('Application', () => {
       await app.run();
       expect(app.webServer).toBeNull();
     });
+
+    describe('when web server is present', () => {
+      let webServerStartResolved;
+      let resolveWebServerStart;
+
+      beforeEach(() => {
+        JobRegistry.reset();
+        JobFactory.reset();
+        WorkersRegistry.reset();
+        ResourceRegistry.reset();
+
+        configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_web.yml');
+
+        app = new Application();
+        app.loadConfig(configFilePath);
+        WorkersRegistry.build({ quantity: 1, factory: workerFactory });
+        WorkersRegistry.initWorkers();
+        JobFactory.registry('ResourceRequestJob', jobFactory);
+
+        webServerStartResolved = false;
+
+        const webServerPromise = new Promise((resolve) => {
+          resolveWebServerStart = resolve;
+        });
+
+        spyOn(WebServer.prototype, 'start').and.callFake(() => {
+          return webServerPromise.then(() => {
+            webServerStartResolved = true;
+          });
+        });
+      });
+
+      it('waits for web server promise before resolving', async () => {
+        let runResolved = false;
+
+        const runPromise = app.run().then(() => {
+          runResolved = true;
+        });
+
+        // Allow engine to finish processing
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(webServerStartResolved).toBeFalse();
+        expect(runResolved).toBeFalse();
+
+        resolveWebServerStart();
+        await runPromise;
+
+        expect(webServerStartResolved).toBeTrue();
+        expect(runResolved).toBeTrue();
+      });
+    });
   });
 
   describe('#buildWebServer', () => {
