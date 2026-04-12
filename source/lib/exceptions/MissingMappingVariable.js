@@ -1,7 +1,7 @@
 import { AppError } from './AppError.js';
 
 /**
- * Thrown when a variables_map references a field that is absent from the response item.
+ * Thrown when a parameters path expression cannot be resolved against the response wrapper.
  * @author darthjee
  */
 class MissingMappingVariable extends AppError {

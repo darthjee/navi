@@ -1,4 +1,5 @@
 import { Job } from './Job.js';
+import { ResponseWrapper } from './ResponseWrapper.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -35,7 +36,8 @@ class ResourceRequestJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
-      this.#resourceRequest.enqueueActions(response.data);
+      const wrapper = new ResponseWrapper(response);
+      this.#resourceRequest.enqueueActions(wrapper);
       return response;
     } catch (error) {
       Logger.error(`Job #${this.id} failed: ${error}`);

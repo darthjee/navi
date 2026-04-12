@@ -8,11 +8,11 @@ class ResourceRequestActionFactory {
    * Builds a ResourceRequestAction instance.
    * @param {object} [params={}] - Optional attributes.
    * @param {string} [params.resource='products'] - The resource name.
-   * @param {object} [params.variables_map={}] - The variables map.
+   * @param {object} [params.parameters={}] - The parameters map.
    * @returns {ResourceRequestAction} A new ResourceRequestAction instance.
    */
-  static build({ resource = 'products', variables_map = {} } = {}) {
-    return new ResourceRequestAction({ resource, variables_map });
+  static build({ resource = 'products', parameters = {} } = {}) {
+    return new ResourceRequestAction({ resource, parameters });
   }
 }
 

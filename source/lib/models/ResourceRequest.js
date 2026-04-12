@@ -1,7 +1,6 @@
 import { ActionsEnqueuer } from './ActionsEnqueuer.js';
 import { ActionsExecutor } from './ActionsExecutor.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
-import { ResponseParser } from './ResponseParser.js';
 
 /**
  * ResourceRequest represents a request to a specific URL with an expected status code.
@@ -35,28 +34,28 @@ class ResourceRequest {
 
   /**
    * Enqueues one ActionProcessingJob per action associated with the resource request.
-   * Returns immediately if there are no actions, skipping JSON parsing entirely.
-   * @param {string} rawBody The raw response body string.
+   * Returns immediately if there are no actions.
+   * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
    * @returns {void}
    */
-  enqueueActions(rawBody) {
+  enqueueActions(responseWrapper) {
     if (this.actions.length === 0) return;
 
-    const parsed = new ResponseParser(rawBody).parse();
-    new ActionsEnqueuer(this.actions, parsed).enqueue();
+    const itemWrappers = responseWrapper.toItemWrappers();
+    new ActionsEnqueuer(this.actions, itemWrappers).enqueue();
   }
 
   /**
-   * Executes all configured actions against the raw response body.
-   * Returns immediately if there are no actions, skipping JSON parsing entirely.
-   * @param {string} rawBody The raw response body string.
+   * Executes all configured actions against the response wrapper.
+   * Returns immediately if there are no actions.
+   * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
    * @returns {void}
    */
-  executeActions(rawBody) {
+  executeActions(responseWrapper) {
     if (this.actions.length === 0) return;
 
-    const parsed = new ResponseParser(rawBody).parse();
-    new ActionsExecutor(this.actions, parsed).execute();
+    const itemWrappers = responseWrapper.toItemWrappers();
+    new ActionsExecutor(this.actions, itemWrappers).execute();
   }
 
   /**

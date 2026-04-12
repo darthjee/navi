@@ -7,10 +7,11 @@ import { Logger } from '../utils/logging/Logger.js';
 /**
  * Represents a single action to execute after a successful resource request response.
  *
- * Each action holds a reference to a resource name and an optional variables_map
- * that renames response fields into job parameters. When executed, it looks up the
- * target resource and enqueues one ResourceRequestJob per ResourceRequest in that
- * resource, passing the mapped variables as job parameters.
+ * Each action holds a reference to a resource name and an optional parameters
+ * map that extracts response fields into job parameters via path expressions.
+ * When executed, it looks up the target resource and enqueues one
+ * ResourceRequestJob per ResourceRequest in that resource, passing the
+ * mapped variables as job parameters.
  * @author darthjee
  */
 class ResourceRequestAction {
@@ -19,23 +20,25 @@ class ResourceRequestAction {
   /**
    * @param {object} attributes Action attributes.
    * @param {string} attributes.resource Name of the resource to act upon.
-   * @param {object} [attributes.variables_map={}] Key-value map renaming response fields to variable names.
+   * @param {object} [attributes.parameters={}] Key-value map where keys are destination
+   * variable names and values are path expressions (e.g. `parsed_body.id`, `headers['page']`).
    * @throws {MissingActionResource} If resource is absent or falsy.
    */
-  constructor({ resource, variables_map = {} }) {
+  constructor({ resource, parameters = {} }) {
     if (!resource) throw new MissingActionResource();
     this.resource = resource;
-    this.#mapper = new VariablesMapper(variables_map);
+    this.#mapper = new VariablesMapper(parameters);
   }
 
   /**
-   * Maps the response item to variables, looks up the target resource, and
+   * Maps the response wrapper to variables, looks up the target resource, and
    * enqueues one ResourceRequestJob per ResourceRequest in that resource.
-   * @param {object} item A single parsed response item.
+   * @param {ResponseWrapper} responseWrapper A ResponseWrapper instance exposing
+   * parsed_body and headers.
    * @returns {void}
    */
-  execute(item) {
-    const vars = this.#mapper.map(item);
+  execute(responseWrapper) {
+    const vars = this.#mapper.map(responseWrapper);
     const resource = ResourceRegistry.getItem(this.resource);
 
     for (const resourceRequest of resource.resourceRequests) {

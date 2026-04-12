@@ -11,29 +11,28 @@ import { NullResponse } from '../exceptions/NullResponse.js';
  */
 class ActionsEnqueuer {
   #actions;
-  #parsed;
+  #items;
 
   /**
    * @param {Array} actions List of ResourceRequestAction instances.
-   * @param {*} parsed The already-parsed response value (object, array, or null).
+   * @param {Array} items List of ResponseWrapper instances (one per response item).
    */
-  constructor(actions, parsed) {
+  constructor(actions, items) {
     this.#actions = actions;
-    this.#parsed = parsed;
+    this.#items = items;
   }
 
   /**
-   * Normalises the parsed response to an array and enqueues one ActionProcessingJob
-   * per (action × item) pair, delegating per-action item enqueueing to ActionEnqueuer.
+   * Enqueues one ActionProcessingJob per (action × item) pair,
+   * delegating per-action item enqueueing to ActionEnqueuer.
    * @returns {void}
-   * @throws {NullResponse} If the parsed response is null.
+   * @throws {NullResponse} If the items list is null.
    */
   enqueue() {
-    if (this.#parsed === null) throw new NullResponse();
+    if (this.#items === null) throw new NullResponse();
 
-    const items = Array.isArray(this.#parsed) ? this.#parsed : [this.#parsed];
     for (const action of this.#actions) {
-      new ActionEnqueuer(action, items).enqueue();
+      new ActionEnqueuer(action, this.#items).enqueue();
     }
   }
 }
