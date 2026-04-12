@@ -1,19 +1,33 @@
-import { MissingMappingVariable } from '../exceptions/MissingMappingVariable.js';
+import { PathSegmentTraverser } from './PathSegmentTraverser.js';
 
 /**
  * Resolves dot/bracket-notation path expressions against an object.
  *
  * Supports expressions such as `parsed_body.id`, `headers['page']`,
  * and `parsed_body.nested.key`. Throws when a segment cannot be resolved.
+ *
+ * @example
+ * const resolver = PathResolver.fromExpression('parsed_body.id');
+ * resolver.resolve({ parsed_body: { id: 42 }, headers: {} }); // → 42
+ *
+ * @example
+ * const resolver = PathResolver.fromExpression("headers['x-next-page']");
+ * resolver.resolve({ parsed_body: {}, headers: { 'x-next-page': '3' } }); // → '3'
  * @author darthjee
  */
 class PathResolver {
+  /** @type {RegExp} Pattern for parsing path segments. */
+  static #SEGMENT_PATTERN = /(?:^|\.)([\w]+)|\['([^']+)'\]|\["([^"]+)"\]/g;
+
   #segments;
   #pathExpr;
 
   /**
    * @param {Array<string>} segments The parsed path segments.
    * @param {string} pathExpr The original path expression string.
+   * @example
+   * const resolver = new PathResolver(['parsed_body', 'id'], 'parsed_body.id');
+   * resolver.resolve({ parsed_body: { id: 42 }, headers: {} }); // → 42
    */
   constructor(segments, pathExpr) {
     this.#segments = segments;
@@ -27,21 +41,13 @@ class PathResolver {
    * @throws {MissingMappingVariable} If any segment of the path is missing.
    */
   resolve(obj) {
-    let current = obj;
+    const traverser = new PathSegmentTraverser(obj, this.#pathExpr);
 
     for (const segment of this.#segments) {
-      if (current === null || current === undefined || typeof current !== 'object') {
-        throw new MissingMappingVariable(this.#pathExpr);
-      }
-
-      if (!(segment in current)) {
-        throw new MissingMappingVariable(this.#pathExpr);
-      }
-
-      current = current[segment];
+      traverser.traverse(segment);
     }
 
-    return current;
+    return traverser.value;
   }
 
   /**
@@ -64,7 +70,7 @@ class PathResolver {
    */
   static #parsePathSegments(pathExpr) {
     const segments = [];
-    const regex = /(?:^|\.)([\w]+)|\['([^']+)'\]|\["([^"]+)"\]/g;
+    const regex = new RegExp(PathResolver.#SEGMENT_PATTERN.source, 'g');
     let match;
 
     while ((match = regex.exec(pathExpr)) !== null) {

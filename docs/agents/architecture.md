@@ -47,7 +47,8 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
 | `ActionsExecutor` | (Legacy — kept for reference.) Receives per-item wrappers and dispatches each `ResourceRequestAction` per item synchronously. No longer called by `ResourceRequestJob`; removal is a follow-up. |
 | `ParametersMapper` | Applies a `parameters` map to a response wrapper, delegating each path expression (e.g. `parsed_body.id`, `headers['page']`) to a `PathResolver` to extract values. When no map is provided, the item passes through unchanged. |
-| `PathResolver` | Resolves a single dot/bracket-notation path expression against an object. Created via `PathResolver.fromExpression(pathExpr)`. Throws `MissingMappingVariable` when a segment cannot be resolved. |
+| `PathResolver` | Resolves a single dot/bracket-notation path expression against an object. Created via `PathResolver.fromExpression(pathExpr)`. Delegates segment-by-segment traversal to `PathSegmentTraverser`. |
+| `PathSegmentTraverser` | Traverses an object one path segment at a time. Provides semantic methods (`traverse`, `value`) and throws `MissingMappingVariable` when a segment cannot be resolved (non-object value or missing key). |
 | `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
 | `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
 | `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
