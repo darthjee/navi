@@ -58,6 +58,12 @@ describe('ResourceRequestJob', () => {
         expect(wrapper).toBeInstanceOf(ResponseWrapper);
       });
 
+      it('passes the job parameters to the ResponseWrapper', async () => {
+        await expectAsync(job.perform()).toBeResolvedTo(response);
+        const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
+        expect(wrapper.parameters).toBe(parameters);
+      });
+
       it('logs info when performing', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
         expect(Logger.info).toHaveBeenCalledWith(`ResourceRequestJob #${job.id} performing`);

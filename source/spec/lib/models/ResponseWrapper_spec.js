@@ -49,6 +49,25 @@ describe('ResponseWrapper', () => {
     });
   });
 
+  describe('#parameters', () => {
+    describe('when parameters are provided', () => {
+      it('returns the given parameters', () => {
+        const response = { data: '{}', headers: {} };
+        const parameters = { id: 7, category_id: 3 };
+        const wrapper = new ResponseWrapper(response, parameters);
+        expect(wrapper.parameters).toBe(parameters);
+      });
+    });
+
+    describe('when no parameters are provided', () => {
+      it('defaults to an empty object', () => {
+        const response = { data: '{}', headers: {} };
+        const wrapper = new ResponseWrapper(response);
+        expect(wrapper.parameters).toEqual({});
+      });
+    });
+  });
+
   describe('#toItemWrappers', () => {
     describe('when the parsed body is an array', () => {
       it('returns one wrapper per array element', () => {
@@ -73,6 +92,18 @@ describe('ResponseWrapper', () => {
         expect(items[0].headers).toBe(headers);
         expect(items[1].headers).toBe(headers);
       });
+
+      it('propagates parameters to all item wrappers', () => {
+        const headers = { page: '1' };
+        const parameters = { category_id: 5 };
+        const response = { data: '[{"id":1},{"id":2}]', headers };
+        const wrapper = new ResponseWrapper(response, parameters);
+
+        const items = wrapper.toItemWrappers();
+
+        expect(items[0].parameters).toBe(parameters);
+        expect(items[1].parameters).toBe(parameters);
+      });
     });
 
     describe('when the parsed body is a single object', () => {
@@ -86,6 +117,17 @@ describe('ResponseWrapper', () => {
         expect(items.length).toBe(1);
         expect(items[0].parsed_body).toEqual({ id: 1 });
         expect(items[0].headers).toBe(headers);
+      });
+
+      it('propagates parameters to the single item wrapper', () => {
+        const headers = { page: '1' };
+        const parameters = { category_id: 5 };
+        const response = { data: '{"id":1}', headers };
+        const wrapper = new ResponseWrapper(response, parameters);
+
+        const items = wrapper.toItemWrappers();
+
+        expect(items[0].parameters).toBe(parameters);
       });
     });
   });

@@ -36,7 +36,7 @@ class ResourceRequestJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
-      const wrapper = new ResponseWrapper(response);
+      const wrapper = new ResponseWrapper(response, this.#parameters);
       this.#resourceRequest.enqueueActions(wrapper);
       return response;
     } catch (error) {
