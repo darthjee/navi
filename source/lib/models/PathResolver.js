@@ -69,15 +69,8 @@ class PathResolver {
    * @returns {Array<string>} The array of path segments.
    */
   static #parsePathSegments(pathExpr) {
-    const segments = [];
-    const regex = new RegExp(PathResolver.#SEGMENT_PATTERN.source, 'g');
-    let match;
-
-    while ((match = regex.exec(pathExpr)) !== null) {
-      segments.push(match[1] ?? match[2] ?? match[3]);
-    }
-
-    return segments;
+    return [...pathExpr.matchAll(PathResolver.#SEGMENT_PATTERN)]
+      .map((match) => match[1] ?? match[2] ?? match[3]);
   }
 }
 
