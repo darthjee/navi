@@ -51,9 +51,19 @@ class PathSegmentTraverser {
    * @throws {MissingMappingVariable} If the current value is not an object.
    */
   #ensureObject() {
-    if (this.#current === null || this.#current === undefined || typeof this.#current !== 'object') {
+    if (!this.#isTraversable()) {
       throw new MissingMappingVariable(this.#pathExpr);
     }
+  }
+
+  /**
+   * Checks whether the current value is a non-null object that can be traversed.
+   * @returns {boolean} True if the current value is traversable.
+   */
+  #isTraversable() {
+    return this.#current !== null
+      && this.#current !== undefined
+      && typeof this.#current === 'object';
   }
 
   /**
