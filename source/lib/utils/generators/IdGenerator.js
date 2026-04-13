@@ -42,10 +42,7 @@ class IdGenerator {
    * @returns {IdGeneratorFunction} A function that accepts an attributes object and returns it enriched with a unique `id`.
    */
   generator() {
-    const that = this;
-    return function(attributes = {}) {
-      return that.generate(attributes);
-    };
+    return (attributes = {}) => this.generate(attributes);
   }
 
   /**
