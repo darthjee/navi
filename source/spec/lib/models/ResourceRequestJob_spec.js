@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
-import { ResourceRequestJob } from '../../../lib/models/ResourceRequestJob.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
+import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
 
 describe('ResourceRequestJob', () => {
   let resourceRequest;
@@ -28,7 +28,7 @@ describe('ResourceRequestJob', () => {
     clients = ClientRegistryFactory.build({ default: client });
     parameters = {};
 
-    job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+    job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
   });
 
   describe('#constructor', () => {
@@ -116,7 +116,7 @@ describe('ResourceRequestJob', () => {
       beforeEach(() => {
         resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
         parameters = { id: 7 };
-        job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
 
         response = { status: 200, data: '[]' };
         spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
@@ -137,7 +137,7 @@ describe('ResourceRequestJob', () => {
       beforeEach(() => {
         resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
         parameters = {};
-        job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
 
         response = { status: 200, data: '[]' };
         spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
