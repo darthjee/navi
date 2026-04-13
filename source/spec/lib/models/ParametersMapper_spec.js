@@ -1,5 +1,6 @@
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
 import { ParametersMapper } from '../../../lib/models/ParametersMapper.js';
+import { WrapperFactory } from '../../support/factories/WrapperFactory.js';
 
 describe('ParametersMapper', () => {
   describe('#map', () => {
@@ -44,10 +45,10 @@ describe('ParametersMapper', () => {
     });
 
     describe('when parameters map has dot-notation entries', () => {
-      const wrapper = {
+      const wrapper = WrapperFactory.build({
         parsedBody: { id: 1, name: 'Electronics', kind_id: 42 },
         headers: { page: '3' },
-      };
+      });
 
       it('resolves a single path expression', () => {
         const mapper = new ParametersMapper({ category_id: 'parsedBody.id' });
@@ -64,10 +65,7 @@ describe('ParametersMapper', () => {
     });
 
     describe('when parameters map uses bracket notation for headers', () => {
-      const wrapper = {
-        parsedBody: { id: 1 },
-        headers: { page: '3', 'x-total': '100' },
-      };
+      const wrapper = WrapperFactory.build({ headers: { page: '3', 'x-total': '100' } });
 
       it('resolves header values via bracket notation', () => {
         const mapper = new ParametersMapper({ page: "headers['page']" });
@@ -81,10 +79,7 @@ describe('ParametersMapper', () => {
     });
 
     describe('when mixing body and header mappings', () => {
-      const wrapper = {
-        parsedBody: { id: 1 },
-        headers: { page: '3' },
-      };
+      const wrapper = WrapperFactory.build({ headers: { page: '3' } });
 
       it('resolves both body and header expressions', () => {
         const mapper = new ParametersMapper({
@@ -96,11 +91,7 @@ describe('ParametersMapper', () => {
     });
 
     describe('when parameters map uses parameters namespace', () => {
-      const wrapper = {
-        parsedBody: { id: 5 },
-        headers: {},
-        parameters: { category_id: 3 },
-      };
+      const wrapper = WrapperFactory.build({ parsedBody: { id: 5 }, parameters: { category_id: 3 } });
 
       it('resolves a parameters path expression', () => {
         const mapper = new ParametersMapper({ category_id: 'parameters.category_id' });
@@ -117,10 +108,7 @@ describe('ParametersMapper', () => {
     });
 
     describe('when a path expression cannot be resolved', () => {
-      const wrapper = {
-        parsedBody: { id: 1 },
-        headers: {},
-      };
+      const wrapper = WrapperFactory.build();
 
       it('throws MissingMappingVariable for a missing body field', () => {
         const mapper = new ParametersMapper({ dest: 'parsedBody.missing_field' });
@@ -140,10 +128,7 @@ describe('ParametersMapper', () => {
     });
 
     describe('when resolving nested body paths', () => {
-      const wrapper = {
-        parsedBody: { user: { address: { city: 'Paris' } } },
-        headers: {},
-      };
+      const wrapper = WrapperFactory.build({ parsedBody: { user: { address: { city: 'Paris' } } } });
 
       it('resolves deeply nested dot notation', () => {
         const mapper = new ParametersMapper({ city: 'parsedBody.user.address.city' });

@@ -1,5 +1,6 @@
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
 import { PathResolver } from '../../../lib/models/PathResolver.js';
+import { WrapperFactory } from '../../support/factories/WrapperFactory.js';
 
 describe('PathResolver', () => {
   describe('.fromExpression', () => {
@@ -11,10 +12,10 @@ describe('PathResolver', () => {
 
   describe('#resolve', () => {
     describe('when resolving dot-notation paths', () => {
-      const wrapper = {
+      const wrapper = WrapperFactory.build({
         parsedBody: { id: 1, name: 'Electronics', kind_id: 42 },
         headers: { page: '3' },
-      };
+      });
 
       it('resolves a single-level body path', () => {
         const resolver = PathResolver.fromExpression('parsedBody.id');
@@ -28,10 +29,7 @@ describe('PathResolver', () => {
     });
 
     describe('when resolving bracket-notation paths', () => {
-      const wrapper = {
-        parsedBody: { id: 1 },
-        headers: { page: '3', 'x-total': '100' },
-      };
+      const wrapper = WrapperFactory.build({ headers: { page: '3', 'x-total': '100' } });
 
       it('resolves header values via single-quote bracket notation', () => {
         const resolver = PathResolver.fromExpression("headers['page']");
@@ -45,10 +43,7 @@ describe('PathResolver', () => {
     });
 
     describe('when resolving deeply nested paths', () => {
-      const wrapper = {
-        parsedBody: { user: { address: { city: 'Paris' } } },
-        headers: {},
-      };
+      const wrapper = WrapperFactory.build({ parsedBody: { user: { address: { city: 'Paris' } } } });
 
       it('resolves deeply nested dot notation', () => {
         const resolver = PathResolver.fromExpression('parsedBody.user.address.city');
@@ -57,10 +52,7 @@ describe('PathResolver', () => {
     });
 
     describe('when a path cannot be resolved', () => {
-      const wrapper = {
-        parsedBody: { id: 1 },
-        headers: {},
-      };
+      const wrapper = WrapperFactory.build();
 
       it('throws MissingMappingVariable for a missing body field', () => {
         const resolver = PathResolver.fromExpression('parsedBody.missing_field');
