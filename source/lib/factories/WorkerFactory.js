@@ -8,14 +8,19 @@ import { IdGenerator } from '../utils/generators/IdGenerator.js';
  * @author darthjee
  */
 class WorkerFactory extends Factory {
+  #registries;
+
   /**
-   * Creates a new WorkerFactory instance with default settings for Worker creation.
+   * Creates a new WorkerFactory instance.
    * @param {object} options - Configuration options for the factory.
    * @param {class} options.klass - The class to instantiate (default is Worker).
    * @param {object} options.attributesGenerator - The generator for unique attributes (default is IdGenerator).
+   * @param {object} [options.jobRegistry] - The job registry to inject into each Worker.
+   * @param {object} [options.workersRegistry] - The workers registry to inject into each Worker.
    */
-  constructor({ klass = Worker, attributesGenerator = new IdGenerator() } = {}) {
+  constructor({ klass = Worker, attributesGenerator = new IdGenerator(), jobRegistry, workersRegistry } = {}) {
     super({ klass, attributesGenerator });
+    this.#registries = { jobRegistry, workersRegistry };
   }
 
   /**
@@ -23,7 +28,7 @@ class WorkerFactory extends Factory {
    * @returns {Worker} The created Worker instance.
    */
   build() {
-    return super.build({});
+    return super.build({ ...this.#registries });
   }
 }
 

@@ -9,10 +9,10 @@ describe('Queue', () => {
 
   describe('#push', () => {
     it('adds an item to the end of the queue', () => {
-      expect(queue.hasItem()).toBeFalse();
+      expect(queue.hasAny()).toBeFalse();
       queue.push(1);
       queue.push(2);
-      expect(queue.hasItem()).toBeTrue();
+      expect(queue.hasAny()).toBeTrue();
     });
   });
 
@@ -24,23 +24,23 @@ describe('Queue', () => {
 
     it('removes and returns the first item from the queue', () => {
       expect(queue.pick()).toEqual(1);
-      expect(queue.hasItem()).toBeTrue();
+      expect(queue.hasAny()).toBeTrue();
     });
 
     it('removes in order and returns the first item from the queue', () => {
       queue.pick();
       expect(queue.pick()).toEqual(2);
-      expect(queue.hasItem()).toBeFalse();
+      expect(queue.hasAny()).toBeFalse();
     });
   });
 
-  describe('#hasItem', () => {
+  describe('#hasAny', () => {
     it('returns whether the queue has any items', () => {
-      expect(queue.hasItem()).toBeFalse();
+      expect(queue.hasAny()).toBeFalse();
       queue.push(1);
-      expect(queue.hasItem()).toBeTrue();
+      expect(queue.hasAny()).toBeTrue();
       queue.pick();
-      expect(queue.hasItem()).toBeFalse();
+      expect(queue.hasAny()).toBeFalse();
     });
   });
 

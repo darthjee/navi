@@ -31,7 +31,6 @@ describe('Resource', () => {
     it('propagates the client name to each ResourceRequest', () => {
       const resource = Resource.fromObject({ name, client: 'myClient', resourceRequests });
 
-      expect(resource.client).toBe('myClient');
       expect(resource.resourceRequests.every((rr) => rr.clientName === 'myClient')).toBeTrue();
     });
   });

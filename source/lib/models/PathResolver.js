@@ -3,16 +3,16 @@ import { PathSegmentTraverser } from './PathSegmentTraverser.js';
 /**
  * Resolves dot/bracket-notation path expressions against an object.
  *
- * Supports expressions such as `parsed_body.id`, `headers['page']`,
- * and `parsed_body.nested.key`. Throws when a segment cannot be resolved.
+ * Supports expressions such as `parsedBody.id`, `headers['page']`,
+ * and `parsedBody.nested.key`. Throws when a segment cannot be resolved.
  *
  * @example
- * const resolver = PathResolver.fromExpression('parsed_body.id');
- * resolver.resolve({ parsed_body: { id: 42 }, headers: {} }); // → 42
+ * const resolver = PathResolver.fromExpression('parsedBody.id');
+ * resolver.resolve({ parsedBody: { id: 42 }, headers: {} }); // → 42
  *
  * @example
  * const resolver = PathResolver.fromExpression("headers['x-next-page']");
- * resolver.resolve({ parsed_body: {}, headers: { 'x-next-page': '3' } }); // → '3'
+ * resolver.resolve({ parsedBody: {}, headers: { 'x-next-page': '3' } }); // → '3'
  * @author darthjee
  */
 class PathResolver {
@@ -26,8 +26,8 @@ class PathResolver {
    * @param {Array<string>} segments The parsed path segments.
    * @param {string} pathExpr The original path expression string.
    * @example
-   * const resolver = new PathResolver(['parsed_body', 'id'], 'parsed_body.id');
-   * resolver.resolve({ parsed_body: { id: 42 }, headers: {} }); // → 42
+   * const resolver = new PathResolver(['parsedBody', 'id'], 'parsedBody.id');
+   * resolver.resolve({ parsedBody: { id: 42 }, headers: {} }); // → 42
    */
   constructor(segments, pathExpr) {
     this.#segments = segments;
@@ -53,7 +53,7 @@ class PathResolver {
   /**
    * Creates a PathResolver by parsing a path expression string.
    * @param {string} pathExpr The path expression
-   * (e.g. `parsed_body.id`, `headers['page']`).
+   * (e.g. `parsedBody.id`, `headers['page']`).
    * @returns {PathResolver} A new PathResolver instance.
    */
   static fromExpression(pathExpr) {
@@ -65,7 +65,7 @@ class PathResolver {
    * Parses a path expression string into an array of property segments.
    * Handles dot notation and bracket notation with single or double quotes.
    * @param {string} pathExpr The path expression
-   * (e.g. `parsed_body.id`, `headers['page']`).
+   * (e.g. `parsedBody.id`, `headers['page']`).
    * @returns {Array<string>} The array of path segments.
    */
   static #parsePathSegments(pathExpr) {

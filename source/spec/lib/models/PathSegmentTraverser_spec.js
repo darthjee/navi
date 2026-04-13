@@ -5,19 +5,19 @@ describe('PathSegmentTraverser', () => {
   describe('#traverse', () => {
     describe('when traversing valid segments', () => {
       const obj = {
-        parsed_body: { id: 1, nested: { key: 'val' } },
+        parsedBody: { id: 1, nested: { key: 'val' } },
         headers: { page: '3' },
       };
 
       it('advances one level', () => {
-        const traverser = new PathSegmentTraverser(obj, 'parsed_body');
-        traverser.traverse('parsed_body');
+        const traverser = new PathSegmentTraverser(obj, 'parsedBody');
+        traverser.traverse('parsedBody');
         expect(traverser.value).toEqual({ id: 1, nested: { key: 'val' } });
       });
 
       it('advances multiple levels', () => {
-        const traverser = new PathSegmentTraverser(obj, 'parsed_body.nested.key');
-        traverser.traverse('parsed_body');
+        const traverser = new PathSegmentTraverser(obj, 'parsedBody.nested.key');
+        traverser.traverse('parsedBody');
         traverser.traverse('nested');
         traverser.traverse('key');
         expect(traverser.value).toBe('val');
@@ -25,41 +25,41 @@ describe('PathSegmentTraverser', () => {
     });
 
     describe('when current value is not an object', () => {
-      const obj = { parsed_body: { id: 1 } };
+      const obj = { parsedBody: { id: 1 } };
 
       it('throws MissingMappingVariable', () => {
-        const traverser = new PathSegmentTraverser(obj, 'parsed_body.id.nested');
-        traverser.traverse('parsed_body');
+        const traverser = new PathSegmentTraverser(obj, 'parsedBody.id.nested');
+        traverser.traverse('parsedBody');
         traverser.traverse('id');
         expect(() => traverser.traverse('nested')).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
-            && error.variable === 'parsed_body.id.nested'
+            && error.variable === 'parsedBody.id.nested'
         );
       });
     });
 
     describe('when current value is null', () => {
-      const obj = { parsed_body: null };
+      const obj = { parsedBody: null };
 
       it('throws MissingMappingVariable', () => {
-        const traverser = new PathSegmentTraverser(obj, 'parsed_body.id');
-        traverser.traverse('parsed_body');
+        const traverser = new PathSegmentTraverser(obj, 'parsedBody.id');
+        traverser.traverse('parsedBody');
         expect(() => traverser.traverse('id')).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
-            && error.variable === 'parsed_body.id'
+            && error.variable === 'parsedBody.id'
         );
       });
     });
 
     describe('when the segment key does not exist', () => {
-      const obj = { parsed_body: { id: 1 }, headers: {} };
+      const obj = { parsedBody: { id: 1 }, headers: {} };
 
       it('throws MissingMappingVariable for a missing body field', () => {
-        const traverser = new PathSegmentTraverser(obj, 'parsed_body.missing');
-        traverser.traverse('parsed_body');
+        const traverser = new PathSegmentTraverser(obj, 'parsedBody.missing');
+        traverser.traverse('parsedBody');
         expect(() => traverser.traverse('missing')).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
-            && error.variable === 'parsed_body.missing'
+            && error.variable === 'parsedBody.missing'
         );
       });
 

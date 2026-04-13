@@ -1,7 +1,7 @@
 /**
  * Abstract base class for collection types.
  *
- * Provides shared interface methods (`hasAny`, `hasItem`) that delegate
+ * Provides shared interface methods (`hasAny`) that delegate
  * to `size()`, which concrete subclasses must implement.
  */
 class Collection {
@@ -10,15 +10,6 @@ class Collection {
    * @returns {boolean} True if the collection has any items, false otherwise.
    */
   hasAny() {
-    return this.size() > 0;
-  }
-
-  /**
-   * Checks if the collection has any items.
-   * Alias for `hasAny()` for backward compatibility.
-   * @returns {boolean} True if the collection has any items, false otherwise.
-   */
-  hasItem() {
     return this.size() > 0;
   }
 }

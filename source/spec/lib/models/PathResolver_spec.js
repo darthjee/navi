@@ -4,7 +4,7 @@ import { PathResolver } from '../../../lib/models/PathResolver.js';
 describe('PathResolver', () => {
   describe('.fromExpression', () => {
     it('returns a PathResolver instance', () => {
-      const resolver = PathResolver.fromExpression('parsed_body.id');
+      const resolver = PathResolver.fromExpression('parsedBody.id');
       expect(resolver).toBeInstanceOf(PathResolver);
     });
   });
@@ -12,24 +12,24 @@ describe('PathResolver', () => {
   describe('#resolve', () => {
     describe('when resolving dot-notation paths', () => {
       const wrapper = {
-        parsed_body: { id: 1, name: 'Electronics', kind_id: 42 },
+        parsedBody: { id: 1, name: 'Electronics', kind_id: 42 },
         headers: { page: '3' },
       };
 
       it('resolves a single-level body path', () => {
-        const resolver = PathResolver.fromExpression('parsed_body.id');
+        const resolver = PathResolver.fromExpression('parsedBody.id');
         expect(resolver.resolve(wrapper)).toBe(1);
       });
 
       it('resolves a nested body path', () => {
-        const resolver = PathResolver.fromExpression('parsed_body.name');
+        const resolver = PathResolver.fromExpression('parsedBody.name');
         expect(resolver.resolve(wrapper)).toBe('Electronics');
       });
     });
 
     describe('when resolving bracket-notation paths', () => {
       const wrapper = {
-        parsed_body: { id: 1 },
+        parsedBody: { id: 1 },
         headers: { page: '3', 'x-total': '100' },
       };
 
@@ -46,27 +46,27 @@ describe('PathResolver', () => {
 
     describe('when resolving deeply nested paths', () => {
       const wrapper = {
-        parsed_body: { user: { address: { city: 'Paris' } } },
+        parsedBody: { user: { address: { city: 'Paris' } } },
         headers: {},
       };
 
       it('resolves deeply nested dot notation', () => {
-        const resolver = PathResolver.fromExpression('parsed_body.user.address.city');
+        const resolver = PathResolver.fromExpression('parsedBody.user.address.city');
         expect(resolver.resolve(wrapper)).toBe('Paris');
       });
     });
 
     describe('when a path cannot be resolved', () => {
       const wrapper = {
-        parsed_body: { id: 1 },
+        parsedBody: { id: 1 },
         headers: {},
       };
 
       it('throws MissingMappingVariable for a missing body field', () => {
-        const resolver = PathResolver.fromExpression('parsed_body.missing_field');
+        const resolver = PathResolver.fromExpression('parsedBody.missing_field');
         expect(() => resolver.resolve(wrapper)).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
-            && error.variable === 'parsed_body.missing_field'
+            && error.variable === 'parsedBody.missing_field'
         );
       });
 
@@ -79,10 +79,10 @@ describe('PathResolver', () => {
       });
 
       it('throws MissingMappingVariable when traversing non-object', () => {
-        const resolver = PathResolver.fromExpression('parsed_body.id.nested');
+        const resolver = PathResolver.fromExpression('parsedBody.id.nested');
         expect(() => resolver.resolve(wrapper)).toThrowMatching(
           (error) => error instanceof MissingMappingVariable
-            && error.variable === 'parsed_body.id.nested'
+            && error.variable === 'parsedBody.id.nested'
         );
       });
     });

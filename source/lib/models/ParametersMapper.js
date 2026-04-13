@@ -4,10 +4,10 @@ import { PathResolver } from './PathResolver.js';
  * Applies a parameters map to a ResponseWrapper, resolving path expressions
  * against the wrapper to extract values from the parsed body or headers.
  *
- * When the parameters map is empty, the parsed body of the response item
- * is returned as-is.
+ * When the parameters map is empty, the originating request parameters of the response
+ * item are returned (or an empty object if none exist).
  * When the parameters map has entries, each value is a path expression
- * (e.g. `parsed_body.id`, `headers['page']`) resolved against the wrapper.
+ * (e.g. `parsedBody.id`, `headers['page']`) resolved against the wrapper.
  * @author darthjee
  */
 class ParametersMapper {
@@ -16,7 +16,7 @@ class ParametersMapper {
   /**
    * @param {object} [parametersMap={}] Key-value map where each key is the
    * destination variable name and its value is a path expression to resolve
-   * against the ResponseWrapper (e.g. `parsed_body.id`, `headers['page']`).
+   * against the ResponseWrapper (e.g. `parsedBody.id`, `headers['page']`).
    */
   constructor(parametersMap = {}) {
     this.#resolvers = Object.entries(parametersMap).map(
@@ -32,7 +32,7 @@ class ParametersMapper {
    * @throws {MissingMappingVariable} If a path expression cannot be resolved.
    */
   map(item) {
-    if (this.#resolvers.length === 0) return item;
+    if (this.#resolvers.length === 0) return item.parameters ?? {};
 
     return Object.fromEntries(this.#resolvers.map(([dest, resolver]) => {
       return [dest, resolver.resolve(item)];

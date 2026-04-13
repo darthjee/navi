@@ -4,22 +4,24 @@ import { NullResponse } from '../exceptions/NullResponse.js';
 /**
  * ActionsEnqueuer enqueues one ActionProcessingJob per (item × action) pair.
  *
- * Mirrors the structure of ActionsExecutor but delegates execution to the job queue
- * instead of running actions inline. Each action is handled by a dedicated
- * ActionEnqueuer that enqueues all items for that action.
+ * Delegates execution to the job queue instead of running actions inline.
+ * Each action is handled by a dedicated ActionEnqueuer that enqueues all items for that action.
  * @author darthjee
  */
 class ActionsEnqueuer {
   #actions;
   #items;
+  #jobRegistry;
 
   /**
    * @param {Array} actions List of ResourceRequestAction instances.
    * @param {Array} items List of ResponseWrapper instances (one per response item).
+   * @param {object} [jobRegistry] The job registry to enqueue jobs to. Defaults to global JobRegistry.
    */
-  constructor(actions, items) {
+  constructor(actions, items, jobRegistry) {
     this.#actions = actions;
     this.#items = items;
+    this.#jobRegistry = jobRegistry;
   }
 
   /**
@@ -32,7 +34,7 @@ class ActionsEnqueuer {
     if (this.#items === null) throw new NullResponse();
 
     for (const action of this.#actions) {
-      new ActionEnqueuer(action, this.#items).enqueue();
+      new ActionEnqueuer(action, this.#items, this.#jobRegistry).enqueue();
     }
   }
 }

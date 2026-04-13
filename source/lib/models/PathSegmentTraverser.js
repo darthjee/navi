@@ -5,9 +5,9 @@ import { MissingMappingVariable } from '../exceptions/MissingMappingVariable.js'
  * the segment cannot be resolved.
  *
  * @example
- * const traverser = new PathSegmentTraverser(wrapper, 'parsed_body.id');
- * traverser.traverse('parsed_body'); // advances to wrapper.parsed_body
- * traverser.traverse('id');          // advances to wrapper.parsed_body.id
+ * const traverser = new PathSegmentTraverser(wrapper, 'parsedBody.id');
+ * traverser.traverse('parsedBody'); // advances to wrapper.parsedBody
+ * traverser.traverse('id');          // advances to wrapper.parsedBody.id
  * traverser.value;                   // → the resolved value
  * @author darthjee
  */

@@ -34,7 +34,7 @@ describe('Engine', () => {
     JobFactory.registry('ResourceRequestJob', jobFactory);
     JobRegistry.build({ finished, dead, cooldown: -1 });
 
-    workerFactory = new DummyWorkerFactory();
+    workerFactory = new DummyWorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
     busy = new IdentifyableCollection();
     WorkersRegistry.build({ busy, quantity: 2, factory: workerFactory });
     WorkersRegistry.initWorkers();

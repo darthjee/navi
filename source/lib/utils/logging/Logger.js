@@ -103,16 +103,6 @@ class Logger {
   }
 
   /**
-   * Sets the default logger to the provided instance, wrapping it in a LoggerGroup.
-   * Useful in tests to inject a mock or custom logger.
-   * @param {BaseLogger} logger - The logger instance to use as the default.
-   * @returns {void}
-   */
-  static setDefault(logger) {
-    this.#loggerGroup = new LoggerGroup([logger]);
-  }
-
-  /**
    * Replaces the default logger group with a new LoggerGroup containing the provided logger.
    * @param {BaseLogger} logger - The logger instance to use in the new group.
    * @returns {void}
