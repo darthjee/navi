@@ -91,6 +91,17 @@ class JobRegistryInstance {
   }
 
   /**
+   * Moves a job from processing back to the enqueued queue.
+   * @param {Job} job - The job to re-enqueue.
+   * @returns {void}
+   */
+  requeue(job) {
+    if (!job) return;
+    this.#processing.remove(job.id);
+    this.#enqueued.push(job);
+  }
+
+  /**
    * Promotes jobs from the failed queue to the retryQueue once their cooldown has elapsed.
    * @returns {void}
    */
@@ -108,7 +119,7 @@ class JobRegistryInstance {
    * @returns {boolean} True if any of enqueued, failed, or retryQueue is non-empty.
    */
   hasJob() {
-    return this.#enqueued.hasItem() || this.#failed.hasItem() || this.#retryQueue.hasItem();
+    return this.#enqueued.hasAny() || this.#failed.hasAny() || this.#retryQueue.hasAny();
   }
 
   /**
@@ -116,7 +127,7 @@ class JobRegistryInstance {
    * @returns {boolean} True if enqueued or retryQueue is non-empty.
    */
   hasReadyJob() {
-    return this.#enqueued.hasItem() || this.#retryQueue.hasItem();
+    return this.#enqueued.hasAny() || this.#retryQueue.hasAny();
   }
 
   /**

@@ -102,6 +102,8 @@ class Application {
 
     WorkersRegistry.build({
       workers: this.#workers,
+      jobRegistry: JobRegistry,
+      workersRegistry: WorkersRegistry,
       ...this.config.workersConfig,
     });
     WorkersRegistry.initWorkers();

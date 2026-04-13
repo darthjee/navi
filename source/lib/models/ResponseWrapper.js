@@ -5,7 +5,7 @@ import { ResponseParser } from './ResponseParser.js';
  * parsed JSON body and response headers for use in parameter mapping.
  *
  * Can represent either a full response or a per-item view where
- * `parsed_body` is a single element from the response array.
+ * `parsedBody` is a single element from the response array.
  * @author darthjee
  */
 class ResponseWrapper {
@@ -31,7 +31,7 @@ class ResponseWrapper {
    * The result is cached after the first call.
    * @returns {*} The parsed response body.
    */
-  get parsed_body() {
+  get parsedBody() {
     if (this.#parsedBody === undefined) {
       this.#parsedBody = new ResponseParser(this.#response.data).parse();
     }
@@ -63,7 +63,7 @@ class ResponseWrapper {
    * @returns {Array<ResponseWrapper>} List of per-item wrappers.
    */
   toItemWrappers() {
-    const body = this.parsed_body;
+    const body = this.parsedBody;
     const items = Array.isArray(body) ? body : [body];
 
     return items.map((item) => ResponseWrapper.#fromItem(item, this.#headers, this.#parameters));
@@ -74,7 +74,7 @@ class ResponseWrapper {
    * @param {*} parsedBody The already-parsed item value.
    * @param {object} headers The response headers to share.
    * @param {object} parameters The request parameters to share.
-   * @returns {ResponseWrapper} A wrapper whose parsed_body is the given item.
+   * @returns {ResponseWrapper} A wrapper whose parsedBody is the given item.
    */
   static #fromItem(parsedBody, headers, parameters) {
     const wrapper = new ResponseWrapper({ data: null, headers }, parameters);

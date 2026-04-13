@@ -10,7 +10,7 @@ describe('WorkerFactory', () => {
     beforeEach(() => {
       JobRegistry.build({ cooldown: -1 });
       WorkersRegistry.build({ quantity: 0 });
-      factory = new WorkerFactory();
+      factory = new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
     });
 
     afterEach(() => {

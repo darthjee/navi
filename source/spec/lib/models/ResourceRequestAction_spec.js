@@ -40,7 +40,7 @@ describe('ResourceRequestAction', () => {
     describe('when all entries are valid', () => {
       it('returns one instance per entry', () => {
         const list = ResourceRequestAction.fromList([
-          { resource: 'products', parameters: { category_id: 'parsed_body.id' } },
+          { resource: 'products', parameters: { category_id: 'parsedBody.id' } },
           { resource: 'category_information' },
         ]);
         expect(list.length).toBe(2);
@@ -62,7 +62,7 @@ describe('ResourceRequestAction', () => {
 
   describe('#execute', () => {
     const responseWrapper = {
-      parsed_body: { id: 1, name: 'Electronics' },
+      parsedBody: { id: 1, name: 'Electronics' },
       headers: { page: '3' },
     };
 
@@ -85,11 +85,11 @@ describe('ResourceRequestAction', () => {
         ResourceRegistry.build({ products: resource });
       });
 
-      it('enqueues a ResourceRequestJob with the wrapper as parameters', () => {
+      it('enqueues a ResourceRequestJob with empty parameters', () => {
         ResourceRequestActionFactory.build({ resource: 'products' }).execute(responseWrapper);
         expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
           'ResourceRequestJob',
-          { resourceRequest, parameters: responseWrapper }
+          { resourceRequest, parameters: {} }
         );
       });
     });
@@ -106,7 +106,7 @@ describe('ResourceRequestAction', () => {
       it('enqueues a ResourceRequestJob with the mapped variables as parameters', () => {
         ResourceRequestActionFactory.build({
           resource: 'products',
-          parameters: { category_id: 'parsed_body.id' },
+          parameters: { category_id: 'parsedBody.id' },
         }).execute(responseWrapper);
         expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
           'ResourceRequestJob',
@@ -153,7 +153,7 @@ describe('ResourceRequestAction', () => {
       it('enqueues one ResourceRequestJob per ResourceRequest', () => {
         ResourceRequestActionFactory.build({
           resource: 'products',
-          parameters: { category_id: 'parsed_body.id' },
+          parameters: { category_id: 'parsedBody.id' },
         }).execute(responseWrapper);
         expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
         expect(JobRegistry.enqueue).toHaveBeenCalledWith(
@@ -188,7 +188,7 @@ describe('ResourceRequestAction', () => {
       it('throws MissingMappingVariable', () => {
         const action = ResourceRequestActionFactory.build({
           resource: 'products',
-          parameters: { dest: 'parsed_body.missing_field' },
+          parameters: { dest: 'parsedBody.missing_field' },
         });
         expect(() => action.execute(responseWrapper))
           .toThrowMatching((error) => error instanceof MissingMappingVariable);

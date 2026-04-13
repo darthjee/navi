@@ -1,5 +1,3 @@
-import { JobRegistry } from '../registry/JobRegistry.js';
-import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -7,13 +5,20 @@ import { Logger } from '../utils/logging/Logger.js';
  * @author darthjee
  */
 class Worker {
+  #jobRegistry;
+  #workersRegistry;
+
   /**
    * Creates a new Worker instance.
    * @param {object} params - The parameters for creating a Worker instance.
    * @param {string|number} params.id - The unique identifier for this worker.
+   * @param {JobRegistry} params.jobRegistry - The job registry to report job outcomes to.
+   * @param {WorkersRegistry} params.workersRegistry - The workers registry to report idle status to.
    */
-  constructor({ id }) {
+  constructor({ id, jobRegistry, workersRegistry }) {
     this.id = id;
+    this.#jobRegistry = jobRegistry;
+    this.#workersRegistry = workersRegistry;
   }
 
   /**
@@ -38,13 +43,13 @@ class Worker {
 
     try {
       await this.job.perform();
-      JobRegistry.finish(this.job);
+      this.#jobRegistry.finish(this.job);
     } catch (error) {
       Logger.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
-      JobRegistry.fail(this.job);
+      this.#jobRegistry.fail(this.job);
     } finally {
       this.job = undefined;
-      WorkersRegistry.setIdle(this.id);
+      this.#workersRegistry.setIdle(this.id);
     }
   }
 }

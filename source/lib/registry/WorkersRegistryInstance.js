@@ -20,15 +20,19 @@ class WorkersRegistryInstance {
    * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
    * @param {IdentifyableCollection} [params.busy] - The collection of busy workers (injected for testing).
    * @param {IdentifyableCollection} [params.idle] - The collection of idle workers (injected for testing).
+   * @param {object} [params.jobRegistry] - The job registry to inject into each Worker.
+   * @param {object} [params.workersRegistry] - The workers registry to inject into each Worker.
    */
   constructor({
     quantity,
-    factory = new WorkerFactory(),
+    factory,
     workers = new IdentifyableCollection(),
     busy = new IdentifyableCollection(),
-    idle = new IdentifyableCollection()
+    idle = new IdentifyableCollection(),
+    jobRegistry,
+    workersRegistry
   }) {
-    this.#factory = factory;
+    this.#factory = factory || new WorkerFactory({ jobRegistry, workersRegistry });
     this.#quantity = quantity;
     this.#workers = workers;
     this.#busy = busy;
@@ -50,28 +54,28 @@ class WorkersRegistryInstance {
 
   /**
    * Sets a worker as busy.
-   * @param {string} worker_id - The ID of the worker to set as busy.
+   * @param {string} workerId - The ID of the worker to set as busy.
    * @returns {void}
    */
-  setBusy(worker_id) {
-    const worker = this.#workers.get(worker_id);
+  setBusy(workerId) {
+    const worker = this.#workers.get(workerId);
 
     if (worker) {
-      this.#idle.remove(worker_id);
+      this.#idle.remove(workerId);
       this.#busy.push(worker);
     }
   }
 
   /**
    * Sets a worker as idle.
-   * @param {string} worker_id - The ID of the worker to set as idle.
+   * @param {string} workerId - The ID of the worker to set as idle.
    * @returns {void}
    */
-  setIdle(worker_id) {
-    const worker = this.#workers.get(worker_id);
+  setIdle(workerId) {
+    const worker = this.#workers.get(workerId);
 
     if (worker) {
-      this.#busy.remove(worker_id);
+      this.#busy.remove(workerId);
       this.#idle.push(worker);
     }
   }

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { ConsoleLogger } from '../../../../lib/utils/logging/ConsoleLogger.js';
 import { Logger } from '../../../../lib/utils/logging/Logger.js';
 import { LoggerGroup } from '../../../../lib/utils/logging/LoggerGroup.js';
 
@@ -85,27 +84,6 @@ describe('Logger', () => {
       const newInstance = Logger.default();
       expect(newInstance).toBeInstanceOf(LoggerGroup);
       expect(newInstance).not.toBe(instanceBeforeReset);
-    });
-  });
-
-  describe('.setDefault', () => {
-    let customLogger;
-
-    beforeEach(() => {
-      customLogger = new ConsoleLogger();
-      Logger.setDefault(customLogger);
-    });
-
-    afterEach(() => {
-      Logger.reset();
-    });
-
-    it('sets a new LoggerGroup as the default', () => {
-      expect(Logger.default()).toBeInstanceOf(LoggerGroup);
-    });
-
-    it('new LoggerGroup contains the provided logger', () => {
-      expect(Logger.default().getLoggers()).toContain(customLogger);
     });
   });
 

@@ -2,12 +2,12 @@ import { InvalidResponseBody } from '../../../lib/exceptions/InvalidResponseBody
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 
 describe('ResponseWrapper', () => {
-  describe('#parsed_body', () => {
+  describe('#parsedBody', () => {
     describe('when the response body is a JSON object', () => {
       it('returns the parsed object', () => {
         const response = { data: '{"id":1,"name":"Electronics"}', headers: {} };
         const wrapper = new ResponseWrapper(response);
-        expect(wrapper.parsed_body).toEqual({ id: 1, name: 'Electronics' });
+        expect(wrapper.parsedBody).toEqual({ id: 1, name: 'Electronics' });
       });
     });
 
@@ -15,7 +15,7 @@ describe('ResponseWrapper', () => {
       it('returns the parsed array', () => {
         const response = { data: '[{"id":1},{"id":2}]', headers: {} };
         const wrapper = new ResponseWrapper(response);
-        expect(wrapper.parsed_body).toEqual([{ id: 1 }, { id: 2 }]);
+        expect(wrapper.parsedBody).toEqual([{ id: 1 }, { id: 2 }]);
       });
     });
 
@@ -23,7 +23,7 @@ describe('ResponseWrapper', () => {
       it('throws InvalidResponseBody', () => {
         const response = { data: 'not json', headers: {} };
         const wrapper = new ResponseWrapper(response);
-        expect(() => wrapper.parsed_body).toThrowMatching(
+        expect(() => wrapper.parsedBody).toThrowMatching(
           (error) => error instanceof InvalidResponseBody
         );
       });
@@ -33,8 +33,8 @@ describe('ResponseWrapper', () => {
       it('returns the same cached value', () => {
         const response = { data: '{"id":1}', headers: {} };
         const wrapper = new ResponseWrapper(response);
-        const first = wrapper.parsed_body;
-        const second = wrapper.parsed_body;
+        const first = wrapper.parsedBody;
+        const second = wrapper.parsedBody;
         expect(first).toBe(second);
       });
     });
@@ -78,8 +78,8 @@ describe('ResponseWrapper', () => {
         const items = wrapper.toItemWrappers();
 
         expect(items.length).toBe(2);
-        expect(items[0].parsed_body).toEqual({ id: 1 });
-        expect(items[1].parsed_body).toEqual({ id: 2 });
+        expect(items[0].parsedBody).toEqual({ id: 1 });
+        expect(items[1].parsedBody).toEqual({ id: 2 });
       });
 
       it('shares the same headers across all item wrappers', () => {
@@ -115,7 +115,7 @@ describe('ResponseWrapper', () => {
         const items = wrapper.toItemWrappers();
 
         expect(items.length).toBe(1);
-        expect(items[0].parsed_body).toEqual({ id: 1 });
+        expect(items[0].parsedBody).toEqual({ id: 1 });
         expect(items[0].headers).toBe(headers);
       });
 

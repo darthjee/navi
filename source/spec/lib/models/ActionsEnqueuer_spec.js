@@ -28,7 +28,7 @@ describe('ActionsEnqueuer', () => {
     });
 
     describe('when there is a single item wrapper', () => {
-      const item = { parsed_body: { id: 1, name: 'Electronics' }, headers: {} };
+      const item = { parsedBody: { id: 1, name: 'Electronics' }, headers: {} };
 
       it('calls enqueue once with the action and item', () => {
         new ActionsEnqueuer(actions, [item]).enqueue();
@@ -38,8 +38,8 @@ describe('ActionsEnqueuer', () => {
 
     describe('when there are multiple item wrappers', () => {
       const items = [
-        { parsed_body: { id: 1 }, headers: {} },
-        { parsed_body: { id: 2 }, headers: {} },
+        { parsedBody: { id: 1 }, headers: {} },
+        { parsedBody: { id: 2 }, headers: {} },
       ];
 
       it('calls enqueue once per element', () => {

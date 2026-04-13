@@ -92,7 +92,7 @@ resources:
         - resource: category_information  # no parameters → all fields pass through
         - resource: products
           parameters:
-            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
+            category_id: parsedBody.id   # extract "id" from parsed body → variable "category_id"
   category_information:
     - url: /categories/{:id}.json
       status: 200
@@ -100,7 +100,7 @@ resources:
       actions:
         - resource: kind
           parameters:
-            id: parsed_body.kind_id       # extract "kind_id" from parsed body → variable "id"
+            id: parsedBody.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
     - url: /categories/{:category_id}/products.json
       status: 200
@@ -204,7 +204,7 @@ Given a response body `[{ "id": 1 }, { "id": 2 }]` and the following actions con
 actions:
   - resource: products
     parameters:
-      category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
+      category_id: parsedBody.id   # extract "id" from parsed body → variable "category_id"
   - resource: category_information
 ```
 

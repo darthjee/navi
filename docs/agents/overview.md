@@ -28,7 +28,7 @@ ResourceRequest (no params)           ← enqueued at startup
 ```
 
 Actions define how response fields are mapped to parameters for the next request via
-`parameters`. Each value in the `parameters` map is a path expression (e.g. `parsed_body.id`,
+`parameters`. Each value in the `parameters` map is a path expression (e.g. `parsedBody.id`,
 `headers['page']`) resolved against a response wrapper that exposes the parsed JSON body and
 HTTP headers. A resource with no actions is a leaf node and ends the chain.
 
