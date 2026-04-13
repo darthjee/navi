@@ -12,8 +12,22 @@ resources:
       status: 200
       actions:
         - resource: category
-          variables_map:
-            id: id
+          parameters:
+            id: parsedBody.id
+        - resource: category_items
+          parameters:
+            id: parsedBody.id
   category:
     - url: /categories/{:id}.json
+      status: 200
+  category_items:
+    - url: /categories/{:id}/items.json
+      status: 200
+      actions:
+        - resource: category_item
+          parameters:
+            id: parsedBody.id
+            category_id: parameters.id
+  category_item:
+    - url: /categories/{:category_id}/items/{:id}.json
       status: 200
