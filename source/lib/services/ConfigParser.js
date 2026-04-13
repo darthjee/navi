@@ -95,12 +95,10 @@ class ConfigParser {
   /**
    * Validates and loads resources from the config object.
    * @returns {Array<Resource>} List of Resource instances.
-   * @throws {Error} Throws when the config does not contain a `resources` key.
+   * @throws {MissingResourceConfig} Throws when the config does not contain a `resources` key.
    */
   #loadResources() {
-    if (!this.config || typeof this.config !== 'object' || !('resources' in this.config)) {
-      throw new MissingResourceConfig();
-    }
+    this.#requireKey('resources', MissingResourceConfig);
 
     return Resource.fromListObject(this.config.resources);
   }
@@ -108,14 +106,25 @@ class ConfigParser {
   /**
    * Validates and loads clients from the config object.
    * @returns {Array<Client>} List of Client instances.
-   * @throws {Error} Throws when the config does not contain a `clients` key.
+   * @throws {MissingClientsConfig} Throws when the config does not contain a `clients` key.
    */
   #loadClients() {
-    if (!this.config || typeof this.config !== 'object' || !('clients' in this.config)) {
-      throw new MissingClientsConfig();
-    }
+    this.#requireKey('clients', MissingClientsConfig);
 
     return Client.fromListObject(this.config.clients);
+  }
+
+  /**
+   * Validates that the config object contains the specified key.
+   * @param {string} key - The key to check for.
+   * @param {Function} ExceptionClass - The exception class to throw if the key is missing.
+   * @returns {void}
+   * @throws {Error} Throws if the config is invalid or missing the key.
+   */
+  #requireKey(key, ExceptionClass) {
+    if (!this.config || typeof this.config !== 'object' || !(key in this.config)) {
+      throw new ExceptionClass();
+    }
   }
 }
 

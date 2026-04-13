@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { ConsoleLogger } from '../../../../lib/utils/logging/ConsoleLogger.js';
 import { Logger } from '../../../../lib/utils/logging/Logger.js';
 import { LoggerGroup } from '../../../../lib/utils/logging/LoggerGroup.js';
 
