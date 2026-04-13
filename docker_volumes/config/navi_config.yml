@@ -14,6 +14,12 @@ resources:
         - resource: category
           parameters:
             id: parsedBody.id
+        - resource: category_items
+          parameters:
+            id: parsedBody.id
   category:
     - url: /categories/{:id}.json
+      status: 200
+  category_items:
+    - url: /categories/{:id}/items.json
       status: 200
