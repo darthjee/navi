@@ -11,7 +11,7 @@ resources:
       actions:
         - resource: products
           parameters:
-            category_id: parsed_body.id
+            category_id: parsedBody.id
         - resource: category_information
   products:
     - url: /categories/:category_id/products.json
@@ -22,7 +22,7 @@ resources:
       actions:
         - resource: kind
           parameters:
-            id: parsed_body.kind_id
+            id: parsedBody.kind_id
   kind:
     - url: /kinds/:id.json
       status: 200

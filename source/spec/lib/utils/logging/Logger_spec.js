@@ -88,27 +88,6 @@ describe('Logger', () => {
     });
   });
 
-  describe('.setDefault', () => {
-    let customLogger;
-
-    beforeEach(() => {
-      customLogger = new ConsoleLogger();
-      Logger.setDefault(customLogger);
-    });
-
-    afterEach(() => {
-      Logger.reset();
-    });
-
-    it('sets a new LoggerGroup as the default', () => {
-      expect(Logger.default()).toBeInstanceOf(LoggerGroup);
-    });
-
-    it('new LoggerGroup contains the provided logger', () => {
-      expect(Logger.default().getLoggers()).toContain(customLogger);
-    });
-  });
-
   describe('.setLogger', () => {
     let originalInstance;
     let customLogger;

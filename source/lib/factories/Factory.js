@@ -1,27 +1,22 @@
 /**
- * A flexible factory class that can be configured with a builder function, a class, and an attributes generator.
+ * A flexible factory class that can be configured with a class and an attributes generator.
  *
- * The factory can build objects using the provided builder or class,
+ * The factory builds objects using the provided class,
  * and can generate attributes using the attributes generator.
  * @author darthjee
  */
 class Factory {
-  #builder;
   #klass;
   #attributesGenerator;
 
   /**
    * Creates a new Factory instance.
    * @param {object} params - The parameters for configuring the factory.
-   * @param {Function|null} params.builder - A function used to build objects. Takes generated attributes as arguments.
-   * @param {Function|null} params.klass - A class used to instantiate objects when no builder is provided.
+   * @param {Function|null} params.klass - A class used to instantiate objects.
    * @param {object|null} params.attributesGenerator - An object with a `generate` method that produces attributes before building.
    * @example <caption>Default factory (builds plain objects)</caption>
    * const factory = new Factory();
    * factory.build(); // => {}
-   * @example <caption>Factory with a builder function</caption>
-   * const factory = new Factory({ builder: ({ value = 'default' } = {}) => ({ key: value }) });
-   * factory.build({ value: 'hello' }); // => { key: 'hello' }
    * @example <caption>Factory with a class</caption>
    * const factory = new Factory({ klass: MyModel });
    * factory.build({ name: 'foo' }); // => new MyModel({ name: 'foo' })
@@ -30,22 +25,21 @@ class Factory {
    * const factory = new Factory({ klass: MyModel, attributesGenerator: idGenerator });
    * factory.build({ name: 'foo' }); // => new MyModel({ id: '<uuid>', name: 'foo' })
    */
-  constructor({ builder = null, klass = null, attributesGenerator = null } = {}) {
-    this.#builder = builder;
+  constructor({ klass = null, attributesGenerator = null } = {}) {
     this.#klass = klass;
     this.#attributesGenerator = attributesGenerator;
   }
 
   /**
-   * Builds an object using the configured builder or class and optional attributes generator.
-   * @param {...*} args - Arguments passed to the attributes generator or directly to the builder.
+   * Builds an object using the configured class and optional attributes generator.
+   * @param {...*} args - Arguments passed to the attributes generator or directly to the class constructor.
    * @returns {*} The built object.
    * @example <caption>Building without arguments</caption>
-   * const factory = new Factory({ builder: ({ value = 'default' } = {}) => ({ key: value }) });
-   * factory.build(); // => { key: 'default' }
+   * const factory = new Factory({ klass: MyModel });
+   * factory.build(); // => new MyModel()
    * @example <caption>Building with arguments</caption>
-   * const factory = new Factory({ builder: ({ value = 'default' } = {}) => ({ key: value }) });
-   * factory.build({ value: 'custom' }); // => { key: 'custom' }
+   * const factory = new Factory({ klass: MyModel });
+   * factory.build({ value: 'custom' }); // => new MyModel({ value: 'custom' })
    * @example <caption>Building with an attributes generator that enriches arguments</caption>
    * const idGenerator = new IdGenerator();
    * const factory = new Factory({ klass: MyModel, attributesGenerator: idGenerator });
@@ -53,32 +47,19 @@ class Factory {
    */
   build(...args) {
     const attributes = this.#generateAttributes(...args);
-    const builder = this.#builderFunction();
-    return builder(...attributes);
+    return this.#buildInstance(...attributes);
   }
 
   /**
-   * Returns the builder function, falling back to the default builder if none was provided.
-   * @returns {Function} The builder function.
+   * Builds an instance using the configured class or returns a plain object.
+   * @param {...*} args - Arguments to pass to the class constructor.
+   * @returns {*} The built instance.
    */
-  #builderFunction() {
-    if (typeof this.#builder !== 'function') {
-      this.#builder = this.#defaultBuilder();
-    }
-    return this.#builder;
-  }
-
-  /**
-   * Returns the default builder function based on the configured class.
-   * If a class is set, returns a function that instantiates the class.
-   * Otherwise, returns a function that produces an empty object.
-   * @returns {Function} The default builder function.
-   */
-  #defaultBuilder() {
+  #buildInstance(...args) {
     if (this.#klass) {
-      return (...args) => new this.#klass(...args);
+      return new this.#klass(...args);
     }
-    return () => ({});
+    return {};
   }
 
   /**

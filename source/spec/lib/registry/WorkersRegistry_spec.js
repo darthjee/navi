@@ -4,7 +4,7 @@ import { IdentifyableCollection } from '../../../lib/utils/collections/Identifya
 
 describe('WorkersRegistry', () => {
   let worker;
-  let worker_id;
+  let workerId;
   let workers;
   let busy;
   let idle;
@@ -17,7 +17,7 @@ describe('WorkersRegistry', () => {
     WorkersRegistry.build({ quantity: 1, workers, busy, idle });
     WorkersRegistry.initWorkers();
     worker = workers.byIndex(0);
-    worker_id = worker.id;
+    workerId = worker.id;
   });
 
   afterEach(() => {
@@ -89,12 +89,12 @@ describe('WorkersRegistry', () => {
 
   describe('.setBusy', () => {
     it('moves a worker from idle to busy when the worker exists', () => {
-      expect(idle.get(worker_id)).toBe(worker);
+      expect(idle.get(workerId)).toBe(worker);
 
-      WorkersRegistry.setBusy(worker_id);
+      WorkersRegistry.setBusy(workerId);
 
-      expect(busy.get(worker_id)).toBe(worker);
-      expect(idle.get(worker_id)).toBeUndefined();
+      expect(busy.get(workerId)).toBe(worker);
+      expect(idle.get(workerId)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
@@ -104,26 +104,26 @@ describe('WorkersRegistry', () => {
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
-      WorkersRegistry.setBusy(worker_id);
-      WorkersRegistry.setBusy(worker_id);
+      WorkersRegistry.setBusy(workerId);
+      WorkersRegistry.setBusy(workerId);
 
-      expect(busy.get(worker_id)).toBe(worker);
-      expect(idle[worker_id]).toBeUndefined();
+      expect(busy.get(workerId)).toBe(worker);
+      expect(idle[workerId]).toBeUndefined();
     });
   });
 
   describe('.setIdle', () => {
     beforeEach(() => {
-      WorkersRegistry.setBusy(worker_id);
+      WorkersRegistry.setBusy(workerId);
     });
 
     it('moves a worker from busy to idle when the worker exists', () => {
-      expect(busy.get(worker_id)).toBe(worker);
+      expect(busy.get(workerId)).toBe(worker);
 
-      WorkersRegistry.setIdle(worker_id);
+      WorkersRegistry.setIdle(workerId);
 
-      expect(idle.get(worker_id)).toBe(worker);
-      expect(busy.get(worker_id)).toBeUndefined();
+      expect(idle.get(workerId)).toBe(worker);
+      expect(busy.get(workerId)).toBeUndefined();
     });
 
     it('does nothing when the worker id does not exist', () => {
@@ -133,17 +133,17 @@ describe('WorkersRegistry', () => {
     });
 
     it('is idempotent when called multiple times for the same worker', () => {
-      WorkersRegistry.setIdle(worker_id);
-      WorkersRegistry.setIdle(worker_id);
+      WorkersRegistry.setIdle(workerId);
+      WorkersRegistry.setIdle(workerId);
 
-      expect(idle.get(worker_id)).toBe(worker);
-      expect(busy.get(worker_id)).toBeUndefined();
+      expect(idle.get(workerId)).toBe(worker);
+      expect(busy.get(workerId)).toBeUndefined();
     });
   });
 
   describe('.hasBusyWorker', () => {
     it('returns true when there is a busy worker', () => {
-      WorkersRegistry.setBusy(worker_id);
+      WorkersRegistry.setBusy(workerId);
 
       expect(WorkersRegistry.hasBusyWorker()).toBe(true);
     });
@@ -159,7 +159,7 @@ describe('WorkersRegistry', () => {
     });
 
     it('returns false when there are no idle workers', () => {
-      WorkersRegistry.setBusy(worker_id);
+      WorkersRegistry.setBusy(workerId);
       expect(WorkersRegistry.hasIdleWorker()).toBe(false);
     });
   });
@@ -169,11 +169,11 @@ describe('WorkersRegistry', () => {
       const idleWorker = WorkersRegistry.getIdleWorker();
 
       expect(idleWorker).toBeDefined();
-      expect(idleWorker.id).toBe(worker_id);
+      expect(idleWorker.id).toBe(workerId);
     });
 
     it('returns null when no idle workers are available', () => {
-      WorkersRegistry.setBusy(worker_id);
+      WorkersRegistry.setBusy(workerId);
       const idleWorker = WorkersRegistry.getIdleWorker();
 
       expect(idleWorker).toBeNull();
@@ -189,7 +189,7 @@ describe('WorkersRegistry', () => {
 
     describe('when a worker is set to busy', () => {
       beforeEach(() => {
-        WorkersRegistry.setBusy(worker_id);
+        WorkersRegistry.setBusy(workerId);
       });
 
       it('returns busy count of 1 and idle count of zero', () => {
@@ -199,8 +199,8 @@ describe('WorkersRegistry', () => {
 
     describe('when a busy worker is returned to idle', () => {
       beforeEach(() => {
-        WorkersRegistry.setBusy(worker_id);
-        WorkersRegistry.setIdle(worker_id);
+        WorkersRegistry.setBusy(workerId);
+        WorkersRegistry.setIdle(workerId);
       });
 
       it('returns idle count of 1 and busy count of zero', () => {

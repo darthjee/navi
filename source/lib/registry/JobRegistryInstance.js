@@ -119,7 +119,7 @@ class JobRegistryInstance {
    * @returns {boolean} True if any of enqueued, failed, or retryQueue is non-empty.
    */
   hasJob() {
-    return this.#enqueued.hasItem() || this.#failed.hasItem() || this.#retryQueue.hasItem();
+    return this.#enqueued.hasAny() || this.#failed.hasAny() || this.#retryQueue.hasAny();
   }
 
   /**
@@ -127,7 +127,7 @@ class JobRegistryInstance {
    * @returns {boolean} True if enqueued or retryQueue is non-empty.
    */
   hasReadyJob() {
-    return this.#enqueued.hasItem() || this.#retryQueue.hasItem();
+    return this.#enqueued.hasAny() || this.#retryQueue.hasAny();
   }
 
   /**

@@ -229,19 +229,19 @@ describe('SortedCollection', () => {
     });
   });
 
-  // ─── inherited: #hasAny / #hasItem ──────────────────────────────────────────
+  // ─── inherited: #hasAny ─────────────────────────────────────────────────────
 
-  describe('#hasAny / #hasItem', () => {
+  describe('#hasAny', () => {
     it('returns false when empty', () => {
       collection = new SortedCollection([], { sortBy });
       expect(collection.hasAny()).toBeFalse();
-      expect(collection.hasItem()).toBeFalse();
+      expect(collection.hasAny()).toBeFalse();
     });
 
     it('returns true when not empty', () => {
       collection = new SortedCollection([{ value: 1 }], { sortBy });
       expect(collection.hasAny()).toBeTrue();
-      expect(collection.hasItem()).toBeTrue();
+      expect(collection.hasAny()).toBeTrue();
     });
   });
 });

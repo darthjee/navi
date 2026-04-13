@@ -26,15 +26,4 @@ describe('Collection', () => {
     });
   });
 
-  describe('#hasItem', () => {
-    it('returns false when size is 0', () => {
-      collection = new TestCollection(0);
-      expect(collection.hasItem()).toBeFalse();
-    });
-
-    it('returns true when size is greater than 0', () => {
-      collection = new TestCollection(1);
-      expect(collection.hasItem()).toBeTrue();
-    });
-  });
 });

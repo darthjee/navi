@@ -141,9 +141,9 @@ describe('Worker', () => {
       });
 
       it ('fails the job', async () => {
-        expect(failed.hasItem()).toBeFalse();
+        expect(failed.hasAny()).toBeFalse();
         await worker.perform();
-        expect(failed.hasItem()).toBeTrue();
+        expect(failed.hasAny()).toBeTrue();
         expect(failed.pick()).toEqual(job);
       });
 
