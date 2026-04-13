@@ -15,6 +15,12 @@ describe('ParametersMapper', () => {
         const mapper = new ParametersMapper({});
         expect(mapper.map(item)).toEqual({});
       });
+
+      it('returns an empty object when the item has undefined parameters', () => {
+        const item = { parameters: undefined };
+        const mapper = new ParametersMapper({});
+        expect(mapper.map(item)).toEqual({});
+      });
     });
 
     describe('when no parameters map is provided', () => {
@@ -26,6 +32,12 @@ describe('ParametersMapper', () => {
 
       it('returns an empty object when the item has no parameters', () => {
         const item = { id: 1, name: 'Electronics' };
+        const mapper = new ParametersMapper();
+        expect(mapper.map(item)).toEqual({});
+      });
+
+      it('returns an empty object when the item has undefined parameters', () => {
+        const item = { parameters: undefined };
         const mapper = new ParametersMapper();
         expect(mapper.map(item)).toEqual({});
       });
