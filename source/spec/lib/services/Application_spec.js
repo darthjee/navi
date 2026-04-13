@@ -99,10 +99,11 @@ describe('Application', () => {
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
       jobFactory = new DummyJobFactory();
-      workerFactory = new DummyWorkerFactory();
+      workerFactory = new DummyWorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
 
       app = new Application();
       app.loadConfig(configFilePath);
+      WorkersRegistry.reset();
       WorkersRegistry.build({ quantity: 1, factory: workerFactory });
       WorkersRegistry.initWorkers();
       JobFactory.registry('ResourceRequestJob', jobFactory);
@@ -132,6 +133,7 @@ describe('Application', () => {
 
         app = new Application();
         app.loadConfig(configFilePath);
+        WorkersRegistry.reset();
         WorkersRegistry.build({ quantity: 1, factory: workerFactory });
         WorkersRegistry.initWorkers();
         JobFactory.registry('ResourceRequestJob', jobFactory);

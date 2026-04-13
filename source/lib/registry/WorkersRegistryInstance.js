@@ -20,15 +20,19 @@ class WorkersRegistryInstance {
    * @param {IdentifyableCollection} [params.workers] - The collection of all workers (injected for testing).
    * @param {IdentifyableCollection} [params.busy] - The collection of busy workers (injected for testing).
    * @param {IdentifyableCollection} [params.idle] - The collection of idle workers (injected for testing).
+   * @param {object} [params.jobRegistry] - The job registry to inject into each Worker.
+   * @param {object} [params.workersRegistry] - The workers registry to inject into each Worker.
    */
   constructor({
     quantity,
-    factory = new WorkerFactory(),
+    factory,
     workers = new IdentifyableCollection(),
     busy = new IdentifyableCollection(),
-    idle = new IdentifyableCollection()
+    idle = new IdentifyableCollection(),
+    jobRegistry,
+    workersRegistry
   }) {
-    this.#factory = factory;
+    this.#factory = factory || new WorkerFactory({ jobRegistry, workersRegistry });
     this.#quantity = quantity;
     this.#workers = workers;
     this.#busy = busy;

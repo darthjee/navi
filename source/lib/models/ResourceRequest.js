@@ -1,5 +1,4 @@
 import { ActionsEnqueuer } from './ActionsEnqueuer.js';
-import { ActionsExecutor } from './ActionsExecutor.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
 
 /**
@@ -43,19 +42,6 @@ class ResourceRequest {
 
     const itemWrappers = responseWrapper.toItemWrappers();
     new ActionsEnqueuer(this.actions, itemWrappers).enqueue();
-  }
-
-  /**
-   * Executes all configured actions against the response wrapper.
-   * Returns immediately if there are no actions.
-   * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
-   * @returns {void}
-   */
-  executeActions(responseWrapper) {
-    if (this.actions.length === 0) return;
-
-    const itemWrappers = responseWrapper.toItemWrappers();
-    new ActionsExecutor(this.actions, itemWrappers).execute();
   }
 
   /**

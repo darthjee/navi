@@ -44,7 +44,7 @@ describe('Worker', () => {
     idle = new IdentifyableCollection();
     WorkersRegistry.build({ quantity: 0, idle });
 
-    worker = new Worker({ id: 1 });
+    worker = new Worker({ id: 1, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
   });
 
   afterEach(() => {
@@ -83,7 +83,7 @@ describe('Worker', () => {
 
     describe('when no job is assigned', () => {
       it('throws an error', async () => {
-        const unassignedWorker = new Worker({ id: 2 });
+        const unassignedWorker = new Worker({ id: 2, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
         expectedError = new Error('No job assigned to worker');
         await expectAsync(unassignedWorker.perform()).toBeRejectedWith(expectedError);
       });
@@ -95,7 +95,6 @@ describe('Worker', () => {
         const promise = Promise.resolve(response);
 
         spyOn(axios, 'get').and.returnValue(promise);
-        spyOn(resourceRequest, 'executeActions').and.stub();
       });
 
       it('performs the job', async () => {

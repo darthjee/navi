@@ -41,6 +41,11 @@ describe('WorkersRegistry', () => {
 
       expect(workers.size()).toEqual(3);
     });
+
+    it('throws when called twice without reset', () => {
+      expect(() => WorkersRegistry.build({ quantity: 1 }))
+        .toThrowError('WorkersRegistry.build() has already been called. Call reset() first.');
+    });
   });
 
   describe('.initWorkers', () => {
