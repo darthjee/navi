@@ -69,6 +69,15 @@ class JobRegistry {
   }
 
   /**
+   * Moves a job from processing back to the enqueued queue.
+   * @param {Job} job - The job to re-enqueue.
+   * @returns {void}
+   */
+  static requeue(job) {
+    return JobRegistry.#getInstance().requeue(job);
+  }
+
+  /**
    * Promotes cooling-down failed jobs that are ready to retry.
    * @returns {void}
    */

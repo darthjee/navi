@@ -30,12 +30,20 @@ class WorkersAllocator {
    * Allocates a single worker to a job.
    *
    * This method picks a job from the job registry and an idle worker from the workers registry,
-   * and assigns the job to the worker.
+   * and assigns the job to the worker. If no job is available, returns immediately.
+   * If no idle worker is available, the job is re-enqueued.
    * @returns {void}
    */
   _allocateNext() {
     const job = JobRegistry.pick();
+    if (!job) return;
+
     const worker = WorkersRegistry.getIdleWorker();
+    if (!worker) {
+      JobRegistry.requeue(job);
+      return;
+    }
+
     this._allocateWorkerToJob(worker, job);
   }
 
