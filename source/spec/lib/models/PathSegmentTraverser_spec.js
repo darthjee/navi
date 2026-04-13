@@ -1,13 +1,14 @@
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
 import { PathSegmentTraverser } from '../../../lib/models/PathSegmentTraverser.js';
+import { WrapperFactory } from '../../support/factories/WrapperFactory.js';
 
 describe('PathSegmentTraverser', () => {
   describe('#traverse', () => {
     describe('when traversing valid segments', () => {
-      const obj = {
+      const obj = WrapperFactory.build({
         parsedBody: { id: 1, nested: { key: 'val' } },
         headers: { page: '3' },
-      };
+      });
 
       it('advances one level', () => {
         const traverser = new PathSegmentTraverser(obj, 'parsedBody');
@@ -25,7 +26,7 @@ describe('PathSegmentTraverser', () => {
     });
 
     describe('when current value is not an object', () => {
-      const obj = { parsedBody: { id: 1 } };
+      const obj = WrapperFactory.build();
 
       it('throws MissingMappingVariable', () => {
         const traverser = new PathSegmentTraverser(obj, 'parsedBody.id.nested');
@@ -39,7 +40,7 @@ describe('PathSegmentTraverser', () => {
     });
 
     describe('when current value is null', () => {
-      const obj = { parsedBody: null };
+      const obj = WrapperFactory.build({ parsedBody: null });
 
       it('throws MissingMappingVariable', () => {
         const traverser = new PathSegmentTraverser(obj, 'parsedBody.id');
@@ -52,7 +53,7 @@ describe('PathSegmentTraverser', () => {
     });
 
     describe('when the segment key does not exist', () => {
-      const obj = { parsedBody: { id: 1 }, headers: {} };
+      const obj = WrapperFactory.build();
 
       it('throws MissingMappingVariable for a missing body field', () => {
         const traverser = new PathSegmentTraverser(obj, 'parsedBody.missing');
