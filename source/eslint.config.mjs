@@ -109,7 +109,7 @@ export default [
   },
   // Jasmine spec files configuration
   {
-    files: ['spec/**/*_spec.js', 'spec/**/*[sS]pec.js'],
+    files: ['spec/**/*_spec.js', 'spec/**/*[sS]pec.js', 'spec/support/**/*.js'],
     plugins: {
       jasmine,
     },
