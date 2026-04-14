@@ -31,5 +31,12 @@ describe('RouteParamsExtractor', () => {
         expect(extractor.steps()).toEqual(['categories', 3, 'items', 7]);
       });
     });
+
+    describe('with a non-numeric URL param', () => {
+      it('throws an error with the param name and value', () => {
+        const extractor = new RouteParamsExtractor('/categories/:id.json', { id: 'abc' });
+        expect(() => extractor.steps()).toThrowError('Invalid numeric parameter "id": abc');
+      });
+    });
   });
 });
