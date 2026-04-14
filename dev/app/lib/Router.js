@@ -1,5 +1,6 @@
 import { Router as ExpressRouter } from 'express';
 import RouteRegister from './RouteRegister.js';
+import { ROUTES } from './routes.config.js';
 
 /**
  * Builds and returns the configured Express router with all application routes
@@ -23,10 +24,7 @@ class Router {
     const router = ExpressRouter();
     const register = new RouteRegister(router, this.#data);
 
-    register.register({ route: '/categories.json', attributes: ['id', 'name'] });
-    register.register({ route: '/categories/:id.json', attributes: ['id', 'name'] });
-    register.register({ route: '/categories/:id/items.json' });
-    register.register({ route: '/categories/:id/items/:item_id.json' });
+    ROUTES.forEach(route => register.register(route));
 
     return router;
   }
