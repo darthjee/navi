@@ -41,10 +41,13 @@ describe('ResourceRequestJob', () => {
   });
 
   describe('#perform', () => {
+    beforeEach(() => {
+      spyOn(resourceRequest, 'enqueueActions').and.stub();
+    });
+
     describe('when the client request is successful', () => {
       beforeEach(() => {
         response = AxiosUtils.stubGet(200, '[]');
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
       it('resolves with the response', async () => {
@@ -83,7 +86,6 @@ describe('ResourceRequestJob', () => {
       beforeEach(() => {
         response = AxiosUtils.stubGet(502, '[]');
         expectedError = new RequestFailed(502, fullUrl);
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
       it('does not call enqueueActions', async () => {
@@ -107,6 +109,7 @@ describe('ResourceRequestJob', () => {
         expect(Logger.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
     });
+
     describe('when the resource request has a parameterized URL', () => {
       const paramUrl = '/categories/{:id}.json';
       const resolvedFullUrl = 'http://example.com/categories/7.json';
@@ -115,7 +118,6 @@ describe('ResourceRequestJob', () => {
         resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
         parameters = { id: 7 };
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
-
         response = AxiosUtils.stubGet(200, '[]');
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
@@ -134,7 +136,6 @@ describe('ResourceRequestJob', () => {
         resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
         parameters = {};
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
-
         response = AxiosUtils.stubGet(200, '[]');
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
