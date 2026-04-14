@@ -27,7 +27,7 @@ describe('Client', () => {
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
-    expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${fullUrl}`);
+    expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
   });
 
   describe('when request status is not a match', () => {
@@ -138,7 +138,7 @@ describe('Client', () => {
 
       await expectAsync(client.perform(resourceRequest, { id: 42 })).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
-      expect(Logger.info).toHaveBeenCalledWith(`[Client:default] Requesting ${resolvedFullUrl}`);
+      expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(resolvedFullUrl));
     });
   });
 

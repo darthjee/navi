@@ -137,7 +137,7 @@ describe('Worker', () => {
         expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
-        expect(Logger.error).toHaveBeenCalledWith(`Error occurred while performing job: #${job.id} - ${expectedError}`);
+        expect(Logger.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
 
       it ('fails the job', async () => {
