@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';

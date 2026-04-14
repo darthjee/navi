@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Client } from '../../../lib/services/Client.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
