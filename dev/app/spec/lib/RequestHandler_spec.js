@@ -7,9 +7,9 @@ import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
 
-const buildTestApp = (route, routerData, serializer = null) => {
+const buildTestApp = (route, routerData, serializer = null, extractorFactory = null) => {
   const app = express();
-  const handler = new RequestHandler(route, routerData, serializer);
+  const handler = new RequestHandler(route, routerData, serializer, extractorFactory);
   app.get(route, (req, res) => handler.handle(req, res));
   return app;
 };
@@ -38,6 +38,18 @@ describe('RequestHandler', () => {
         const res = await request(app).get('/categories/abc.json');
         expect(res.status).toBe(400);
         expect(res.body.error).toContain('"id"');
+      });
+    });
+
+    describe('with a custom extractorFactory', () => {
+      const factory = (_route, _params) => ({ steps: () => ['categories', 1] });
+      const serializer = new Serializer(['id', 'name']);
+      const app = buildTestApp('/any/:x.json', data, serializer, factory);
+
+      it('uses the steps returned by the injected factory', async () => {
+        const res = await request(app).get('/any/99.json');
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(BOOKS_CATEGORY);
       });
     });
 
