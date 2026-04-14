@@ -10,16 +10,21 @@ class RequestHandler {
   #route;
   #data;
   #serializer;
+  #extractorFactory;
 
   /**
    * @param {string} route - Express route pattern used to derive navigation steps.
    * @param {Object} data - Root data structure.
    * @param {import('./Serializer.js').default|null} [serializer] - Optional serializer to project the result.
+   * @param {Function|null} [extractorFactory] - Optional factory `(route, params) => { steps() }`.
+   *   Defaults to creating a real {@link RouteParamsExtractor}.
    */
-  constructor(route, data, serializer = null) {
+  constructor(route, data, serializer = null, extractorFactory = null) {
     this.#route = route;
     this.#data = data;
     this.#serializer = serializer;
+    this.#extractorFactory = extractorFactory
+      ?? ((r, params) => new RouteParamsExtractor(r, params));
   }
 
   /**
@@ -30,7 +35,7 @@ class RequestHandler {
    */
   handle(req, res) {
     try {
-      const steps = new RouteParamsExtractor(this.#route, req.params).steps();
+      const steps = this.#extractorFactory(this.#route, req.params).steps();
       const result = new DataNavigator(this.#data, steps).navigate();
       if (result === null) return notFound(res);
       res.json(this.#serializer ? this.#serializer.serialize(result) : result);
