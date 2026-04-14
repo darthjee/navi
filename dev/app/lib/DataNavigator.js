@@ -5,14 +5,17 @@
 class DataNavigator {
   #data;
   #steps;
+  #idField;
 
   /**
    * @param {Object|Array} data - Root data structure to navigate.
    * @param {Array<string|number>} steps - Ordered navigation steps.
+   * @param {string} [idField='id'] - The field name used to match numeric steps against array items.
    */
-  constructor(data, steps) {
+  constructor(data, steps, idField = 'id') {
     this.#data = data;
     this.#steps = steps;
+    this.#idField = idField;
   }
 
   /**
@@ -27,7 +30,7 @@ class DataNavigator {
       if (current === null || current === undefined) return null;
 
       if (typeof step === 'number') {
-        current = current.find((item) => item.id === step);
+        current = current.find((item) => item[this.#idField] === step);
       } else {
         current = current[step];
       }

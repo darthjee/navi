@@ -50,5 +50,19 @@ describe('DataNavigator', () => {
         expect(navigator.navigate()).toBeNull();
       });
     });
+
+    describe('with a custom idField', () => {
+      const customData = { items: [{ key: 1, name: 'one' }, { key: 2, name: 'two' }] };
+
+      it('finds the element by the custom field', () => {
+        const navigator = new DataNavigator(customData, ['items', 1], 'key');
+        expect(navigator.navigate()).toBe(customData.items[0]);
+      });
+
+      it('returns null when no element matches', () => {
+        const navigator = new DataNavigator(customData, ['items', 999], 'key');
+        expect(navigator.navigate()).toBeNull();
+      });
+    });
   });
 });
