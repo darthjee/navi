@@ -9,6 +9,7 @@ import { IdentifyableCollection } from '../../../lib/utils/collections/Identifya
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
+import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
@@ -34,7 +35,7 @@ describe('Worker', () => {
   const status = 200;
 
   beforeEach(() => {
-    Logger.suppress();
+    LoggerUtils.stubLoggerMethods();
     clients = ClientRegistryFactory.build({});
     JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     finished = new IdentifyableCollection();
@@ -78,7 +79,6 @@ describe('Worker', () => {
       job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
       worker.assign(job);
 
-      spyOn(Logger, 'error').and.stub();
     });
 
     describe('when no job is assigned', () => {

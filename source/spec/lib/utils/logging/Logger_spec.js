@@ -1,13 +1,10 @@
-/* eslint-disable no-console */
 import { Logger } from '../../../../lib/utils/logging/Logger.js';
 import { LoggerGroup } from '../../../../lib/utils/logging/LoggerGroup.js';
+import { LoggerUtils } from '../../../support/utils/LoggerUtils.js';
 
 describe('Logger', () => {
   beforeEach(() => {
-    spyOn(console, 'debug').and.stub();
-    spyOn(console, 'info').and.stub();
-    spyOn(console, 'warn').and.stub();
-    spyOn(console, 'error').and.stub();
+    LoggerUtils.stubConsoleMethods();
   });
 
   describe('.default', () => {

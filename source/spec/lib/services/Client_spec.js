@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Client } from '../../../lib/services/Client.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
+import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 
@@ -16,13 +17,13 @@ describe('Client', () => {
   let resourceRequest;
 
   beforeEach(() => {
+    LoggerUtils.stubLoggerMethods();
     client = ClientFactory.build({ baseUrl });
     resourceRequest = ResourceRequestFactory.build({ url, status });
   });
 
   it('returns true when status matches and requests using baseUrl + url', async () => {
     const response = AxiosUtils.stubGet(200);
-    spyOn(Logger, 'info').and.stub();
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
@@ -37,8 +38,6 @@ describe('Client', () => {
         url: fullUrl,
       });
 
-      spyOn(Logger, 'error').and.stub();
-      spyOn(Logger, 'info').and.stub();
     });
 
     it('throws RequestFailed when status does not match and logs the error', async () => {
@@ -56,7 +55,6 @@ describe('Client', () => {
 
     it('throws RequestFailed when status does not match', async () => {
       const response = AxiosUtils.stubGet(404);
-      spyOn(Logger, 'info').and.stub();
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
     });
@@ -70,8 +68,6 @@ describe('Client', () => {
         url: fullUrl,
       });
 
-      spyOn(Logger, 'error').and.stub();
-      spyOn(Logger, 'info').and.stub();
     });
 
     it('throws RequestFailed with correct status and full url on error.response and logs the error', async () => {
@@ -85,7 +81,6 @@ describe('Client', () => {
   describe('when a timeout is configured', () => {
     beforeEach(() => {
       client = ClientFactory.build({ baseUrl, timeout: 5000 });
-      spyOn(Logger, 'info').and.stub();
     });
 
     it('passes the timeout to the axios request', async () => {
@@ -101,7 +96,6 @@ describe('Client', () => {
 
     beforeEach(() => {
       client = ClientFactory.build({ baseUrl, headers });
-      spyOn(Logger, 'info').and.stub();
     });
 
     it('passes the headers to the axios request', async () => {
@@ -122,7 +116,6 @@ describe('Client', () => {
 
     beforeEach(() => {
       resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
-      spyOn(Logger, 'info').and.stub();
     });
 
     it('resolves placeholders and requests the resolved URL', async () => {

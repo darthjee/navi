@@ -3,6 +3,7 @@ import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
+import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
@@ -24,6 +25,7 @@ describe('ResourceRequestJob', () => {
   let expectedError;
 
   beforeEach(() => {
+    LoggerUtils.stubLoggerMethods();
     resourceRequest = ResourceRequestFactory.build({ url, status });
     client = ClientFactory.build({ baseUrl });
     clients = ClientRegistryFactory.build({ default: client });
@@ -42,7 +44,6 @@ describe('ResourceRequestJob', () => {
     describe('when the client request is successful', () => {
       beforeEach(() => {
         response = AxiosUtils.stubGet(200, '[]');
-        spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
@@ -82,8 +83,6 @@ describe('ResourceRequestJob', () => {
       beforeEach(() => {
         response = AxiosUtils.stubGet(502, '[]');
         expectedError = new RequestFailed(502, fullUrl);
-        spyOn(Logger, 'error').and.stub();
-        spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
@@ -118,7 +117,6 @@ describe('ResourceRequestJob', () => {
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
 
         response = AxiosUtils.stubGet(200, '[]');
-        spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
@@ -138,7 +136,6 @@ describe('ResourceRequestJob', () => {
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
 
         response = AxiosUtils.stubGet(200, '[]');
-        spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
 
