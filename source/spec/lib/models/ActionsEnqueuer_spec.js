@@ -1,20 +1,15 @@
 import { NullResponse } from '../../../lib/exceptions/NullResponse.js';
 import { ActionsEnqueuer } from '../../../lib/models/ActionsEnqueuer.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { ActionEnqueuerUtils } from '../../support/utils/ActionEnqueuerUtils.js';
 
 describe('ActionsEnqueuer', () => {
-  let action;
+  const ctx = ActionEnqueuerUtils.setup();
+
   let actions;
 
   beforeEach(() => {
-    action = jasmine.createSpyObj('action', ['execute']);
-    actions = [action];
-    JobRegistry.build({ cooldown: -1 });
-    spyOn(JobRegistry, 'enqueue').and.stub();
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
+    actions = [ctx.action];
   });
 
   describe('#enqueue', () => {
@@ -32,7 +27,7 @@ describe('ActionsEnqueuer', () => {
 
       it('calls enqueue once with the action and item', () => {
         new ActionsEnqueuer(actions, [item]).enqueue();
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action, item });
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action: ctx.action, item });
       });
     });
 
@@ -45,8 +40,8 @@ describe('ActionsEnqueuer', () => {
       it('calls enqueue once per element', () => {
         new ActionsEnqueuer(actions, items).enqueue();
         expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: items[0] });
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: items[1] });
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: ctx.action, item: items[0] });
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: ctx.action, item: items[1] });
       });
 
       describe('with multiple actions', () => {
@@ -54,14 +49,14 @@ describe('ActionsEnqueuer', () => {
 
         beforeEach(() => {
           secondAction = jasmine.createSpyObj('secondAction', ['execute']);
-          actions = [action, secondAction];
+          actions = [ctx.action, secondAction];
         });
 
         it('calls enqueue for each action × item combination', () => {
           new ActionsEnqueuer(actions, items).enqueue();
           expect(JobRegistry.enqueue).toHaveBeenCalledTimes(4);
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: items[0] });
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action, item: items[1] });
+          expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: ctx.action, item: items[0] });
+          expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: ctx.action, item: items[1] });
           expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: secondAction, item: items[0] });
           expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: secondAction, item: items[1] });
         });
