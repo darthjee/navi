@@ -31,6 +31,16 @@ describe('RequestHandler', () => {
       });
     });
 
+    describe('when a URL param is non-numeric', () => {
+      const app = buildTestApp('/categories/:id.json', data);
+
+      it('returns 400 with an error message', async () => {
+        const res = await request(app).get('/categories/abc.json');
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain('"id"');
+      });
+    });
+
     describe('with a serializer', () => {
       const serializer = new Serializer(['id', 'name']);
       const app = buildTestApp('/categories/:id.json', data, serializer);

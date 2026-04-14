@@ -29,10 +29,14 @@ class RequestHandler {
    * @param {import('express').Response} res
    */
   handle(req, res) {
-    const steps = new RouteParamsExtractor(this.#route, req.params).steps();
-    const result = new DataNavigator(this.#data, steps).navigate();
-    if (result === null) return notFound(res);
-    res.json(this.#serializer ? this.#serializer.serialize(result) : result);
+    try {
+      const steps = new RouteParamsExtractor(this.#route, req.params).steps();
+      const result = new DataNavigator(this.#data, steps).navigate();
+      if (result === null) return notFound(res);
+      res.json(this.#serializer ? this.#serializer.serialize(result) : result);
+    } catch (e) {
+      res.status(400).json({ error: e.message });
+    }
   }
 }
 

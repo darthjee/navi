@@ -26,7 +26,12 @@ class RouteParamsExtractor {
       .filter(Boolean)
       .map((segment) => {
         if (segment.startsWith(':')) {
-          return Number(this.#params[segment.slice(1)]);
+          const paramName = segment.slice(1);
+          const numValue = Number(this.#params[paramName]);
+          if (isNaN(numValue)) {
+            throw new Error(`Invalid numeric parameter "${paramName}": ${this.#params[paramName]}`);
+          }
+          return numValue;
         }
         return segment;
       });
