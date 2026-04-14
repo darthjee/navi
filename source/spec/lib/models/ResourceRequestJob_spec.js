@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
@@ -6,6 +5,7 @@ import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
+import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 
 describe('ResourceRequestJob', () => {
   let resourceRequest;
@@ -40,8 +40,7 @@ describe('ResourceRequestJob', () => {
   describe('#perform', () => {
     describe('when the client request is successful', () => {
       beforeEach(() => {
-        response = { status: 200, data: '[]' };
-        spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+        response = AxiosUtils.stubGet(200, '[]');
         spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
@@ -80,9 +79,8 @@ describe('ResourceRequestJob', () => {
 
     describe('when the client request fails', () => {
       beforeEach(() => {
-        response = { status: 502, data: '[]' };
+        response = AxiosUtils.stubGet(502, '[]');
         expectedError = new RequestFailed(502, fullUrl);
-        spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
         spyOn(Logger, 'error').and.stub();
         spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
@@ -118,8 +116,7 @@ describe('ResourceRequestJob', () => {
         parameters = { id: 7 };
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
 
-        response = { status: 200, data: '[]' };
-        spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+        response = AxiosUtils.stubGet(200, '[]');
         spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
@@ -139,8 +136,7 @@ describe('ResourceRequestJob', () => {
         parameters = {};
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
 
-        response = { status: 200, data: '[]' };
-        spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+        response = AxiosUtils.stubGet(200, '[]');
         spyOn(Logger, 'info').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
       });
