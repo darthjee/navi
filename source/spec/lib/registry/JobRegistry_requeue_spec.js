@@ -1,29 +1,8 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
-import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
-import { Queue } from '../../../lib/utils/collections/Queue.js';
+import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {
-  let clients;
-
-  let jobs;
-  let retryQueue;
-  let finished;
-  let processing;
-
-  beforeEach(() => {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
-    jobs = new Queue();
-    retryQueue = new Queue();
-    finished = new Queue();
-    processing = new IdentifyableCollection();
-    JobRegistry.build({ queue: jobs, retryQueue, finished, processing, cooldown: -1 });
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
-    JobFactory.reset();
-  });
+  const ctx = JobRegistryUtils.setup();
 
   describe('.requeue', () => {
     describe('when the job is in processing', () => {
@@ -35,11 +14,11 @@ describe('JobRegistry', () => {
       });
 
       it('removes the job from processing', () => {
-        expect(processing.has(job.id)).toBeTrue();
+        expect(ctx.processing.has(job.id)).toBeTrue();
 
         JobRegistry.requeue(job);
 
-        expect(processing.has(job.id)).toBeFalse();
+        expect(ctx.processing.has(job.id)).toBeFalse();
       });
 
       it('adds the job back to the enqueued queue', () => {

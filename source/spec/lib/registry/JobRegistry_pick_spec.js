@@ -1,29 +1,8 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
-import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
-import { Queue } from '../../../lib/utils/collections/Queue.js';
+import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {
-  let clients;
-
-  let jobs;
-  let retryQueue;
-  let finished;
-  let processing;
-
-  beforeEach(() => {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
-    jobs = new Queue();
-    retryQueue = new Queue();
-    finished = new Queue();
-    processing = new IdentifyableCollection();
-    JobRegistry.build({ queue: jobs, retryQueue, finished, processing, cooldown: -1 });
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
-    JobFactory.reset();
-  });
+  const ctx = JobRegistryUtils.setup();
 
   describe('.pick', () => {
     describe('when the queue is empty', () => {
@@ -34,7 +13,7 @@ describe('JobRegistry', () => {
       it('does not add anything to processing', () => {
         JobRegistry.pick();
 
-        expect(processing.hasAny()).toBeFalse();
+        expect(ctx.processing.hasAny()).toBeFalse();
       });
     });
 
@@ -69,7 +48,7 @@ describe('JobRegistry', () => {
       it('adds the picked job to processing', () => {
         const job = JobRegistry.pick();
 
-        expect(processing.has(job.id)).toBeTrue();
+        expect(ctx.processing.has(job.id)).toBeTrue();
       });
     });
 
@@ -150,7 +129,7 @@ describe('JobRegistry', () => {
 
       it('adds the job to processing', () => {
         JobRegistry.pick();
-        expect(processing.has(failedJob.id)).toBeTrue();
+        expect(ctx.processing.has(failedJob.id)).toBeTrue();
       });
 
       it('empties retryQueue afterwards', () => {

@@ -1,29 +1,8 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
-import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
-import { Queue } from '../../../lib/utils/collections/Queue.js';
+import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {
-  let clients;
-
-  let jobs;
-  let retryQueue;
-  let finished;
-  let processing;
-
-  beforeEach(() => {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
-    jobs = new Queue();
-    retryQueue = new Queue();
-    finished = new Queue();
-    processing = new IdentifyableCollection();
-    JobRegistry.build({ queue: jobs, retryQueue, finished, processing, cooldown: -1 });
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
-    JobFactory.reset();
-  });
+  const ctx = JobRegistryUtils.setup();
 
   describe('.fail', () => {
     it('moves the failed job to the failed queue for later retry', () => {
@@ -43,11 +22,11 @@ describe('JobRegistry', () => {
       const job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
       const picked = JobRegistry.pick();
 
-      expect(processing.has(picked.id)).toBeTrue();
+      expect(ctx.processing.has(picked.id)).toBeTrue();
 
       JobRegistry.fail(job);
 
-      expect(processing.has(picked.id)).toBeFalse();
+      expect(ctx.processing.has(picked.id)).toBeFalse();
     });
 
     describe('when the job is not exhausted', () => {
