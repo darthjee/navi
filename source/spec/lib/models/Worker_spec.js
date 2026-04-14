@@ -2,7 +2,6 @@ import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { JobFactory } from '../../../lib/factories/JobFactory.js';
 import { Job } from '../../../lib/models/Job.js';
-import { ResourceRequestJob } from '../../../lib/models/ResourceRequestJob.js';
 import { Worker } from '../../../lib/models/Worker.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
@@ -12,6 +11,7 @@ import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
+import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
 
 describe('Worker', () => {
   let worker;
@@ -75,7 +75,7 @@ describe('Worker', () => {
       clients = ClientRegistryFactory.build({ default: client });
       parameters = {};
 
-      job = new ResourceRequestJob({ id: 'id', resourceRequest, clients, parameters });
+      job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
       worker.assign(job);
 
       spyOn(Logger, 'error').and.stub();
