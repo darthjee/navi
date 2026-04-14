@@ -3,6 +3,7 @@ import { Client } from '../../../lib/services/Client.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
+import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 
 describe('Client', () => {
   const baseUrl = 'http://example.com';
@@ -20,9 +21,7 @@ describe('Client', () => {
   });
 
   it('returns true when status matches and requests using baseUrl + url', async () => {
-    const response = { status: 200 };
-    const promise = Promise.resolve(response);
-    spyOn(axios, 'get').and.returnValue(promise);
+    const response = AxiosUtils.stubGet(200);
     spyOn(Logger, 'info').and.stub();
 
     await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
@@ -43,8 +42,7 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed when status does not match and logs the error', async () => {
-      const promise = Promise.resolve({ status: 404 });
-      spyOn(axios, 'get').and.returnValue(promise);
+      AxiosUtils.stubGet(404);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
       expect(Logger.error).toHaveBeenCalled();
@@ -57,9 +55,7 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed when status does not match', async () => {
-      const response = { status: 404 };
-      const promise = Promise.resolve(response);
-      spyOn(axios, 'get').and.returnValue(promise);
+      const response = AxiosUtils.stubGet(404);
       spyOn(Logger, 'info').and.stub();
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
@@ -79,8 +75,7 @@ describe('Client', () => {
     });
 
     it('throws RequestFailed with correct status and full url on error.response and logs the error', async () => {
-      const promise = Promise.reject({ response: { status: 500 } });
-      spyOn(axios, 'get').and.returnValue(promise);
+      AxiosUtils.stubGetRejection({ response: { status: 500 } });
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
       expect(Logger.error).toHaveBeenCalled();
@@ -94,8 +89,7 @@ describe('Client', () => {
     });
 
     it('passes the timeout to the axios request', async () => {
-      const response = { status: 200 };
-      spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+      const response = AxiosUtils.stubGet(200);
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
@@ -111,8 +105,7 @@ describe('Client', () => {
     });
 
     it('passes the headers to the axios request', async () => {
-      const response = { status: 200 };
-      spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+      const response = AxiosUtils.stubGet(200);
 
       await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(fullUrl, {
@@ -133,8 +126,7 @@ describe('Client', () => {
     });
 
     it('resolves placeholders and requests the resolved URL', async () => {
-      const response = { status: 200 };
-      spyOn(axios, 'get').and.returnValue(Promise.resolve(response));
+      const response = AxiosUtils.stubGet(200);
 
       await expectAsync(client.perform(resourceRequest, { id: 42 })).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
