@@ -23,7 +23,12 @@ class Serializer {
       return data.map((item) => this.serialize(item));
     }
     return Object.fromEntries(
-      this.#attributes.map((attr) => [attr, data[attr]])
+      this.#attributes.map((attr) => {
+        if (!(attr in data)) {
+          throw new Error(`Serializer: attribute "${attr}" is not present in the data`);
+        }
+        return [attr, data[attr]];
+      })
     );
   }
 }
