@@ -118,15 +118,7 @@ describe('Engine', () => {
     describe('when jobs take some time to be processed', () => {
       let workers;
 
-      beforeEach(() => {
-        workers = new IdentifyableCollection();
-        WorkersRegistry.reset();
-        WorkersRegistry.build({ busy, quantity: 2, workers, factory: workerFactory });
-        WorkersRegistry.initWorkers();
-        allocator = new DummyWorkersAllocator();
-        engine = new Engine({ allocator, sleepMs: -1 });
-        DummyJob.setSuccessRate(0.1);
-
+      const stubWorkersRegistryIdleCheck = () => {
         spyOn(WorkersRegistry, 'hasIdleWorker').and.callFake(() => {
           const result = WorkersRegistry.hasIdleWorker.and.originalFn.call(WorkersRegistry);
           if (!result || !JobRegistry.hasJob()) {
@@ -134,15 +126,34 @@ describe('Engine', () => {
           }
           return result;
         });
+      };
 
-        enqueueJobs(20);
+      beforeEach(() => {
+        workers = new IdentifyableCollection();
+        WorkersRegistry.reset();
+        WorkersRegistry.build({ busy, quantity: 2, workers, factory: workerFactory });
+        WorkersRegistry.initWorkers();
+        allocator = new DummyWorkersAllocator();
+        engine = new Engine({ allocator, sleepMs: -1 });
       });
 
-      it('processes all jobs until they are in the finished or dead', async () => {
-        expect(JobRegistry.hasJob()).toBeTrue();
-        await engine.start();
-        expect(JobRegistry.hasJob()).toBeFalse();
-        expect(finished.size() + dead.size()).toBe(20);
+      describe('with a low job success rate', () => {
+        beforeEach(() => {
+          DummyJob.setSuccessRate(0.1);
+          stubWorkersRegistryIdleCheck();
+          enqueueJobs(20);
+        });
+
+        it('clears the job queue', async () => {
+          expect(JobRegistry.hasJob()).toBeTrue();
+          await engine.start();
+          expect(JobRegistry.hasJob()).toBeFalse();
+        });
+
+        it('moves all jobs to finished or dead', async () => {
+          await engine.start();
+          expect(finished.size() + dead.size()).toBe(20);
+        });
       });
     });
 
