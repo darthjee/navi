@@ -2,9 +2,9 @@ import axios from 'axios';
 import { Client } from '../../../lib/services/Client.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
+import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 describe('Client', () => {
   const baseUrl = 'http://example.com';

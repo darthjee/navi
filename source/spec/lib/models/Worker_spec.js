@@ -9,10 +9,10 @@ import { IdentifyableCollection } from '../../../lib/utils/collections/Identifya
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
+import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 describe('Worker', () => {
   let worker;

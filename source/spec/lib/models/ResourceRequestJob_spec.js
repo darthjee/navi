@@ -3,11 +3,11 @@ import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
+import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 describe('ResourceRequestJob', () => {
   let resourceRequest;
