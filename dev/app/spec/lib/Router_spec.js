@@ -1,22 +1,13 @@
 // Unit tests: exercises the Router class in isolation inside a minimal Express wrapper.
-import express from 'express';
 import request from 'supertest';
-import { notFound } from '../../lib/not_found.js';
-import Router from '../../lib/Router.js';
 import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { buildRouterApp } from '../support/utils/AppFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
 
-const buildTestApp = (routerData) => {
-  const app = express();
-  app.use(new Router(routerData).build());
-  app.use((_req, res) => notFound(res));
-  return app;
-};
-
 describe('Router', () => {
-  const app = buildTestApp(data);
+  const app = buildRouterApp(data);
 
   describe('GET /categories.json', () => {
     it('returns all categories without items', async () => {
