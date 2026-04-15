@@ -1,10 +1,8 @@
 // Unit tests: exercises the Router class in isolation inside a minimal Express wrapper.
 import request from 'supertest';
 import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { testData as data } from '../support/fixtures/testData.js';
 import { buildRouterApp } from '../support/utils/AppFactory.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
-
-const data = FixturesUtils.loadYamlFixture('data.yml');
 
 describe('Router', () => {
   const app = buildRouterApp(data);

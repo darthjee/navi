@@ -2,10 +2,8 @@ import express from 'express';
 import request from 'supertest';
 import RouteRegister from '../../lib/RouteRegister.js';
 import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { testData as data } from '../support/fixtures/testData.js';
 import { buildRouteRegisterApp } from '../support/utils/AppFactory.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
-
-const data = FixturesUtils.loadYamlFixture('data.yml');
 
 describe('RouteRegister', () => {
   describe('#register', () => {
