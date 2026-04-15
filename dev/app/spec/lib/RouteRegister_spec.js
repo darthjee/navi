@@ -15,6 +15,15 @@ const buildTestApp = (routes, routerData) => {
 
 describe('RouteRegister', () => {
   describe('#register', () => {
+    describe('when the same route is registered twice', () => {
+      it('throws an error identifying the duplicate', () => {
+        const register = new RouteRegister(express(), data);
+        register.register({ route: '/categories.json' });
+        expect(() => register.register({ route: '/categories.json' }))
+          .toThrowError('RouteRegister: duplicate route "/categories.json"');
+      });
+    });
+
     describe('with /categories/:id/items.json', () => {
       const app = buildTestApp([{ route: '/categories/:id/items.json' }], data);
 
@@ -74,6 +83,20 @@ describe('RouteRegister', () => {
         const res = await request(app).get('/categories/999.json');
         expect(res.status).toBe(404);
       });
+    });
+  });
+
+  describe('#routes', () => {
+    it('returns the list of registered route patterns in registration order', () => {
+      const register = new RouteRegister(express(), data);
+      register.register({ route: '/categories.json' });
+      register.register({ route: '/categories/:id.json' });
+      expect(register.routes()).toEqual(['/categories.json', '/categories/:id.json']);
+    });
+
+    it('returns an empty array before any routes are registered', () => {
+      const register = new RouteRegister(express(), data);
+      expect(register.routes()).toEqual([]);
     });
   });
 });
