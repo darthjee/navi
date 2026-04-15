@@ -55,7 +55,7 @@ build:
 
 build-image:
 	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make build-image)"; exit 1; fi
-	docker build --platform $(PLATFORM) -f $(DOCKERFILE_PROD) . -t $(PROD_IMAGE):$(TAG) -t $(PROD_IMAGE):latest
+	docker build --platform $(PLATFORM) -f $(DOCKERFILE_PROD) --build-arg NAVI_VERSION=$(TAG) . -t $(PROD_IMAGE):$(TAG) -t $(PROD_IMAGE):latest
 
 release:
 	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make release)"; exit 1; fi

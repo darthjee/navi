@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "description": "Navi cache warmer CLI",
   "main": "index.js",
+  "bin": {
+    "navi": "bin/navi.js"
+  },
+  "files": ["bin", "lib"],
   "scripts": {
     "spec": "npx jasmine spec/**/*.js",
     "test": "npx c8 jasmine spec/**/*.js",
@@ -20,16 +24,10 @@
   "dependencies": {
     "axios": "^1.13.0",
     "express": "5.2.1",
-    "react": "^19.2.0",
-    "react-bootstrap": "2.10.10",
-    "react-dom": "^19.2.0",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^8.0.0",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
-    "babel-plugin-react-compiler": "^1.0.0",
     "c8": "11.0.0",
     "eslint": "^8.0.1",
     "eslint-config-standard": "^17.0.0",
