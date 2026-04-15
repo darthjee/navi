@@ -36,27 +36,63 @@ In `source/package.json`:
   - `@types/react-dom` (move to `devDependencies` or remove)
   - `babel-plugin-react-compiler` (move to `devDependencies` or remove)
 
-### Step 2 — Add `npm-publish` job to CircleCI
+### Step 2 — Add tag/version consistency check script
 
-In `.circleci/config.yml`:
+Add a script `scripts/check_tag_version.sh` that:
 
-- Add a new `npm-publish` job that:
-  - Uses a Node-capable Docker image (e.g., `darthjee/circleci_node:0.2.1`).
-  - Runs `cd source && npm publish --access public` using the `NPM_TOKEN` environment variable for authentication (set `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` in `.npmrc` or via `npm config set`).
-  - Is triggered only on version tags matching `\d+\.\d+\.\d+`, ignoring all branches.
-  - Requires all test and check jobs to pass (`jasmine`, `jasmine-dev`, `jasmine-frontend`, `checks`, `checks-dev`, `checks-frontend`).
-  - Runs alongside `build-and-release` (both depend on the same prerequisite jobs).
+- Reads the `version` field from `source/package.json`.
+- Compares it against the CircleCI tag (`$CIRCLE_TAG`).
+- Exits with a non-zero status and a clear error message if they do not match, causing the job to fail.
 
-- Add the job to the `test-and-release` workflow:
-  ```yaml
-  - npm-publish:
-      requires: [jasmine, jasmine-dev, jasmine-frontend, checks, checks-dev, checks-frontend]
-      filters:
-        tags:
-          only: /\d+\.\d+\.\d+/
-        branches:
-          ignore: /.*/
-  ```
+Example logic:
+```bash
+#!/bin/bash
+set -e
+PACKAGE_VERSION=$(node -p "require('./source/package.json').version")
+if [ "$CIRCLE_TAG" != "$PACKAGE_VERSION" ]; then
+  echo "ERROR: Git tag ($CIRCLE_TAG) does not match package.json version ($PACKAGE_VERSION)"
+  exit 1
+fi
+echo "Tag and package.json version match: $CIRCLE_TAG"
+```
+
+### Step 3 — Add `check-version-tag` job to CircleCI
+
+Add a dedicated `check-version-tag` job in `.circleci/config.yml` that:
+
+- Uses a Node-capable Docker image (e.g., `darthjee/circleci_node:0.2.1`).
+- Runs `scripts/check_tag_version.sh`.
+- Is triggered only on version tags matching `\d+\.\d+\.\d+`, ignoring all branches.
+- Does **not** require any other job — it runs as soon as a matching tag is pushed.
+
+Wire it into the `test-and-release` workflow:
+```yaml
+- check-version-tag:
+    filters:
+      tags:
+        only: /\d+\.\d+\.\d+/
+      branches:
+        ignore: /.*/
+```
+
+Both `build-and-release` and `npm-publish` must declare `check-version-tag` as a requirement, alongside the existing test/check jobs:
+```yaml
+- build-and-release:
+    requires: [check-version-tag, jasmine, jasmine-dev, jasmine-frontend, checks, checks-dev, checks-frontend]
+    ...
+- npm-publish:
+    requires: [check-version-tag, jasmine, jasmine-dev, jasmine-frontend, checks, checks-dev, checks-frontend]
+    ...
+```
+
+### Step 4 — Add `npm-publish` job to CircleCI
+
+Add a new `npm-publish` job that:
+
+- Uses a Node-capable Docker image (e.g., `darthjee/circleci_node:0.2.1`).
+- Runs `cd source && npm publish --access public` using the `NPM_TOKEN` environment variable for authentication (set `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` in `.npmrc` or via `npm config set`).
+- Is triggered only on version tags matching `\d+\.\d+\.\d+`, ignoring all branches.
+- Requires `check-version-tag` and all test/check jobs (see Step 3).
 
 ### Step 3 — Update the production Dockerfile
 
@@ -82,7 +118,8 @@ Add a section documenting the new npm/yarn distribution option:
 ## Files to Change
 
 - `source/package.json` — add `bin` and `files` fields; remove React-related dependencies
-- `.circleci/config.yml` — add `npm-publish` job and wire it into the workflow
+- `scripts/check_tag_version.sh` — new script to assert git tag matches `package.json` version
+- `.circleci/config.yml` — add `check-version-tag` job (gate for both release jobs) and `npm-publish` job; update `build-and-release` to require `check-version-tag`
 - `dockerfiles/production_navi/Dockerfile` — install from published npm package instead of copying source
 - `README.md` — document `npx navi` and global install usage
 
@@ -90,5 +127,6 @@ Add a section documenting the new npm/yarn distribution option:
 
 - **Required CI secret:** The `NPM_TOKEN` environment variable must be set in the CircleCI project settings. This is an npm access token generated from [npmjs.com](https://www.npmjs.com) with publish permissions. Since npm and yarn share the same registry, this single token covers both package managers.
 - The `npm publish` step should be mentioned explicitly in the PR description so the reviewer knows to verify that `NPM_TOKEN` is configured in CircleCI before merging.
+- The `check-version-tag` job acts as a shared gate: both `build-and-release` and `npm-publish` depend on it, so a tag/version mismatch blocks all releases atomically.
 - React/frontend dependencies removal may affect `eslint.config.mjs` (which may reference React ESLint plugins) — check if any lint rules need to be scoped or removed alongside the dependency removal.
 - The `public/` folder (React SPA static files) is currently served by `WebServer`. With React removed from deps, `source/public/` can remain in place for the Docker image but will not be part of the npm package (excluded by the `files` field).
