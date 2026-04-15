@@ -5,6 +5,8 @@ import { testData as data } from '../support/fixtures/testData.js';
 import { buildRequestHandlerApp } from '../support/utils/AppFactory.js';
 
 describe('RequestHandler', () => {
+  const defaultSerializer = new Serializer(['id', 'name']);
+
   describe('#handle', () => {
     describe('without a serializer', () => {
       const app = buildRequestHandlerApp('/categories/:id/items/:item_id.json', data);
@@ -47,8 +49,7 @@ describe('RequestHandler', () => {
 
     describe('with a custom extractorFactory', () => {
       const factory = (_route, _params) => ({ steps: () => ['categories', 1] });
-      const serializer = new Serializer(['id', 'name']);
-      const app = buildRequestHandlerApp('/any/:x.json', data, serializer, factory);
+      const app = buildRequestHandlerApp('/any/:x.json', data, defaultSerializer, factory);
 
       it('uses the steps returned by the injected factory', async () => {
         const res = await request(app).get('/any/99.json');
@@ -58,8 +59,7 @@ describe('RequestHandler', () => {
     });
 
     describe('with a serializer', () => {
-      const serializer = new Serializer(['id', 'name']);
-      const app = buildRequestHandlerApp('/categories/:id.json', data, serializer);
+      const app = buildRequestHandlerApp('/categories/:id.json', data, defaultSerializer);
 
       it('returns the projected result', async () => {
         const res = await request(app).get('/categories/1.json');
