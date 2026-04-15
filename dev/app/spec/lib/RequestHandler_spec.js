@@ -1,10 +1,8 @@
 import request from 'supertest';
 import Serializer from '../../lib/Serializer.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { testData as data } from '../support/fixtures/testData.js';
 import { buildRequestHandlerApp } from '../support/utils/AppFactory.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
-
-const data = FixturesUtils.loadYamlFixture('data.yml');
 
 describe('RequestHandler', () => {
   describe('#handle', () => {

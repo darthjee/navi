@@ -1,7 +1,5 @@
 import DataNavigator from '../../lib/DataNavigator.js';
-import { FixturesUtils } from '../support/utils/FixturesUtils.js';
-
-const data = FixturesUtils.loadYamlFixture('data.yml');
+import { testData as data } from '../support/fixtures/testData.js';
 
 describe('DataNavigator', () => {
   describe('#navigate', () => {
