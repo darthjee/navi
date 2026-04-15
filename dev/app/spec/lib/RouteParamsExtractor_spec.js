@@ -1,6 +1,22 @@
 import RouteParamsExtractor from '../../lib/RouteParamsExtractor.js';
 
 describe('RouteParamsExtractor', () => {
+  describe('constructor', () => {
+    describe('when the route does not start with "/"', () => {
+      it('throws an error identifying the invalid pattern', () => {
+        expect(() => new RouteParamsExtractor('categories.json', {}))
+          .toThrowError('RouteParamsExtractor: invalid route pattern "categories.json" — must start with "/"');
+      });
+    });
+
+    describe('when the route is an empty string', () => {
+      it('throws an error', () => {
+        expect(() => new RouteParamsExtractor('', {}))
+          .toThrowError('RouteParamsExtractor: invalid route pattern "" — must start with "/"');
+      });
+    });
+  });
+
   describe('#steps', () => {
     describe('with no URL params', () => {
       it('returns string segments', () => {
@@ -36,6 +52,14 @@ describe('RouteParamsExtractor', () => {
       it('throws an error with the param name and value', () => {
         const extractor = new RouteParamsExtractor('/categories/:id.json', { id: 'abc' });
         expect(() => extractor.steps()).toThrowError('Invalid numeric parameter "id": abc');
+      });
+    });
+
+    describe('with an empty parameter name', () => {
+      it('throws an error identifying the route', () => {
+        const extractor = new RouteParamsExtractor('/categories/:.json', {});
+        expect(() => extractor.steps())
+          .toThrowError('RouteParamsExtractor: empty parameter name in route "/categories/:.json"');
       });
     });
   });
