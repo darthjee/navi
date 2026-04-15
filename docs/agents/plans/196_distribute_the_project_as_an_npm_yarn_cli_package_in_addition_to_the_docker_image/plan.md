@@ -41,19 +41,35 @@ In `source/package.json`:
 Add a script `scripts/check_tag_version.sh` that:
 
 - Reads the `version` field from `source/package.json`.
-- Compares it against the CircleCI tag (`$CIRCLE_TAG`).
-- Exits with a non-zero status and a clear error message if they do not match, causing the job to fail.
+- Extracts the current version from `README.md` by parsing the line matching `**Current Version:**` (format: `**Current Version:** [x.y.z](...)`).
+- Compares both against the CircleCI tag (`$CIRCLE_TAG`).
+- Exits with a non-zero status and a clear error message for each mismatch, causing the job to fail.
 
 Example logic:
 ```bash
 #!/bin/bash
 set -e
+
 PACKAGE_VERSION=$(node -p "require('./source/package.json').version")
+README_VERSION=$(grep -oP '(?<=\*\*Current Version:\*\* \[)[\d.]+' README.md)
+
+FAILED=0
+
 if [ "$CIRCLE_TAG" != "$PACKAGE_VERSION" ]; then
   echo "ERROR: Git tag ($CIRCLE_TAG) does not match package.json version ($PACKAGE_VERSION)"
+  FAILED=1
+fi
+
+if [ "$CIRCLE_TAG" != "$README_VERSION" ]; then
+  echo "ERROR: Git tag ($CIRCLE_TAG) does not match README.md version ($README_VERSION)"
+  FAILED=1
+fi
+
+if [ "$FAILED" = "1" ]; then
   exit 1
 fi
-echo "Tag and package.json version match: $CIRCLE_TAG"
+
+echo "All versions match: $CIRCLE_TAG"
 ```
 
 ### Step 3 — Add `check-version-tag` job to CircleCI
