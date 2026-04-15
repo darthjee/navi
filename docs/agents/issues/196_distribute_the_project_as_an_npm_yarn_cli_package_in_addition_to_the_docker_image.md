@@ -24,14 +24,16 @@ Currently, the project is released only as a Docker image. To expand distributio
   - Add a `bin` field pointing `navi` to `bin/navi.js`.
   - Add a `files` field listing only `lib/` and `bin/` to exclude `spec/` and other non-essential files from the published package.
 - Ensure `bin/navi.js` has the proper shebang (`#!/usr/bin/env node`) and serves as the CLI entrypoint.
-- Publish the package on npm or document the expected publishing process.
+- Publish the package on both npm and yarn registries.
+- Add a publication step to `.circleci/config.yml` to automate package publishing as part of the CI/CD pipeline.
 - Update the Dockerfile to install from the published package instead of copying source directly.
 - Update documentation to cover both Docker and `npx navi` usage options.
 
 ## Benefits
 
 - Broader integration options for pipelines that prefer npm/yarn-managed dependencies.
-- Easier updates via package managers.
+- Easier updates via package managers (both npm and yarn).
+- Automated publishing via CircleCI removes manual release steps.
 - Retains Docker distribution while following best practices (install from a published package).
 
 ---
