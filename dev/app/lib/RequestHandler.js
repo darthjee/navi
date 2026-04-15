@@ -40,6 +40,7 @@ class RequestHandler {
       if (result === null) return notFound(res);
       res.json(this.#serializer ? this.#serializer.serialize(result) : result);
     } catch (e) {
+      console.warn(`RequestHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
       res.status(400).json({ error: e.message });
     }
   }
