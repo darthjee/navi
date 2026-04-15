@@ -7,6 +7,7 @@
     "test": "npx c8 jasmine spec/**/*_spec.js spec/*_spec.js",
     "coverage": "npx c8 --reporter=lcov jasmine spec/**/*.js spec/*_spec.js",
     "lint": "eslint .",
+    "lint_fix": "eslint . --fix",
     "report": "jscpd app.js lib spec --reporters console,html --output ./report/jscpd"
   },
   "dependencies": {
