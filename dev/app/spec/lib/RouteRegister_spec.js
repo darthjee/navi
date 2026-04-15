@@ -2,16 +2,10 @@ import express from 'express';
 import request from 'supertest';
 import RouteRegister from '../../lib/RouteRegister.js';
 import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { buildRouteRegisterApp } from '../support/utils/AppFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
-
-const buildTestApp = (routes, routerData) => {
-  const app = express();
-  const register = new RouteRegister(app, routerData);
-  routes.forEach((opts) => register.register(opts));
-  return app;
-};
 
 describe('RouteRegister', () => {
   describe('#register', () => {
@@ -25,7 +19,7 @@ describe('RouteRegister', () => {
     });
 
     describe('with /categories/:id/items.json', () => {
-      const app = buildTestApp([{ route: '/categories/:id/items.json' }], data);
+      const app = buildRouteRegisterApp([{ route: '/categories/:id/items.json' }], data);
 
       it('returns items for a valid category', async () => {
         const res = await request(app).get('/categories/1/items.json');
@@ -40,7 +34,7 @@ describe('RouteRegister', () => {
     });
 
     describe('with /categories/:id/items/:item_id.json', () => {
-      const app = buildTestApp([{ route: '/categories/:id/items/:item_id.json' }], data);
+      const app = buildRouteRegisterApp([{ route: '/categories/:id/items/:item_id.json' }], data);
 
       it('returns the matching item', async () => {
         const res = await request(app).get('/categories/1/items/1.json');
@@ -55,7 +49,7 @@ describe('RouteRegister', () => {
     });
 
     describe('with attributes projection', () => {
-      const app = buildTestApp(
+      const app = buildRouteRegisterApp(
         [{ route: '/categories.json', attributes: ['id', 'name'] }],
         data
       );
@@ -68,7 +62,7 @@ describe('RouteRegister', () => {
     });
 
     describe('with attributes projection on a single resource', () => {
-      const app = buildTestApp(
+      const app = buildRouteRegisterApp(
         [{ route: '/categories/:id.json', attributes: ['id', 'name'] }],
         data
       );

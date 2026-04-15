@@ -1,23 +1,15 @@
-import express from 'express';
 import request from 'supertest';
-import RequestHandler from '../../lib/RequestHandler.js';
 import Serializer from '../../lib/Serializer.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
+import { buildRequestHandlerApp } from '../support/utils/AppFactory.js';
 import { FixturesUtils } from '../support/utils/FixturesUtils.js';
 
 const data = FixturesUtils.loadYamlFixture('data.yml');
 
-const buildTestApp = (route, routerData, serializer = null, extractorFactory = null) => {
-  const app = express();
-  const handler = new RequestHandler(route, routerData, serializer, extractorFactory);
-  app.get(route, (req, res) => handler.handle(req, res));
-  return app;
-};
-
 describe('RequestHandler', () => {
   describe('#handle', () => {
     describe('without a serializer', () => {
-      const app = buildTestApp('/categories/:id/items/:item_id.json', data);
+      const app = buildRequestHandlerApp('/categories/:id/items/:item_id.json', data);
 
       it('returns the raw navigation result as JSON', async () => {
         const res = await request(app).get('/categories/1/items/1.json');
@@ -32,7 +24,7 @@ describe('RequestHandler', () => {
     });
 
     describe('when a URL param is non-numeric', () => {
-      const app = buildTestApp('/categories/:id.json', data);
+      const app = buildRequestHandlerApp('/categories/:id.json', data);
 
       beforeEach(() => {
         spyOn(console, 'warn');
@@ -58,7 +50,7 @@ describe('RequestHandler', () => {
     describe('with a custom extractorFactory', () => {
       const factory = (_route, _params) => ({ steps: () => ['categories', 1] });
       const serializer = new Serializer(['id', 'name']);
-      const app = buildTestApp('/any/:x.json', data, serializer, factory);
+      const app = buildRequestHandlerApp('/any/:x.json', data, serializer, factory);
 
       it('uses the steps returned by the injected factory', async () => {
         const res = await request(app).get('/any/99.json');
@@ -69,7 +61,7 @@ describe('RequestHandler', () => {
 
     describe('with a serializer', () => {
       const serializer = new Serializer(['id', 'name']);
-      const app = buildTestApp('/categories/:id.json', data, serializer);
+      const app = buildRequestHandlerApp('/categories/:id.json', data, serializer);
 
       it('returns the projected result', async () => {
         const res = await request(app).get('/categories/1.json');
