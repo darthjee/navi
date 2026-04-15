@@ -7,70 +7,68 @@ import { buildRequestHandlerApp } from '../support/utils/AppFactory.js';
 describe('RequestHandler', () => {
   const defaultSerializer = new Serializer(['id', 'name']);
 
-  describe('#handle', () => {
-    describe('without a serializer', () => {
-      const app = buildRequestHandlerApp('/categories/:id/items/:item_id.json', data);
+  describe('#handle — without a serializer', () => {
+    const app = buildRequestHandlerApp('/categories/:id/items/:item_id.json', data);
 
-      it('returns the raw navigation result as JSON', async () => {
-        const res = await request(app).get('/categories/1/items/1.json');
-        expect(res.status).toBe(200);
-        expect(res.body).toEqual(HOBBIT_ITEM);
-      });
-
-      it('returns 404 when navigation returns null', async () => {
-        const res = await request(app).get('/categories/1/items/999.json');
-        expect(res.status).toBe(404);
-      });
+    it('returns the raw navigation result as JSON', async () => {
+      const res = await request(app).get('/categories/1/items/1.json');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(HOBBIT_ITEM);
     });
 
-    describe('when a URL param is non-numeric', () => {
-      const app = buildRequestHandlerApp('/categories/:id.json', data);
+    it('returns 404 when navigation returns null', async () => {
+      const res = await request(app).get('/categories/1/items/999.json');
+      expect(res.status).toBe(404);
+    });
+  });
 
-      beforeEach(() => {
-        spyOn(console, 'warn');
-      });
+  describe('#handle — when a URL param is non-numeric', () => {
+    const app = buildRequestHandlerApp('/categories/:id.json', data);
 
-      it('returns 400 with an error message', async () => {
-        const res = await request(app).get('/categories/abc.json');
-        expect(res.status).toBe(400);
-        expect(res.body.error).toContain('"id"');
-      });
-
-      it('logs the route and URL to console.warn', async () => {
-        await request(app).get('/categories/abc.json');
-        expect(console.warn).toHaveBeenCalledWith(
-          jasmine.stringContaining('/categories/:id.json')
-        );
-        expect(console.warn).toHaveBeenCalledWith(
-          jasmine.stringContaining('/categories/abc.json')
-        );
-      });
+    beforeEach(() => {
+      spyOn(console, 'warn');
     });
 
-    describe('with a custom extractorFactory', () => {
-      const factory = (_route, _params) => ({ steps: () => ['categories', 1] });
-      const app = buildRequestHandlerApp('/any/:x.json', data, defaultSerializer, factory);
-
-      it('uses the steps returned by the injected factory', async () => {
-        const res = await request(app).get('/any/99.json');
-        expect(res.status).toBe(200);
-        expect(res.body).toEqual(BOOKS_CATEGORY);
-      });
+    it('returns 400 with an error message', async () => {
+      const res = await request(app).get('/categories/abc.json');
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('"id"');
     });
 
-    describe('with a serializer', () => {
-      const app = buildRequestHandlerApp('/categories/:id.json', data, defaultSerializer);
+    it('logs the route and URL to console.warn', async () => {
+      await request(app).get('/categories/abc.json');
+      expect(console.warn).toHaveBeenCalledWith(
+        jasmine.stringContaining('/categories/:id.json')
+      );
+      expect(console.warn).toHaveBeenCalledWith(
+        jasmine.stringContaining('/categories/abc.json')
+      );
+    });
+  });
 
-      it('returns the projected result', async () => {
-        const res = await request(app).get('/categories/1.json');
-        expect(res.status).toBe(200);
-        expect(res.body).toEqual(BOOKS_CATEGORY);
-      });
+  describe('#handle — with a custom extractorFactory', () => {
+    const factory = (_route, _params) => ({ steps: () => ['categories', 1] });
+    const app = buildRequestHandlerApp('/any/:x.json', data, defaultSerializer, factory);
 
-      it('returns 404 when navigation returns null', async () => {
-        const res = await request(app).get('/categories/999.json');
-        expect(res.status).toBe(404);
-      });
+    it('uses the steps returned by the injected factory', async () => {
+      const res = await request(app).get('/any/99.json');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(BOOKS_CATEGORY);
+    });
+  });
+
+  describe('#handle — with a serializer', () => {
+    const app = buildRequestHandlerApp('/categories/:id.json', data, defaultSerializer);
+
+    it('returns the projected result', async () => {
+      const res = await request(app).get('/categories/1.json');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(BOOKS_CATEGORY);
+    });
+
+    it('returns 404 when navigation returns null', async () => {
+      const res = await request(app).get('/categories/999.json');
+      expect(res.status).toBe(404);
     });
   });
 });
