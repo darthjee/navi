@@ -34,10 +34,24 @@ describe('RequestHandler', () => {
     describe('when a URL param is non-numeric', () => {
       const app = buildTestApp('/categories/:id.json', data);
 
+      beforeEach(() => {
+        spyOn(console, 'warn');
+      });
+
       it('returns 400 with an error message', async () => {
         const res = await request(app).get('/categories/abc.json');
         expect(res.status).toBe(400);
         expect(res.body.error).toContain('"id"');
+      });
+
+      it('logs the route and URL to console.warn', async () => {
+        await request(app).get('/categories/abc.json');
+        expect(console.warn).toHaveBeenCalledWith(
+          jasmine.stringContaining('/categories/:id.json')
+        );
+        expect(console.warn).toHaveBeenCalledWith(
+          jasmine.stringContaining('/categories/abc.json')
+        );
       });
     });
 
