@@ -15,6 +15,7 @@ Currently, the project is released only as a Docker image. To expand distributio
 - Users can run `npx navi` directly, without installing the package globally — following the same usage pattern as `jasmine`.
 - The published npm package includes only `lib/` and `bin/` directories; `spec/` is excluded (e.g., via `files` field in `package.json`).
 - `bin/navi.js` serves as the CLI entrypoint, declared in `package.json`'s `bin` field.
+- Initially, only the API (Express) is functional via the CLI; the web UI (React frontend) is not included in this release and will be bundled in a future issue.
 - The Docker image installs the published package (e.g., via `yarn install`) instead of copying source code directly.
 - Documentation describes the new installation and usage options.
 
@@ -23,9 +24,13 @@ Currently, the project is released only as a Docker image. To expand distributio
 - Configure `package.json`:
   - Add a `bin` field pointing `navi` to `bin/navi.js`.
   - Add a `files` field listing only `lib/` and `bin/` to exclude `spec/` and other non-essential files from the published package.
-- Ensure `bin/navi.js` has the proper shebang (`#!/usr/bin/env node`) and serves as the CLI entrypoint.
-- Publish the package on both npm and yarn registries.
-- Add a publication step to `.circleci/config.yml` to automate package publishing as part of the CI/CD pipeline.
+  - Remove `react`, `react-dom`, and related packages from `dependencies` for now — the frontend is not included in this release.
+- `bin/navi.js` already exists with the correct shebang (`#!/usr/bin/env node`) and serves as the CLI entrypoint.
+- Publish the package on npmjs.com (available to both npm and yarn users from the same registry).
+- Add a dedicated `npm-publish` job to `.circleci/config.yml`:
+  - Runs only on version tags matching `\d+\.\d+\.\d+` (same filter as `build-and-release`), ignoring branches.
+  - Requires all test and check jobs to pass before running.
+  - Runs as a separate job alongside `build-and-release`, not merged into it.
 - Update the Dockerfile to install from the published package instead of copying source directly.
 - Update documentation to cover both Docker and `npx navi` usage options.
 
