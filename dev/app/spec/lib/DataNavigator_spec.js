@@ -3,49 +3,20 @@ import { testData as data } from '../support/fixtures/testData.js';
 
 describe('DataNavigator', () => {
   describe('#navigate', () => {
-    describe('with a single string step', () => {
-      it('returns the property value', () => {
-        const navigator = new DataNavigator(data, ['categories']);
-        expect(navigator.navigate()).toBe(data.categories);
-      });
+    const cases = [
+      { label: "with ['categories'] returns the property value", steps: ['categories'], expected: () => data.categories },
+      { label: "with ['unknown'] returns null for an unknown key", steps: ['unknown'], expected: () => null },
+      { label: "with ['categories', 1] finds the element by id", steps: ['categories', 1], expected: () => data.categories[0] },
+      { label: "with ['categories', 999] returns null when no element matches", steps: ['categories', 999], expected: () => null },
+      { label: "with ['categories', 1, 'items'] traverses nested string keys", steps: ['categories', 1, 'items'], expected: () => data.categories[0].items },
+      { label: "with ['categories', 1, 'items', 1] finds a nested element by id", steps: ['categories', 1, 'items', 1], expected: () => data.categories[0].items[0] },
+      { label: "with ['categories', 999, 'items'] returns null on intermediate fail", steps: ['categories', 999, 'items'], expected: () => null },
+      { label: "with ['categories', 1, 'items', 999] returns null on final fail", steps: ['categories', 1, 'items', 999], expected: () => null },
+    ];
 
-      it('returns null for an unknown key', () => {
-        const navigator = new DataNavigator(data, ['unknown']);
-        expect(navigator.navigate()).toBeNull();
-      });
-    });
-
-    describe('with a single integer step', () => {
-      it('finds the element by id', () => {
-        const navigator = new DataNavigator(data, ['categories', 1]);
-        expect(navigator.navigate()).toBe(data.categories[0]);
-      });
-
-      it('returns null when no element matches the id', () => {
-        const navigator = new DataNavigator(data, ['categories', 999]);
-        expect(navigator.navigate()).toBeNull();
-      });
-    });
-
-    describe('with chained steps', () => {
-      it('traverses nested string keys', () => {
-        const navigator = new DataNavigator(data, ['categories', 1, 'items']);
-        expect(navigator.navigate()).toBe(data.categories[0].items);
-      });
-
-      it('finds a nested element by id', () => {
-        const navigator = new DataNavigator(data, ['categories', 1, 'items', 1]);
-        expect(navigator.navigate()).toBe(data.categories[0].items[0]);
-      });
-
-      it('returns null when an intermediate integer step fails', () => {
-        const navigator = new DataNavigator(data, ['categories', 999, 'items']);
-        expect(navigator.navigate()).toBeNull();
-      });
-
-      it('returns null when a final integer step fails', () => {
-        const navigator = new DataNavigator(data, ['categories', 1, 'items', 999]);
-        expect(navigator.navigate()).toBeNull();
+    cases.forEach(({ label, steps, expected }) => {
+      it(label, () => {
+        expect(new DataNavigator(data, steps).navigate()).toEqual(expected());
       });
     });
 
