@@ -23,5 +23,19 @@ describe('Serializer', () => {
         ]);
       });
     });
+
+    describe('when a configured attribute is missing from the object', () => {
+      it('throws an error identifying the missing attribute', () => {
+        expect(() => serializer.serialize({ id: 1 }))
+          .toThrowError('Serializer: attribute "name" is not present in the data');
+      });
+    });
+
+    describe('when a configured attribute is missing from an array item', () => {
+      it('throws an error for the item with the missing attribute', () => {
+        expect(() => serializer.serialize([{ id: 1, name: 'Books' }, { id: 2 }]))
+          .toThrowError('Serializer: attribute "name" is not present in the data');
+      });
+    });
   });
 });
