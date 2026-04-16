@@ -8,9 +8,9 @@
 
 Cache Warmer Tool
 
-**Current Version:** [0.3.0](https://github.com/darthjee/navi/releases/tag/0.3.0)
+**Current Version:** [0.4.0](https://github.com/darthjee/navi/releases/tag/0.4.0)
 
-**Next Release:** [0.3.1](https://github.com/darthjee/navi/compare/0.3.0...main)
+**Next Release:** [0.4.1](https://github.com/darthjee/navi/compare/0.4.0...main)
 
 ---
 
@@ -22,6 +22,7 @@ Cache Warmer Tool
 - [Development](#development)
 - [Running Tests](#running-tests)
 - [Roadmap](#roadmap)
+- [Installation](#installation)
 
 ---
 
@@ -117,6 +118,40 @@ docker run --rm \
 ```
 
 In the development environment the config file lives at `docker_volumes/config/navi_config.yml` and is automatically mounted into the container.
+
+---
+
+## Installation
+
+### Via npm / yarn (npx)
+
+No installation required — run Navi directly using `npx`:
+
+```bash
+npx navi --config /path/to/your/config.yml
+```
+
+Or install globally:
+
+```bash
+# npm
+npm install -g navi
+
+# yarn
+yarn global add navi
+```
+
+Then run:
+
+```bash
+navi --config /path/to/your/config.yml
+```
+
+> **Note:** Only the API (Express web server) is available in the npm package. The web UI frontend will be bundled in a future release.
+
+### Docker
+
+See the [Running Navi](#running-navi) section below.
 
 ---
 
