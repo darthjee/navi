@@ -1,11 +1,11 @@
 {
-  "name": "navi",
+  "name": "navi-hey",
   "type": "module",
   "version": "0.4.0",
   "description": "Navi cache warmer CLI",
   "main": "index.js",
   "bin": {
-    "navi": "bin/navi.js"
+    "navi-hey": "bin/navi.js"
   },
   "files": ["bin", "lib"],
   "scripts": {

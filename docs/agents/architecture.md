@@ -235,7 +235,7 @@ Development workflow is Docker-based.
 | `make dev` | Runs the `navi_app` container with `/bin/bash`; allows interactive `yarn test`, `yarn lint`, etc. |
 | `make tests` | Runs the `navi_tests` container with `/bin/bash` for an isolated test environment. |
 | `make build-dev` | Builds the development Docker image tagged `navi:dev` from `dockerfiles/dev_navy/Dockerfile`. |
-| `make build` | Builds the production Docker image tagged `navi:latest` from `dockerfiles/navy/Dockerfile`. |
+| `make build` | Builds the production Docker image tagged `darthjee/navi-hey:latest` from `dockerfiles/navy/Dockerfile`. |
 
 ### Directory Conventions
 

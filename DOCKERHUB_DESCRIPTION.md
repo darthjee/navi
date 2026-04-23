@@ -29,7 +29,7 @@ Key features:
 ```bash
 docker run --rm \
   -v /path/to/your/config.yml:/home/node/app/config/navi_config.yml \
-  darthjee/navi:latest \
+  darthjee/navi-hey:latest \
   node navi.js config/navi_config.yml
 ```
 

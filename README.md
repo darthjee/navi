@@ -113,7 +113,7 @@ When running via Docker (the recommended approach), mount the YAML file as a vol
 ```bash
 docker run --rm \
   -v /path/to/your/config.yml:/home/node/app/config/navi_config.yml \
-  navi:latest \
+  darthjee/navi-hey:latest \
   node navi.js config/navi_config.yml
 ```
 
@@ -128,23 +128,23 @@ In the development environment the config file lives at `docker_volumes/config/n
 No installation required — run Navi directly using `npx`:
 
 ```bash
-npx navi --config /path/to/your/config.yml
+npx navi-hey --config /path/to/your/config.yml
 ```
 
 Or install globally:
 
 ```bash
 # npm
-npm install -g navi
+npm install -g navi-hey
 
 # yarn
-yarn global add navi
+yarn global add navi-hey
 ```
 
 Then run:
 
 ```bash
-navi --config /path/to/your/config.yml
+navi-hey --config /path/to/your/config.yml
 ```
 
 > **Note:** Only the API (Express web server) is available in the npm package. The web UI frontend will be bundled in a future release.
@@ -170,7 +170,7 @@ See the [Running Navi](#running-navi) section below.
    ```bash
    docker run --rm \
      -v /path/to/your/config.yml:/home/node/app/config/navi_config.yml \
-     navi:latest \
+     darthjee/navi-hey:latest \
      node navi.js config/navi_config.yml
    ```
 
@@ -220,7 +220,7 @@ This opens an interactive Bash shell inside the `navi_app` container, where you 
 | `make dev` | Opens a shell in the `navi_app` container. |
 | `make tests` | Opens a shell in the isolated `navi_tests` container. |
 | `make build-dev` | Builds the development Docker image (`navi:dev`). |
-| `make build` | Builds the production Docker image (`navi:latest`). |
+| `make build` | Builds the production Docker image (`darthjee/navi-hey:latest`). |
 
 ---
 
