@@ -57,6 +57,7 @@ web:
 clients:
   default:
     base_url: https://example.com
+    timeout: 5000            # ms before the request times out (default: 5000)
   auth_api:
     base_url: https://api.example.com
     headers:
@@ -97,6 +98,7 @@ resources:
 | `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
+| `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), which are resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
