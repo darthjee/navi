@@ -1,4 +1,5 @@
 import { Config } from '../../../lib/models/Config.js';
+import { LogConfig } from '../../../lib/models/LogConfig.js';
 import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
@@ -40,6 +41,18 @@ describe('Config', () => {
         expect(config.resourceRegistry).toEqual(expectedResourceRegistry);
         expect(config.clientRegistry).toEqual(expectedClientRegistry);
         expect(config.workersConfig).toEqual(expectedWorkersConfig);
+        expect(config.logConfig instanceof LogConfig).toBeTrue();
+        expect(config.logConfig.size).toBe(100);
+      });
+    });
+
+    describe('when the yaml file has a log section', () => {
+      it('returns a Config with the configured log size', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_log.yml');
+
+        const config = Config.fromFile(configFilePath);
+
+        expect(config.logConfig.size).toBe(50);
       });
     });
 
