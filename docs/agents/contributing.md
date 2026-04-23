@@ -14,6 +14,51 @@
 - **Descriptive Summary:** Every PR must include a clear and descriptive summary of its purpose and changes.
 - **PR Description Files:** If a description cannot be provided directly in the PR, generate a file with the PR description (e.g., `docs/issues/<pr_number>_description.md`), but do not commit this file.
 
+### PR Description Template
+
+Every PR description must follow this structure:
+
+```markdown
+## Issue
+
+Brief description of the problem or requirement this PR addresses.
+Reference the GitHub issue number if applicable (e.g., "Fixes #123").
+
+## Solution
+
+Brief description of the approach taken to solve the issue.
+Focus on *what* was done and *why* this approach was chosen.
+
+## Details
+
+Any additional information that helps reviewers understand the changes:
+- Notable implementation decisions
+- Trade-offs considered
+- Areas that may need extra attention
+- Testing notes or edge cases covered
+
+Omit this section if there is nothing relevant to add.
+```
+
+**Example:**
+
+```markdown
+## Issue
+
+`RequestHandler` spec had an unnecessary nesting level under `#handle`,
+making the test structure harder to read and navigate. Fixes #302.
+
+## Solution
+
+Removed the redundant `describe('#handle')` wrapper, flattening the spec
+so all test cases sit directly under the top-level `describe('RequestHandler')`.
+
+## Details
+
+No logic was changed — this is a pure structural refactor of the spec file.
+All existing tests continue to pass without modification.
+```
+
 ## Definition of Done for PRs
 
 A PR is considered complete when:
