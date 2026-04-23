@@ -55,7 +55,7 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
    Throws `ConfigurationFileNotProvided` if `configPath` is falsy.
    Throws `ConfigurationFileNotFound` if the file does not exist.
 2. `ConfigParser` validates required top-level keys and builds:
-   - `ClientRegistry` — named HTTP client definitions (`base_url`, optional `headers` with env var interpolation).
+   - `ClientRegistry` — named HTTP client definitions (`base_url`, optional `timeout` in ms, optional `headers` with env var interpolation).
    - `ResourceRegistry` — named resource groups, each containing one or more `ResourceRequest` entries.
    - `WorkersConfig` — worker pool size (`workers.quantity`, default 1) and `retryCooldown`.
    - `WebConfig` — web server port (`web.port`); `null` when the `web:` key is absent.
@@ -77,6 +77,7 @@ web:
 clients:
   default:
     base_url: https://example.com
+    timeout: 5000            # optional; ms before the request times out (default: 5000)
   auth_api:
     base_url: https://api.example.com
     headers:
