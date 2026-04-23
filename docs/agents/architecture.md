@@ -53,7 +53,7 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
 | `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
 | `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)` where `item` is a per-item `ResponseWrapper`. Exhausted after the first failure — no retry rights. |
-| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1) and the retry cooldown in milliseconds (`retryCooldown`, default 2000). |
+| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1), the retry cooldown in milliseconds (`retryCooldown`, default 2000), and the engine sleep interval in milliseconds (`sleep`, default 500). |
 | `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 
 ### `registry/`
