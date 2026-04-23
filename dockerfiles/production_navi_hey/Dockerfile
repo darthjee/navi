@@ -4,6 +4,6 @@ ARG NAVI_VERSION=latest
 
 ENV NODE_ENV=production
 
-RUN npm install -g navi@${NAVI_VERSION}
+RUN npm install -g navi-hey@${NAVI_VERSION}
 
 USER node
