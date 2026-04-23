@@ -8,11 +8,12 @@ Navi is a queue-based cache-warmer. It reads a YAML configuration file, enqueues
 source/bin/navi.js
   └─ ArgumentsParser.parse()          — --config / -c → configPath
   └─ Application.loadConfig(configPath)
-       ├─ Config  ────────────────────────────────── clients + resources + workers + web
+       ├─ Config  ────────────────────────────────── clients + resources + workers + web + log
        │    ├─ ClientRegistry    (named HTTP clients)
        │    ├─ ResourceRegistry  (named resource groups)
        │    ├─ WorkersConfig     (pool size + retry cooldown)
-       │    └─ WebConfig         (web server port — optional)
+       │    ├─ WebConfig         (web server port — optional)
+       │    └─ LogConfig         (log buffer size — optional)
        ├─ JobFactory.build()     — registers 'ResourceRequestJob' and 'Action' factories
        ├─ JobRegistry.build()    — singleton: enqueued / processing / failed /
        │                                       retryQueue / finished / dead
@@ -59,6 +60,7 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
    - `ResourceRegistry` — named resource groups, each containing one or more `ResourceRequest` entries.
    - `WorkersConfig` — worker pool size (`workers.quantity`, default 1) and `retryCooldown`.
    - `WebConfig` — web server port (`web.port`); `null` when the `web:` key is absent.
+   - `LogConfig` — log buffer size (`log.size`, default 100); uses default when the `log:` key is absent.
 3. `JobFactory.build('ResourceRequestJob', ...)` and `JobFactory.build('Action', ...)` register the two job factories.
 4. `JobRegistry.build({ cooldown })` creates the singleton with empty queues.
 5. `WorkersRegistry.build(workersConfig)` creates the singleton; `WorkersRegistry.initWorkers()` calls `WorkerFactory` to create the configured number of `Worker` instances (all start idle).
@@ -70,6 +72,9 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
 ```yaml
 workers:
   quantity: 5          # number of concurrent workers
+
+log:
+  size: 100            # max log entries kept in memory (default: 100)
 
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
