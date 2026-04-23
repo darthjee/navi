@@ -75,6 +75,20 @@ describe('ConfigParser', () => {
       });
     });
 
+    describe('when workers config includes sleep', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_sleep.yml');
+      });
+
+      it('returns a WorkersConfig with the configured sleep', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workersConfig).toEqual(
+          new WorkersConfig({ quantity: 5, sleep: 200 })
+        );
+      });
+    });
+
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/missing_clients_sample_config.yml');
