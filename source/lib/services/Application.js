@@ -6,6 +6,8 @@ import { Config } from '../models/Config.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 import { WebServer } from '../server/WebServer.js';
+import { BufferedLogger } from '../utils/logging/BufferedLogger.js';
+import { Logger } from '../utils/logging/Logger.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
@@ -16,6 +18,7 @@ import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
  */
 class Application {
   #workers;
+  #bufferedLogger;
 
   /**
    * Creates a new Application instance.
@@ -40,6 +43,8 @@ class Application {
 
     // Load the configuration from the specified path.
     this.config = Config.fromFile(configPath);
+    this.#bufferedLogger = new BufferedLogger(undefined, this.config.logConfig.size);
+    Logger.addLogger(this.#bufferedLogger);
     this.#initRegistries();
   }
 
@@ -65,7 +70,7 @@ class Application {
    * @returns {Engine} The created Engine instance.
    */
   buildEngine() {
-    return new Engine();
+    return new Engine({ sleepMs: this.config.workersConfig.sleep });
   }
 
   /**
@@ -76,6 +81,14 @@ class Application {
     return WebServer.build({
       webConfig: this.config.webConfig,
     });
+  }
+
+  /**
+   * Gets the buffered logger instance created during config loading.
+   * @returns {BufferedLogger} The buffered logger instance.
+   */
+  get bufferedLogger() {
+    return this.#bufferedLogger;
   }
 
   /**

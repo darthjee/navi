@@ -23,6 +23,7 @@ describe('Application', () => {
 
   afterEach(() => {
     Logger.suppress();
+    Logger.reset();
     JobRegistry.reset();
     JobFactory.reset();
     WorkersRegistry.reset();
@@ -72,6 +73,24 @@ describe('Application', () => {
         app.loadConfig(configFilePath);
 
         expect(workers.size()).toEqual(5);
+      });
+
+      it('creates a buffered logger with the default retention size', () => {
+        app.loadConfig(configFilePath);
+
+        expect(app.bufferedLogger.retention).toBe(100);
+      });
+    });
+
+    describe('when config file has a log size', () => {
+      beforeEach(() => {
+        configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_log.yml');
+      });
+
+      it('creates a buffered logger with the configured retention size', () => {
+        app.loadConfig(configFilePath);
+
+        expect(app.bufferedLogger.retention).toBe(50);
       });
     });
 

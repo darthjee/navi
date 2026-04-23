@@ -40,7 +40,7 @@ HTTP headers. A resource with no actions is a leaf node and ends the chain.
 
 - [x] CLI entrypoint (`source/bin/navi.js`) with `ArgumentsParser`
 - [x] Configuration loading from YAML (`ConfigLoader`, `ConfigParser`)
-- [x] `Config` model — `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, `WebConfig`
+- [x] `Config` model — `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, `WebConfig`, `LogConfig`
 - [x] `ResourceRequestCollector` — identifies parameter-free resources for initial enqueueing
 - [x] Initial enqueueing of parameter-free `ResourceRequest`s at startup
 - [x] `JobRegistry` singleton — queues: enqueued, processing, failed, retryQueue, finished, dead

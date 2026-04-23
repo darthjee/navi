@@ -1,5 +1,6 @@
 import { MissingClientsConfig } from '../../../lib/exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../../lib/exceptions/MissingResourceConfig.js';
+import { LogConfig } from '../../../lib/models/LogConfig.js';
 import { WebConfig } from '../../../lib/models/WebConfig.js';
 import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
 import { ConfigParser } from '../../../lib/services/ConfigParser.js';
@@ -70,6 +71,20 @@ describe('ConfigParser', () => {
 
         expect(result.workersConfig).toEqual(
           new WorkersConfig({ quantity: 5, retry_cooldown: 3000 })
+        );
+      });
+    });
+
+    describe('when workers config includes sleep', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_sleep.yml');
+      });
+
+      it('returns a WorkersConfig with the configured sleep', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workersConfig).toEqual(
+          new WorkersConfig({ quantity: 5, sleep: 200 })
         );
       });
     });
@@ -185,6 +200,33 @@ describe('ConfigParser', () => {
         const result = ConfigParser.fromObject(config);
 
         expect(result.clients.default.headers).toEqual({});
+      });
+    });
+
+    describe('when the config has a log key', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_log.yml');
+      });
+
+      it('returns a LogConfig instance', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.logConfig instanceof LogConfig).toBeTrue();
+      });
+
+      it('returns a LogConfig with the configured size', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.logConfig.size).toBe(50);
+      });
+    });
+
+    describe('when the config has no log key', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
+      });
+
+      it('returns a LogConfig with the default size', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.logConfig.size).toBe(100);
       });
     });
   });
