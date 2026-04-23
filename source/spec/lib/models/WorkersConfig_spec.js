@@ -12,6 +12,11 @@ describe('WorkersConfig', () => {
         const config = new WorkersConfig({ quantity: 5, retry_cooldown: 3000 });
         expect(config.retryCooldown).toBe(3000);
       });
+
+      it('should create an instance with custom sleep', () => {
+        const config = new WorkersConfig({ sleep: 200 });
+        expect(config.sleep).toBe(200);
+      });
     });
 
     describe('when a partial config object is provided', () => {
@@ -24,6 +29,11 @@ describe('WorkersConfig', () => {
         const config = new WorkersConfig({});
         expect(config.retryCooldown).toBe(2000);
       });
+
+      it('should create an instance with default sleep', () => {
+        const config = new WorkersConfig({});
+        expect(config.sleep).toBe(500);
+      });
     });
 
     describe('when no config object is provided', () => {
@@ -35,6 +45,11 @@ describe('WorkersConfig', () => {
       it('should create an instance with default retryCooldown', () => {
         const config = new WorkersConfig();
         expect(config.retryCooldown).toBe(2000);
+      });
+
+      it('should create an instance with default sleep', () => {
+        const config = new WorkersConfig();
+        expect(config.sleep).toBe(500);
       });
     });
   });
