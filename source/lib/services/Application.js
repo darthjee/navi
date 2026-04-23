@@ -111,7 +111,7 @@ class Application {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
 
-    JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown });
+    JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 
     WorkersRegistry.build({
       workers: this.#workers,

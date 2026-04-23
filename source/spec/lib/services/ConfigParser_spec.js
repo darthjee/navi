@@ -89,6 +89,20 @@ describe('ConfigParser', () => {
       });
     });
 
+    describe('when workers config includes max-retries', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_max_retries.yml');
+      });
+
+      it('returns a WorkersConfig with the configured maxRetries', () => {
+        const result = ConfigParser.fromObject(config);
+
+        expect(result.workersConfig).toEqual(
+          new WorkersConfig({ quantity: 5, 'max-retries': 5 })
+        );
+      });
+    });
+
     describe('when the config object does not contain a clients key', () => {
       beforeEach(() => {
         config = FixturesUtils.loadYamlFixture('config/missing_clients_sample_config.yml');

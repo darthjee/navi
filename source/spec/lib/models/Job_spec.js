@@ -72,6 +72,19 @@ describe('Job', () => {
       try { job._fail(error); } catch (_) { /* expected */ }
       expect(job.exhausted()).toBeTrue();
     });
+
+    describe('when a custom maxRetries is provided', () => {
+      it('returns false with fewer than maxRetries attempts', () => {
+        try { job._fail(error); } catch (_) { /* expected */ }
+        expect(job.exhausted(2)).toBeFalse();
+      });
+
+      it('returns true after maxRetries attempts', () => {
+        try { job._fail(error); } catch (_) { /* expected */ }
+        try { job._fail(error); } catch (_) { /* expected */ }
+        expect(job.exhausted(2)).toBeTrue();
+      });
+    });
   });
 
   describe('#_fail', () => {
