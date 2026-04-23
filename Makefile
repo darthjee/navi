@@ -8,10 +8,10 @@ TEST_SERVICE ?= $(PROJECT)_tests
 DEV_SHELL ?= /bin/bash
 IMAGE ?= $(PROJECT)
 APP_IMAGE ?= $(PROJECT)_app
-DOCKERFILE_DEV ?= dockerfiles/dev_navi/Dockerfile
+DOCKERFILE_DEV ?= dockerfiles/dev_navi_hey/Dockerfile
 DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
-DOCKERFILE_PROD ?= dockerfiles/production_navi/Dockerfile
-PROD_IMAGE := darthjee/navi
+DOCKERFILE_PROD ?= dockerfiles/production_navi_hey/Dockerfile
+PROD_IMAGE := darthjee/navi-hey
 PLATFORM := linux/amd64
 DOCKER_HUB_SCRIPT ?= /home/scripts/sbin/docker_hub.sh
 
