@@ -8,11 +8,12 @@ Navi is a queue-based cache-warmer. It reads a YAML configuration file, enqueues
 source/bin/navi.js
   └─ ArgumentsParser.parse()          — --config / -c → configPath
   └─ Application.loadConfig(configPath)
-       ├─ Config  ────────────────────────────────── clients + resources + workers + web
+       ├─ Config  ────────────────────────────────── clients + resources + workers + web + log
        │    ├─ ClientRegistry    (named HTTP clients)
        │    ├─ ResourceRegistry  (named resource groups)
        │    ├─ WorkersConfig     (pool size + retry cooldown)
-       │    └─ WebConfig         (web server port — optional)
+       │    ├─ WebConfig         (web server port — optional)
+       │    └─ LogConfig         (log buffer size — optional)
        ├─ JobFactory.build()     — registers 'ResourceRequestJob' and 'Action' factories
        ├─ JobRegistry.build()    — singleton: enqueued / processing / failed /
        │                                       retryQueue / finished / dead
@@ -55,10 +56,11 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
    Throws `ConfigurationFileNotProvided` if `configPath` is falsy.
    Throws `ConfigurationFileNotFound` if the file does not exist.
 2. `ConfigParser` validates required top-level keys and builds:
-   - `ClientRegistry` — named HTTP client definitions (`base_url`, optional `headers` with env var interpolation).
+   - `ClientRegistry` — named HTTP client definitions (`base_url`, optional `timeout` in ms, optional `headers` with env var interpolation).
    - `ResourceRegistry` — named resource groups, each containing one or more `ResourceRequest` entries.
-   - `WorkersConfig` — worker pool size (`workers.quantity`, default 1) and `retryCooldown`.
+   - `WorkersConfig` — worker pool size (`workers.quantity`, default 1), retry cooldown (`workers.retry_cooldown`, default 2000 ms), and engine sleep interval (`workers.sleep`, default 500 ms).
    - `WebConfig` — web server port (`web.port`); `null` when the `web:` key is absent.
+   - `LogConfig` — log buffer size (`log.size`, default 100); uses default when the `log:` key is absent.
 3. `JobFactory.build('ResourceRequestJob', ...)` and `JobFactory.build('Action', ...)` register the two job factories.
 4. `JobRegistry.build({ cooldown })` creates the singleton with empty queues.
 5. `WorkersRegistry.build(workersConfig)` creates the singleton; `WorkersRegistry.initWorkers()` calls `WorkerFactory` to create the configured number of `Worker` instances (all start idle).
@@ -69,7 +71,12 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
 
 ```yaml
 workers:
-  quantity: 5          # number of concurrent workers
+  quantity: 5          # number of concurrent workers (default: 1)
+  retry_cooldown: 2000 # ms before a failed job is retried (default: 2000)
+  sleep: 500           # ms the engine waits between allocation ticks (default: 500)
+
+log:
+  size: 100            # max log entries kept in memory (default: 100)
 
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
@@ -77,6 +84,7 @@ web:
 clients:
   default:
     base_url: https://example.com
+    timeout: 5000            # optional; ms before the request times out (default: 5000)
   auth_api:
     base_url: https://api.example.com
     headers:
@@ -115,6 +123,12 @@ Each `ResourceRequest` entry may specify:
 - `status` — expected HTTP response status code.
 - `client` — name of the client to use (falls back to `default`).
 - `actions` — optional list of actions to execute after a successful response (see section 6).
+
+The optional top-level `workers:` key configures the worker pool:
+
+- `quantity` — number of concurrent workers (default: `1`).
+- `retry_cooldown` — milliseconds a failed job waits before being re-queued for retry (default: `2000`).
+- `sleep` — milliseconds the engine waits between allocation ticks when all pending jobs are in cooldown (default: `500`).
 
 The optional top-level `web:` key configures the monitoring web UI:
 

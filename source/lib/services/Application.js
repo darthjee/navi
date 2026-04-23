@@ -70,7 +70,7 @@ class Application {
    * @returns {Engine} The created Engine instance.
    */
   buildEngine() {
-    return new Engine();
+    return new Engine({ sleepMs: this.config.workersConfig.sleep });
   }
 
   /**
