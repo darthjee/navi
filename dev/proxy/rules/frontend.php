@@ -8,7 +8,13 @@ Configuration::buildRule([
     'folder' => '/var/www/html/configuration/static'
   ],
   'matchers' => [
-    ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+    ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
+  ],
+  "middlewares" => [
+    [
+      'class' => 'Tent\Middlewares\SetPathMiddleware',
+      'path' => '/index.html'
+    ]
   ]
 ]);
 
@@ -18,12 +24,6 @@ Configuration::buildRule([
     'folder' => '/var/www/html/configuration/static'
   ],
   'matchers' => [
-    ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
-  ],
-  "middlewares" => [
-    [
-      'class' => 'Tent\Middlewares\SetPathMiddleware',
-      'path' => '/index.html'
-    ]
+    ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
   ]
 ]);
