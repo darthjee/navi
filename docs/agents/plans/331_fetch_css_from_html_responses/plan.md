@@ -81,17 +81,58 @@ In `source/lib/services/Application.js`:
 ### Step 11 — Tests
 
 For each new class, create the corresponding spec under `source/spec/lib/`:
-- `exceptions/InvalidHtmlResponseBody_spec.js`
-- `models/AssetRequest_spec.js`
-- `utils/HtmlParser_spec.js`
-- `models/HtmlParseJob_spec.js`
-- `models/AssetDownloadJob_spec.js`
+
+#### `exceptions/InvalidHtmlResponseBody_spec.js`
+- Extends `AppError`.
+- `error.name` equals `'InvalidHtmlResponseBody'`.
+
+#### `models/AssetRequest_spec.js`
+- `fromObject()` with all fields (`selector`, `attribute`, `client`, `status`) — returns correct instance.
+- `fromObject()` with only required fields — `client` is undefined, `status` defaults to `200`.
+- `fromListObject()` with a list — returns an array of `AssetRequest` instances.
+- `fromListObject()` with an empty list — returns an empty array.
+
+#### `utils/HtmlParser_spec.js`
+- Returns the matching attribute values for a given selector.
+- Returns values from multiple matching elements.
+- Returns an empty array when no elements match the selector (and logs a warning).
+- Skips elements that are missing the target attribute (and logs a warning for each).
+- Throws `InvalidHtmlResponseBody` when the raw HTML cannot be parsed.
+
+#### `models/HtmlParseJob_spec.js`
+- `perform()` calls `HtmlParser` once per `AssetRequest`.
+- Enqueues one `AssetDownloadJob` per discovered URL.
+- Resolves absolute URLs (`https://…`) as-is.
+- Resolves root-relative URLs (`/…`) by concatenating with the client's `base_url`.
+- Resolves protocol-relative URLs (`//…`) by prepending `https:`.
+- When a selector matches zero elements, no `AssetDownloadJob` is enqueued for that rule.
+- With multiple `AssetRequest` rules, all discovered URLs across all rules are enqueued.
+- No retry rights — the job is exhausted after the first failure.
+
+#### `models/AssetDownloadJob_spec.js`
+- `perform()` makes an HTTP request to the given URL using the named client.
+- Falls back to the `default` client when no `client` is specified.
+- Validates the expected HTTP status; does not throw when status matches.
+- Throws `RequestFailed` when the status does not match, following the standard retry/dead path.
+- Is a leaf node — does not enqueue further jobs after a successful fetch.
 
 Update existing specs:
-- `models/ResourceRequest_spec.js` — cover `assets` parsing and `enqueueAssets`.
-- `models/ResourceRequestJob_spec.js` — cover HTML branch (enqueues `HtmlParseJob`, skips `ResponseParser`).
-- `services/ConfigParser_spec.js` — cover `assets` key in config.
-- `services/Application_spec.js` — cover new factory registrations.
+
+#### `models/ResourceRequest_spec.js`
+- `fromObject()` with an `assets` list — parses into `AssetRequest[]`.
+- `fromObject()` without an `assets` key — `assets` is empty / null.
+- `enqueueAssets(rawHtml, jobRegistry)` enqueues one `HtmlParseJob`.
+
+#### `models/ResourceRequestJob_spec.js`
+- When the request has `assets`: enqueues `HtmlParseJob`; does **not** call `ResponseParser`.
+- When the request has `actions` only: existing behaviour unchanged.
+- When the request has both `assets` and `actions`: enqueues both `HtmlParseJob` and `ActionProcessingJob` independently.
+
+#### `services/ConfigParser_spec.js`
+- Config with an `assets` key on a resource request — produces `AssetRequest[]` on the resulting `ResourceRequest`.
+
+#### `services/Application_spec.js`
+- Registers `HtmlParse` and `AssetDownload` factories during `loadConfig`.
 
 ### Step 12 — Update documentation
 
