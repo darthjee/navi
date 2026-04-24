@@ -51,12 +51,21 @@ class ResourceRequestJob extends Job {
    * @private
    */
   #handleResponse(response) {
-    if (this.#resourceRequest.hasAssets()) {
-      this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
-    }
+    this.#enqueueAssets(response);
     const wrapper = new ResponseWrapper(response, this.#parameters);
     this.#resourceRequest.enqueueActions(wrapper);
     return response;
+  }
+
+  /**
+   * Enqueues asset download jobs when the resource request declares asset rules.
+   * @param {object} response The HTTP response object.
+   * @private
+   */
+  #enqueueAssets(response) {
+    if (this.#resourceRequest.hasAssets()) {
+      this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
+    }
   }
 
   /**
