@@ -1,7 +1,10 @@
+import { AssetRequest } from '../../../lib/models/AssetRequest.js';
 import { ResourceRequest } from '../../../lib/models/ResourceRequest.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
+import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
+import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestActionFactory } from '../../support/factories/ResourceRequestActionFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
@@ -173,6 +176,77 @@ describe('ResourceRequest', () => {
           jasmine.objectContaining({ action })
         );
       });
+    });
+  });
+
+  describe('#hasAssets', () => {
+    it('returns false when the assets list is empty', () => {
+      const request = ResourceRequestFactory.build();
+      expect(request.hasAssets()).toBeFalse();
+    });
+
+    it('returns true when the assets list is non-empty', () => {
+      const assetAttrs = [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }];
+      const request = new ResourceRequest({ url: '/', status: 200, assets: assetAttrs });
+      expect(request.hasAssets()).toBeTrue();
+    });
+  });
+
+  describe('.fromList with assets', () => {
+    it('parses the assets list into AssetRequest instances', () => {
+      const resources = [
+        { url: '/', status: 200, assets: [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }] },
+      ];
+
+      const [request] = ResourceRequest.fromList(resources);
+
+      expect(request.assets.length).toBe(1);
+      expect(request.assets[0]).toBeInstanceOf(AssetRequest);
+    });
+
+    it('sets an empty assets array when the key is absent', () => {
+      const resources = [{ url: '/', status: 200 }];
+      const [request] = ResourceRequest.fromList(resources);
+
+      expect(request.assets).toEqual([]);
+      expect(request.hasAssets()).toBeFalse();
+    });
+  });
+
+  describe('#enqueueAssets', () => {
+    let request;
+    let jobRegistry;
+    let clientRegistry;
+
+    beforeEach(() => {
+      spyOn(Logger, 'info').and.stub();
+      spyOn(Logger, 'error').and.stub();
+      jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
+      clientRegistry = ClientRegistryFactory.build();
+      const assetAttrs = [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }];
+      request = new ResourceRequest({ url: '/', status: 200, assets: assetAttrs });
+    });
+
+    it('enqueues one HtmlParseJob with the correct rawHtml and assetRequests', () => {
+      const rawHtml = '<html><head><link rel="stylesheet" href="/a.css"></head></html>';
+      request.enqueueAssets(rawHtml, jobRegistry, clientRegistry);
+
+      expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('HtmlParse', jasmine.objectContaining({
+        rawHtml,
+        assetRequests: request.assets,
+        clientRegistry,
+      }));
+    });
+
+    it('passes the assetRequests from the request', () => {
+      const assetRequest = AssetRequestFactory.build();
+      request = new ResourceRequest({ url: '/', status: 200, assets: [] });
+      request.assets = [assetRequest];
+      request.enqueueAssets('<html></html>', jobRegistry, clientRegistry);
+
+      expect(jobRegistry.enqueue).toHaveBeenCalledWith('HtmlParse',
+        jasmine.objectContaining({ assetRequests: [assetRequest] })
+      );
     });
   });
 

@@ -56,8 +56,17 @@ HTTP headers. A resource with no actions is a leaf node and ends the chain.
 
 ### Resource Chaining
 
-- [ ] `ResourceRequestAction.execute()` should enqueue a new `ResourceRequestJob` with
+- [x] `ResourceRequestAction.execute()` should enqueue a new `ResourceRequestJob` with
       mapped parameters instead of only logging them
+
+### Asset Fetching
+
+- [x] `ResourceRequest` supports an `assets` list with CSS-selector + attribute rules
+- [x] `HtmlParser` utility extracts asset URLs from HTML using `node-html-parser`
+- [x] `HtmlParseJob` parses HTML responses and enqueues `AssetDownloadJob` per asset URL
+- [x] `AssetDownloadJob` fetches fully-resolved asset URLs (leaf node — no further chaining)
+- [x] `ResourceRequestJob` enqueues `HtmlParseJob` when the resource declares `assets`
+- [x] `Client.performUrl()` added for fetching absolute (pre-resolved) URLs
 
 ### Web Interface
 

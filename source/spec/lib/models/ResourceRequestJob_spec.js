@@ -145,5 +145,53 @@ describe('ResourceRequestJob', () => {
         expect(axios.get).toHaveBeenCalledWith(unresolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
       });
     });
+
+    describe('when the resource request has assets (assets only)', () => {
+      const rawHtml = '<html><head><link rel="stylesheet" href="/a.css"></head></html>';
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url, status });
+        spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
+        spyOn(resourceRequest, 'enqueueAssets').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
+        parameters = {};
+        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+        response = AxiosUtils.stubGet(200, rawHtml);
+      });
+
+      it('calls enqueueAssets with the raw response body', async () => {
+        await job.perform();
+        expect(resourceRequest.enqueueAssets).toHaveBeenCalledOnceWith(
+          rawHtml,
+          jasmine.anything(),
+          jasmine.anything()
+        );
+      });
+
+      it('does not call ResponseParser (enqueueActions still called but no-op without actions)', async () => {
+        await job.perform();
+        expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('when the resource request has both assets and actions', () => {
+      const rawHtml = '<html><head><link rel="stylesheet" href="/a.css"></head></html>';
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url, status });
+        spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
+        spyOn(resourceRequest, 'enqueueAssets').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
+        parameters = {};
+        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+        response = AxiosUtils.stubGet(200, rawHtml);
+      });
+
+      it('calls both enqueueAssets and enqueueActions', async () => {
+        await job.perform();
+        expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
+        expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });

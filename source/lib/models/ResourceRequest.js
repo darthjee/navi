@@ -1,5 +1,7 @@
 import { ActionsEnqueuer } from './ActionsEnqueuer.js';
+import { AssetRequest } from './AssetRequest.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
+import { JobRegistry as DefaultJobRegistry } from '../registry/JobRegistry.js';
 
 /**
  * ResourceRequest represents a request to a specific URL with an expected status code.
@@ -14,12 +16,14 @@ class ResourceRequest {
    * @param {number} attributes.status The expected status code of the response.
    * @param {string} [attributes.clientName] The name of the client to use for this request.
    * @param {Array} [attributes.actions=[]] List of raw action config objects.
+   * @param {Array} [attributes.assets=[]] List of raw asset extraction rule objects.
    */
-  constructor({ url, status, clientName, actions = [] }) {
+  constructor({ url, status, clientName, actions = [], assets = [] }) {
     this.url = url;
     this.status = status;
     this.#clientName = clientName;
     this.actions = ResourceRequestAction.fromList(actions);
+    this.assets = AssetRequest.fromListObject(assets);
   }
 
   /**
@@ -42,6 +46,25 @@ class ResourceRequest {
 
     const itemWrappers = responseWrapper.toItemWrappers();
     new ActionsEnqueuer(this.actions, itemWrappers).enqueue();
+  }
+
+  /**
+   * Enqueues one HtmlParseJob for this resource request's asset extraction rules.
+   * @param {string} rawHtml The raw HTML response body string.
+   * @param {object} [jobRegistry=JobRegistry] The job registry used to enqueue the HtmlParseJob.
+   * @param {object} clientRegistry The client registry for URL resolution inside HtmlParseJob.
+   * @returns {void}
+   */
+  enqueueAssets(rawHtml, jobRegistry = DefaultJobRegistry, clientRegistry) {
+    jobRegistry.enqueue('HtmlParse', { rawHtml, assetRequests: this.assets, clientRegistry });
+  }
+
+  /**
+   * Returns true when the resource request has at least one asset extraction rule.
+   * @returns {boolean} True if assets are configured.
+   */
+  hasAssets() {
+    return this.assets.length > 0;
   }
 
   /**

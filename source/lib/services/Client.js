@@ -65,11 +65,24 @@ class Client {
     try {
       return await this.#request(resourceRequest, requestUrl);
     } catch (error) {
-      Logger.error(`Request failed: ${error}`);
-      if (error.response) {
-        throw new RequestFailed(error.response.status, requestUrl);
-      }
-      throw error;
+      this.#handleError(error, requestUrl);
+    }
+  }
+
+  /**
+   * Performs an HTTP request to the given fully-resolved URL and validates the expected status.
+   * Unlike `perform`, this method accepts an absolute URL directly and does not prepend `baseUrl`.
+   * @param {string} absoluteUrl The fully-resolved URL to request.
+   * @param {number} expectedStatus The expected HTTP response status code.
+   * @returns {Promise<object>} The Axios response object.
+   * @throws {RequestFailed} If the response status does not match `expectedStatus`.
+   */
+  async performUrl(absoluteUrl, expectedStatus) {
+    Logger.info(`[Client:${this.name}] Requesting ${absoluteUrl}`);
+    try {
+      return await this.#requestUrl(absoluteUrl, expectedStatus);
+    } catch (error) {
+      this.#handleError(error, absoluteUrl);
     }
   }
 
@@ -82,17 +95,43 @@ class Client {
    * @throws {RequestFailed} Throws an error if the response status does not match.
    */
   async #request(resourceRequest, requestUrl) {
+    return this.#requestUrl(requestUrl, resourceRequest.status);
+  }
+
+  /**
+   * Performs the HTTP GET request to the given URL and validates the response status.
+   * @param {string} requestUrl The full URL to request.
+   * @param {number} expectedStatus The expected HTTP response status code.
+   * @returns {Promise<object>} The Axios response object.
+   * @throws {RequestFailed} Throws an error if the response status does not match.
+   */
+  async #requestUrl(requestUrl, expectedStatus) {
     const response = await axios.get(requestUrl, {
       timeout: this.timeout,
       responseType: 'text',
       headers: this.headers,
     });
 
-    if (response.status !== resourceRequest.status) {
+    if (response.status !== expectedStatus) {
       throw new RequestFailed(response.status, requestUrl);
     }
 
     return response;
+  }
+
+  /**
+   * Handles a caught request error, logging it and re-throwing as RequestFailed when applicable.
+   * @param {Error} error The caught error.
+   * @param {string} requestUrl The URL that was requested.
+   * @throws {RequestFailed} If the error has a response object.
+   * @throws {Error} Re-throws the original error otherwise.
+   */
+  #handleError(error, requestUrl) {
+    Logger.error(`Request failed: ${error}`);
+    if (error.response) {
+      throw new RequestFailed(error.response.status, requestUrl);
+    }
+    throw error;
   }
 
   /**
