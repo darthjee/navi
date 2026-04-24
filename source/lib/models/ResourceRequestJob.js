@@ -37,16 +37,26 @@ class ResourceRequestJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
-      if (this.#resourceRequest.hasAssets()) {
-        this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
-      }
-      const wrapper = new ResponseWrapper(response, this.#parameters);
-      this.#resourceRequest.enqueueActions(wrapper);
-      return response;
+      return this.#handleResponse(response);
     } catch (error) {
       Logger.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
     }
+  }
+
+  /**
+   * Handles the successful HTTP response: enqueues asset jobs and action jobs.
+   * @param {object} response The HTTP response object.
+   * @returns {object} The same response object.
+   * @private
+   */
+  #handleResponse(response) {
+    if (this.#resourceRequest.hasAssets()) {
+      this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
+    }
+    const wrapper = new ResponseWrapper(response, this.#parameters);
+    this.#resourceRequest.enqueueActions(wrapper);
+    return response;
   }
 
   /**

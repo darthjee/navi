@@ -1,5 +1,5 @@
+import { AssetRequestEnqueuer } from './AssetRequestEnqueuer.js';
 import { Job } from './Job.js';
-import { HtmlParser } from '../utils/HtmlParser.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -42,15 +42,7 @@ class HtmlParseJob extends Job {
     try {
       this.lastError = undefined;
       for (const assetRequest of this.#assetRequests) {
-        const urls = HtmlParser.parse(this.#rawHtml, assetRequest.selector, assetRequest.attribute);
-        for (const url of urls) {
-          const resolvedUrl = this.#resolveUrl(url, assetRequest.client);
-          this.#jobRegistry.enqueue('AssetDownload', {
-            url: resolvedUrl,
-            client: assetRequest.client,
-            status: assetRequest.status,
-          });
-        }
+        new AssetRequestEnqueuer(this.#rawHtml, assetRequest, this.#jobRegistry, this.#clientRegistry).enqueue();
       }
     } catch (error) {
       this._fail(error);
@@ -64,30 +56,6 @@ class HtmlParseJob extends Job {
    */
   exhausted() {
     return this._attempts >= 1;
-  }
-
-  /**
-   * Resolves the discovered URL to an absolute URL.
-   *
-   * | Form | Resolution |
-   * |------|------------|
-   * | Absolute (`https://…`) | Used as-is. |
-   * | Protocol-relative (`//…`) | Prepended with `https:`. |
-   * | Root-relative (`/…`) | Concatenated with the named client's `baseUrl`. |
-   * @param {string} url The raw URL extracted from the HTML element attribute.
-   * @param {string} [clientName] The name of the client, used to look up `baseUrl`.
-   * @returns {string} The fully-resolved absolute URL.
-   * @private
-   */
-  #resolveUrl(url, clientName) {
-    if (url.startsWith('https://') || url.startsWith('http://')) {
-      return url;
-    }
-    if (url.startsWith('//')) {
-      return `https:${url}`;
-    }
-    const client = this.#clientRegistry.getClient(clientName);
-    return `${client.baseUrl}${url}`;
   }
 }
 

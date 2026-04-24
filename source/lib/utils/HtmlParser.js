@@ -1,4 +1,5 @@
 import { parse } from 'node-html-parser';
+import { HtmlElementParser } from './HtmlElementParser.js';
 import { InvalidHtmlResponseBody } from '../exceptions/InvalidHtmlResponseBody.js';
 import { Logger } from './logging/Logger.js';
 
@@ -37,12 +38,8 @@ class HtmlParser {
 
     const values = [];
     for (const element of elements) {
-      const value = element.getAttribute(attribute);
-      if (value === undefined || value === null) {
-        Logger.warn(`HtmlParser: element matched by "${selector}" is missing attribute "${attribute}"`);
-      } else {
-        values.push(value);
-      }
+      const value = new HtmlElementParser(element, selector).getAttribute(attribute);
+      if (value !== null) values.push(value);
     }
 
     return values;

@@ -65,11 +65,7 @@ class Client {
     try {
       return await this.#request(resourceRequest, requestUrl);
     } catch (error) {
-      Logger.error(`Request failed: ${error}`);
-      if (error.response) {
-        throw new RequestFailed(error.response.status, requestUrl);
-      }
-      throw error;
+      this.#handleError(error, requestUrl);
     }
   }
 
@@ -86,11 +82,7 @@ class Client {
     try {
       return await this.#requestUrl(absoluteUrl, expectedStatus);
     } catch (error) {
-      Logger.error(`Request failed: ${error}`);
-      if (error.response) {
-        throw new RequestFailed(error.response.status, absoluteUrl);
-      }
-      throw error;
+      this.#handleError(error, absoluteUrl);
     }
   }
 
@@ -125,6 +117,21 @@ class Client {
     }
 
     return response;
+  }
+
+  /**
+   * Handles a caught request error, logging it and re-throwing as RequestFailed when applicable.
+   * @param {Error} error The caught error.
+   * @param {string} requestUrl The URL that was requested.
+   * @throws {RequestFailed} If the error has a response object.
+   * @throws {Error} Re-throws the original error otherwise.
+   */
+  #handleError(error, requestUrl) {
+    Logger.error(`Request failed: ${error}`);
+    if (error.response) {
+      throw new RequestFailed(error.response.status, requestUrl);
+    }
+    throw error;
   }
 
   /**
