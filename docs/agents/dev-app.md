@@ -202,7 +202,7 @@ yarn report     # JSCPD duplication analysis
 | `checks-dev-frontend` | `dev/frontend/` | ESLint + JSCPD |
 | `coverage-final` | — | Sends the Codacy `final` signal after all partial uploads complete |
 
-`coverage-final` depends on `jasmine`, `jasmine-dev`, `jasmine-dev-frontend`, and `jasmine-frontend` so Codacy receives a combined coverage report from all applications.
+`coverage-final` depends on `jasmine`, `jasmine-dev`, `jasmine-dev-frontend`, and `jasmine-frontend` so Codacy receives a combined coverage report from all four test suites (main application, dev backend, dev frontend, and main frontend).
 
 All jobs run on every push and every tag. There are no branch restrictions on the test jobs.
 
