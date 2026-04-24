@@ -56,10 +56,11 @@ class Job {
 
   /**
    * Checks if the job has been exhausted (i.e., has reached the maximum number of attempts).
+   * @param {number} [maxRetries=3] - Maximum number of retries before the job is considered dead.
    * @returns {boolean} True if the job is exhausted, false otherwise.
    */
-  exhausted() {
-    return this.#attempts >= 3;
+  exhausted(maxRetries = 3) {
+    return this.#attempts >= maxRetries;
   }
 
   /**

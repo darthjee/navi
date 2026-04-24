@@ -18,6 +18,7 @@ class JobRegistryInstance {
   #dead;
   #processing;
   #cooldown;
+  #maxRetries;
 
   /**
    * @param {object} [options={}] - Construction options.
@@ -28,8 +29,9 @@ class JobRegistryInstance {
    * @param {IdentifyableCollection} [options.dead] - Initial dead jobs collection.
    * @param {IdentifyableCollection} [options.processing] - Initial processing jobs collection.
    * @param {number} [options.cooldown=5000] - Cooldown in milliseconds before a failed job is retried.
+   * @param {number} [options.maxRetries=3] - Maximum number of retries before a job is marked dead.
    */
-  constructor({ queue, failed, retryQueue, finished, dead, processing, cooldown = 5000 } = {}) {
+  constructor({ queue, failed, retryQueue, finished, dead, processing, cooldown = 5000, maxRetries = 3 } = {}) {
     this.#enqueued = queue || new Queue();
     this.#failed = failed || new SortedCollection([], { sortBy: FAILED_SORT_BY });
     this.#retryQueue = retryQueue || new Queue();
@@ -37,6 +39,7 @@ class JobRegistryInstance {
     this.#dead = dead || new IdentifyableCollection();
     this.#processing = processing || new IdentifyableCollection();
     this.#cooldown = cooldown;
+    this.#maxRetries = maxRetries;
   }
 
   /**
@@ -59,7 +62,7 @@ class JobRegistryInstance {
   fail(job) {
     if (!job) return;
     this.#processing.remove(job.id);
-    if (job.exhausted()) {
+    if (job.exhausted(this.#maxRetries)) {
       this.#dead.push(job);
     } else {
       job.applyCooldown(this.#cooldown);
