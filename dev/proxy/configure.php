@@ -11,3 +11,4 @@ use Tent\Models\RequestMatcher;
 
 require_once __DIR__ . '/middlewares/RandomFailureMiddleware.php';
 require_once __DIR__ . '/rules/backend.php';
+require_once __DIR__ . '/rules/frontend.php';
