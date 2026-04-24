@@ -23,6 +23,7 @@ Cache Warmer Tool
 - [Running Tests](#running-tests)
 - [Roadmap](#roadmap)
 - [Installation](#installation)
+- [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/HOW_TO_USE_NAVI.md)
 
 ---
 
