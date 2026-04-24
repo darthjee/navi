@@ -5,7 +5,7 @@ use Tent\Configuration;
 Configuration::buildRule([
   'handler' => [
     'type' => 'static',
-    'folder' => '/var/www/html/configuration/static'
+    'location' => '/var/www/html/configuration/static'
   ],
   'matchers' => [
     ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
@@ -21,7 +21,7 @@ Configuration::buildRule([
 Configuration::buildRule([
   'handler' => [
     'type' => 'static',
-    'folder' => '/var/www/html/configuration/static'
+    'location' => '/var/www/html/configuration/static'
   ],
   'matchers' => [
     ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
