@@ -34,6 +34,7 @@ The dev app currently lacks a frontend, which prevents truly testing it end-to-e
   - Serve static files from `dev/proxy/static/`.
   - Forward `.json` requests to `dev/app`.
   - Fall back to `index.html` for all other non-matched requests (SPA routing support).
+- Add tests (Jasmine) and lint configuration to `dev/frontend/`, following the same patterns used in other parts of the project.
 - Update `.circleci/config.yml` to add two new CI jobs:
   - `jasmine-dev-frontend`: runs the frontend test suite.
   - `checks-dev-frontend`: runs linting and other static checks for the frontend.
