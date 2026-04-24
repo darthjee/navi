@@ -28,9 +28,14 @@ Write the file with the following sections:
 ## Files to Change
 
 - `docs/HOW_TO_USE_NAVI.md` — new file (documentation only)
+- `README.md` — add a link to `docs/HOW_TO_USE_NAVI.md` so readers know the guide exists
+- `source/README.md` — same: add a link to the guide
+- `DOCKERHUB_DESCRIPTION.md` — same: add a link to the guide
 
 ## Notes
 
 - No source code, tests, or CI configuration need to change.
 - The YAML config example should use the headless mode (no `web:` key), since both scenarios target CI without a web interface.
 - CLI invocation details (flags, default config path) should be verified against `source/lib/services/ArgumentsParser.js` if needed.
+- The link added to each README should make it clear that the guide is intended for both human developers and AI agents integrating Navi into other projects.
+- All links must use the full GitHub URL: `https://github.com/darthjee/navi/blob/main/docs/HOW_TO_USE_NAVI.md`
