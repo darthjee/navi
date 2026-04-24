@@ -198,11 +198,86 @@ yarn report     # JSCPD duplication analysis
 | `checks` | `source/` | ESLint + JSCPD |
 | `jasmine-dev` | `dev/app/` | Runs dev-app tests + uploads coverage to Codacy (partial) |
 | `checks-dev` | `dev/app/` | ESLint + JSCPD |
-| `coverage-final` | — | Sends the Codacy `final` signal after both partial uploads complete |
+| `jasmine-dev-frontend` | `dev/frontend/` | Runs dev-frontend tests + uploads coverage to Codacy (partial) |
+| `checks-dev-frontend` | `dev/frontend/` | ESLint + JSCPD |
+| `coverage-final` | — | Sends the Codacy `final` signal after all partial uploads complete |
 
-`jasmine-dev` and `checks-dev` mirror the structure of `jasmine` and `checks`. `coverage-final` depends on both `jasmine` and `jasmine-dev` so Codacy receives a combined coverage report from both applications.
+`coverage-final` depends on `jasmine`, `jasmine-dev`, `jasmine-dev-frontend`, and `jasmine-frontend` so Codacy receives a combined coverage report from all four test suites (main application, dev backend, dev frontend, and main frontend).
 
 All jobs run on every push and every tag. There are no branch restrictions on the test jobs.
+
+---
+
+## `dev/frontend/` — React + Vite frontend application
+
+### Overview
+
+`dev/frontend/` is a React single-page application (SPA) that provides a browser UI for browsing the categories and items served by `dev/app/`. It is built with Vite and served as static assets through `navi_proxy`.
+
+### Structure
+
+```
+dev/frontend/
+├── index.html
+├── package.json
+├── eslint.config.mjs
+├── vite.config.js
+├── yarn.lock
+├── src/
+│   ├── App.jsx                  # Root component with BrowserRouter + Routes
+│   ├── main.jsx                 # Entry point — mounts App into #root
+│   ├── clients/
+│   │   ├── CategoriesClient.js  # fetch wrappers for /categories*.json
+│   │   └── ItemsClient.js       # fetch wrappers for /categories/:id/items*.json
+│   ├── pages/
+│   │   ├── IndexPage.jsx
+│   │   ├── CategoriesIndexPage.jsx
+│   │   ├── CategoryPage.jsx
+│   │   ├── CategoryItemsIndexPage.jsx
+│   │   └── CategoryItemPage.jsx
+│   └── styles/
+│       └── main.css             # Imports Bootstrap CSS
+└── spec/
+    ├── clients/
+    │   ├── CategoriesClient_spec.js
+    │   └── ItemsClient_spec.js
+    ├── pages/
+    │   ├── IndexPage_spec.js
+    │   ├── CategoriesIndexPage_spec.js
+    │   ├── CategoryPage_spec.js
+    │   ├── CategoryItemsIndexPage_spec.js
+    │   └── CategoryItemPage_spec.js
+    └── support/
+        ├── jasmine.json         # Jasmine config — loads dom.js helper
+        ├── dom.js               # Sets up jsdom globals for Node.js
+        ├── loader.js            # Registers ESM transform hook
+        └── transform_hooks.js   # esbuild-powered JSX transform hook
+```
+
+### Routes
+
+| Path | Component |
+|------|-----------|
+| `/` | `IndexPage` |
+| `/categories` | `CategoriesIndexPage` |
+| `/categories/:id` | `CategoryPage` |
+| `/categories/:id/items` | `CategoryItemsIndexPage` |
+| `/categories/:categoryId/items/:id` | `CategoryItemPage` |
+
+### Build and serving
+
+The frontend is built with `yarn build` (Vite) and the output lands in `dev/proxy/static/` (mounted into the proxy container). The proxy serves static files for non-`.json` requests and falls back to `index.html` for SPA routing.
+
+### Running tests
+
+Inside the `dev/frontend/` directory:
+
+```bash
+yarn test       # Run tests with c8 coverage (text + HTML)
+yarn coverage   # Run tests and produce coverage/lcov.info (for CI)
+yarn lint       # ESLint
+yarn report     # JSCPD duplication analysis
+```
 
 ---
 
@@ -211,7 +286,8 @@ All jobs run on every push and every tag. There are no branch restrictions on th
 | Service | Image | Port | Purpose |
 |---------|-------|------|---------|
 | `navi_dev_app` | `navi_app:dev` | `3020:80` | Runs the Express dev app from `dev/app/` |
-| `navi_proxy` | `darthjee/tent:0.5.0` | `3010:80` | Reverse-proxy + caching layer in front of `navi_dev_app` |
+| `navi_dev_frontend` | `navi_dev_frontend:dev` | — | Builds the React SPA from `dev/frontend/` into `dev/proxy/static/` |
+| `navi_proxy` | `darthjee/tent:0.5.0` | `3010:80` | Reverse-proxy + caching layer in front of `navi_dev_app`; serves the built frontend static files |
 | `navi_app` | `navi:dev` | — | Navi application container; linked to `navi_proxy` as `remote_host` |
 | `navi_tests` | `navi:dev` | — | Test/lint container for `source/` |
 
@@ -219,6 +295,7 @@ All jobs run on every push and every tag. There are no branch restrictions on th
 
 ```
 navi_app ──depends_on──► navi_proxy ──depends_on──► navi_dev_app
+                                     ──depends_on──► navi_dev_frontend
 navi_tests ──depends_on──► base_build
 ```
 

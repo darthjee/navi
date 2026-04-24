@@ -1,5 +1,20 @@
 # Architecture
 
+## Repository Layout
+
+```
+navi/
+├── source/           # Navi cache-warmer Node.js application
+├── frontend/         # Navi web UI (React + Vite)
+├── dev/
+│   ├── app/          # Dev backend: Express JSON API
+│   ├── frontend/     # Dev frontend: React SPA for browsing the dev API
+│   └── proxy/        # Dev reverse proxy: Tent configuration + static assets
+├── dockerfiles/      # Dockerfiles for each service image
+├── scripts/          # Shell utilities (CI, release, etc.)
+└── docs/             # Project documentation
+```
+
 ## Source Code Layout
 
 All application source code lives under the `source/` directory.

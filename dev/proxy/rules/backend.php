@@ -12,7 +12,7 @@ Configuration::buildRule([
         'host' => 'http://backend:80'
     ],
     'matchers' => [
-        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+        ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
     ],
     'middlewares' => [
         ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware']
