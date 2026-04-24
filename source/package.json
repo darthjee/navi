@@ -8,7 +8,10 @@
   "bin": {
     "navi-hey": "bin/navi.js"
   },
-  "files": ["bin", "lib"],
+  "files": [
+    "bin",
+    "lib"
+  ],
   "scripts": {
     "spec": "npx jasmine spec/**/*.js",
     "test": "npx c8 jasmine spec/**/*.js",
@@ -25,6 +28,7 @@
   "dependencies": {
     "axios": "^1.13.0",
     "express": "5.2.1",
+    "node-html-parser": "7.1.0",
     "yaml": "^2.8.2"
   },
   "devDependencies": {

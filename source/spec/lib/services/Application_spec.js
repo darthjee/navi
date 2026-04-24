@@ -58,6 +58,18 @@ describe('Application', () => {
         expect(JobFactory.get('Action')).toBeDefined();
       });
 
+      it('registers the HtmlParse factory', () => {
+        app.loadConfig(configFilePath);
+
+        expect(JobFactory.get('HtmlParse')).toBeDefined();
+      });
+
+      it('registers the AssetDownload factory', () => {
+        app.loadConfig(configFilePath);
+
+        expect(JobFactory.get('AssetDownload')).toBeDefined();
+      });
+
       it('does not expose a clients property on config (uses clientRegistry instead)', () => {
         app.loadConfig(configFilePath);
 

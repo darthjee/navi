@@ -1,5 +1,6 @@
 import { Job } from './Job.js';
 import { ResponseWrapper } from './ResponseWrapper.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -36,6 +37,9 @@ class ResourceRequestJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
+      if (this.#resourceRequest.hasAssets()) {
+        this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
+      }
       const wrapper = new ResponseWrapper(response, this.#parameters);
       this.#resourceRequest.enqueueActions(wrapper);
       return response;
@@ -59,3 +63,4 @@ class ResourceRequestJob extends Job {
 }
 
 export { ResourceRequestJob };
+

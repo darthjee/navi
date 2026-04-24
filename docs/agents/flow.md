@@ -61,7 +61,7 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
    - `WorkersConfig` — worker pool size (`workers.quantity`, default 1), retry cooldown (`workers.retry_cooldown`, default 2000 ms), engine sleep interval (`workers.sleep`, default 500 ms), and max retries (`workers.max-retries`, default 3).
    - `WebConfig` — web server port (`web.port`); `null` when the `web:` key is absent.
    - `LogConfig` — log buffer size (`log.size`, default 100); uses default when the `log:` key is absent.
-3. `JobFactory.build('ResourceRequestJob', ...)` and `JobFactory.build('Action', ...)` register the two job factories.
+3. `JobFactory.build('ResourceRequestJob', ...)`, `JobFactory.build('Action', ...)`, `JobFactory.build('HtmlParse', ...)`, and `JobFactory.build('AssetDownload', ...)` register the four job factories.
 4. `JobRegistry.build({ cooldown })` creates the singleton with empty queues.
 5. `WorkersRegistry.build(workersConfig)` creates the singleton; `WorkersRegistry.initWorkers()` calls `WorkerFactory` to create the configured number of `Worker` instances (all start idle).
 
@@ -116,6 +116,15 @@ resources:
   kind:
     - url: /kinds/{:id}.json
       status: 200
+  home_page:
+    - url: /
+      status: 200
+      assets:
+        - selector: 'link[rel="stylesheet"]'  # CSS selector to match elements
+          attribute: href                       # attribute whose value is the asset URL
+          status: 200                           # expected status when fetching the asset
+        - selector: 'script[src]'
+          attribute: src
 ```
 
 Each `ResourceRequest` entry may specify:
@@ -124,6 +133,7 @@ Each `ResourceRequest` entry may specify:
 - `status` — expected HTTP response status code.
 - `client` — name of the client to use (falls back to `default`).
 - `actions` — optional list of actions to execute after a successful response (see section 6).
+- `assets` — optional list of asset extraction rules (see section 7). When declared, the response body is treated as HTML and the listed selector+attribute rules are used to discover asset URLs, each of which is fetched as an `AssetDownloadJob`.
 
 The optional top-level `workers:` key configures the worker pool:
 
@@ -187,8 +197,9 @@ Each `Worker` processes one job at a time asynchronously:
 1. **Resolve client** — look up the client named in `ResourceRequest` (or `default`) from `ClientRegistry`.
 2. **Resolve URL** — expand `{:placeholder}` tokens in the URL template using the job's parameter map.
 3. **Perform request** — call `Client.perform(resourceRequest, params)`; throws `RequestFailed` if the response status does not match the expected status. The response body is returned as raw text (`responseType: 'text'`).
-4. **Enqueue action jobs** — call `resourceRequest.enqueueActions(rawBody, jobRegistry)` to parse the response and enqueue one `ActionProcessingJob` per `(item × action)` pair (see section 7).
-5. **Finish** — mark the job as finished and store it in `JobRegistry`'s finished list; call `WorkersRegistry.setIdle(workerId)` so the worker re-enters the idle pool.
+4. **Enqueue asset jobs** — if `resourceRequest.hasAssets()`: call `resourceRequest.enqueueAssets(rawBody, jobRegistry, clientRegistry)` to enqueue a `HtmlParseJob` that will extract and fetch asset URLs (see section 8).
+5. **Enqueue action jobs** — call `resourceRequest.enqueueActions(responseWrapper)` to parse the response and enqueue one `ActionProcessingJob` per `(item × action)` pair (see section 7). This is a no-op if the resource has no actions configured.
+6. **Finish** — mark the job as finished and store it in `JobRegistry`'s finished list; call `WorkersRegistry.setIdle(workerId)` so the worker re-enters the idle pool.
 
 ---
 
@@ -237,7 +248,35 @@ When each `ResourceRequestJob` performs, `Client.perform()` calls `resolveUrl(pa
 
 ---
 
-## 8. Failure Handling
+## 8. Asset Processing
+
+When a `ResourceRequest` declares an `assets` list, the response body is treated as **HTML** rather than JSON.
+After a successful HTTP response in `ResourceRequestJob`:
+
+1. `resourceRequest.hasAssets()` returns `true`.
+2. `resourceRequest.enqueueAssets(rawBody, jobRegistry, clientRegistry)` is called.
+3. `JobRegistry.enqueue('HtmlParse', { rawHtml, assetRequests, clientRegistry })` creates an **`HtmlParseJob`**.
+4. **`HtmlParseJob.perform()`** iterates over the `assetRequests`:
+   - Calls **`HtmlParser.parse(rawHtml, selector, attribute)`** for each rule, returning an array of URL strings.
+   - Resolves each URL to an absolute form:
+     - Absolute (`https://…` / `http://…`) — used as-is.
+     - Protocol-relative (`//…`) — prepended with `https:`.
+     - Root-relative (`/…`) — concatenated with the named client's `baseUrl`.
+   - Enqueues one **`AssetDownloadJob`** per resolved URL via `JobRegistry.enqueue('AssetDownload', { url, client, status })`.
+5. **`AssetDownloadJob.perform()`** fetches the fully-resolved URL using `client.performUrl(url, expectedStatus)`.
+   - Validates the HTTP status against the configured `status` (default 200).
+   - Throws `RequestFailed` if the status does not match.
+   - Follows the standard retry/dead path.
+   - Is a **leaf node** — no further chaining after a successful fetch.
+6. `HtmlParseJob` has **no retry rights** — exhausted after the first failure.
+
+> **Note:** A `ResourceRequest` may declare both `assets` and `actions`. Both run independently:
+> `enqueueAssets` is called for HTML asset extraction, and `enqueueActions` is called for JSON
+> response chaining. In practice, a resource would only declare one or the other.
+
+---
+
+## 9. Failure Handling
 
 When a job fails (e.g., `RequestFailed` is thrown):
 
@@ -258,7 +297,7 @@ managed inside `JobRegistryInstance`, accessed via the `JobRegistry` singleton f
 
 ---
 
-## 9. Web UI
+## 10. Web UI
 
 When the `web:` key is present in the configuration, `Application` starts a local
 **read-only monitoring web UI** built with React, served by an Express.js `WebServer`.
