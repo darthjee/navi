@@ -48,4 +48,3 @@ class AssetDownloadJob extends Job {
 }
 
 export { AssetDownloadJob };
-
