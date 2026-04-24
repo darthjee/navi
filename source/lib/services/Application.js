@@ -2,7 +2,9 @@ import { Engine } from './Engine.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
 import { JobFactory } from '../factories/JobFactory.js';
 import { ActionProcessingJob } from '../models/ActionProcessingJob.js';
+import { AssetDownloadJob } from '../models/AssetDownloadJob.js';
 import { Config } from '../models/Config.js';
+import { HtmlParseJob } from '../models/HtmlParseJob.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { WorkersRegistry } from '../registry/WorkersRegistry.js';
 import { WebServer } from '../server/WebServer.js';
@@ -110,6 +112,8 @@ class Application {
   #initRegistries() {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
+    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.clientRegistry } });
+    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.clientRegistry } });
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 

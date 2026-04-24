@@ -1,5 +1,6 @@
 import { Job } from './Job.js';
 import { ResponseWrapper } from './ResponseWrapper.js';
+import { JobRegistry } from '../registry/JobRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -36,12 +37,34 @@ class ResourceRequestJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
-      const wrapper = new ResponseWrapper(response, this.#parameters);
-      this.#resourceRequest.enqueueActions(wrapper);
-      return response;
+      return this.#handleResponse(response);
     } catch (error) {
       Logger.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
+    }
+  }
+
+  /**
+   * Handles the successful HTTP response: enqueues asset jobs and action jobs.
+   * @param {object} response The HTTP response object.
+   * @returns {object} The same response object.
+   * @private
+   */
+  #handleResponse(response) {
+    this.#enqueueAssets(response);
+    const wrapper = new ResponseWrapper(response, this.#parameters);
+    this.#resourceRequest.enqueueActions(wrapper);
+    return response;
+  }
+
+  /**
+   * Enqueues asset download jobs when the resource request declares asset rules.
+   * @param {object} response The HTTP response object.
+   * @private
+   */
+  #enqueueAssets(response) {
+    if (this.#resourceRequest.hasAssets()) {
+      this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
     }
   }
 
@@ -59,3 +82,4 @@ class ResourceRequestJob extends Job {
 }
 
 export { ResourceRequestJob };
+

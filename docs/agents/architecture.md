@@ -21,6 +21,7 @@ AppError (base)
 ├── RequestFailed
 ├── LockedByOtherWorker
 ├── InvalidResponseBody          ← raw JSON response body could not be parsed
+├── InvalidHtmlResponseBody      ← raw HTML response body could not be parsed
 ├── NullResponse                 ← parsed response body is null
 ├── MissingActionResource        ← action config entry has no "resource" field
 ├── MissingMappingVariable       ← parameters path expression cannot be resolved against the response
@@ -39,7 +40,8 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 |-------|---------------|
 | `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
-| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(responseWrapper)` to enqueue action jobs after a successful HTTP request. |
+| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list + optional assets list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(responseWrapper)` to enqueue action jobs after a successful HTTP request. Exposes `enqueueAssets(rawHtml, jobRegistry, clientRegistry)` to enqueue an `HtmlParseJob` when assets are configured. Exposes `hasAssets()` to check whether any asset extraction rules are configured. |
+| `AssetRequest` | Represents a single asset extraction rule (`selector`, `attribute`, optional `client`, optional `status`). Created via `AssetRequest.fromObject()` / `AssetRequest.fromListObject()`. |
 | `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `parameters`). Uses `ParametersMapper` to evaluate path expressions against a `ResponseWrapper`, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
 | `ResponseWrapper` | Wraps an HTTP response, exposing `parsedBody` (lazily-parsed JSON body) and `headers`. Provides `toItemWrappers()` to split an array response into per-item wrappers sharing the same headers. |
@@ -53,6 +55,8 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
 | `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
 | `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)` where `item` is a per-item `ResponseWrapper`. Exhausted after the first failure — no retry rights. |
+| `HtmlParseJob` | Extends `Job`. Parses an HTML response body using `HtmlParser`, resolves asset URLs, and enqueues one `AssetDownloadJob` per discovered URL. Exhausted after the first failure — no retry rights. |
+| `AssetDownloadJob` | Extends `Job`. Fetches a single fully-resolved asset URL via `Client.performUrl()` and validates the expected HTTP status. Leaf node — no further chaining. Follows the standard retry/dead path. |
 | `WorkersConfig` | Holds the worker pool size (`quantity`, default 1), the retry cooldown in milliseconds (`retryCooldown`, default 2000), and the engine sleep interval in milliseconds (`sleep`, default 500). |
 | `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 
@@ -118,6 +122,7 @@ ID generation utilities.
 | Class | Responsibility |
 |-------|---------------|
 | `EnvResolver` | Resolves environment variable references (`$VAR` / `${VAR}`) in string values. Used by `Client.fromObject()` to interpolate header values at parse time. |
+| `HtmlParser` | Parses a raw HTML string using `node-html-parser` and extracts attribute values from elements matched by a CSS selector. Logs warnings for unmatched selectors or elements missing the target attribute. Throws `InvalidHtmlResponseBody` when parsing fails. |
 | `ResourceRequestCollector` | Iterates a `ResourceRegistry` and enqueues one job per resource+parameter combination. |
 
 ### `services/`
@@ -130,7 +135,7 @@ Business logic and I/O layer.
 | `ArgumentsParser` | Parses CLI arguments using Node's `parseArgs`. Supports `--config <path>` / `-c <path>`; defaults to `config/navi_config.yml`. Returns `{ config }`. |
 | `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
 | `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
-| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. Supports per-client headers (including environment variable interpolation via `$VAR` / `${VAR}` syntax, resolved at parse time). |
+| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. `performUrl(absoluteUrl, expectedStatus)` fetches a fully-resolved absolute URL directly (no `baseUrl` prepended). Supports per-client headers (including environment variable interpolation via `$VAR` / `${VAR}` syntax, resolved at parse time). |
 | `Engine` | Drives the main allocation loop. Each tick calls `JobRegistry.promoteReadyJobs()` then delegates to `WorkersAllocator.allocate()` while jobs or busy workers exist. Sleeps for `sleepMs` (default 500 ms) when all pending jobs are in cooldown. |
 | `WorkersAllocator` | Assigns ready jobs to idle workers. On each `allocate()` call, repeatedly pairs `WorkersRegistry.getIdleWorker()` with `JobRegistry.pick()` until either pool is exhausted. |
 | `JobFactory` | Static registry of named job factories. `JobFactory.build(name, options)` registers a factory; `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears all entries (test teardown). |
