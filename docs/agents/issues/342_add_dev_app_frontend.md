@@ -2,25 +2,26 @@
 
 ## Description
 
-The dev app currently lacks a frontend, which prevents truly testing it end-to-end. A new React-based frontend application (built with Vite) needs to be added under `dev/frontend/`. Its build output is mounted into `dev/proxy/static/`, allowing the dev proxy to serve static assets for non-JSON requests while routing JSON requests to `dev/app`.
+The dev app currently lacks a frontend, which prevents truly testing it end-to-end. A new React-based frontend application (built with Vite) needs to be added under `dev/frontend/`. Its `dist/` build output is mounted via Docker Compose as `dev/proxy/static/`, allowing the dev proxy to serve static assets for non-JSON requests while routing `.json` requests to `dev/app`. The frontend pages consume data from `dev/app` by making `.json` requests through `dev/proxy`.
 
 ## Problem
 
 - The dev app cannot be fully tested without a real frontend.
 - There is no `dev/frontend/` application yet.
 - Static files are not being served through the dev proxy.
+- The proxy is not configured to handle SPA (single-page app) fallback routing.
 
 ## Expected Behavior
 
 - A `dev/frontend/` React + Vite application exists and can be built.
-- The build output folder is mounted via Docker Compose into `dev/proxy/static/`.
-- The dev proxy serves static files (non-`.json` requests) from `dev/proxy/static/`.
-- JSON requests continue to be forwarded to `dev/app`.
+- Docker Compose mounts `dev/proxy/static/` into the `navi_dev_frontend` container at `/home/node/app/dist`, so the Vite build output (`dist/`) is shared with the proxy.
+- The dev proxy serves static files (non-`.json` requests) from `dev/proxy/static/`, with a SPA fallback that serves `index.html` for unmatched paths.
+- `.json` requests continue to be forwarded to `dev/app`.
+- The frontend pages fetch data via `dev/proxy` (e.g. `/categories.json`), which in turn proxies them to `dev/app`.
 
 ## Solution
 
 - Create `dev/frontend/` as a new Vite + React application.
-- Configure the build output directory to `dev/proxy/static/` (or mount it there via Docker Compose).
 - Add the following pages/routes:
   - Index page `/`
   - Categories index page `/categories`
@@ -28,7 +29,11 @@ The dev app currently lacks a frontend, which prevents truly testing it end-to-e
   - Category items index page `/categories/:id/items`
   - Category item page `/categories/:category_id/items/:id`
 - Include a shared JS entry point and a shared CSS file using Bootstrap.
-- Update `docker-compose` to mount the build output into `dev/proxy/static/`.
+- Configure `docker-compose` to mount `dev/proxy/static/` at `/home/node/app/dist` inside the `navi_dev_frontend` container.
+- Configure the dev proxy to:
+  - Serve static files from `dev/proxy/static/`.
+  - Forward `.json` requests to `dev/app`.
+  - Fall back to `index.html` for all other non-matched requests (SPA routing support).
 
 ## Benefits
 
