@@ -55,17 +55,26 @@ In `dev/proxy/`, extend the proxy configuration to:
 ### Step 6 — Update CircleCI configuration
 
 In `.circleci/config.yml`, add two new jobs:
-- `jasmine-dev-frontend`: runs `yarn test` inside the `dev/frontend/` Docker container.
+- `jasmine-dev-frontend`: runs `yarn test` inside the `dev/frontend/` Docker container. Must also report coverage results (to the same coverage service used by the other test jobs, e.g. Codacy or Codecov).
 - `checks-dev-frontend`: runs `yarn lint` (and any other static checks) inside the `dev/frontend/` Docker container.
 
-Both jobs should follow the same structure as the existing `jasmine-dev-app` and `checks-dev-app` (or equivalent) jobs.
+Both jobs should follow the same structure as the existing `jasmine-dev-app` and `checks-dev-app` (or equivalent) jobs, including coverage reporting for the test job.
+
+### Step 7 — Update `docs/agents/` documentation
+
+Update the relevant documentation files under `docs/agents/` to reflect the new frontend:
+- Mention `dev/frontend/` in the architecture/overview docs (folder layout, tech stack, purpose).
+- Document the data flow: browser → `dev/proxy` → `dev/app` (for `.json`) or `dev/proxy/static/` (for assets).
+- Document the Docker Compose setup for the frontend service.
+- Document how to run and test `dev/frontend/` locally.
 
 ## Files to Change
 
 - `dev/frontend/` — new directory: Vite + React app, pages, tests, lint config, `package.json`
 - `dev/proxy/` — extend proxy rules: static file serving, SPA fallback
 - `docker-compose.yml` — add `navi_dev_frontend` service with the volume mount
-- `.circleci/config.yml` — add `jasmine-dev-frontend` and `checks-dev-frontend` jobs
+- `.circleci/config.yml` — add `jasmine-dev-frontend` (with coverage reporting) and `checks-dev-frontend` jobs
+- `docs/agents/` — update architecture/overview, data flow, Docker setup, and local dev instructions to include `dev/frontend/`
 
 ## Notes
 
