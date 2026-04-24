@@ -63,13 +63,12 @@ Entry point loaded by Tent at boot. Its only job is to include the rule files:
 <?php
 
 require_once __DIR__ . '/rules/backend.php';
+require_once __DIR__ . '/rules/frontend.php';
 ```
-
-Add more `require_once` lines here if you need additional rule files (e.g. a frontend rule).
 
 ### `dev/proxy/rules/backend.php`
 
-Defines a single routing rule that forwards all `GET` requests to the backend and caches the responses:
+Defines a routing rule that forwards `.json` `GET` requests to the backend and caches the responses:
 
 ```php
 Configuration::buildRule([
@@ -78,24 +77,59 @@ Configuration::buildRule([
         'host' => 'http://backend:80'
     ],
     'matchers' => [
-        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+        ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
     ]
 ]);
 ```
 
 - **`default_proxy`** — forwards the request to `http://backend:80` (the `navi_dev_app` container), automatically handles the `Host` header, and enables `FileCacheMiddleware` with the default cache directory (`./cache`, which resolves to the mounted `docker_volumes/proxy_cache`).
-- **Matcher** — `begins_with /` matches every request, so all GET traffic is proxied and cached.
+- **Matcher** — `ends_with .json` matches all JSON API requests, so only API traffic is proxied and cached.
+
+### `dev/proxy/rules/frontend.php`
+
+Defines two rules for serving the React SPA from `dev/proxy/static/`:
+
+```php
+// Serve static assets (JS, CSS, images, etc.)
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'static_file',
+        'folder' => '/var/www/html/configuration/static'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+    ]
+]);
+
+// SPA fallback: return index.html for any non-asset GET request
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'fixed_file',
+        'file' => '/var/www/html/configuration/static/index.html'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+    ]
+]);
+```
+
+- **`static_file`** — serves a file from `dev/proxy/static/` if it exists at the requested path.
+- **`fixed_file`** — always returns `index.html`, enabling client-side routing for the React SPA.
+
+### `dev/proxy/static/`
+
+Output directory where the React build artifacts are placed. The `navi_dev_frontend` Docker service mounts this directory as its Vite build output (`dist/`), so the proxy always serves the latest build.
 
 ---
 
 ## Request flow
 
-1. Navi issues a `GET` request to `http://remote_host` (the proxy).
-2. Tent checks whether a cached response exists for that URI.
-   - **Cache hit** — responds directly from disk; the backend is not contacted.
-   - **Cache miss** — forwards the request to `http://backend:80` (`navi_dev_app`).
-3. On a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
-4. The response is returned to Navi.
+1. Navi or a browser issues a `GET` request to `http://remote_host` (the proxy).
+2. Tent evaluates rules in order:
+   - If the URI ends with `.json` → **backend rule**: check cache, forward to `navi_dev_app` on miss.
+   - Otherwise → **frontend rules**: serve static file if it exists, otherwise return `index.html`.
+3. For backend requests, on a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
+4. The response is returned to the caller.
 
 ---
 
@@ -155,6 +189,7 @@ Configuration::buildRule([
 
 ```
 navi_app ──depends_on──► navi_proxy ──depends_on──► navi_dev_app
+                                     ──depends_on──► navi_dev_frontend
 ```
 
-`navi_proxy` will not start until `navi_dev_app` is up, and `navi_app` will not start until `navi_proxy` is up.
+`navi_proxy` will not start until both `navi_dev_app` and `navi_dev_frontend` are up, and `navi_app` will not start until `navi_proxy` is up.

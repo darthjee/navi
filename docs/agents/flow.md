@@ -342,3 +342,35 @@ Omit the `web:` key entirely to run Navi in headless mode (no web server).
 - Display jobs in cooldown with time remaining until retry.
 - View application logs (`BufferedLogger` / `LogBuffer`).
 - Real-time updates (polling or WebSocket).
+
+
+---
+
+## Local Dev Request Flow
+
+When running the full local development stack (`docker-compose up`), requests are routed as follows:
+
+```
+Browser ──► navi_proxy (:3010)
+               ├─ GET *.json  ──► navi_dev_app (:3020)   (proxied + cached)
+               └─ GET *       ──► dev/proxy/static/       (React SPA static files)
+                                   └─ index.html           (SPA fallback for client-side routes)
+
+navi_app ──► navi_proxy (:3010) ──► navi_dev_app (:3020)  (cache-warming)
+```
+
+### Services involved
+
+| Service | Role |
+|---------|------|
+| `navi_dev_app` | Express JSON API backend (`dev/app/`) |
+| `navi_dev_frontend` | Builds the React SPA (`dev/frontend/`) into `dev/proxy/static/` |
+| `navi_proxy` | Tent reverse proxy: serves static SPA files and proxies API requests |
+| `navi_app` | Navi cache-warmer; issues requests to the proxy |
+
+### Startup order
+
+1. `navi_dev_app` starts (Express server on port 80).
+2. `navi_dev_frontend` runs `yarn build` (Vite), writing `dist/` to `dev/proxy/static/`.
+3. `navi_proxy` starts (depends on both above services).
+4. `navi_app` starts (depends on `navi_proxy`).

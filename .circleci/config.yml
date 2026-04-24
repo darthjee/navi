@@ -19,6 +19,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - jasmine-dev-frontend:
+          filters:
+            tags:
+              only: /.*/
+      - checks-dev-frontend:
+          filters:
+            tags:
+              only: /.*/
       - checks-frontend:
           filters:
             tags:
@@ -28,7 +36,7 @@ workflows:
             tags:
               only: /.*/
       - coverage-final:
-          requires: [jasmine, jasmine-dev, jasmine-frontend]
+          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend]
           filters:
             tags:
               only: /.*/
@@ -39,7 +47,7 @@ workflows:
             branches:
               ignore: /.*/
       - npm-publish:
-          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-frontend, checks, checks-dev, checks-frontend]
+          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend]
           filters:
             tags:
               only: /\d+\.\d+\.\d+/
@@ -119,6 +127,36 @@ jobs:
       - run:
           name: Duplication report (JSCPD)
           command: cd dev/app; npm run report
+
+  jasmine-dev-frontend:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd dev/frontend; yarn install
+      - run:
+          name: Unit tests (Jasmine + c8 coverage)
+          command: cd dev/frontend; npm run coverage
+      - run:
+          name: Upload coverage to Codacy (partial)
+          command: cd dev/frontend; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+
+  checks-dev-frontend:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd dev/frontend; yarn install
+      - run:
+          name: Lint
+          command: cd dev/frontend; npm run lint
+      - run:
+          name: Duplication report (JSCPD)
+          command: cd dev/frontend; npm run report
 
   checks-frontend:
     docker:
