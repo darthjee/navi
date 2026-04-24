@@ -51,6 +51,7 @@ workers:
   quantity: 5          # number of concurrent workers (default: 1)
   retry_cooldown: 2000 # ms before a failed job is retried (default: 2000)
   sleep: 500           # ms the engine waits between allocation ticks (default: 500)
+  max-retries: 3       # max number of retries before a job is marked dead (default: 3)
 
 log:
   size: 100            # max number of log entries kept in memory (default: 100)
@@ -101,6 +102,7 @@ resources:
 | `workers.quantity` | Number of concurrent workers. Defaults to `1`. |
 | `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
 | `workers.sleep` | Milliseconds the engine waits between allocation ticks. Defaults to `500`. |
+| `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |

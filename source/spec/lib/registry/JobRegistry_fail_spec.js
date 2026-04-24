@@ -55,5 +55,26 @@ describe('JobRegistry', () => {
         expect(JobRegistry.hasJob()).toBeTrue();
       });
     });
+
+    describe('when the job is exhausted', () => {
+      it('moves the job to the dead queue using the configured maxRetries', () => {
+        JobRegistry.reset();
+        JobRegistry.build({ cooldown: -1, maxRetries: 2 });
+        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        const error = new Error('test error');
+
+        JobRegistry.pick();
+        try { j._fail(error); } catch (_) { /* expected */ }
+        JobRegistry.fail(j);
+        JobRegistry.promoteReadyJobs();
+
+        JobRegistry.pick();
+        try { j._fail(error); } catch (_) { /* expected */ }
+        JobRegistry.fail(j);
+
+        expect(JobRegistry.hasJob()).toBeFalse();
+        expect(JobRegistry.stats().dead).toBe(1);
+      });
+    });
   });
 });

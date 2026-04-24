@@ -17,6 +17,11 @@ describe('WorkersConfig', () => {
         const config = new WorkersConfig({ sleep: 200 });
         expect(config.sleep).toBe(200);
       });
+
+      it('should create an instance with custom max-retries', () => {
+        const config = new WorkersConfig({ 'max-retries': 5 });
+        expect(config.maxRetries).toBe(5);
+      });
     });
 
     describe('when a partial config object is provided', () => {
@@ -34,6 +39,11 @@ describe('WorkersConfig', () => {
         const config = new WorkersConfig({});
         expect(config.sleep).toBe(500);
       });
+
+      it('should create an instance with default maxRetries', () => {
+        const config = new WorkersConfig({});
+        expect(config.maxRetries).toBe(3);
+      });
     });
 
     describe('when no config object is provided', () => {
@@ -50,6 +60,11 @@ describe('WorkersConfig', () => {
       it('should create an instance with default sleep', () => {
         const config = new WorkersConfig();
         expect(config.sleep).toBe(500);
+      });
+
+      it('should create an instance with default maxRetries', () => {
+        const config = new WorkersConfig();
+        expect(config.maxRetries).toBe(3);
       });
     });
   });
