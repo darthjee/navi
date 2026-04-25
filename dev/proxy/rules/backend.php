@@ -18,3 +18,13 @@ Configuration::buildRule([
         ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware']
     ]
 ]);
+
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'default_proxy',
+        'host' => 'http://backend:80'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
+    ]
+]);
