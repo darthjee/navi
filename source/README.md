@@ -74,6 +74,14 @@ clients:
       Authorization: Bearer $API_TOKEN
 
 resources:
+  home:
+    - url: /
+      status: 200
+      assets:
+        - selector: script[src]
+          attribute: src
+        - selector: link[rel="stylesheet"]
+          attribute: href
   categories:
     - url: /categories.json
       status: 200
@@ -83,6 +91,10 @@ resources:
           parameters:
             category_id: parsed_body.id
             page: headers['x-next-page']
+    - url: /categories
+      status: 302
+    - url: /#/categories
+      status: 200
   category_information:
     - url: /categories/{:id}.json
       status: 200
@@ -111,6 +123,11 @@ resources:
 | `actions` | Optional list of actions to execute after a successful response. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
 | `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response (e.g. `parsed_body.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
+| `assets` | Optional list of asset extraction rules. When present on an HTML resource, Navi parses the response body and enqueues a download job for each matched URL. |
+| `assets[].selector` | CSS selector used to find asset elements in the HTML response (e.g. `script[src]`, `link[rel="stylesheet"]`). |
+| `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
+| `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
+| `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
 
 ---
 
