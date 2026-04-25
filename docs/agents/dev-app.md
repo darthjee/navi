@@ -224,7 +224,7 @@ dev/frontend/
 ├── vite.config.js
 ├── yarn.lock
 ├── src/
-│   ├── App.jsx                  # Root component with BrowserRouter + Routes
+│   ├── App.jsx                  # Root component with HashRouter + Routes
 │   ├── main.jsx                 # Entry point — mounts App into #root
 │   ├── clients/
 │   │   ├── CategoriesClient.js  # fetch wrappers for /categories*.json
@@ -258,11 +258,11 @@ dev/frontend/
 
 | Path | Component |
 |------|-----------|
-| `/` | `IndexPage` |
-| `/categories` | `CategoriesIndexPage` |
-| `/categories/:id` | `CategoryPage` |
-| `/categories/:id/items` | `CategoryItemsIndexPage` |
-| `/categories/:categoryId/items/:id` | `CategoryItemPage` |
+| `/#/` | `IndexPage` |
+| `/#/categories` | `CategoriesIndexPage` |
+| `/#/categories/:id` | `CategoryPage` |
+| `/#/categories/:id/items` | `CategoryItemsIndexPage` |
+| `/#/categories/:categoryId/items/:id` | `CategoryItemPage` |
 
 ### Build and serving
 
