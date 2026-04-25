@@ -6,14 +6,13 @@ import RedirectHandler from './RedirectHandler.js';
  */
 class RedirectRegister {
   #router;
-  #routes;
+  #routes = [];
 
   /**
    * @param {import('express').Router} router - Express router instance.
    */
   constructor(router) {
     this.#router = router;
-    this.#routes = [];
   }
 
   /**

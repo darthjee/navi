@@ -20,8 +20,8 @@ class Router {
 
   /**
    * Registers all GET routes and returns the Express router.
-   * JSON routes are registered before redirect routes so that `.json` paths
-   * are matched by their exact patterns before the more general redirect patterns.
+   * JSON routes are registered first so that `.json` paths are matched by
+   * their exact patterns before the more general redirect patterns are tried.
    * @returns {import('express').Router}
    */
   build() {

@@ -16,12 +16,14 @@ class RedirectHandler {
 
   /**
    * Substitutes route params into the target template and redirects with 302.
+   * Each param value is URI-encoded to prevent injection into the redirect URL.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   handle(req, res) {
     const location = this.#target.replace(/:([^/]+)/g, (_match, name) => {
-      return req.params[name] ?? `:${name}`;
+      const value = req.params[name];
+      return value !== undefined ? encodeURIComponent(value) : `:${name}`;
     });
     res.redirect(302, location);
   }
