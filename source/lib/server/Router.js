@@ -1,6 +1,8 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import { AssetsRequestHandler } from './AssetsRequestHandler.js';
+import { IndexRequestHandler } from './IndexRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
 import { RouteRegister } from './RouteRegister.js';
@@ -8,7 +10,7 @@ import { StatsRequestHandler } from './StatsRequestHandler.js';
 
 const { Router: ExpressRouter } = express;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const publicDir = path.join(__dirname, '../../public');
+const staticDir = path.join(__dirname, '../../static');
 
 /**
  * Builds the Express router with all application routes.
@@ -43,10 +45,20 @@ class Router {
       handler: new JobRequestHandler(),
     });
 
-    router.use(express.static(publicDir));
+    register.register({
+      route:   '/',
+      handler: new IndexRequestHandler(),
+    });
+
+    register.register({
+      route:   '/assets/*path',
+      handler: new AssetsRequestHandler(),
+    });
+
+    router.use(express.static(staticDir));
 
     router.use((_req, res) => {
-      res.sendFile(path.join(publicDir, 'index.html'));
+      new IndexRequestHandler().handle(_req, res);
     });
 
     return router;

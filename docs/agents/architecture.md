@@ -161,13 +161,15 @@ Express-based web server and request handlers.
 
 | Class | Responsibility |
 |-------|---------------|
-| `WebServer` | Optional Express.js server. `WebServer.build({ webConfig })` returns `null` when `webConfig` is absent; otherwise creates an instance listening on `webConfig.port`. Serves the React SPA from `source/public/`. |
-| `Router` | Builds the Express `Router`: registers `GET /stats.json`, `GET /jobs/:status.json`, and `GET /job/:id.json` via `RouteRegister`, serves static files from `source/public/`, and falls back to `index.html` for SPA navigation. |
+| `WebServer` | Optional Express.js server. `WebServer.build({ webConfig })` returns `null` when `webConfig` is absent; otherwise creates an instance listening on `webConfig.port`. Serves the React SPA from `source/static/`. |
+| `Router` | Builds the Express `Router`: registers `GET /stats.json`, `GET /jobs/:status.json`, `GET /job/:id.json`, `GET /` and `GET /assets/*path` via `RouteRegister`, serves static files from `source/static/`, and falls back to `index.html` for SPA navigation. |
 | `RouteRegister` | Helper that wires a route path to a `RequestHandler` instance on an Express router. |
 | `RequestHandler` | Abstract base class for route handlers. Subclasses implement `handle(req, res)`. |
 | `StatsRequestHandler` | Extends `RequestHandler`. Responds to `GET /stats.json` with `{ jobs: JobRegistry.stats(), workers: WorkersRegistry.stats() }`. |
 | `JobsRequestHandler` | Extends `RequestHandler`. Responds to `GET /jobs/:status.json` with the array of jobs in the given status queue (from `JobRegistry.jobsByStatus(status)`). |
 | `JobRequestHandler` | Extends `RequestHandler`. Responds to `GET /job/:id.json` with job details from `JobRegistry.jobById(id)`, or 404 if not found. |
+| `IndexRequestHandler` | Extends `RequestHandler`. Responds to `GET /` and the SPA catch-all by serving `source/static/index.html`. |
+| `AssetsRequestHandler` | Extends `RequestHandler`. Responds to `GET /assets/*path` by serving the requested file from `source/static/assets/`. Validates that the resolved path stays within `source/static/assets/`; returns **403 Forbidden** on path traversal attempts. |
 
 ### `factories/`
 

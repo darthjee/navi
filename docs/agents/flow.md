@@ -316,7 +316,9 @@ Omit the `web:` key entirely to run Navi in headless mode (no web server).
 | `GET /stats.json` | `StatsRequestHandler` | Returns `{ jobs, workers }` with counts per state. |
 | `GET /jobs/:status.json` | `JobsRequestHandler` | Returns an array of jobs in the given status queue. |
 | `GET /job/:id.json` | `JobRequestHandler` | Returns details for a specific job by ID (404 if not found). |
-| `GET /*` | static + SPA fallback | Serves the React app from `source/public/`. |
+| `GET /` | `IndexRequestHandler` | Serves `source/static/index.html` (React app entry point). |
+| `GET /assets/*path` | `AssetsRequestHandler` | Serves static asset files from `source/static/assets/`. Path traversal attempts are rejected with **403 Forbidden**. |
+| `GET /*` | `IndexRequestHandler` (catch-all) | Serves `source/static/index.html` for all unmatched routes so React Router can handle client-side navigation. |
 
 ### `jobs` object (from `JobRegistry.stats()`)
 
