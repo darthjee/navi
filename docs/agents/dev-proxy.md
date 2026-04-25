@@ -87,34 +87,45 @@ Configuration::buildRule([
 
 ### `dev/proxy/rules/frontend.php`
 
-Defines two rules for serving the React SPA from `dev/proxy/static/`:
+Defines two rules for serving the React SPA from `dev/proxy/static/`. With hash-based routing,
+the hash fragment (`#/...`) is never sent to the server, so the proxy only needs to handle `GET /`
+(the SPA entry point) and static asset requests:
 
 ```php
-// Serve static assets (JS, CSS, images, etc.)
+// Serve index.html for the SPA entry point
 Configuration::buildRule([
-    'handler' => [
-        'type' => 'static_file',
-        'folder' => '/var/www/html/configuration/static'
-    ],
-    'matchers' => [
-        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+  'handler' => [
+    'type' => 'static',
+    'location' => '/var/www/html/configuration/static'
+  ],
+  'matchers' => [
+    ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
+  ],
+  "middlewares" => [
+    [
+      'class' => 'Tent\Middlewares\SetPathMiddleware',
+      'path' => '/index.html'
     ]
+  ]
 ]);
 
-// SPA fallback: return index.html for any non-asset GET request
+// Serve static assets (JS, CSS bundles, etc.)
 Configuration::buildRule([
-    'handler' => [
-        'type' => 'fixed_file',
-        'file' => '/var/www/html/configuration/static/index.html'
-    ],
-    'matchers' => [
-        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
-    ]
+  'handler' => [
+    'type' => 'static',
+    'location' => '/var/www/html/configuration/static'
+  ],
+  'matchers' => [
+    ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+  ]
 ]);
 ```
 
-- **`static_file`** — serves a file from `dev/proxy/static/` if it exists at the requested path.
-- **`fixed_file`** — always returns `index.html`, enabling client-side routing for the React SPA.
+- **`static` with `SetPathMiddleware`** — rewrites the path to `/index.html` and serves it from `dev/proxy/static/`, used for the exact `/` match (SPA entry point).
+- **`static` (begins_with)** — serves compiled JS/CSS bundles and any other static assets directly from `dev/proxy/static/`.
+
+No path-based frontend routes need to be handled by the server because all client-side navigation
+uses hash fragments, which are processed entirely by the browser.
 
 ### `dev/proxy/static/`
 
@@ -127,9 +138,11 @@ Output directory where the React build artifacts are placed. The `navi_dev_front
 1. Navi or a browser issues a `GET` request to `http://remote_host` (the proxy).
 2. Tent evaluates rules in order:
    - If the URI ends with `.json` → **backend rule**: check cache, forward to `navi_dev_app` on miss.
-   - Otherwise → **frontend rules**: serve static file if it exists, otherwise return `index.html`.
-3. For backend requests, on a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
-4. The response is returned to the caller.
+   - If the URI is exactly `/` → **frontend entry point rule**: serve `index.html` (the SPA entry point).
+   - Otherwise → **frontend asset rule**: serve the requested static file (JS/CSS bundle) from `dev/proxy/static/`.
+3. Hash fragments (`#/...`) are never sent to the server — the browser handles all client-side navigation locally after loading `index.html`.
+4. For backend requests, on a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
+5. The response is returned to the caller.
 
 ---
 
