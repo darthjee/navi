@@ -32,7 +32,7 @@ services:
     command: /bin/bash
 
   navi_proxy:
-    image: darthjee/tent:0.7.1
+    image: darthjee/tent:0.7.2
     depends_on: [navi_dev_app, navi_dev_frontend]
     links:
       - navi_dev_app:backend
@@ -78,7 +78,7 @@ services:
       - ./source/public:/home/node/app/dist
 
   navi_web_proxy:
-    image: darthjee/tent:0.7.1
+    image: darthjee/tent:0.7.2
     depends_on: [navi_app, navi_frontend]
     links:
       - navi_app:backend
