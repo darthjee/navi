@@ -102,6 +102,14 @@ resources:
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
+
+When the web server is enabled, the following screens are available:
+
+| Screen | URL | Description |
+|--------|-----|-------------|
+| Dashboard | `/#/` | Real-time job queue stats (counts per status). |
+| Jobs list | `/#/jobs` | Table of all jobs across every status, with links to individual job pages. |
+| Job detail | `/#/job/:id` | Full details for a specific job (ID, status, attempt count). |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |

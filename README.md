@@ -283,11 +283,17 @@ web:
   port: 3000
 ```
 
-When enabled, the UI is accessible at `http://localhost:<port>` and displays the real-time state of all job queues:
+When enabled, the UI is accessible at `http://localhost:<port>` and includes the following screens:
+
+**Dashboard (`/#/`)** — displays the real-time state of all job queues:
 
 - Jobs currently in queue.
 - Jobs being processed.
 - Finished jobs.
 - Failed jobs (with last failure reason).
 - Dead jobs (exceeded retry limit).
+
+**Jobs list (`/#/jobs`)** — shows a table of all jobs across every status, with links to each job's detail page.
+
+**Job detail (`/#/job/:id`)** — shows the full details of a specific job (ID, status, and attempt count).
 
