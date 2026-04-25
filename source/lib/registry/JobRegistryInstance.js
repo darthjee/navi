@@ -139,15 +139,7 @@ class JobRegistryInstance {
    * @returns {{ id: string, status: string, attempts: number }[]} Array of job data objects, or an empty array for unknown status.
    */
   jobsByStatus(status) {
-    const collections = {
-      enqueued:   this.#enqueued,
-      processing: this.#processing,
-      failed:     this.#failed,
-      retryQueue: this.#retryQueue,
-      finished:   this.#finished,
-      dead:       this.#dead,
-    };
-    const collection = collections[status];
+    const collection = this.#collectionsByStatus()[status];
     if (!collection) return [];
     return collection.list().map(job => ({ id: job.id, status, attempts: job._attempts }));
   }
@@ -158,17 +150,9 @@ class JobRegistryInstance {
    * @returns {{ id: string, status: string, attempts: number } | null} The job data, or null if not found.
    */
   jobById(id) {
-    const statuses = ['enqueued', 'processing', 'failed', 'retryQueue', 'finished', 'dead'];
-    const collections = {
-      enqueued:   this.#enqueued,
-      processing: this.#processing,
-      failed:     this.#failed,
-      retryQueue: this.#retryQueue,
-      finished:   this.#finished,
-      dead:       this.#dead,
-    };
+    const collections = this.#collectionsByStatus();
 
-    for (const status of statuses) {
+    for (const status of Object.keys(collections)) {
       const job = collections[status].list().find(j => j.id === id);
       if (job) {
         return { id: job.id, status, attempts: job._attempts };
@@ -189,6 +173,21 @@ class JobRegistryInstance {
       retryQueue: this.#retryQueue.size(),
       finished: this.#finished.size(),
       dead: this.#dead.size(),
+    };
+  }
+
+  /**
+   * Returns an object mapping each status name to its corresponding collection.
+   * @returns {object} A map of status names to collection instances.
+   */
+  #collectionsByStatus() {
+    return {
+      enqueued:   this.#enqueued,
+      processing: this.#processing,
+      failed:     this.#failed,
+      retryQueue: this.#retryQueue,
+      finished:   this.#finished,
+      dead:       this.#dead,
     };
   }
 }
