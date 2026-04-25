@@ -314,6 +314,8 @@ Omit the `web:` key entirely to run Navi in headless mode (no web server).
 | Route | Handler | Description |
 |-------|---------|-------------|
 | `GET /stats.json` | `StatsRequestHandler` | Returns `{ jobs, workers }` with counts per state. |
+| `GET /jobs/:status.json` | `JobsRequestHandler` | Returns an array of jobs in the given status queue. |
+| `GET /job/:id.json` | `JobRequestHandler` | Returns details for a specific job by ID (404 if not found). |
 | `GET /*` | static + SPA fallback | Serves the React app from `source/public/`. |
 
 ### `jobs` object (from `JobRegistry.stats()`)
@@ -329,6 +331,23 @@ Omit the `web:` key entirely to run Navi in headless mode (no web server).
 }
 ```
 
+### Job list item (from `GET /jobs/:status.json`)
+
+```json
+{ "id": "abc-123", "status": "enqueued", "attempts": 0 }
+```
+
+Valid `:status` values: `enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`.
+Returns an empty array for unknown status values.
+
+### Job detail (from `GET /job/:id.json`)
+
+```json
+{ "id": "abc-123", "status": "enqueued", "attempts": 0 }
+```
+
+Returns `404` with `{ "error": "Job not found" }` when no job matches the given ID.
+
 ### `workers` object (from `WorkersRegistry.stats()`)
 
 ```json
@@ -337,7 +356,6 @@ Omit the `web:` key entirely to run Navi in headless mode (no web server).
 
 ### Planned web UI features
 
-- List individual jobs per queue/state (URL, status, failure reason).
 - List individual workers with their current state and active job.
 - Display jobs in cooldown with time remaining until retry.
 - View application logs (`BufferedLogger` / `LogBuffer`).

@@ -134,6 +134,50 @@ class JobRegistryInstance {
   }
 
   /**
+   * Returns all jobs in the collection that corresponds to the given status.
+   * @param {string} status - The status name ('enqueued', 'processing', 'failed', 'retryQueue', 'finished', 'dead').
+   * @returns {{ id: string, status: string, attempts: number }[]} Array of job data objects, or an empty array for unknown status.
+   */
+  jobsByStatus(status) {
+    const collections = {
+      enqueued:   this.#enqueued,
+      processing: this.#processing,
+      failed:     this.#failed,
+      retryQueue: this.#retryQueue,
+      finished:   this.#finished,
+      dead:       this.#dead,
+    };
+    const collection = collections[status];
+    if (!collection) return [];
+    return collection.list().map(job => ({ id: job.id, status, attempts: job._attempts }));
+  }
+
+  /**
+   * Searches all collections and returns data for the job with the given ID.
+   * @param {string} id - The ID of the job to look up.
+   * @returns {{ id: string, status: string, attempts: number } | null} The job data, or null if not found.
+   */
+  jobById(id) {
+    const statuses = ['enqueued', 'processing', 'failed', 'retryQueue', 'finished', 'dead'];
+    const collections = {
+      enqueued:   this.#enqueued,
+      processing: this.#processing,
+      failed:     this.#failed,
+      retryQueue: this.#retryQueue,
+      finished:   this.#finished,
+      dead:       this.#dead,
+    };
+
+    for (const status of statuses) {
+      const job = collections[status].list().find(j => j.id === id);
+      if (job) {
+        return { id: job.id, status, attempts: job._attempts };
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns counts of jobs in each state.
    * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Counts of jobs in each state.
    */
