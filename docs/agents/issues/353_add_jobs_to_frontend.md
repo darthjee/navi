@@ -19,6 +19,7 @@ The Navi front-end needs new screens to display job information, consuming the J
 
 - Add a `Jobs` screen at `/#/jobs` that requests `/jobs.json` and renders the job list.
 - Add a `Job` detail screen at `/#/job/:id` that requests `/job/:id.json` and renders the job's information.
+- Use React (already included in the project) for the component structure and Bootstrap (already included) for styling and layout.
 - Configure the dev proxy to forward `*.json` requests to the Navi backend, since the JSON data originates there.
 
 ## Benefits
