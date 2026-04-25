@@ -55,6 +55,15 @@ class IdentifyableCollection extends Collection {
   }
 
   /**
+   * Searches for an item with the given id.
+   * @param {string} id - The id to search for.
+   * @returns {object|null} The matching item, or null if not found.
+   */
+  findById(id) {
+    return this.get(id) ?? null;
+  }
+
+  /**
    * Retrieves an item from the collection by index.
    * @param {number} index - The index of the item to retrieve.
    * @returns {object | undefined} - The item if found, otherwise undefined.

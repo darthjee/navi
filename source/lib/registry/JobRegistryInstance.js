@@ -134,6 +134,32 @@ class JobRegistryInstance {
   }
 
   /**
+   * Returns all jobs in the collection that corresponds to the given status.
+   * @param {string} status - The status name ('enqueued', 'processing', 'failed', 'retryQueue', 'finished', 'dead').
+   * @returns {object[]} Array of raw job instances, or an empty array for unknown status.
+   */
+  jobsByStatus(status) {
+    const collection = this.#collectionByStatus(status);
+    if (!collection) return [];
+    return collection.list();
+  }
+
+  /**
+   * Searches all collections and returns the job and its status for the given ID.
+   * @param {string} id - The ID of the job to look up.
+   * @returns {{ job: object, status: string } | null} The raw job and its status, or null if not found.
+   */
+  jobById(id) {
+    for (const status of Object.keys(this.#collectionsByStatus())) {
+      const job = this.#collectionByStatus(status).findById(id);
+      if (job) {
+        return { job, status };
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns counts of jobs in each state.
    * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Counts of jobs in each state.
    */
@@ -145,6 +171,30 @@ class JobRegistryInstance {
       retryQueue: this.#retryQueue.size(),
       finished: this.#finished.size(),
       dead: this.#dead.size(),
+    };
+  }
+
+  /**
+   * Returns the collection corresponding to the given status, or undefined.
+   * @param {string} status - The status name.
+   * @returns {object|undefined} The collection for the given status, or undefined if unknown.
+   */
+  #collectionByStatus(status) {
+    return this.#collectionsByStatus()[status];
+  }
+
+  /**
+   * Returns an object mapping each status name to its corresponding collection.
+   * @returns {object} A map of status names to collection instances.
+   */
+  #collectionsByStatus() {
+    return {
+      enqueued:   this.#enqueued,
+      processing: this.#processing,
+      failed:     this.#failed,
+      retryQueue: this.#retryQueue,
+      finished:   this.#finished,
+      dead:       this.#dead,
     };
   }
 }
