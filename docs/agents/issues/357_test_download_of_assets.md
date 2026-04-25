@@ -11,7 +11,7 @@ Now that the dev app has a frontend and Navi can download assets, the integratio
 
 ## Expected Behavior
 
-The Navi config exercises the following route types:
+The Navi config is updated to cover **all resources currently declared in the dev app**, not just `categories`. For each resource, all relevant route types should be represented:
 
 ```yaml
 resources:
@@ -27,11 +27,14 @@ resources:
       status: 302
     - url: /#/categories      # hash-based SPA route — expects HTML template
       status: 200
+
+  # ... same pattern for every other resource declared in the dev app
 ```
 
 ## Solution
 
-- Update `docker_volumes/config/navi_config.yml` to include the resources above with proper asset-fetching configuration.
+- Identify all resources currently declared in the dev app (`dev/app/`).
+- Update `docker_volumes/config/navi_config.yml` to include every resource with its full set of route types (JSON, redirect, and hash-based SPA route where applicable) and proper asset-fetching configuration.
 - Update `README.md`, `DOCKERHUB_DESCRIPTION.md`, and `source/README.md` to document how to configure asset fetching with examples.
 
 ## Benefits
