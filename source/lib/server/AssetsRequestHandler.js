@@ -1,9 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { PathValidator } from './PathValidator.js';
 import { RequestHandler } from './RequestHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const assetsDir = path.resolve(__dirname, '../../static/assets');
+const validator = new PathValidator(assetsDir);
 
 /**
  * Handles GET /assets/* requests by serving static asset files.
@@ -28,7 +30,7 @@ class AssetsRequestHandler extends RequestHandler {
     const assetPath = req.params.path;
     const resolved = path.resolve(assetsDir, assetPath);
 
-    if (!resolved.startsWith(assetsDir + path.sep)) {
+    if (!validator.isValid(resolved)) {
       res.status(403).json({ error: 'Forbidden' });
       return;
     }

@@ -169,7 +169,8 @@ Express-based web server and request handlers.
 | `JobsRequestHandler` | Extends `RequestHandler`. Responds to `GET /jobs/:status.json` with the array of jobs in the given status queue (from `JobRegistry.jobsByStatus(status)`). |
 | `JobRequestHandler` | Extends `RequestHandler`. Responds to `GET /job/:id.json` with job details from `JobRegistry.jobById(id)`, or 404 if not found. |
 | `IndexRequestHandler` | Extends `RequestHandler`. Responds to `GET /` and the SPA catch-all by serving `source/static/index.html`. |
-| `AssetsRequestHandler` | Extends `RequestHandler`. Responds to `GET /assets/*path` by serving the requested file from `source/static/assets/`. Validates that the resolved path stays within `source/static/assets/`; returns **403 Forbidden** on path traversal attempts. |
+| `AssetsRequestHandler` | Extends `RequestHandler`. Responds to `GET /assets/*path` by serving the requested file from `source/static/assets/`. Uses `PathValidator` to ensure the resolved path stays within `source/static/assets/`; returns **403 Forbidden** on path traversal attempts. |
+| `PathValidator` | Encapsulates the path traversal security check. Given a base directory, `isValid(resolvedPath)` returns `true` only when `resolvedPath` is strictly inside that directory. |
 
 ### `factories/`
 
