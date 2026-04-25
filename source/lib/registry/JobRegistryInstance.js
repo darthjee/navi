@@ -151,10 +151,8 @@ class JobRegistryInstance {
    * @returns {{ id: string, status: string, attempts: number } | null} The job data, or null if not found.
    */
   jobById(id) {
-    const collections = this.#collectionsByStatus();
-
-    for (const status of Object.keys(collections)) {
-      const job = collections[status].findById(id);
+    for (const status of Object.keys(this.#collectionsByStatus())) {
+      const job = this.#collectionByStatus(status).findById(id);
       if (job) {
         return JobSerializer.serialize(job, { status });
       }

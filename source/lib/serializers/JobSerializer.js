@@ -1,24 +1,22 @@
+import { Serializer } from './Serializer.js';
+
 /**
  * Serializes one or more job instances into plain data objects.
+ * @augments Serializer
  */
-class JobSerializer {
+class JobSerializer extends Serializer {
   /**
-   * Serializes a job or a list of jobs into `{ id, status, attempts }` objects.
+   * Serializes a single job instance into a `{ id, status, attempts }` object.
    *
-   * When `jobOrList` is an array, each element is serialized individually.
-   * When it is a single job object, returns `{ id, status, attempts }`.
-   *
-   * @param {object|object[]} jobOrList - A job instance or array of job instances.
+   * @param {object} job - A job instance.
    * @param {object} options - Serialization options.
-   * @param {string} options.status - The status label to embed in each serialized object.
-   * @returns {{ id: string, status: string, attempts: number }|{ id: string, status: string, attempts: number }[]} The serialized job data, or an array of serialized job data objects.
+   * @param {string} options.status - The status label to embed in the serialized object.
+   * @returns {{ id: string, status: string, attempts: number }} The serialized job data.
    */
-  static serialize(jobOrList, { status }) {
-    if (Array.isArray(jobOrList)) {
-      return jobOrList.map(job => JobSerializer.serialize(job, { status }));
-    }
-    return { id: jobOrList.id, status, attempts: jobOrList._attempts };
+  static _serializeObject(job, { status }) {
+    return { id: job.id, status, attempts: job._attempts };
   }
 }
 
 export { JobSerializer };
+
