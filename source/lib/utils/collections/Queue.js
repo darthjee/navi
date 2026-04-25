@@ -40,6 +40,14 @@ class Queue extends Collection {
   size() {
     return this.items.length;
   }
+
+  /**
+   * Returns a shallow copy of all items in the queue, preserving FIFO order.
+   * @returns {Array} A copy of all items.
+   */
+  list() {
+    return [...this.items];
+  }
 }
 
 export { Queue };

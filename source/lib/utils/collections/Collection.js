@@ -12,6 +12,15 @@ class Collection {
   hasAny() {
     return this.size() > 0;
   }
+
+  /**
+   * Searches for an item with the given id.
+   * @param {string} id - The id to search for.
+   * @returns {object|null} The matching item, or null if not found.
+   */
+  findById(id) {
+    return this.list().find(item => item.id === id) ?? null;
+  }
 }
 
 export { Collection };

@@ -97,7 +97,7 @@ Configuration::buildRule([
 ]);
 ```
 
-- **`default_proxy` (`.json`)** — forwards the request to `http://backend:80`, automatically handles the `Host` header, and enables `FileCacheMiddleware` with the default cache directory. Only JSON API traffic is cached.
+- **`default_proxy` (`.json`)** — forwards all requests whose URI ends with `.json` to `http://backend:80`. This covers `/stats.json`, `/jobs/:status.json`, and `/job/:id.json`. Automatically handles the `Host` header and enables `FileCacheMiddleware` with the default cache directory. Only JSON API traffic is cached.
 - **`default_proxy` (`/categories`)** — forwards plain path requests (e.g. `/categories`, `/categories/1/items`) to the backend for redirect handling. No cache, no `RandomFailureMiddleware` — redirect responses are not cached.
 
 ### `dev/proxy/rules/frontend.php`

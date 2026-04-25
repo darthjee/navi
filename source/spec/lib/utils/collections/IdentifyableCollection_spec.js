@@ -44,4 +44,15 @@ describe('IdentifyableCollection', () => {
     expect(collection.byIndex(1)).toBe(second);
     expect(collection.list().map(i => i.id)).toEqual(['one', 'two']);
   });
+
+  it('finds an item by id', () => {
+    const item = { id: 'find_me', value: 42 };
+    collection.push(item);
+
+    expect(collection.findById('find_me')).toBe(item);
+  });
+
+  it('returns null when findById does not find a match', () => {
+    expect(collection.findById('missing')).toBeNull();
+  });
 });
