@@ -28,16 +28,21 @@ dev/app/
 ├── yarn.lock
 ├── lib/
 │   ├── DataNavigator.js      # Traverses the in-memory data structure
+│   ├── RedirectHandler.js    # Issues HTTP 302 redirects to hash-based frontend routes
+│   ├── RedirectRegister.js   # Registers redirect GET routes on the router
 │   ├── RequestHandler.js     # Handles a single Express request
 │   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
 │   ├── RouteRegister.js      # Registers a single GET route on the router
 │   ├── Router.js             # Builds the Express router with all routes
 │   ├── Serializer.js         # Projects data objects to a set of allowed attributes
-│   └── not_found.js          # Helper that sends a 404 JSON response
+│   ├── not_found.js          # Helper that sends a 404 JSON response
+│   ├── redirect_routes.config.js # Redirect route definitions (plain path → hash SPA)
+│   └── routes.config.js      # JSON API route definitions
 └── spec/
     ├── app_spec.js
     ├── lib/
     │   ├── DataNavigator_spec.js
+    │   ├── RedirectHandler_spec.js
     │   ├── RequestHandler_spec.js
     │   ├── RouteParamsExtractor_spec.js
     │   ├── RouteRegister_spec.js
@@ -67,7 +72,25 @@ Builds and returns the configured Express router with all application routes reg
 | Method | Description |
 |--------|-------------|
 | `constructor(data)` | Receives the parsed YAML data. |
-| `build()` | Creates an Express router, registers all routes via `RouteRegister`, and returns it. |
+| `build()` | Creates an Express router, registers redirect routes via `RedirectRegister` (before JSON routes), registers JSON routes via `RouteRegister`, and returns it. |
+
+#### `lib/RedirectRegister`
+
+Registers individual GET redirect routes on an Express router, wiring each route to a `RedirectHandler` that issues an HTTP 302 to the target URL.
+
+| Method | Description |
+|--------|-------------|
+| `constructor(router)` | Receives the Express router. |
+| `register({ route, target })` | Registers a GET redirect handler for `route`; `target` is the hash-based URL template. |
+
+#### `lib/RedirectHandler`
+
+Handles an incoming Express request by issuing an HTTP 302 redirect to the hash-based equivalent path, substituting any route parameters into the target template.
+
+| Method | Description |
+|--------|-------------|
+| `constructor(target)` | Receives the hash-based redirect target template (e.g. `'/#/categories/:id'`). |
+| `handle(req, res)` | Substitutes `req.params` into the target template and responds with 302. |
 
 #### `lib/RouteRegister`
 
@@ -120,17 +143,21 @@ Utility function: `notFound(res)` — sends a 404 response with `{ "error": "Not
 
 ### Routes
 
-All routes are registered in `Router#build()` via `RouteRegister#register()`:
+All routes are registered in `Router#build()`. Redirect routes are registered via `RedirectRegister#register()` before JSON routes:
 
 | Method | Path | Description | Response |
 |--------|------|-------------|----------|
+| GET | `/categories` | Redirect to hash SPA route | 302 → `/#/categories` |
+| GET | `/categories/:id` | Redirect to hash SPA route | 302 → `/#/categories/:id` |
+| GET | `/categories/:id/items` | Redirect to hash SPA route | 302 → `/#/categories/:id/items` |
+| GET | `/categories/:categoryId/items/:id` | Redirect to hash SPA route | 302 → `/#/categories/:categoryId/items/:id` |
 | GET | `/categories.json` | List all categories | `[{id, name}, …]` |
 | GET | `/categories/:id.json` | Single category by ID | `{id, name}` or 404 |
 | GET | `/categories/:id/items.json` | All items in a category | `[{id, name}, …]` or 404 |
 | GET | `/categories/:id/items/:item_id.json` | Single item | `{id, name}` or 404 |
 | `*` | `/*` | Catch-all | `{error: "Not found"}` 404 |
 
-All responses are JSON. Errors return `{"error": "Not found"}` with status 404.
+All JSON responses return `{"error": "Not found"}` with status 404 when the resource is not found.
 
 ### Request lifecycle
 
@@ -172,6 +199,7 @@ Tests live in `spec/`. They import the Express app (or individual classes) direc
 | `spec/app_spec.js` | End-to-end route tests through the full app |
 | `spec/lib/Router_spec.js` | All routes registered by `Router#build()` |
 | `spec/lib/RouteRegister_spec.js` | Route registration and serializer wiring |
+| `spec/lib/RedirectHandler_spec.js` | Redirect URL building and 302 response |
 | `spec/lib/RequestHandler_spec.js` | Data navigation, serialization, and 404 handling |
 | `spec/lib/RouteParamsExtractor_spec.js` | Steps extraction from route patterns and params |
 | `spec/lib/DataNavigator_spec.js` | Navigation through nested data structures |
