@@ -1,5 +1,6 @@
 import express from 'express';
 import request from 'supertest';
+import ContentHandler from '../../lib/ContentHandler.js';
 import RouteRegister from '../../lib/RouteRegister.js';
 import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
 import { testData as data } from '../support/fixtures/testData.js';
@@ -9,9 +10,10 @@ describe('RouteRegister', () => {
   describe('#register', () => {
     describe('when the same route is registered twice', () => {
       it('throws an error identifying the duplicate', () => {
-        const register = new RouteRegister(express(), data);
-        register.register({ route: '/categories.json' });
-        expect(() => register.register({ route: '/categories.json' }))
+        const register = new RouteRegister(express());
+        const handler = new ContentHandler('/categories.json', data);
+        register.register('/categories.json', handler);
+        expect(() => register.register('/categories.json', handler))
           .toThrowError('RouteRegister: duplicate route "/categories.json"');
       });
     });
@@ -76,19 +78,38 @@ describe('RouteRegister', () => {
         expect(res.status).toBe(404);
       });
     });
+
+    describe('with a redirect handler', () => {
+      it('accepts any handler implementing handle(req, res)', async () => {
+        const app = express();
+        const register = new RouteRegister(app);
+        const handler = { handle: (_req, res) => res.status(200).json({ ok: true }) };
+        register.register('/test', handler);
+        const res = await request(app).get('/test');
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ ok: true });
+      });
+    });
   });
 
   describe('#routes', () => {
     it('returns the list of registered route patterns in registration order', () => {
-      const register = new RouteRegister(express(), data);
-      register.register({ route: '/categories.json' });
-      register.register({ route: '/categories/:id.json' });
+      const register = new RouteRegister(express());
+      register.register('/categories.json', new ContentHandler('/categories.json', data));
+      register.register('/categories/:id.json', new ContentHandler('/categories/:id.json', data));
       expect(register.routes()).toEqual(['/categories.json', '/categories/:id.json']);
     });
 
     it('returns an empty array before any routes are registered', () => {
-      const register = new RouteRegister(express(), data);
+      const register = new RouteRegister(express());
       expect(register.routes()).toEqual([]);
+    });
+
+    it('includes redirect handler routes', () => {
+      const register = new RouteRegister(express());
+      register.register('/categories', { handle: () => {} });
+      expect(register.routes()).toEqual(['/categories']);
     });
   });
 });
+

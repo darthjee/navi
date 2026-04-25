@@ -1,48 +1,22 @@
-import DataNavigator from './DataNavigator.js';
-import { notFound } from './not_found.js';
-import RouteParamsExtractor from './RouteParamsExtractor.js';
-
 /**
- * Handles an incoming Express request by navigating the in-memory data,
- * optionally serializing the result, and writing the JSON response.
+ * Abstract base class for all request handlers. Defines the common API that
+ * every handler must implement: a single `handle(req, res)` method.
+ *
+ * Subclasses must override `handle` to provide their own request-handling
+ * behaviour (e.g. data fetching via {@link ContentHandler}, or HTTP redirects
+ * via {@link RedirectHandler}).
  */
 class RequestHandler {
-  #route;
-  #data;
-  #serializer;
-  #extractorFactory;
-
   /**
-   * @param {string} route - Express route pattern used to derive navigation steps.
-   * @param {Object} data - Root data structure.
-   * @param {import('./Serializer.js').default|null} [serializer] - Optional serializer to project the result.
-   * @param {Function|null} [extractorFactory] - Optional factory `(route, params) => { steps() }`.
-   *   Defaults to creating a real {@link RouteParamsExtractor}.
-   */
-  constructor(route, data, serializer = null, extractorFactory = null) {
-    this.#route = route;
-    this.#data = data;
-    this.#serializer = serializer;
-    this.#extractorFactory = extractorFactory
-      ?? ((r, params) => new RouteParamsExtractor(r, params));
-  }
-
-  /**
-   * Navigates the data for the given route/params, serializes the result,
-   * and writes the JSON response. Responds 404 if navigation returns null.
+   * Handles the incoming Express request and writes a response.
+   * Subclasses must override this method.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
+   * @throws {Error} Always — subclasses must override this method.
    */
-  handle(req, res) {
-    try {
-      const steps = this.#extractorFactory(this.#route, req.params).steps();
-      const result = new DataNavigator(this.#data, steps).navigate();
-      if (result === null) return notFound(res);
-      res.json(this.#serializer ? this.#serializer.serialize(result) : result);
-    } catch (e) {
-      console.warn(`RequestHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
-      res.status(400).json({ error: e.message });
-    }
+  // eslint-disable-next-line no-unused-vars
+  handle(_req, _res) {
+    throw new Error('RequestHandler#handle must be implemented by subclass');
   }
 }
 
