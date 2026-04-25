@@ -7,6 +7,54 @@ import { buildRouterApp } from '../support/utils/AppFactory.js';
 describe('Router', () => {
   const app = buildRouterApp(data);
 
+  describe('GET /categories (redirect)', () => {
+    it('responds with 302', async () => {
+      const res = await request(app).get('/categories').redirects(0);
+      expect(res.status).toBe(302);
+    });
+
+    it('redirects to /#/categories', async () => {
+      const res = await request(app).get('/categories').redirects(0);
+      expect(res.headers['location']).toBe('/#/categories');
+    });
+  });
+
+  describe('GET /categories/:id (redirect)', () => {
+    it('responds with 302', async () => {
+      const res = await request(app).get('/categories/1').redirects(0);
+      expect(res.status).toBe(302);
+    });
+
+    it('redirects to /#/categories/:id', async () => {
+      const res = await request(app).get('/categories/1').redirects(0);
+      expect(res.headers['location']).toBe('/#/categories/1');
+    });
+  });
+
+  describe('GET /categories/:id/items (redirect)', () => {
+    it('responds with 302', async () => {
+      const res = await request(app).get('/categories/1/items').redirects(0);
+      expect(res.status).toBe(302);
+    });
+
+    it('redirects to /#/categories/:id/items', async () => {
+      const res = await request(app).get('/categories/1/items').redirects(0);
+      expect(res.headers['location']).toBe('/#/categories/1/items');
+    });
+  });
+
+  describe('GET /categories/:categoryId/items/:id (redirect)', () => {
+    it('responds with 302', async () => {
+      const res = await request(app).get('/categories/1/items/2').redirects(0);
+      expect(res.status).toBe(302);
+    });
+
+    it('redirects to /#/categories/:categoryId/items/:id', async () => {
+      const res = await request(app).get('/categories/1/items/2').redirects(0);
+      expect(res.headers['location']).toBe('/#/categories/1/items/2');
+    });
+  });
+
   describe('GET /categories.json', () => {
     it('returns all categories without items', async () => {
       const res = await request(app).get('/categories.json');

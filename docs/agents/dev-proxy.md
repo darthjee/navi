@@ -68,9 +68,10 @@ require_once __DIR__ . '/rules/frontend.php';
 
 ### `dev/proxy/rules/backend.php`
 
-Defines a routing rule that forwards `.json` `GET` requests to the backend and caches the responses:
+Defines routing rules that forward requests to the backend. The `.json` rule comes first so JSON API requests are matched before the redirect-forwarding rule:
 
 ```php
+// Forward and cache JSON API requests
 Configuration::buildRule([
     'handler' => [
         'type' => 'default_proxy',
@@ -78,12 +79,26 @@ Configuration::buildRule([
     ],
     'matchers' => [
         ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware']
+    ]
+]);
+
+// Forward plain path requests to the backend for redirect handling
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'default_proxy',
+        'host' => 'http://backend:80'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
     ]
 ]);
 ```
 
-- **`default_proxy`** — forwards the request to `http://backend:80` (the `navi_dev_app` container), automatically handles the `Host` header, and enables `FileCacheMiddleware` with the default cache directory (`./cache`, which resolves to the mounted `docker_volumes/proxy_cache`).
-- **Matcher** — `ends_with .json` matches all JSON API requests, so only API traffic is proxied and cached.
+- **`default_proxy` (`.json`)** — forwards the request to `http://backend:80`, automatically handles the `Host` header, and enables `FileCacheMiddleware` with the default cache directory. Only JSON API traffic is cached.
+- **`default_proxy` (`/categories`)** — forwards plain path requests (e.g. `/categories`, `/categories/1/items`) to the backend for redirect handling. No cache, no `RandomFailureMiddleware` — redirect responses are not cached.
 
 ### `dev/proxy/rules/frontend.php`
 
@@ -139,11 +154,12 @@ Output directory where the React build artifacts are placed. The `navi_dev_front
 
 1. Navi or a browser issues a `GET` request to `http://remote_host` (the proxy).
 2. Tent evaluates rules in order:
-   - If the URI ends with `.json` → **backend rule**: check cache, forward to `navi_dev_app` on miss.
+   - If the URI ends with `.json` → **backend JSON rule**: check cache, forward to `navi_dev_app` on miss.
+   - If the URI begins with `/categories` → **backend redirect rule**: forward to `navi_dev_app`, which responds with a 302 to the hash-based SPA route.
    - If the URI is exactly `/` → **frontend entry point rule**: serve `index.html` (the SPA entry point).
    - Otherwise → **frontend asset rule**: serve the requested static file (JS/CSS bundle) from `dev/proxy/static/`.
 3. Hash fragments (`#/...`) are never sent to the server — the browser handles all client-side navigation locally after loading `index.html`.
-4. For backend requests, on a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
+4. For backend JSON requests, on a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
 5. The response is returned to the caller.
 
 ---
