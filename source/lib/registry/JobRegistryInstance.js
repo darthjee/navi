@@ -1,4 +1,5 @@
 import { JobFactory } from '../factories/JobFactory.js';
+import { JobSerializer } from '../serializers/JobSerializer.js';
 import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
 import { Queue } from '../utils/collections/Queue.js';
 import { SortedCollection } from '../utils/collections/SortedCollection.js';
@@ -139,9 +140,9 @@ class JobRegistryInstance {
    * @returns {{ id: string, status: string, attempts: number }[]} Array of job data objects, or an empty array for unknown status.
    */
   jobsByStatus(status) {
-    const collection = this.#collectionsByStatus()[status];
+    const collection = this.#collectionByStatus(status);
     if (!collection) return [];
-    return collection.list().map(job => ({ id: job.id, status, attempts: job._attempts }));
+    return JobSerializer.serialize(collection.list(), { status });
   }
 
   /**
@@ -155,7 +156,7 @@ class JobRegistryInstance {
     for (const status of Object.keys(collections)) {
       const job = collections[status].findById(id);
       if (job) {
-        return { id: job.id, status, attempts: job._attempts };
+        return JobSerializer.serialize(job, { status });
       }
     }
     return null;
@@ -174,6 +175,15 @@ class JobRegistryInstance {
       finished: this.#finished.size(),
       dead: this.#dead.size(),
     };
+  }
+
+  /**
+   * Returns the collection corresponding to the given status, or undefined.
+   * @param {string} status - The status name.
+   * @returns {object|undefined} The collection for the given status, or undefined if unknown.
+   */
+  #collectionByStatus(status) {
+    return this.#collectionsByStatus()[status];
   }
 
   /**
