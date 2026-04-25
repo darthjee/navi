@@ -92,7 +92,9 @@ the hash fragment (`#/...`) is never sent to the server, so the proxy only needs
 (the SPA entry point) and static asset requests:
 
 ```php
-// Serve index.html for the SPA entry point
+// All /#/... hash routes are served by this rule because browsers strip
+// the hash fragment before sending the HTTP request, so every hash-based
+// navigation arrives at the server as GET /.
 Configuration::buildRule([
   'handler' => [
     'type' => 'static',
@@ -121,7 +123,7 @@ Configuration::buildRule([
 ]);
 ```
 
-- **`static` with `SetPathMiddleware`** — rewrites the path to `/index.html` and serves it from `dev/proxy/static/`, used for the exact `/` match (SPA entry point).
+- **`static` with `SetPathMiddleware`** — rewrites the path to `/index.html` and serves it from `dev/proxy/static/`. This rule handles the SPA entry point for all hash-based navigation: browsers strip the hash fragment before sending the HTTP request, so every `/#/categories`, `/#/categories/:id`, etc. arrives at the proxy as `GET /` and is served `index.html`.
 - **`static` (begins_with)** — serves compiled JS/CSS bundles and any other static assets directly from `dev/proxy/static/`.
 
 No path-based frontend routes need to be handled by the server because all client-side navigation

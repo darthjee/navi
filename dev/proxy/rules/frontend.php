@@ -2,6 +2,9 @@
 
 use Tent\Configuration;
 
+// All /#/... hash routes are served by this rule because browsers strip
+// the hash fragment before sending the HTTP request, so every hash-based
+// navigation arrives at the server as GET /.
 Configuration::buildRule([
   'handler' => [
     'type' => 'static',
