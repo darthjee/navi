@@ -1,6 +1,8 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import { JobRequestHandler } from './JobRequestHandler.js';
+import { JobsRequestHandler } from './JobsRequestHandler.js';
 import { RouteRegister } from './RouteRegister.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
@@ -29,6 +31,16 @@ class Router {
     register.register({
       route:   '/stats.json',
       handler: new StatsRequestHandler(),
+    });
+
+    register.register({
+      route:   '/jobs/:status.json',
+      handler: new JobsRequestHandler(),
+    });
+
+    register.register({
+      route:   '/job/:id.json',
+      handler: new JobRequestHandler(),
     });
 
     router.use(express.static(publicDir));

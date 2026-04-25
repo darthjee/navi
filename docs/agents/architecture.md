@@ -82,8 +82,8 @@ Collection managers built on a shared base class.
 - **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
 - **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
 - **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
-- **`JobRegistry`** — Static singleton facade for the job queues. Call `JobRegistry.build(options)` once during bootstrap; call `JobRegistry.reset()` in tests. Delegates all operations to a `JobRegistryInstance`. Key static methods: `enqueue(factoryKey, params)`, `fail(job)`, `finish(job)`, `pick()`, `hasJob()`, `hasReadyJob()`, `promoteReadyJobs()`, `stats()`.
-- **`JobRegistryInstance`** — Holds the actual queues: `enqueued` (FIFO), `processing` (`IdentifyableCollection`), `failed` (`SortedCollection` sorted by `readyBy` timestamp), `retryQueue` (FIFO), `finished`, and `dead`. `promoteReadyJobs()` moves cooled-down failed jobs to `retryQueue`. Not exported; accessed only via `JobRegistry`.
+- **`JobRegistry`** — Static singleton facade for the job queues. Call `JobRegistry.build(options)` once during bootstrap; call `JobRegistry.reset()` in tests. Delegates all operations to a `JobRegistryInstance`. Key static methods: `enqueue(factoryKey, params)`, `fail(job)`, `finish(job)`, `pick()`, `hasJob()`, `hasReadyJob()`, `promoteReadyJobs()`, `stats()`, `jobsByStatus(status)`, `jobById(id)`.
+- **`JobRegistryInstance`** — Holds the actual queues: `enqueued` (FIFO), `processing` (`IdentifyableCollection`), `failed` (`SortedCollection` sorted by `readyBy` timestamp), `retryQueue` (FIFO), `finished`, and `dead`. `promoteReadyJobs()` moves cooled-down failed jobs to `retryQueue`. `jobsByStatus(status)` returns job data from the named collection. `jobById(id)` searches all collections and returns the job data or `null`. Not exported; accessed only via `JobRegistry`.
 - **`WorkersRegistry`** — Static singleton facade for the worker pool. Call `WorkersRegistry.build(options)` once during bootstrap; call `WorkersRegistry.reset()` in tests. Delegates to a `WorkersRegistryInstance`. Key static methods: `initWorkers()`, `setBusy(id)`, `setIdle(id)`, `hasBusyWorker()`, `hasIdleWorker()`, `getIdleWorker()`, `stats()`.
 - **`WorkersRegistryInstance`** — Holds the actual worker collections: `workers` (all), `idle`, `busy`. `getIdleWorker()` atomically moves a worker from idle to busy and returns it. Not exported; accessed only via `WorkersRegistry`.
 
@@ -162,10 +162,12 @@ Express-based web server and request handlers.
 | Class | Responsibility |
 |-------|---------------|
 | `WebServer` | Optional Express.js server. `WebServer.build({ webConfig })` returns `null` when `webConfig` is absent; otherwise creates an instance listening on `webConfig.port`. Serves the React SPA from `source/public/`. |
-| `Router` | Builds the Express `Router`: registers `GET /stats.json` via `RouteRegister`, serves static files from `source/public/`, and falls back to `index.html` for SPA navigation. |
+| `Router` | Builds the Express `Router`: registers `GET /stats.json`, `GET /jobs/:status.json`, and `GET /job/:id.json` via `RouteRegister`, serves static files from `source/public/`, and falls back to `index.html` for SPA navigation. |
 | `RouteRegister` | Helper that wires a route path to a `RequestHandler` instance on an Express router. |
 | `RequestHandler` | Abstract base class for route handlers. Subclasses implement `handle(req, res)`. |
 | `StatsRequestHandler` | Extends `RequestHandler`. Responds to `GET /stats.json` with `{ jobs: JobRegistry.stats(), workers: WorkersRegistry.stats() }`. |
+| `JobsRequestHandler` | Extends `RequestHandler`. Responds to `GET /jobs/:status.json` with the array of jobs in the given status queue (from `JobRegistry.jobsByStatus(status)`). |
+| `JobRequestHandler` | Extends `RequestHandler`. Responds to `GET /job/:id.json` with job details from `JobRegistry.jobById(id)`, or 404 if not found. |
 
 ### `factories/`
 
