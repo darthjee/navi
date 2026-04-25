@@ -23,9 +23,7 @@ class RedirectRegister {
    * @throws {Error} If the same route pattern has already been registered.
    */
   register({ route, target } = {}) {
-    if (this.#routes.includes(route)) {
-      throw new Error(`RedirectRegister: duplicate route "${route}"`);
-    }
+    this.#assertUnique(route);
     this.#routes.push(route);
     const handler = new RedirectHandler(target);
     this.#router.get(route, (req, res) => handler.handle(req, res));
@@ -37,6 +35,16 @@ class RedirectRegister {
    */
   routes() {
     return [...this.#routes];
+  }
+
+  /**
+   * @param {string} route
+   * @throws {Error} If the route has already been registered.
+   */
+  #assertUnique(route) {
+    if (this.#routes.includes(route)) {
+      throw new Error(`RedirectRegister: duplicate route "${route}"`);
+    }
   }
 }
 

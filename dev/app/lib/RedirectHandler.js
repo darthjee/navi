@@ -1,3 +1,5 @@
+import RedirectLocation from './RedirectLocation.js';
+
 /**
  * Handles an incoming Express request by issuing an HTTP 302 redirect to
  * the hash-based equivalent path, substituting any route parameters into
@@ -15,16 +17,12 @@ class RedirectHandler {
   }
 
   /**
-   * Substitutes route params into the target template and redirects with 302.
-   * Each param value is URI-encoded to prevent injection into the redirect URL.
+   * Builds the redirect location and responds with 302.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   handle(req, res) {
-    const location = this.#target.replace(/:([^/]+)/g, (_match, name) => {
-      const value = req.params[name];
-      return value !== undefined ? encodeURIComponent(value) : `:${name}`;
-    });
+    const location = new RedirectLocation(this.#target, req.params).build();
     res.redirect(302, location);
   }
 }

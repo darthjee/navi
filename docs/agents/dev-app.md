@@ -29,6 +29,7 @@ dev/app/
 ├── lib/
 │   ├── DataNavigator.js      # Traverses the in-memory data structure
 │   ├── RedirectHandler.js    # Issues HTTP 302 redirects to hash-based frontend routes
+│   ├── RedirectLocation.js   # Builds the redirect location URL from a template and params
 │   ├── RedirectRegister.js   # Registers redirect GET routes on the router
 │   ├── RequestHandler.js     # Handles a single Express request
 │   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
@@ -43,6 +44,7 @@ dev/app/
     ├── lib/
     │   ├── DataNavigator_spec.js
     │   ├── RedirectHandler_spec.js
+    │   ├── RedirectLocation_spec.js
     │   ├── RequestHandler_spec.js
     │   ├── RouteParamsExtractor_spec.js
     │   ├── RouteRegister_spec.js
@@ -85,12 +87,21 @@ Registers individual GET redirect routes on an Express router, wiring each route
 
 #### `lib/RedirectHandler`
 
-Handles an incoming Express request by issuing an HTTP 302 redirect to the hash-based equivalent path, substituting any route parameters into the target template.
+Handles an incoming Express request by issuing an HTTP 302 redirect to the hash-based equivalent path, delegating URL construction to `RedirectLocation`.
 
 | Method | Description |
 |--------|-------------|
 | `constructor(target)` | Receives the hash-based redirect target template (e.g. `'/#/categories/:id'`). |
-| `handle(req, res)` | Substitutes `req.params` into the target template and responds with 302. |
+| `handle(req, res)` | Builds the redirect location via `RedirectLocation` and responds with 302. |
+
+#### `lib/RedirectLocation`
+
+Builds a redirect location URL by substituting route parameter values into a hash-based target template. Each parameter value is URI-encoded to prevent injection.
+
+| Method | Description |
+|--------|-------------|
+| `constructor(target, params)` | Receives the target template and the params object (`req.params`). |
+| `build()` | Returns the resolved location string with all named segments replaced. |
 
 #### `lib/RouteRegister`
 
@@ -200,6 +211,7 @@ Tests live in `spec/`. They import the Express app (or individual classes) direc
 | `spec/lib/Router_spec.js` | All routes registered by `Router#build()` |
 | `spec/lib/RouteRegister_spec.js` | Route registration and serializer wiring |
 | `spec/lib/RedirectHandler_spec.js` | Redirect URL building and 302 response |
+| `spec/lib/RedirectLocation_spec.js` | Location URL construction from template and params |
 | `spec/lib/RequestHandler_spec.js` | Data navigation, serialization, and 404 handling |
 | `spec/lib/RouteParamsExtractor_spec.js` | Steps extraction from route patterns and params |
 | `spec/lib/DataNavigator_spec.js` | Navigation through nested data structures |
