@@ -1,5 +1,4 @@
 import { JobFactory } from '../factories/JobFactory.js';
-import { JobSerializer } from '../serializers/JobSerializer.js';
 import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
 import { Queue } from '../utils/collections/Queue.js';
 import { SortedCollection } from '../utils/collections/SortedCollection.js';
@@ -137,24 +136,24 @@ class JobRegistryInstance {
   /**
    * Returns all jobs in the collection that corresponds to the given status.
    * @param {string} status - The status name ('enqueued', 'processing', 'failed', 'retryQueue', 'finished', 'dead').
-   * @returns {{ id: string, status: string, attempts: number }[]} Array of job data objects, or an empty array for unknown status.
+   * @returns {object[]} Array of raw job instances, or an empty array for unknown status.
    */
   jobsByStatus(status) {
     const collection = this.#collectionByStatus(status);
     if (!collection) return [];
-    return JobSerializer.serialize(collection.list(), { status });
+    return collection.list();
   }
 
   /**
-   * Searches all collections and returns data for the job with the given ID.
+   * Searches all collections and returns the job and its status for the given ID.
    * @param {string} id - The ID of the job to look up.
-   * @returns {{ id: string, status: string, attempts: number } | null} The job data, or null if not found.
+   * @returns {{ job: object, status: string } | null} The raw job and its status, or null if not found.
    */
   jobById(id) {
     for (const status of Object.keys(this.#collectionsByStatus())) {
       const job = this.#collectionByStatus(status).findById(id);
       if (job) {
-        return JobSerializer.serialize(job, { status });
+        return { job, status };
       }
     }
     return null;

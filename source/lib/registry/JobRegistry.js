@@ -104,16 +104,16 @@ class JobRegistry {
   /**
    * Returns all jobs in the given status collection.
    * @param {string} status - The status name to filter by.
-   * @returns {{ id: string, status: string, attempts: number }[]} Array of job data objects.
+   * @returns {object[]} Array of raw job instances, or an empty array for unknown status.
    */
   static jobsByStatus(status) {
     return JobRegistry.#getInstance().jobsByStatus(status);
   }
 
   /**
-   * Searches all collections and returns data for the job with the given ID.
+   * Searches all collections and returns the job and its status for the given ID.
    * @param {string} id - The ID of the job to look up.
-   * @returns {{ id: string, status: string, attempts: number } | null} The job data, or null if not found.
+   * @returns {{ job: object, status: string } | null} The raw job and its status, or null if not found.
    */
   static jobById(id) {
     return JobRegistry.#getInstance().jobById(id);

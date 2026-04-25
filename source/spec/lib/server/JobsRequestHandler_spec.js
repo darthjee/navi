@@ -16,10 +16,10 @@ describe('JobsRequestHandler', () => {
   });
 
   describe('#handle', () => {
-    const jobs = [{ id: 'abc', status: 'enqueued', attempts: 0 }];
+    const rawJob = { id: 'abc', _attempts: 0 };
 
     beforeEach(() => {
-      spyOn(JobRegistry, 'jobsByStatus').and.returnValue(jobs);
+      spyOn(JobRegistry, 'jobsByStatus').and.returnValue([rawJob]);
     });
 
     it('calls jobsByStatus with the status param', () => {
@@ -28,10 +28,10 @@ describe('JobsRequestHandler', () => {
       expect(JobRegistry.jobsByStatus).toHaveBeenCalledWith('enqueued');
     });
 
-    it('responds with the job list as JSON', () => {
+    it('responds with the serialized job list as JSON', () => {
       handler.handle({ params: { status: 'enqueued' } }, res);
 
-      expect(res.json).toHaveBeenCalledWith(jobs);
+      expect(res.json).toHaveBeenCalledWith([{ id: 'abc', status: 'enqueued', attempts: 0 }]);
     });
 
     describe('when the status is unknown', () => {

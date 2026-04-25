@@ -1,5 +1,6 @@
 import { RequestHandler } from './RequestHandler.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
+import { JobSerializer } from '../serializers/JobSerializer.js';
 
 /**
  * Handles GET /jobs/:status.json requests.
@@ -20,7 +21,9 @@ class JobsRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(req, res) {
-    res.json(JobRegistry.jobsByStatus(req.params.status));
+    const { status } = req.params;
+    const jobs = JobRegistry.jobsByStatus(status);
+    res.json(JobSerializer.serialize(jobs, { status }));
   }
 }
 

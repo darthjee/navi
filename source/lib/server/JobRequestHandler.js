@@ -1,5 +1,6 @@
 import { RequestHandler } from './RequestHandler.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
+import { JobSerializer } from '../serializers/JobSerializer.js';
 
 /**
  * Handles GET /job/:id.json requests.
@@ -20,12 +21,12 @@ class JobRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(req, res) {
-    const job = JobRegistry.jobById(req.params.id);
-    if (!job) {
+    const result = JobRegistry.jobById(req.params.id);
+    if (!result) {
       res.status(404).json({ error: 'Job not found' });
       return;
     }
-    res.json(job);
+    res.json(JobSerializer.serialize(result.job, { status: result.status }));
   }
 }
 

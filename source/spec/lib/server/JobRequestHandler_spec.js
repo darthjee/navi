@@ -20,10 +20,10 @@ describe('JobRequestHandler', () => {
 
   describe('#handle', () => {
     describe('when the job exists', () => {
-      const job = { id: 'abc-123', status: 'processing', attempts: 1 };
+      const rawJob = { id: 'abc-123', _attempts: 1 };
 
       beforeEach(() => {
-        spyOn(JobRegistry, 'jobById').and.returnValue(job);
+        spyOn(JobRegistry, 'jobById').and.returnValue({ job: rawJob, status: 'processing' });
       });
 
       it('calls jobById with the id param', () => {
@@ -32,10 +32,10 @@ describe('JobRequestHandler', () => {
         expect(JobRegistry.jobById).toHaveBeenCalledWith('abc-123');
       });
 
-      it('responds with the job data as JSON', () => {
+      it('responds with the serialized job data as JSON', () => {
         handler.handle({ params: { id: 'abc-123' } }, res);
 
-        expect(res.json).toHaveBeenCalledWith(job);
+        expect(res.json).toHaveBeenCalledWith({ id: 'abc-123', status: 'processing', attempts: 1 });
       });
     });
 

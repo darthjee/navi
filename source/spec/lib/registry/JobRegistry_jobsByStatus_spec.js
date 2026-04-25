@@ -32,9 +32,7 @@ describe('JobRegistry', () => {
       });
 
       it('returns the job in the enqueued list', () => {
-        expect(JobRegistry.jobsByStatus('enqueued')).toEqual([
-          { id: job.id, status: 'enqueued', attempts: 0 },
-        ]);
+        expect(JobRegistry.jobsByStatus('enqueued')).toEqual([job]);
       });
 
       it('returns an empty array for other statuses', () => {
@@ -53,9 +51,7 @@ describe('JobRegistry', () => {
       });
 
       it('returns the job in the processing list', () => {
-        expect(JobRegistry.jobsByStatus('processing')).toEqual([
-          { id: job.id, status: 'processing', attempts: 0 },
-        ]);
+        expect(JobRegistry.jobsByStatus('processing')).toEqual([job]);
       });
 
       it('returns an empty array for enqueued', () => {
@@ -73,9 +69,7 @@ describe('JobRegistry', () => {
       });
 
       it('returns the job in the finished list', () => {
-        expect(JobRegistry.jobsByStatus('finished')).toEqual([
-          { id: job.id, status: 'finished', attempts: 0 },
-        ]);
+        expect(JobRegistry.jobsByStatus('finished')).toEqual([job]);
       });
     });
 
@@ -89,9 +83,7 @@ describe('JobRegistry', () => {
       });
 
       it('returns the job in the failed list', () => {
-        expect(JobRegistry.jobsByStatus('failed')).toEqual([
-          { id: job.id, status: 'failed', attempts: 0 },
-        ]);
+        expect(JobRegistry.jobsByStatus('failed')).toEqual([job]);
       });
     });
 
@@ -106,9 +98,7 @@ describe('JobRegistry', () => {
       });
 
       it('returns the job in the retryQueue list', () => {
-        expect(JobRegistry.jobsByStatus('retryQueue')).toEqual([
-          { id: job.id, status: 'retryQueue', attempts: 0 },
-        ]);
+        expect(JobRegistry.jobsByStatus('retryQueue')).toEqual([job]);
       });
     });
 
@@ -125,9 +115,7 @@ describe('JobRegistry', () => {
       });
 
       it('returns the job in the dead list', () => {
-        expect(JobRegistry.jobsByStatus('dead')).toEqual([
-          { id: job.id, status: 'dead', attempts: 3 },
-        ]);
+        expect(JobRegistry.jobsByStatus('dead')).toEqual([job]);
       });
     });
   });
@@ -146,10 +134,8 @@ describe('JobRegistry', () => {
         job = JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
       });
 
-      it('returns the job data with enqueued status', () => {
-        expect(JobRegistry.jobById(job.id)).toEqual({
-          id: job.id, status: 'enqueued', attempts: 0,
-        });
+      it('returns the job with enqueued status', () => {
+        expect(JobRegistry.jobById(job.id)).toEqual({ job, status: 'enqueued' });
       });
     });
 
@@ -161,10 +147,8 @@ describe('JobRegistry', () => {
         job = JobRegistry.pick();
       });
 
-      it('returns the job data with processing status', () => {
-        expect(JobRegistry.jobById(job.id)).toEqual({
-          id: job.id, status: 'processing', attempts: 0,
-        });
+      it('returns the job with processing status', () => {
+        expect(JobRegistry.jobById(job.id)).toEqual({ job, status: 'processing' });
       });
     });
 
@@ -177,10 +161,8 @@ describe('JobRegistry', () => {
         JobRegistry.finish(job);
       });
 
-      it('returns the job data with finished status', () => {
-        expect(JobRegistry.jobById(job.id)).toEqual({
-          id: job.id, status: 'finished', attempts: 0,
-        });
+      it('returns the job with finished status', () => {
+        expect(JobRegistry.jobById(job.id)).toEqual({ job, status: 'finished' });
       });
     });
 
@@ -193,10 +175,8 @@ describe('JobRegistry', () => {
         JobRegistry.fail(job);
       });
 
-      it('returns the job data with failed status', () => {
-        expect(JobRegistry.jobById(job.id)).toEqual({
-          id: job.id, status: 'failed', attempts: 0,
-        });
+      it('returns the job with failed status', () => {
+        expect(JobRegistry.jobById(job.id)).toEqual({ job, status: 'failed' });
       });
     });
 
@@ -212,10 +192,8 @@ describe('JobRegistry', () => {
         JobRegistry.fail(job);
       });
 
-      it('returns the job data with dead status', () => {
-        expect(JobRegistry.jobById(job.id)).toEqual({
-          id: job.id, status: 'dead', attempts: 3,
-        });
+      it('returns the job with dead status', () => {
+        expect(JobRegistry.jobById(job.id)).toEqual({ job, status: 'dead' });
       });
     });
   });
