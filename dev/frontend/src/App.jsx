@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import CategoriesIndexPage from './pages/CategoriesIndexPage.jsx';
 import CategoryItemPage from './pages/CategoryItemPage.jsx';
 import CategoryItemsIndexPage from './pages/CategoryItemsIndexPage.jsx';
@@ -9,7 +9,7 @@ import './styles/main.css';
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<IndexPage />} />
         <Route path="/categories" element={<CategoriesIndexPage />} />
@@ -17,7 +17,7 @@ function App() {
         <Route path="/categories/:id/items" element={<CategoryItemsIndexPage />} />
         <Route path="/categories/:categoryId/items/:id" element={<CategoryItemPage />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
