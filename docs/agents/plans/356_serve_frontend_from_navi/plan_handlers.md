@@ -16,7 +16,7 @@ Serve static files from `source/static/assets/`. Before serving, resolve the ful
 
 ### Handler 3 — Hash-based route fallback
 
-Any request that reaches the router without matching a more specific route (i.e. `/#/jobs`, `/#/job/:id`, etc.) should serve `index.html` so React Router can handle client-side navigation. Since the `#` fragment is never sent to the server, this is effectively a catch-all for unmatched GET requests.
+Any request that reaches the router without matching a more specific route (i.e. `/#/jobs`, `/#/job/:id`, etc.) should serve `index.html` so React Router can handle client-side navigation. Since the `#` fragment is never sent to the server, this is effectively a catch-all for unmatched GET requests. The catch-all must also enforce the same path traversal security as `/assets/*` — only `index.html` is ever served, so there is no risk of leaking arbitrary files.
 
 ### Router wiring
 
@@ -32,6 +32,3 @@ Register all three handlers in `source/lib/server/Router.js` via `RouteRegister`
 
 The path traversal check in `AssetsRequestHandler` must use `path.resolve()` and verify the result starts with the absolute path of `source/static/assets/`. Never trust the raw request path.
 
-## Open Questions
-
-- Does `source/lib/server/Router.js` already have a catch-all for SPA navigation? If so, it may just need to be updated to point to `source/static/index.html` instead of `source/public/index.html`.

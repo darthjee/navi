@@ -7,14 +7,11 @@ Create `source/static/` as the location where the built frontend assets will liv
 ## Steps
 
 - Create `source/static/` (with a `.gitkeep` so it is tracked but empty).
-- Update `docker-compose.yml` to mount `source/static/` as the `dist/` directory of the frontend service, replacing or supplementing the current build output path.
-- Verify that running `yarn build` in the frontend container writes assets into `source/static/`.
+- Confirm that Vite is configured to build into `frontend/dist/`. If not, update `frontend/vite.config.js` to set `outDir` to `dist`.
+- Update `docker-compose.yml` to mount `source/static/` as `frontend/dist/` inside the frontend service container, so `yarn build` writes directly into `source/static/`.
 
 ## Files to Change
 
 - `source/static/.gitkeep` — new empty placeholder
-- `docker-compose.yml` — add volume mount for `source/static/` → frontend `dist/`
-
-## Open Questions
-
-- What is the current Vite `outDir` configured in `frontend/vite.config.js`? It may need to be updated or the mount may be sufficient.
+- `docker-compose.yml` — add volume mount for `source/static/` → `frontend/dist/`
+- `frontend/vite.config.js` — set `outDir: 'dist'` if not already configured
