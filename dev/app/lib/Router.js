@@ -1,7 +1,7 @@
 import { Router as ExpressRouter } from 'express';
+import ContentHandler from './ContentHandler.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
 import RedirectHandler from './RedirectHandler.js';
-import RequestHandler from './RequestHandler.js';
 import RouteRegister from './RouteRegister.js';
 import { ROUTES } from './routes.config.js';
 import Serializer from './Serializer.js';
@@ -32,7 +32,7 @@ class Router {
 
     ROUTES.forEach(({ route, attributes }) => {
       const serializer = attributes ? new Serializer(attributes) : null;
-      register.register(route, new RequestHandler(route, this.#data, serializer));
+      register.register(route, new ContentHandler(route, this.#data, serializer));
     });
 
     REDIRECT_ROUTES.forEach(({ route, target }) => {

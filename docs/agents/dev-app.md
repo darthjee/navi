@@ -27,10 +27,11 @@ dev/app/
 ├── eslint.config.mjs
 ├── yarn.lock
 ├── lib/
+│   ├── ContentHandler.js     # Handles data-fetching requests (extends RequestHandler)
 │   ├── DataNavigator.js      # Traverses the in-memory data structure
 │   ├── RedirectHandler.js    # Issues HTTP 302 redirects to hash-based frontend routes (extends RequestHandler)
 │   ├── RedirectLocation.js   # Builds the redirect location URL from a template and params
-│   ├── RequestHandler.js     # Base handler class; also implements the default content-handler behaviour
+│   ├── RequestHandler.js     # Abstract base class defining the handler API (handle(req, res))
 │   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
 │   ├── RouteRegister.js      # Unified registry: registers any RequestHandler subclass on the router
 │   ├── Router.js             # Builds the Express router with all routes via a single RouteRegister
@@ -41,6 +42,7 @@ dev/app/
 └── spec/
     ├── app_spec.js
     ├── lib/
+    │   ├── ContentHandler_spec.js
     │   ├── DataNavigator_spec.js
     │   ├── RedirectHandler_spec.js
     │   ├── RedirectLocation_spec.js
@@ -73,7 +75,7 @@ Builds and returns the configured Express router with all application routes reg
 | Method | Description |
 |--------|-------------|
 | `constructor(data)` | Receives the parsed YAML data. |
-| `build()` | Creates an Express router, instantiates a single `RouteRegister`, registers all JSON content routes (via `RequestHandler`), then all redirect routes (via `RedirectHandler`), and returns the router. |
+| `build()` | Creates an Express router, instantiates a single `RouteRegister`, registers all JSON content routes (via `ContentHandler`), then all redirect routes (via `RedirectHandler`), and returns the router. |
 
 #### `lib/RouteRegister`
 
@@ -87,12 +89,20 @@ Unified registry that registers GET routes on an Express router. Any `RequestHan
 
 #### `lib/RequestHandler`
 
-Base class for all request handlers. Defines the common API (`handle(req, res)`) that every handler type must implement. Also provides the default content-handler behaviour — navigating the in-memory data, optionally serializing the result, and writing the JSON response.
+Abstract base class for all request handlers. Defines the common API (`handle(req, res)`) that every handler type must implement. Subclasses must override `handle`; calling it on the base class throws an error.
 
 | Method | Description |
 |--------|-------------|
-| `constructor(route?, data?, serializer?)` | Receives the route pattern, root data, and an optional `Serializer`. All params default to `null` to allow subclasses to call `super()` without arguments. |
-| `handle(req, res)` | Extracts navigation steps, navigates the data, and responds with JSON (or 404 if nothing was found). Subclasses override this to provide different behaviour. |
+| `handle(req, res)` | Abstract — throws `Error` if not overridden. Subclasses implement their own request-handling logic here. |
+
+#### `lib/ContentHandler`
+
+Extends `RequestHandler`. Handles data-fetching requests by navigating the in-memory data, optionally serializing the result, and writing the JSON response.
+
+| Method | Description |
+|--------|-------------|
+| `constructor(route, data, serializer?)` | Receives the route pattern, root data, and an optional `Serializer`. |
+| `handle(req, res)` | Extracts navigation steps, navigates the data, and responds with JSON (or 404 if nothing was found). |
 
 #### `lib/RedirectHandler`
 
@@ -101,7 +111,7 @@ Extends `RequestHandler`. Handles an incoming Express request by issuing an HTTP
 | Method | Description |
 |--------|-------------|
 | `constructor(target)` | Receives the hash-based redirect target template (e.g. `'/#/categories/:id'`). |
-| `handle(req, res)` | Builds the redirect location via `RedirectLocation` and responds with 302. Overrides the base-class implementation. |
+| `handle(req, res)` | Builds the redirect location via `RedirectLocation` and responds with 302. |
 
 #### `lib/RedirectLocation`
 
@@ -201,9 +211,10 @@ Tests live in `spec/`. They import the Express app (or individual classes) direc
 | `spec/app_spec.js` | End-to-end route tests through the full app |
 | `spec/lib/Router_spec.js` | All routes registered by `Router#build()` |
 | `spec/lib/RouteRegister_spec.js` | Unified registry: route registration and dispatch for all handler types |
+| `spec/lib/ContentHandler_spec.js` | Data navigation, serialization, and 404 handling |
 | `spec/lib/RedirectHandler_spec.js` | Redirect URL building and 302 response |
 | `spec/lib/RedirectLocation_spec.js` | Location URL construction from template and params |
-| `spec/lib/RequestHandler_spec.js` | Data navigation, serialization, and 404 handling |
+| `spec/lib/RequestHandler_spec.js` | Base class contract: abstract `handle` enforcement |
 | `spec/lib/RouteParamsExtractor_spec.js` | Steps extraction from route patterns and params |
 | `spec/lib/DataNavigator_spec.js` | Navigation through nested data structures |
 | `spec/lib/Serializer_spec.js` | Attribute projection for objects and arrays |
