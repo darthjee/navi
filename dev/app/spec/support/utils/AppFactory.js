@@ -3,6 +3,7 @@ import { notFound } from '../../../lib/not_found.js';
 import RequestHandler from '../../../lib/RequestHandler.js';
 import Router from '../../../lib/Router.js';
 import RouteRegister from '../../../lib/RouteRegister.js';
+import Serializer from '../../../lib/Serializer.js';
 
 export const buildRequestHandlerApp = (route, routerData, serializer = null, extractorFactory = null) => {
   const app = express();
@@ -13,8 +14,11 @@ export const buildRequestHandlerApp = (route, routerData, serializer = null, ext
 
 export const buildRouteRegisterApp = (routes, routerData) => {
   const app = express();
-  const register = new RouteRegister(app, routerData);
-  routes.forEach((opts) => register.register(opts));
+  const register = new RouteRegister(app);
+  routes.forEach(({ route, attributes }) => {
+    const serializer = attributes ? new Serializer(attributes) : null;
+    register.register(route, new RequestHandler(route, routerData, serializer));
+  });
   return app;
 };
 
