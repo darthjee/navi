@@ -1,39 +1,34 @@
-import RequestHandler from './RequestHandler.js';
-import Serializer from './Serializer.js';
-
 /**
- * Registers individual GET routes on an Express router, wiring each route
- * to a {@link RequestHandler} and an optional {@link Serializer}.
+ * Unified registry that registers GET routes on an Express router, wiring each
+ * route to a {@link RequestHandler} subclass instance.
+ *
+ * All handler types (content handlers, redirect handlers, or any future type)
+ * are registered through this single registry, provided they implement the
+ * common {@link RequestHandler} API (`handle(req, res)`).
  */
 class RouteRegister {
   #router;
-  #data;
   #routes;
 
   /**
    * @param {import('express').Router} router - Express router instance.
-   * @param {Object} data - Root data structure shared across all handlers.
    */
-  constructor(router, data) {
+  constructor(router) {
     this.#router = router;
-    this.#data = data;
     this.#routes = [];
   }
 
   /**
-   * Registers a GET route.
-   * @param {Object} options
-   * @param {string} options.route - Express route pattern
-   * @param {string[]} [options.attributes] - If provided, response is projected to these fields
+   * Registers a GET route wired to the given handler.
+   * @param {string} route - Express route pattern.
+   * @param {import('./RequestHandler.js').default} handler - Handler instance with a `handle(req, res)` method.
    * @throws {Error} If the same route pattern has already been registered.
    */
-  register({ route, attributes } = {}) {
+  register(route, handler) {
     if (this.#routes.includes(route)) {
       throw new Error(`RouteRegister: duplicate route "${route}"`);
     }
     this.#routes.push(route);
-    const serializer = attributes ? new Serializer(attributes) : null;
-    const handler = new RequestHandler(route, this.#data, serializer);
     this.#router.get(route, (req, res) => handler.handle(req, res));
   }
 

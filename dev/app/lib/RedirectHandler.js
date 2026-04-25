@@ -1,11 +1,14 @@
 import RedirectLocation from './RedirectLocation.js';
+import RequestHandler from './RequestHandler.js';
 
 /**
  * Handles an incoming Express request by issuing an HTTP 302 redirect to
  * the hash-based equivalent path, substituting any route parameters into
  * the target template.
+ *
+ * Extends {@link RequestHandler} to share the unified handler API.
  */
-class RedirectHandler {
+class RedirectHandler extends RequestHandler {
   #target;
 
   /**
@@ -13,6 +16,7 @@ class RedirectHandler {
    *   Named segments (`:param`) are replaced with the corresponding values from `req.params`.
    */
   constructor(target) {
+    super();
     this.#target = target;
   }
 
