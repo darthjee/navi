@@ -28,7 +28,7 @@ class AssetsRequestHandler extends RequestHandler {
     const assetPath = req.params.path;
     const resolved = path.resolve(assetsDir, assetPath);
 
-    if (!resolved.startsWith(assetsDir + path.sep) && resolved !== assetsDir) {
+    if (!resolved.startsWith(assetsDir + path.sep)) {
       res.status(403).json({ error: 'Forbidden' });
       return;
     }
