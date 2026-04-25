@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import fetchJob from '../clients/JobClient.js';
-
-const VARIANT_BY_STATUS = {
-  enqueued:   'secondary',
-  processing: 'primary',
-  failed:     'danger',
-  finished:   'success',
-  dead:       'dark',
-};
+import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
 function Job() {
   const { id } = useParams();

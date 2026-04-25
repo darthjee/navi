@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchJobs } from '../clients/JobsClient.js';
-
-const VARIANT_BY_STATUS = {
-  enqueued:   'secondary',
-  processing: 'primary',
-  failed:     'danger',
-  finished:   'success',
-  dead:       'dark',
-};
+import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
 function Jobs() {
   const [jobs, setJobs] = useState([]);
