@@ -64,4 +64,17 @@ describe('Queue', () => {
       expect(queue.size()).toBe(0);
     });
   });
+
+  describe('#findById', () => {
+    it('returns the item with the matching id', () => {
+      const item = { id: 'x', value: 10 };
+      queue.push(item);
+
+      expect(queue.findById('x')).toBe(item);
+    });
+
+    it('returns null when no item matches', () => {
+      expect(queue.findById('missing')).toBeNull();
+    });
+  });
 });

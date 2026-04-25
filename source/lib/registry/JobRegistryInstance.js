@@ -153,7 +153,7 @@ class JobRegistryInstance {
     const collections = this.#collectionsByStatus();
 
     for (const status of Object.keys(collections)) {
-      const job = collections[status].list().find(j => j.id === id);
+      const job = collections[status].findById(id);
       if (job) {
         return { id: job.id, status, attempts: job._attempts };
       }
