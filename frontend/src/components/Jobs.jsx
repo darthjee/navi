@@ -49,6 +49,7 @@ function Jobs() {
                 <th>ID</th>
                 <th>Status</th>
                 <th>Attempts</th>
+                <th>Class</th>
               </tr>
             </thead>
             <tbody>
@@ -63,6 +64,7 @@ function Jobs() {
                     </span>
                   </td>
                   <td>{job.attempts}</td>
+                  <td>{job.jobClass}</td>
                 </tr>
               ))}
             </tbody>

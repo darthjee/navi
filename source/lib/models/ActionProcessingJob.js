@@ -25,6 +25,24 @@ class ActionProcessingJob extends Job {
   }
 
   /**
+   * Returns the job-specific arguments for serialization.
+   * @returns {{ item: object }} The job arguments.
+   */
+  get arguments() {
+    return { item: this.#item };
+  }
+
+  /**
+   * Returns the maximum number of retries for this job type.
+   * ActionProcessingJob is exhausted after the first failure.
+   * @returns {number} Always 1.
+   * @override
+   */
+  get maxRetries() {
+    return 1;
+  }
+
+  /**
    * Performs the action for the given item.
    * @returns {Promise<void>}
    */
@@ -44,7 +62,7 @@ class ActionProcessingJob extends Job {
    * @override
    */
   exhausted() {
-    return this._attempts >= 1;
+    return super.exhausted();
   }
 }
 

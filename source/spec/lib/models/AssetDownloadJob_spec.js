@@ -32,6 +32,17 @@ describe('AssetDownloadJob', () => {
     });
   });
 
+  describe('#arguments', () => {
+    it('returns url and clientName', () => {
+      job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, client: 'cdn', status: 200, clientRegistry });
+      expect(job.arguments).toEqual({ url: assetUrl, clientName: 'cdn' });
+    });
+
+    it('returns undefined clientName when no client is specified', () => {
+      expect(job.arguments).toEqual({ url: assetUrl, clientName: undefined });
+    });
+  });
+
   describe('#perform', () => {
     describe('when the asset request is successful', () => {
       let response;

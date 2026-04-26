@@ -34,6 +34,24 @@ class HtmlParseJob extends Job {
   }
 
   /**
+   * Returns the job-specific arguments for serialization.
+   * @returns {{ assetCount: number }} The job arguments.
+   */
+  get arguments() {
+    return { assetCount: this.#assetRequests.length };
+  }
+
+  /**
+   * Returns the maximum number of retries for this job type.
+   * HtmlParseJob is exhausted after the first failure.
+   * @returns {number} Always 1.
+   * @override
+   */
+  get maxRetries() {
+    return 1;
+  }
+
+  /**
    * Parses the HTML body, resolves asset URLs, and enqueues one AssetDownloadJob per URL.
    * @returns {Promise<void>}
    */
@@ -55,7 +73,7 @@ class HtmlParseJob extends Job {
    * @override
    */
   exhausted() {
-    return this._attempts >= 1;
+    return super.exhausted();
   }
 }
 

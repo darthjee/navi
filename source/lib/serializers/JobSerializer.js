@@ -1,20 +1,24 @@
-import { Serializer } from './Serializer.js';
+import { JobIndexSerializer } from './JobIndexSerializer.js';
+import { JobShowSerializer } from './JobShowSerializer.js';
 
 /**
- * Serializes one or more job instances into plain data objects.
- * @augments Serializer
+ * Dispatcher serializer for job instances.
+ * Delegates to {@link JobIndexSerializer} or {@link JobShowSerializer} based on the
+ * `view` option.
  */
-class JobSerializer extends Serializer {
+class JobSerializer {
   /**
-   * Serializes a single job instance into a `{ id, status, attempts }` object.
+   * Serializes a job or array of jobs using the appropriate serializer for the given view.
    *
-   * @param {object} job - A job instance.
+   * @param {object|object[]} jobOrList - A single job instance or array of job instances.
    * @param {object} options - Serialization options.
    * @param {string} options.status - The status label to embed in the serialized object.
-   * @returns {{ id: string, status: string, attempts: number }} The serialized job data.
+   * @param {'index'|'show'} [options.view='index'] - The view type to serialize for.
+   * @returns {object|object[]} The serialized job data.
    */
-  static _serializeObject(job, { status }) {
-    return { id: job.id, status, attempts: job._attempts };
+  static serialize(jobOrList, { status, view = 'index' } = {}) {
+    const serializer = view === 'show' ? JobShowSerializer : JobIndexSerializer;
+    return serializer.serialize(jobOrList, { status });
   }
 }
 

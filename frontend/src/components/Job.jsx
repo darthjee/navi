@@ -3,6 +3,35 @@ import { useParams, Link } from 'react-router-dom';
 import fetchJob from '../clients/JobClient.js';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
+function ReadyCountdown({ readyInMs }) {
+  const [remaining, setRemaining] = useState(readyInMs);
+
+  useEffect(() => {
+    setRemaining(readyInMs);
+    if (readyInMs <= 0) return;
+
+    const interval = setInterval(() => {
+      setRemaining((prev) => {
+        const next = prev - 1000;
+        if (next <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [readyInMs]);
+
+  if (remaining <= 0) {
+    return <span className="text-success">Ready</span>;
+  }
+
+  const seconds = Math.ceil(remaining / 1000);
+  return <span>{seconds}s</span>;
+}
+
 function Job() {
   const { id } = useParams();
   const [job, setJob] = useState(undefined);
@@ -63,6 +92,18 @@ function Job() {
 
             <dt className="col-sm-3">Attempts</dt>
             <dd className="col-sm-9">{job.attempts}</dd>
+
+            <dt className="col-sm-3">Class</dt>
+            <dd className="col-sm-9">{job.jobClass}</dd>
+
+            <dt className="col-sm-3">Arguments</dt>
+            <dd className="col-sm-9"><pre>{JSON.stringify(job.arguments, null, 2)}</pre></dd>
+
+            <dt className="col-sm-3">Remaining attempts</dt>
+            <dd className="col-sm-9">{job.remainingAttempts}</dd>
+
+            <dt className="col-sm-3">Ready in</dt>
+            <dd className="col-sm-9"><ReadyCountdown readyInMs={job.readyInMs} /></dd>
           </dl>
         </div>
       </div>

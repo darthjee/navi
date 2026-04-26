@@ -45,6 +45,12 @@ describe('Job', () => {
     });
   });
 
+  describe('#maxRetries', () => {
+    it('returns 3 by default', () => {
+      expect(job.maxRetries).toBe(3);
+    });
+  });
+
   describe('#exhausted', () => {
     const error = new Error('test error');
 

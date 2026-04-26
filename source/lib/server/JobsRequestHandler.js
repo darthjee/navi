@@ -23,7 +23,7 @@ class JobsRequestHandler extends RequestHandler {
   handle(req, res) {
     const { status } = req.params;
     const jobs = JobRegistry.jobsByStatus(status);
-    res.json(JobSerializer.serialize(jobs, { status }));
+    res.json(JobSerializer.serialize(jobs, { status, view: 'index' }));
   }
 }
 

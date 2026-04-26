@@ -24,6 +24,18 @@ describe('ActionProcessingJob', () => {
     });
   });
 
+  describe('#maxRetries', () => {
+    it('returns 1', () => {
+      expect(job.maxRetries).toBe(1);
+    });
+  });
+
+  describe('#arguments', () => {
+    it('returns the item', () => {
+      expect(job.arguments).toEqual({ item });
+    });
+  });
+
   describe('#perform', () => {
     describe('when the action succeeds', () => {
       it('calls action.execute with the item', async () => {
