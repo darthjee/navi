@@ -1,8 +1,11 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
 import StatItem from '../../src/components/StatItem.jsx';
 
-const render = (props) => renderToStaticMarkup(createElement(StatItem, props));
+const render = (props) => renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(StatItem, props))
+);
 
 describe('StatItem', () => {
   describe('rendering', () => {
@@ -53,6 +56,28 @@ describe('StatItem', () => {
     it('applies the secondary variant', () => {
       const html = render({ label: 'Enqueued', value: 3, variant: 'secondary' });
       expect(html).toContain('text-bg-secondary');
+    });
+  });
+
+  describe('with a to prop', () => {
+    it('wraps the card in an anchor link', () => {
+      const html = render({ label: 'Enqueued', value: 3, variant: 'secondary', to: '/jobs/enqueued' });
+      expect(html).toContain('<a ');
+      expect(html).toContain('href="/jobs/enqueued"');
+    });
+
+    it('renders the card content inside the link', () => {
+      const html = render({ label: 'Enqueued', value: 3, variant: 'secondary', to: '/jobs/enqueued' });
+      expect(html).toContain('text-bg-secondary');
+      expect(html).toContain('Enqueued');
+      expect(html).toContain('3');
+    });
+  });
+
+  describe('without a to prop', () => {
+    it('does not render an anchor link', () => {
+      const html = render({ label: 'Idle', value: 5, variant: 'success' });
+      expect(html).not.toContain('<a ');
     });
   });
 });

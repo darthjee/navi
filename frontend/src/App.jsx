@@ -59,11 +59,11 @@ function App() {
       <section>
         <h2 className="h4 mb-3">Jobs</h2>
         <div className="row row-cols-2 row-cols-md-5 g-3">
-          <StatItem label="Enqueued" value={jobs.enqueued} variant="secondary" />
-          <StatItem label="Processing" value={jobs.processing} variant="primary" />
-          <StatItem label="Failed" value={jobs.failed} variant="danger" />
-          <StatItem label="Finished" value={jobs.finished} variant="success" />
-          <StatItem label="Dead" value={jobs.dead} variant="dark" />
+          <StatItem label="Enqueued" value={jobs.enqueued} variant="secondary" to="/jobs/enqueued" />
+          <StatItem label="Processing" value={jobs.processing} variant="primary" to="/jobs/processing" />
+          <StatItem label="Failed" value={jobs.failed} variant="danger" to="/jobs/failed" />
+          <StatItem label="Finished" value={jobs.finished} variant="success" to="/jobs/finished" />
+          <StatItem label="Dead" value={jobs.dead} variant="dark" to="/jobs/dead" />
         </div>
       </section>
     </div>
