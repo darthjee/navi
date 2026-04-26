@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import fetchStats from './clients/StatsClient.js';
-import JobStatItem from './components/JobStatItem.jsx';
-import StatItem from './components/StatItem.jsx';
+import JobStatItem from './JobStatItem.jsx';
+import StatItem from './StatItem.jsx';
+import fetchStats from '../clients/StatsClient.js';
 
-function App() {
+function StatsHeader() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +26,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="container mt-5 text-center">
+      <div className="text-center my-3">
         <div className="spinner-border" role="status" />
         <p className="mt-2">Loading stats…</p>
       </div>
@@ -36,9 +35,7 @@ function App() {
 
   if (error) {
     return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">Failed to load stats: {error}</div>
-      </div>
+      <div className="alert alert-danger my-3">Failed to load stats: {error}</div>
     );
   }
 
@@ -46,10 +43,8 @@ function App() {
   const jobs = stats.jobs;
 
   return (
-    <div className="container mt-4">
-      <h1 className="mb-4">Navi — Cache Warmer</h1>
-
-      <section className="mb-5">
+    <>
+      <section className="mb-4">
         <h2 className="h4 mb-3">Workers</h2>
         <div className="row row-cols-2 row-cols-md-4 g-3">
           <StatItem label="Idle" value={workers.idle} variant="success" />
@@ -57,7 +52,7 @@ function App() {
         </div>
       </section>
 
-      <section>
+      <section className="mb-4">
         <h2 className="h4 mb-3">Jobs</h2>
         <div className="row row-cols-2 row-cols-md-5 g-3">
           <JobStatItem label="Enqueued" value={jobs.enqueued} variant="secondary" status="enqueued" />
@@ -67,8 +62,8 @@ function App() {
           <JobStatItem label="Dead" value={jobs.dead} variant="dark" status="dead" />
         </div>
       </section>
-    </div>
+    </>
   );
 }
 
-export default App;
+export default StatsHeader;
