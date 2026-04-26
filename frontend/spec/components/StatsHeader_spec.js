@@ -2,15 +2,15 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
-import App from '../src/App.jsx';
+import StatsHeader from '../../src/components/StatsHeader.jsx';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
-const renderApp = (root) => {
-  root.render(createElement(MemoryRouter, null, createElement(App)));
+const renderStatsHeader = (root) => {
+  root.render(createElement(MemoryRouter, null, createElement(StatsHeader)));
 };
 
-describe('App', () => {
+describe('StatsHeader', () => {
   let container;
   let root;
 
@@ -29,7 +29,7 @@ describe('App', () => {
       spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
       await act(async () => {
         root = createRoot(container);
-        renderApp(root);
+        renderStatsHeader(root);
       });
     });
 
@@ -54,7 +54,7 @@ describe('App', () => {
       );
       await act(async () => {
         root = createRoot(container);
-        renderApp(root);
+        renderStatsHeader(root);
       });
       await flushAsync();
     });
@@ -112,7 +112,7 @@ describe('App', () => {
       );
       await act(async () => {
         root = createRoot(container);
-        renderApp(root);
+        renderStatsHeader(root);
       });
       await flushAsync();
     });
