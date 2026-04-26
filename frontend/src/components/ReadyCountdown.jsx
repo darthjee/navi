@@ -1,33 +1,39 @@
 import { useEffect, useState } from 'react';
 
-const decrementRemaining = (prev) => Math.max(0, prev - 1000);
+class ReadyCountdownTimer {
+  static decrementRemaining(prev) {
+    return Math.max(0, prev - 1000);
+  }
 
-function ReadyCountdown({ readyInMs }) {
-  const [remaining, setRemaining] = useState(readyInMs);
-
-  useEffect(() => {
+  static initialize(readyInMs, setRemaining) {
     setRemaining(readyInMs);
     if (readyInMs <= 0) return;
 
     const tick = (prev) => {
-      const next = decrementRemaining(prev);
-      if (next <= 0) {
-        clearInterval(interval);
-      }
+      const next = ReadyCountdownTimer.decrementRemaining(prev);
+      if (next <= 0) clearInterval(interval);
       return next;
     };
 
     const interval = setInterval(() => setRemaining(tick), 1000);
 
     return () => clearInterval(interval);
-  }, [readyInMs]);
+  }
+}
+
+function ReadyCountdown({ readyInMs }) {
+  const [remaining, setRemaining] = useState(readyInMs);
+
+  useEffect(
+    () => ReadyCountdownTimer.initialize(readyInMs, setRemaining),
+    [readyInMs]
+  );
 
   if (remaining <= 0) {
     return <span className="text-success">Ready</span>;
   }
 
-  const seconds = Math.ceil(remaining / 1000);
-  return <span>{seconds}s</span>;
+  return <span>{Math.ceil(remaining / 1000)}s</span>;
 }
 
 export default ReadyCountdown;
