@@ -7,16 +7,16 @@ function ReadyCountdown({ readyInMs }) {
     setRemaining(readyInMs);
     if (readyInMs <= 0) return;
 
-    const interval = setInterval(() => {
-      setRemaining((prev) => {
-        const next = prev - 1000;
-        if (next <= 0) {
-          clearInterval(interval);
-          return 0;
-        }
-        return next;
-      });
-    }, 1000);
+    const tick = (prev) => {
+      const next = prev - 1000;
+      if (next <= 0) {
+        clearInterval(interval);
+        return 0;
+      }
+      return next;
+    };
+
+    const interval = setInterval(() => setRemaining(tick), 1000);
 
     return () => clearInterval(interval);
   }, [readyInMs]);
