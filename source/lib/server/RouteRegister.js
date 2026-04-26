@@ -28,15 +28,25 @@ class RouteRegister {
       try {
         handler.handle(req, res);
       } catch (e) {
-        if (e instanceof ForbiddenError) {
-          res.status(403).json({ error: 'Forbidden' });
-        } else if (e instanceof NotFoundError) {
-          res.status(404).json({ error: e.message });
-        } else {
-          res.status(500).json({ error: 'Internal Server Error' });
-        }
+        this.#handleError(e, res);
       }
     });
+  }
+
+  /**
+   * Maps a caught exception to an HTTP error response.
+   * @param {Error} e - The caught exception.
+   * @param {object} res - The Express response object.
+   * @returns {void}
+   */
+  #handleError(e, res) {
+    if (e instanceof ForbiddenError) {
+      res.status(403).json({ error: 'Forbidden' });
+    } else if (e instanceof NotFoundError) {
+      res.status(404).json({ error: e.message });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 }
 
