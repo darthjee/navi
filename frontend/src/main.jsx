@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import Job from './components/Job.jsx';
 import Jobs from './components/Jobs.jsx';
 import Layout from './components/Layout.jsx';
