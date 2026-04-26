@@ -5,17 +5,20 @@ class ReadyCountdownTimer {
     return Math.max(0, prev - 1000);
   }
 
+  static tick(interval, prev) {
+    const next = ReadyCountdownTimer.decrementRemaining(prev);
+    if (next <= 0) clearInterval(interval);
+    return next;
+  }
+
   static initialize(readyInMs, setRemaining) {
     setRemaining(readyInMs);
     if (readyInMs <= 0) return;
 
-    const tick = (prev) => {
-      const next = ReadyCountdownTimer.decrementRemaining(prev);
-      if (next <= 0) clearInterval(interval);
-      return next;
-    };
-
-    const interval = setInterval(() => setRemaining(tick), 1000);
+    const interval = setInterval(
+      () => setRemaining((prev) => ReadyCountdownTimer.tick(interval, prev)),
+      1000
+    );
 
     return () => clearInterval(interval);
   }
