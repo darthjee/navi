@@ -63,6 +63,14 @@ clients:
       Authorization: Bearer <token>
 
 resources:
+  home:
+    - url: /                   # HTML page — fetches linked JS and CSS assets
+      status: 200
+      assets:
+        - selector: script[src]              # matches <script src="...">
+          attribute: src
+        - selector: link[rel="stylesheet"]   # matches <link rel="stylesheet" href="...">
+          attribute: href
   categories:
     - url: /categories.json
       status: 200
@@ -72,6 +80,10 @@ resources:
           parameters:
             category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
             page: headers['x-next-page']  # extract "x-next-page" from response headers → variable "page"
+    - url: /categories         # redirect — Navi validates the 302 status
+      status: 302
+    - url: /#/categories       # hash-based SPA route — same HTML template as home
+      status: 200
   category_information:
     - url: /categories/{:id}.json
       status: 200
@@ -91,6 +103,14 @@ resources:
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
+
+When the web server is enabled, the following screens are available:
+
+| Screen | URL | Description |
+|--------|-----|-------------|
+| Dashboard | `/#/` | Real-time job queue stats (counts per status). |
+| Jobs list | `/#/jobs` | Table of all jobs across every status, with links to individual job pages. |
+| Job detail | `/#/job/:id` | Full details for a specific job (ID, status, attempt count). |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
@@ -100,6 +120,11 @@ resources:
 | `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
 | `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response (e.g. `parsed_body.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
+| `assets` | Optional list of asset extraction rules. When present on an HTML resource, Navi parses the response body and enqueues a download job for each matched URL. |
+| `assets[].selector` | CSS selector used to find asset elements in the HTML response (e.g. `script[src]`, `link[rel="stylesheet"]`). |
+| `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
+| `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
+| `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
 
 ---
 
