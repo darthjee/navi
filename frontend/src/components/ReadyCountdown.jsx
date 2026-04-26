@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+const decrementRemaining = (prev) => Math.max(0, prev - 1000);
+
 function ReadyCountdown({ readyInMs }) {
   const [remaining, setRemaining] = useState(readyInMs);
 
@@ -8,10 +10,9 @@ function ReadyCountdown({ readyInMs }) {
     if (readyInMs <= 0) return;
 
     const tick = (prev) => {
-      const next = prev - 1000;
+      const next = decrementRemaining(prev);
       if (next <= 0) {
         clearInterval(interval);
-        return 0;
       }
       return next;
     };
