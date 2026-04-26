@@ -23,6 +23,18 @@ class PathValidator {
   isValid(resolvedPath) {
     return resolvedPath.startsWith(this.#baseDir + path.sep);
   }
+
+  /**
+   * Throws an error if the given resolved path escapes the base directory.
+   * @param {string} resolvedPath - The already-resolved absolute path to validate.
+   * @returns {void}
+   * @throws {Error} If the path attempts to escape the base directory.
+   */
+  validate(resolvedPath) {
+    if (!this.isValid(resolvedPath)) {
+      throw new Error('Forbidden');
+    }
+  }
 }
 
 export { PathValidator };

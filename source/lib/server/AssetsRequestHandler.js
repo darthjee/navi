@@ -29,9 +29,7 @@ class AssetsRequestHandler extends RequestHandler {
   #resolveAssetPath(assetPath) {
     const resolved = path.resolve(this.assetsDir, assetPath);
 
-    if (!this.validator.isValid(resolved)) {
-      throw new Error('Forbidden');
-    }
+    this.validator.validate(resolved);
 
     return resolved;
   }

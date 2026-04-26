@@ -34,4 +34,22 @@ describe('PathValidator', () => {
       });
     });
   });
+
+  describe('#validate', () => {
+    describe('when the resolved path is inside the base directory', () => {
+      it('does not throw', () => {
+        expect(() => validator.validate(path.join(baseDir, 'app.js'))).not.toThrow();
+      });
+    });
+
+    describe('when the resolved path escapes the base directory', () => {
+      it('throws an error for path traversal', () => {
+        expect(() => validator.validate(path.resolve(baseDir, '../secret.txt'))).toThrow();
+      });
+
+      it('throws an error for the base directory itself', () => {
+        expect(() => validator.validate(baseDir)).toThrow();
+      });
+    });
+  });
 });
