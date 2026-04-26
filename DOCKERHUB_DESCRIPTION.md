@@ -104,6 +104,8 @@ resources:
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. The web UI frontend is bundled directly with the Navi package and served from `source/static/`. |
 
+When the web server is enabled, the following screens are available:
+
 | Screen | URL | Description |
 |--------|-----|-------------|
 | Dashboard | `/#/` | Real-time job queue stats (counts per status). |
