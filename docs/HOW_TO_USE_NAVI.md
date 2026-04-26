@@ -33,19 +33,30 @@ Create a file (e.g. `navi_config.yml`) with at least a `clients` and a `resource
 workers:
   quantity: 5          # number of concurrent workers (default: 1)
   retry_cooldown: 2000 # ms before a failed job is retried (default: 2000)
+  sleep: 500           # ms the engine waits between allocation ticks (default: 500)
   max-retries: 3       # max retries before a job is marked dead (default: 3)
+
+log:
+  size: 100            # max number of log entries kept in memory (default: 100)
 
 clients:
   default:
     base_url: https://your-app.example.com
     timeout: 5000      # ms before the request times out (default: 5000)
+  auth_api:
+    base_url: https://api.your-app.example.com
+    headers:
+      Authorization: Bearer $API_TOKEN
 
 resources:
-  pages:
-    - url: /
+  home:
+    - url: /           # HTML page — fetches linked JS and CSS assets
       status: 200
-    - url: /about
-      status: 200
+      assets:
+        - selector: 'link[rel="stylesheet"]'   # matches <link rel="stylesheet" href="...">
+          attribute: href
+        - selector: 'script[src]'              # matches <script src="...">
+          attribute: src
   products:
     - url: /products.json
       status: 200
@@ -53,9 +64,14 @@ resources:
         - resource: product_detail
           parameters:
             id: parsed_body.id   # extract "id" from each response item
+    - url: /products         # redirect — Navi validates the 302 status
+      status: 302
+    - url: /#/products       # hash-based SPA route — same HTML template as home
+      status: 200
   product_detail:
     - url: /products/{:id}.json
       status: 200
+      client: auth_api   # use a specific named client for this request
 ```
 
 Key points:
@@ -63,11 +79,17 @@ Key points:
 | Field | Description |
 |-------|-------------|
 | `workers.quantity` | Number of parallel workers. Defaults to `1`. |
+| `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
+| `workers.sleep` | Milliseconds the engine waits between allocation ticks. Defaults to `500`. |
+| `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
+| `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `clients.<name>.base_url` | Base URL prepended to every resource URL. |
+| `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional headers sent with every request. Values support `$VAR` / `${VAR}` environment variable references. |
 | `resources.<name>` | A named group of URLs to warm. |
 | `url` | URL path appended to `base_url`. Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP status code. Requests returning a different code are retried. |
+| `client` | Name of the client to use for this request. Defaults to `default`. |
 | `actions[].resource` | Resource to enqueue after a successful response (resource chaining). |
 | `actions[].parameters` | Path expressions that extract values from the response (e.g. `parsed_body.id`, `headers['x-next-page']`). |
 | `assets[].selector` | CSS selector used to find elements in an HTML response body. |
@@ -288,5 +310,13 @@ Navi can optionally serve a real-time monitoring web UI. To enable it, add a `we
 web:
   port: 3000   # omit this section entirely to run headlessly
 ```
+
+When enabled, the web UI is accessible at `http://localhost:<port>` and includes the following screens:
+
+| Screen | URL | Description |
+|--------|-----|-------------|
+| Dashboard | `/#/` | Real-time job queue stats (counts per status). |
+| Jobs list | `/#/jobs` | Table of all jobs across every status, with links to individual job pages. |
+| Job detail | `/#/job/:id` | Full details for a specific job (ID, status, attempt count). |
 
 For CI pipelines, omit the `web:` key so that Navi exits automatically once all jobs are processed.
