@@ -38,19 +38,13 @@ class DelayMiddleware extends Middleware
 
     private function delayMs(): int
     {
-        $minMs = $this->envMs('MIN_RESPONSE_DELAY');
-        $maxMs = $this->envMs('MAX_RESPONSE_DELAY');
+        $minMs = $this->envMs('MIN_RESPONSE_DELAY') ?? 0;
+        $maxMs = $this->envMs('MAX_RESPONSE_DELAY') ?? $minMs;
 
-        $randomizer = new \Random\Randomizer();
-
-        if ($minMs !== null && $maxMs !== null) {
-            return $randomizer->getInt($minMs, $maxMs);
+        if ($minMs === $maxMs) {
+            return $minMs;
         }
 
-        if ($maxMs !== null) {
-            return $randomizer->getInt(0, $maxMs);
-        }
-
-        return $minMs;
+        return (new \Random\Randomizer())->getInt($minMs, $maxMs);
     }
 }
