@@ -1,5 +1,5 @@
-import { NotFoundError } from '../exceptions/NotFoundError.js';
 import { RequestHandler } from './RequestHandler.js';
+import { NotFoundError } from '../exceptions/NotFoundError.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { JobSerializer } from '../serializers/JobSerializer.js';
 

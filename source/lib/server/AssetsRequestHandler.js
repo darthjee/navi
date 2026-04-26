@@ -21,6 +21,17 @@ class AssetsRequestHandler extends RequestHandler {
   }
 
   /**
+   * Serves the requested asset file, rejecting any path traversal attempt.
+   * @param {object} req - The Express request object.
+   * @param {object} res - The Express response object.
+   * @returns {void}
+   */
+  handle(req, res) {
+    const resolved = this.#resolveAssetPath(req.params.path);
+    res.sendFile(resolved);
+  }
+
+  /**
    * Resolves and validates the asset path, throwing if a traversal attempt is detected.
    * @param {string} assetPath - The raw asset path from the request.
    * @returns {string} The resolved absolute path.
@@ -32,17 +43,6 @@ class AssetsRequestHandler extends RequestHandler {
     this.validator.validate(resolved);
 
     return resolved;
-  }
-
-  /**
-   * Serves the requested asset file, rejecting any path traversal attempt.
-   * @param {object} req - The Express request object.
-   * @param {object} res - The Express response object.
-   * @returns {void}
-   */
-  handle(req, res) {
-    const resolved = this.#resolveAssetPath(req.params.path);
-    res.sendFile(resolved);
   }
 }
 
