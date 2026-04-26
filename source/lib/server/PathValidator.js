@@ -1,4 +1,5 @@
 import path from 'path';
+import { ForbiddenError } from '../exceptions/ForbiddenError.js';
 
 /**
  * Validates that a resolved file path stays within an allowed base directory,
@@ -25,14 +26,14 @@ class PathValidator {
   }
 
   /**
-   * Throws an error if the given resolved path escapes the base directory.
+   * Throws a ForbiddenError if the given resolved path escapes the base directory.
    * @param {string} resolvedPath - The already-resolved absolute path to validate.
    * @returns {void}
-   * @throws {Error} If the path attempts to escape the base directory.
+   * @throws {ForbiddenError} If the path attempts to escape the base directory.
    */
   validate(resolvedPath) {
     if (!this.isValid(resolvedPath)) {
-      throw new Error('Forbidden');
+      throw new ForbiddenError();
     }
   }
 }

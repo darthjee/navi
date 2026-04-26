@@ -1,5 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { ForbiddenError } from '../exceptions/ForbiddenError.js';
 import { PathValidator } from './PathValidator.js';
 import { RequestHandler } from './RequestHandler.js';
 
@@ -24,7 +25,7 @@ class AssetsRequestHandler extends RequestHandler {
    * Resolves and validates the asset path, throwing if a traversal attempt is detected.
    * @param {string} assetPath - The raw asset path from the request.
    * @returns {string} The resolved absolute path.
-   * @throws {Error} If the path attempts to escape the assets directory.
+   * @throws {ForbiddenError} If the path attempts to escape the assets directory.
    */
   #resolveAssetPath(assetPath) {
     const resolved = path.resolve(this.assetsDir, assetPath);
@@ -44,8 +45,12 @@ class AssetsRequestHandler extends RequestHandler {
     try {
       const resolved = this.#resolveAssetPath(req.params.path);
       res.sendFile(resolved);
-    } catch (_e) {
-      res.status(403).json({ error: 'Forbidden' });
+    } catch (e) {
+      if (e instanceof ForbiddenError) {
+        res.status(403).json({ error: 'Forbidden' });
+      } else {
+        throw e;
+      }
     }
   }
 }

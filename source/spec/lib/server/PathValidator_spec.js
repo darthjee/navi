@@ -1,4 +1,5 @@
 import path from 'path';
+import { ForbiddenError } from '../../../lib/exceptions/ForbiddenError.js';
 import { PathValidator } from '../../../lib/server/PathValidator.js';
 
 describe('PathValidator', () => {
@@ -43,12 +44,12 @@ describe('PathValidator', () => {
     });
 
     describe('when the resolved path escapes the base directory', () => {
-      it('throws an error for path traversal', () => {
-        expect(() => validator.validate(path.resolve(baseDir, '../secret.txt'))).toThrow();
+      it('throws a ForbiddenError for path traversal', () => {
+        expect(() => validator.validate(path.resolve(baseDir, '../secret.txt'))).toThrowError(ForbiddenError);
       });
 
-      it('throws an error for the base directory itself', () => {
-        expect(() => validator.validate(baseDir)).toThrow();
+      it('throws a ForbiddenError for the base directory itself', () => {
+        expect(() => validator.validate(baseDir)).toThrowError(ForbiddenError);
       });
     });
   });
