@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import fetchStats from './clients/StatsClient.js';
+import JobStatItem from './components/JobStatItem.jsx';
 import StatItem from './components/StatItem.jsx';
 
 function App() {
@@ -59,11 +60,11 @@ function App() {
       <section>
         <h2 className="h4 mb-3">Jobs</h2>
         <div className="row row-cols-2 row-cols-md-5 g-3">
-          <StatItem label="Enqueued" value={jobs.enqueued} variant="secondary" />
-          <StatItem label="Processing" value={jobs.processing} variant="primary" />
-          <StatItem label="Failed" value={jobs.failed} variant="danger" />
-          <StatItem label="Finished" value={jobs.finished} variant="success" />
-          <StatItem label="Dead" value={jobs.dead} variant="dark" />
+          <JobStatItem label="Enqueued" value={jobs.enqueued} variant="secondary" status="enqueued" />
+          <JobStatItem label="Processing" value={jobs.processing} variant="primary" status="processing" />
+          <JobStatItem label="Failed" value={jobs.failed} variant="danger" status="failed" />
+          <JobStatItem label="Finished" value={jobs.finished} variant="success" status="finished" />
+          <JobStatItem label="Dead" value={jobs.dead} variant="dark" status="dead" />
         </div>
       </section>
     </div>

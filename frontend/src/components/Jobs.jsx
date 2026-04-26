@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { fetchJobs } from '../clients/JobsClient.js';
+import { Link, useParams } from 'react-router-dom';
+import { fetchJobs, fetchJobsByStatus } from '../clients/JobsClient.js';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
 function Jobs() {
+  const { status } = useParams();
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchJobs()
+    const load = status ? fetchJobsByStatus(status) : fetchJobs();
+    load
       .then((data) => {
         setJobs(data);
         setError(null);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [status]);
 
   if (loading) {
     return (
