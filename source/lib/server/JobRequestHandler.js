@@ -1,4 +1,5 @@
 import { RequestHandler } from './RequestHandler.js';
+import { NotFoundError } from '../exceptions/NotFoundError.js';
 import { JobRegistry } from '../registry/JobRegistry.js';
 import { JobSerializer } from '../serializers/JobSerializer.js';
 
@@ -23,8 +24,7 @@ class JobRequestHandler extends RequestHandler {
   handle(req, res) {
     const result = JobRegistry.jobById(req.params.id);
     if (!result) {
-      res.status(404).json({ error: 'Job not found' });
-      return;
+      throw new NotFoundError('Job not found');
     }
     res.json(JobSerializer.serialize(result.job, { status: result.status }));
   }

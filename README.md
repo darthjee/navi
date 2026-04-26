@@ -175,7 +175,7 @@ Then run:
 navi-hey --config /path/to/your/config.yml
 ```
 
-> **Note:** Only the API (Express web server) is available in the npm package. The web UI frontend will be bundled in a future release.
+> **Note:** The web UI frontend is bundled directly with the Navi package and served from `source/static/`. After making changes to the frontend code, run `yarn build` inside the `navi_frontend` Docker Compose service to update the bundled assets.
 
 ### Docker
 

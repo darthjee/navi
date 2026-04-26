@@ -10,7 +10,8 @@
   },
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "static"
   ],
   "scripts": {
     "spec": "npx jasmine spec/**/*.js",

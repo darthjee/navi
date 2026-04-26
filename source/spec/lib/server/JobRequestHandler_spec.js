@@ -1,3 +1,4 @@
+import { NotFoundError } from '../../../lib/exceptions/NotFoundError.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { JobRequestHandler } from '../../../lib/server/JobRequestHandler.js';
 
@@ -44,19 +45,14 @@ describe('JobRequestHandler', () => {
         spyOn(JobRegistry, 'jobById').and.returnValue(null);
       });
 
-      it('responds with a 404 status', () => {
-        handler.handle({ params: { id: 'nonexistent' } }, res);
-
-        expect(res.status).toHaveBeenCalledWith(404);
+      it('throws a NotFoundError', () => {
+        expect(() => handler.handle({ params: { id: 'nonexistent' } }, res))
+          .toThrowError(NotFoundError);
       });
 
-      it('responds with a not found error', () => {
-        const jsonSpy = res.status.calls.mostRecent()?.returnValue?.json || jasmine.createSpy('json');
-        res.status.and.returnValue({ json: jsonSpy });
-
-        handler.handle({ params: { id: 'nonexistent' } }, res);
-
-        expect(jsonSpy).toHaveBeenCalledWith({ error: 'Job not found' });
+      it('throws with the job not found message', () => {
+        expect(() => handler.handle({ params: { id: 'nonexistent' } }, res))
+          .toThrowError('Job not found');
       });
     });
   });
