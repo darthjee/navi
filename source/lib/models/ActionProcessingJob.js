@@ -55,15 +55,6 @@ class ActionProcessingJob extends Job {
       this._fail(error);
     }
   }
-
-  /**
-   * Returns true after the first failed attempt — action jobs have no retry rights.
-   * @returns {boolean} True if the job has failed at least once.
-   * @override
-   */
-  exhausted() {
-    return super.exhausted();
-  }
 }
 
 export { ActionProcessingJob };
