@@ -1,6 +1,5 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { ForbiddenError } from '../exceptions/ForbiddenError.js';
 import { PathValidator } from './PathValidator.js';
 import { RequestHandler } from './RequestHandler.js';
 
@@ -42,16 +41,8 @@ class AssetsRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(req, res) {
-    try {
-      const resolved = this.#resolveAssetPath(req.params.path);
-      res.sendFile(resolved);
-    } catch (e) {
-      if (e instanceof ForbiddenError) {
-        res.status(403).json({ error: 'Forbidden' });
-      } else {
-        throw e;
-      }
-    }
+    const resolved = this.#resolveAssetPath(req.params.path);
+    res.sendFile(resolved);
   }
 }
 

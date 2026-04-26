@@ -1,4 +1,5 @@
 import path from 'path';
+import { ForbiddenError } from '../../../lib/exceptions/ForbiddenError.js';
 import { AssetsRequestHandler } from '../../../lib/server/AssetsRequestHandler.js';
 
 describe('AssetsRequestHandler', () => {
@@ -24,19 +25,9 @@ describe('AssetsRequestHandler', () => {
     });
 
     describe('when the path attempts directory traversal', () => {
-      it('responds with 403', () => {
-        handler.handle({ params: { path: '../secret.txt' } }, res);
-
-        expect(res.status).toHaveBeenCalledWith(403);
-      });
-
-      it('responds with a Forbidden error', () => {
-        const jsonSpy = jasmine.createSpy('json');
-        res.status.and.returnValue({ json: jsonSpy });
-
-        handler.handle({ params: { path: '../secret.txt' } }, res);
-
-        expect(jsonSpy).toHaveBeenCalledWith({ error: 'Forbidden' });
+      it('throws a ForbiddenError', () => {
+        expect(() => handler.handle({ params: { path: '../secret.txt' } }, res))
+          .toThrowError(ForbiddenError);
       });
     });
   });
