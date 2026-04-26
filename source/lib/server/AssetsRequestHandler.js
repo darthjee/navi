@@ -21,21 +21,34 @@ class AssetsRequestHandler extends RequestHandler {
   }
 
   /**
+   * Resolves and validates the asset path, throwing if a traversal attempt is detected.
+   * @param {string} assetPath - The raw asset path from the request.
+   * @returns {string} The resolved absolute path.
+   * @throws {Error} If the path attempts to escape the assets directory.
+   */
+  #resolveAssetPath(assetPath) {
+    const resolved = path.resolve(this.assetsDir, assetPath);
+
+    if (!this.validator.isValid(resolved)) {
+      throw new Error('Forbidden');
+    }
+
+    return resolved;
+  }
+
+  /**
    * Serves the requested asset file, rejecting any path traversal attempt.
    * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
   handle(req, res) {
-    const assetPath = req.params.path;
-    const resolved = path.resolve(this.assetsDir, assetPath);
-
-    if (!this.validator.isValid(resolved)) {
+    try {
+      const resolved = this.#resolveAssetPath(req.params.path);
+      res.sendFile(resolved);
+    } catch (_e) {
       res.status(403).json({ error: 'Forbidden' });
-      return;
     }
-
-    res.sendFile(resolved);
   }
 }
 
