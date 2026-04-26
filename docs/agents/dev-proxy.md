@@ -57,11 +57,13 @@ The proxy is reachable from the host at `http://localhost:3010` and from `navi_a
 
 ### `dev/proxy/configure.php`
 
-Entry point loaded by Tent at boot. Its only job is to include the rule files:
+Entry point loaded by Tent at boot. Its only job is to include the middleware and rule files:
 
 ```php
 <?php
 
+require_once __DIR__ . '/middlewares/RandomFailureMiddleware.php';
+require_once __DIR__ . '/middlewares/DelayMiddleware.php';
 require_once __DIR__ . '/rules/backend.php';
 require_once __DIR__ . '/rules/frontend.php';
 ```
@@ -81,7 +83,8 @@ Configuration::buildRule([
         ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
     ],
     'middlewares' => [
-        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware']
+        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware'],
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
     ]
 ]);
 
@@ -93,12 +96,15 @@ Configuration::buildRule([
     ],
     'matchers' => [
         ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
     ]
 ]);
 ```
 
 - **`default_proxy` (`.json`)** — forwards all requests whose URI ends with `.json` to `http://backend:80`. This covers `/stats.json`, `/jobs/:status.json`, and `/job/:id.json`. Automatically handles the `Host` header and enables `FileCacheMiddleware` with the default cache directory. Only JSON API traffic is cached.
-- **`default_proxy` (`/categories`)** — forwards plain path requests (e.g. `/categories`, `/categories/1/items`) to the backend for redirect handling. No cache, no `RandomFailureMiddleware` — redirect responses are not cached.
+- **`default_proxy` (`/categories`)** — forwards plain path requests (e.g. `/categories`, `/categories/1/items`) to the backend for redirect handling. No cache — redirect responses are not cached.
 
 ### `dev/proxy/rules/frontend.php`
 
@@ -122,7 +128,8 @@ Configuration::buildRule([
     [
       'class' => 'Tent\Middlewares\SetPathMiddleware',
       'path' => '/index.html'
-    ]
+    ],
+    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
   ]
 ]);
 
@@ -134,6 +141,9 @@ Configuration::buildRule([
   ],
   'matchers' => [
     ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+  ],
+  'middlewares' => [
+    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
   ]
 ]);
 ```
@@ -147,6 +157,35 @@ uses hash fragments, which are processed entirely by the browser.
 ### `dev/proxy/static/`
 
 Output directory where the React build artifacts are placed. The `navi_dev_frontend` Docker service mounts this directory as its Vite build output (`dist/`), so the proxy always serves the latest build.
+
+---
+
+## Middlewares
+
+Custom middlewares live in `dev/proxy/middlewares/` and are loaded in `configure.php`.
+
+### `RandomFailureMiddleware`
+
+Randomly fails a configurable percentage of requests to simulate backend instability.
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `FAILURE_RATE` | `0` | Percentage (0–100) of requests that return a 500 error |
+
+### `DelayMiddleware`
+
+Introduces a configurable delay before returning each response, allowing developers to simulate slow backends.
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `MIN_RESPONSE_DELAY` | `0` | Minimum delay in milliseconds |
+| `MAX_RESPONSE_DELAY` | `0` | Maximum delay in milliseconds |
+
+Behaviour:
+- Neither set (or both `0`) → no delay
+- Only `MAX_RESPONSE_DELAY` set → random delay between 0 and MAX ms
+- Only `MIN_RESPONSE_DELAY` set → fixed delay of exactly MIN ms
+- Both set → random delay between MIN and MAX ms
 
 ---
 
