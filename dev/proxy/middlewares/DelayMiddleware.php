@@ -14,28 +14,43 @@ class DelayMiddleware extends Middleware
 
     public function processResponse(ProcessingRequest $request): ProcessingRequest
     {
-        $min = getenv('MIN_RESPONSE_DELAY');
-        $max = getenv('MAX_RESPONSE_DELAY');
-
-        $minMs = ($min !== false && $min !== '') ? (int) $min : null;
-        $maxMs = ($max !== false && $max !== '') ? (int) $max : null;
-
-        if ($minMs === null && $maxMs === null) {
+        if ($this->noDelay()) {
             return $request;
         }
+
+        usleep($this->delayMs() * 1000);
+
+        return $request;
+    }
+
+    private function envMs(string $name): ?int
+    {
+        $value = getenv($name);
+
+        return ($value !== false && $value !== '') ? (int) $value : null;
+    }
+
+    private function noDelay(): bool
+    {
+        return $this->envMs('MIN_RESPONSE_DELAY') === null
+            && $this->envMs('MAX_RESPONSE_DELAY') === null;
+    }
+
+    private function delayMs(): int
+    {
+        $minMs = $this->envMs('MIN_RESPONSE_DELAY');
+        $maxMs = $this->envMs('MAX_RESPONSE_DELAY');
 
         $randomizer = new \Random\Randomizer();
 
         if ($minMs !== null && $maxMs !== null) {
-            $delay = $randomizer->getInt($minMs, $maxMs);
-        } elseif ($maxMs !== null) {
-            $delay = $randomizer->getInt(0, $maxMs);
-        } else {
-            $delay = $minMs;
+            return $randomizer->getInt($minMs, $maxMs);
         }
 
-        usleep($delay * 1000);
+        if ($maxMs !== null) {
+            return $randomizer->getInt(0, $maxMs);
+        }
 
-        return $request;
+        return $minMs;
     }
 }
