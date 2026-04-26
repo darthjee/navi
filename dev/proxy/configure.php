@@ -10,5 +10,6 @@ use Tent\Models\FolderLocation;
 use Tent\Models\RequestMatcher;
 
 require_once __DIR__ . '/middlewares/RandomFailureMiddleware.php';
+require_once __DIR__ . '/middlewares/DelayMiddleware.php';
 require_once __DIR__ . '/rules/backend.php';
 require_once __DIR__ . '/rules/frontend.php';

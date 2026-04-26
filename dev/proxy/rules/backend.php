@@ -15,7 +15,8 @@ Configuration::buildRule([
         ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
     ],
     'middlewares' => [
-        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware']
+        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware'],
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
     ]
 ]);
 
@@ -26,5 +27,8 @@ Configuration::buildRule([
     ],
     'matchers' => [
         ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
     ]
 ]);
