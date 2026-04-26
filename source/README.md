@@ -113,7 +113,7 @@ resources:
 | `workers.sleep` | Milliseconds the engine waits between allocation ticks. Defaults to `500`. |
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
-| `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
+| `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. The web UI frontend is bundled with the package and served from `source/static/`. After frontend code changes, run `yarn build` in the `navi_frontend` service to update the bundled assets. |
 
 When the web server is enabled, the following screens are available:
 

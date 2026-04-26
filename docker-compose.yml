@@ -75,7 +75,7 @@ services:
     volumes:
       - ./frontend:/home/node/app
       - ./docker_volumes/node_modules_frontend:/home/node/app/node_modules
-      - ./source/public:/home/node/app/dist
+      - ./source/static:/home/node/app/dist
 
   navi_web_proxy:
     image: darthjee/tent:0.7.2

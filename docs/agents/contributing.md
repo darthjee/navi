@@ -101,6 +101,8 @@ Before a PR is considered complete, all CI checks relevant to the modified parts
 | `dev/app/` | `jasmine-dev`, `checks-dev` | `cd dev/app && yarn coverage && yarn lint && yarn report` |
 | `frontend/` | `jasmine-frontend`, `checks-frontend` | `cd frontend && yarn coverage && yarn lint && yarn report` |
 
+> **Note:** After making changes to the `frontend/` code, run `yarn build` inside the frontend container (or the `navi_frontend` Docker Compose service) to rebuild the production assets and update `source/static/`. Navi serves the built frontend directly from `source/static/`, so the bundled assets must be kept up to date whenever the frontend changes.
+
 If a new container or application folder is added in the future, its corresponding test and check jobs must be run before merging any changes to that folder.
 
 ## Code Organization
