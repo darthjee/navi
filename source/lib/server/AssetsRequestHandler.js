@@ -27,7 +27,8 @@ class AssetsRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(req, res) {
-    const resolved = this.#resolveAssetPath(req.params.path);
+    const assetPath = [].concat(req.params.path).join(path.sep);
+    const resolved = this.#resolveAssetPath(assetPath);
     res.sendFile(resolved);
   }
 
