@@ -256,7 +256,7 @@ Development workflow is Docker-based.
 
 | Command | Description |
 |---------|-------------|
-| `make setup` | Copies `.env.sample` to `.env`; builds `base_build` service; installs Node dependencies via `yarn install`. |
+| `make setup` | Copies `.env.sample` to `.env`; copies `docker_volumes/config/navi_config.yml.sample` to `docker_volumes/config/navi_config.yml` (if absent); builds `base_build` service; installs Node dependencies via `yarn install`. |
 | `make dev` | Runs the `navi_app` container with `/bin/bash`; allows interactive `yarn test`, `yarn lint`, etc. |
 | `make tests` | Runs the `navi_tests` container with `/bin/bash` for an isolated test environment. |
 | `make build-dev` | Builds the development Docker image tagged `navi:dev` from `dockerfiles/dev_navi_hey/Dockerfile`. |

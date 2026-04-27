@@ -227,8 +227,9 @@ make setup
 This command:
 
 1. Copies `.env.sample` to `.env`.
-2. Builds the `base_build` Docker image.
-3. Installs Node.js dependencies inside the container via `yarn install`.
+2. Copies `docker_volumes/config/navi_config.yml.sample` to `docker_volumes/config/navi_config.yml` (if it does not already exist).
+3. Builds the `base_build` Docker image.
+4. Installs Node.js dependencies inside the container via `yarn install`.
 
 > **Note:** Always use **Yarn** to manage dependencies. Do not use `npm install`.
 
@@ -244,7 +245,7 @@ This opens an interactive Bash shell inside the `navi_app` container, where you 
 
 | Command | Description |
 |---------|-------------|
-| `make setup` | First-time environment setup (copies `.env`, builds image, installs deps). |
+| `make setup` | First-time environment setup (copies `.env` and `config.yml` from samples, builds image, installs deps). |
 | `make dev` | Opens a shell in the `navi_app` container. |
 | `make tests` | Opens a shell in the isolated `navi_tests` container. |
 | `make build-dev` | Builds the development Docker image (`navi:dev`). |
