@@ -13,7 +13,17 @@ Configuration::buildRule([
   'matchers' => [
     ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
   ],
-  "middlewares" => [
+  'middlewares' => [
+    [
+      'class' => 'Tent\Middlewares\FileCacheMiddleware',
+      'location' => './cache',
+      'matchers' => [
+        [
+          'class' => 'Tent\Matchers\StatusCodeMatcher',
+          'httpCodes' => ['2xx', '3xx']
+        ]
+      ]
+    ],
     [
       'class' => 'Tent\Middlewares\SetPathMiddleware',
       'path' => '/index.html'
@@ -31,6 +41,16 @@ Configuration::buildRule([
     ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
   ],
   'middlewares' => [
+    [
+      'class' => 'Tent\Middlewares\FileCacheMiddleware',
+      'location' => './cache',
+      'matchers' => [
+        [
+          'class' => 'Tent\Matchers\StatusCodeMatcher',
+          'httpCodes' => ['2xx', '3xx']
+        ]
+      ]
+    ],
     ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
   ]
 ]);
