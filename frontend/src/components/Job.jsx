@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import ReadyCountdown from './ReadyCountdown.jsx';
 import fetchJob from '../clients/JobClient.js';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
@@ -63,6 +64,18 @@ function Job() {
 
             <dt className="col-sm-3">Attempts</dt>
             <dd className="col-sm-9">{job.attempts}</dd>
+
+            <dt className="col-sm-3">Class</dt>
+            <dd className="col-sm-9">{job.jobClass}</dd>
+
+            <dt className="col-sm-3">Arguments</dt>
+            <dd className="col-sm-9"><pre>{JSON.stringify(job.arguments, null, 2)}</pre></dd>
+
+            <dt className="col-sm-3">Remaining attempts</dt>
+            <dd className="col-sm-9">{job.remainingAttempts}</dd>
+
+            <dt className="col-sm-3">Ready in</dt>
+            <dd className="col-sm-9"><ReadyCountdown readyInMs={job.readyInMs} /></dd>
           </dl>
         </div>
       </div>

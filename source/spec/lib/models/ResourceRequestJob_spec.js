@@ -40,6 +40,12 @@ describe('ResourceRequestJob', () => {
     });
   });
 
+  describe('#arguments', () => {
+    it('returns url and parameters', () => {
+      expect(job.arguments).toEqual({ url, parameters });
+    });
+  });
+
   describe('#perform', () => {
     beforeEach(() => {
       spyOn(resourceRequest, 'enqueueActions').and.stub();

@@ -21,7 +21,14 @@ describe('JobRequestHandler', () => {
 
   describe('#handle', () => {
     describe('when the job exists', () => {
-      const rawJob = { id: 'abc-123', _attempts: 1 };
+      const rawJob = {
+        id: 'abc-123',
+        _attempts: 1,
+        constructor: { name: 'ResourceRequestJob' },
+        arguments: { url: '/items.json', parameters: {} },
+        maxRetries: 3,
+        readyBy: 0,
+      };
 
       beforeEach(() => {
         spyOn(JobRegistry, 'jobById').and.returnValue({ job: rawJob, status: 'processing' });
@@ -33,10 +40,17 @@ describe('JobRequestHandler', () => {
         expect(JobRegistry.jobById).toHaveBeenCalledWith('abc-123');
       });
 
-      it('responds with the serialized job data as JSON', () => {
+      it('responds with the serialized job data as JSON including show fields', () => {
         handler.handle({ params: { id: 'abc-123' } }, res);
 
-        expect(res.json).toHaveBeenCalledWith({ id: 'abc-123', status: 'processing', attempts: 1 });
+        expect(res.json).toHaveBeenCalledWith(jasmine.objectContaining({
+          id: 'abc-123',
+          status: 'processing',
+          attempts: 1,
+          jobClass: 'ResourceRequestJob',
+          arguments: { url: '/items.json', parameters: {} },
+          remainingAttempts: 2,
+        }));
       });
     });
 
