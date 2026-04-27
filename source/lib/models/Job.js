@@ -55,11 +55,20 @@ class Job {
   }
 
   /**
+   * Returns the maximum number of retries allowed for this job.
+   * Subclasses may override this to return a different value.
+   * @returns {number} The maximum number of retries.
+   */
+  get maxRetries() {
+    return 3;
+  }
+
+  /**
    * Checks if the job has been exhausted (i.e., has reached the maximum number of attempts).
-   * @param {number} [maxRetries=3] - Maximum number of retries before the job is considered dead.
+   * @param {number} [maxRetries] - Maximum number of retries before the job is considered dead.
    * @returns {boolean} True if the job is exhausted, false otherwise.
    */
-  exhausted(maxRetries = 3) {
+  exhausted(maxRetries = this.maxRetries) {
     return this.#attempts >= maxRetries;
   }
 

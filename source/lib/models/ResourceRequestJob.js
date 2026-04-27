@@ -29,6 +29,14 @@ class ResourceRequestJob extends Job {
   }
 
   /**
+   * Returns the job-specific arguments for serialization.
+   * @returns {{ url: string, parameters: object }} The job arguments.
+   */
+  get arguments() {
+    return { url: this.#resourceRequest.url, parameters: this.#parameters };
+  }
+
+  /**
    * Performs the HTTP request for the resource request.
    * @returns {Promise} A promise that resolves with the HTTP response.
    */

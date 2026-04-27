@@ -49,7 +49,15 @@ describe('Job', () => {
   });
 
   describe('when the job loads successfully', () => {
-    const job = { id: 'abc-123', status: 'processing', attempts: 2 };
+    const job = {
+      id: 'abc-123',
+      status: 'processing',
+      attempts: 2,
+      jobClass: 'ResourceRequestJob',
+      arguments: { url: '/items.json', parameters: {} },
+      remainingAttempts: 1,
+      readyInMs: 0,
+    };
 
     beforeEach(async () => {
       spyOn(globalThis, 'fetch').and.returnValue(
@@ -81,6 +89,46 @@ describe('Job', () => {
 
     it('renders a back link to jobs', () => {
       expect(container.textContent).toContain('Back to Jobs');
+    });
+
+    it('shows the job class', () => {
+      expect(container.textContent).toContain('ResourceRequestJob');
+    });
+
+    it('shows the job arguments as JSON', () => {
+      expect(container.textContent).toContain('/items.json');
+    });
+
+    it('shows the remaining attempts', () => {
+      expect(container.textContent).toContain('1');
+    });
+
+    it('shows Ready when readyInMs is 0', () => {
+      expect(container.textContent).toContain('Ready');
+    });
+  });
+
+  describe('when the job has a cooldown pending', () => {
+    const job = {
+      id: 'abc-456',
+      status: 'failed',
+      attempts: 1,
+      jobClass: 'AssetDownloadJob',
+      arguments: { url: 'https://cdn.example.com/app.css', clientName: 'cdn' },
+      remainingAttempts: 2,
+      readyInMs: 5000,
+    };
+
+    beforeEach(async () => {
+      spyOn(globalThis, 'fetch').and.returnValue(
+        Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(job) })
+      );
+      await renderJob(root, 'abc-456');
+      await flushAsync();
+    });
+
+    it('shows a countdown in seconds', () => {
+      expect(container.textContent).toContain('5s');
     });
   });
 

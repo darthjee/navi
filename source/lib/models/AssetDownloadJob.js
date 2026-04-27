@@ -31,6 +31,14 @@ class AssetDownloadJob extends Job {
   }
 
   /**
+   * Returns the job-specific arguments for serialization.
+   * @returns {{ url: string, clientName: string }} The job arguments.
+   */
+  get arguments() {
+    return { url: this.#url, clientName: this.#clientName };
+  }
+
+  /**
    * Fetches the asset URL using the named client and validates the HTTP status.
    * @returns {Promise<object>} The HTTP response.
    */

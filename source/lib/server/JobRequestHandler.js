@@ -26,7 +26,7 @@ class JobRequestHandler extends RequestHandler {
     if (!result) {
       throw new NotFoundError('Job not found');
     }
-    res.json(JobSerializer.serialize(result.job, { status: result.status }));
+    res.json(JobSerializer.serialize(result.job, { status: result.status, view: 'show' }));
   }
 }
 
