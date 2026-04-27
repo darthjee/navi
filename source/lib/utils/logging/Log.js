@@ -1,11 +1,12 @@
 /**
- * Represents a single log entry with id, level, message and timestamp.
+ * Represents a single log entry with id, level, message, attributes and timestamp.
  * @author darthjee
  */
 class Log {
   #id;
   #level;
   #message;
+  #attributes;
   #timestamp;
 
   /**
@@ -13,11 +14,13 @@ class Log {
    * @param {number} id - Unique incremental identifier for this log.
    * @param {string} level - The log level (debug, info, warn, error).
    * @param {string} message - The log message.
+   * @param {object} [attributes={}] - Optional structured metadata for the log entry.
    */
-  constructor(id, level, message) {
+  constructor(id, level, message, attributes = {}) {
     this.#id = id;
     this.#level = level;
     this.#message = message;
+    this.#attributes = attributes;
     this.#timestamp = new Date();
   }
 
@@ -46,6 +49,14 @@ class Log {
   }
 
   /**
+   * Gets the log attributes.
+   * @returns {object} The structured metadata attached to this log entry.
+   */
+  get attributes() {
+    return this.#attributes;
+  }
+
+  /**
    * Gets the log timestamp.
    * @returns {Date} The timestamp when the log was created.
    */
@@ -62,6 +73,7 @@ class Log {
       id: this.#id,
       level: this.#level,
       message: this.#message,
+      attributes: this.#attributes,
       timestamp: this.#timestamp.toISOString()
     };
   }

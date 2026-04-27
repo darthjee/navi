@@ -31,4 +31,30 @@ describe('ConsoleLogger', () => {
     logger.error('msg');
     expect(console.error).toHaveBeenCalledWith('msg');
   });
+
+  describe('with attributes', () => {
+    it('passes message and attributes to console.debug', () => {
+      const attrs = { jobId: 1 };
+      logger.debug('msg', attrs);
+      expect(console.debug).toHaveBeenCalledWith('msg', attrs);
+    });
+
+    it('passes message and attributes to console.info', () => {
+      const attrs = { resource: 'home' };
+      logger.info('msg', attrs);
+      expect(console.info).toHaveBeenCalledWith('msg', attrs);
+    });
+
+    it('passes message and attributes to console.warn', () => {
+      const attrs = { status: 500 };
+      logger.warn('msg', attrs);
+      expect(console.warn).toHaveBeenCalledWith('msg', attrs);
+    });
+
+    it('passes message and attributes to console.error', () => {
+      const attrs = { status: 500 };
+      logger.error('msg', attrs);
+      expect(console.error).toHaveBeenCalledWith('msg', attrs);
+    });
+  });
 });

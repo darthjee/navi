@@ -45,37 +45,41 @@ class LoggerGroup {
   /**
    * Broadcasts a debug message to all loggers in the group.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  debug(message) {
-    this.#loggers.forEach(logger => logger.debug(message));
+  debug(message, attributes = {}) {
+    this.#loggers.forEach(logger => logger.debug(message, attributes));
   }
 
   /**
    * Broadcasts an info message to all loggers in the group.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  info(message) {
-    this.#loggers.forEach(logger => logger.info(message));
+  info(message, attributes = {}) {
+    this.#loggers.forEach(logger => logger.info(message, attributes));
   }
 
   /**
    * Broadcasts a warn message to all loggers in the group.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  warn(message) {
-    this.#loggers.forEach(logger => logger.warn(message));
+  warn(message, attributes = {}) {
+    this.#loggers.forEach(logger => logger.warn(message, attributes));
   }
 
   /**
    * Broadcasts an error message to all loggers in the group.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  error(message) {
-    this.#loggers.forEach(logger => logger.error(message));
+  error(message, attributes = {}) {
+    this.#loggers.forEach(logger => logger.error(message, attributes));
   }
 
   /**

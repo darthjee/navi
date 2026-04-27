@@ -20,44 +20,49 @@ class BaseLogger {
    * Outputs a message at the given level. Override in subclasses.
    * @param {string} _level - The log level.
    * @param {string} _message - The message to output.
+   * @param {object} _attributes - The structured metadata for the log entry.
    * @returns {void}
    */
-  _output(_level, _message) {}
+  _output(_level, _message, _attributes) {}
 
   /**
    * Logs a debug message if the configured level allows it.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  debug(message) {
-    if (this.#shouldLog('debug')) this._output('debug', message);
+  debug(message, attributes = {}) {
+    if (this.#shouldLog('debug')) this._output('debug', message, attributes);
   }
 
   /**
    * Logs an info message if the configured level allows it.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  info(message) {
-    if (this.#shouldLog('info')) this._output('info', message);
+  info(message, attributes = {}) {
+    if (this.#shouldLog('info')) this._output('info', message, attributes);
   }
 
   /**
    * Logs a warn message if the configured level allows it.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  warn(message) {
-    if (this.#shouldLog('warn')) this._output('warn', message);
+  warn(message, attributes = {}) {
+    if (this.#shouldLog('warn')) this._output('warn', message, attributes);
   }
 
   /**
    * Logs an error message if the configured level allows it.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  error(message) {
-    if (this.#shouldLog('error')) this._output('error', message);
+  error(message, attributes = {}) {
+    if (this.#shouldLog('error')) this._output('error', message, attributes);
   }
 
   /**

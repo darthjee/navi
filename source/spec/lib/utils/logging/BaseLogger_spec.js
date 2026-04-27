@@ -22,7 +22,13 @@ describe('BaseLogger', () => {
         if (expected[method]) {
           it(`outputs ${method} messages`, () => {
             logger[method]('msg');
-            expect(logger._output).toHaveBeenCalledWith(method, 'msg');
+            expect(logger._output).toHaveBeenCalledWith(method, 'msg', {});
+          });
+
+          it(`forwards attributes for ${method} messages`, () => {
+            const attrs = { jobId: 1 };
+            logger[method]('msg', attrs);
+            expect(logger._output).toHaveBeenCalledWith(method, 'msg', attrs);
           });
         } else {
           it(`does not output ${method} messages`, () => {
@@ -56,7 +62,7 @@ describe('BaseLogger', () => {
       logger.info('msg');
       expect(logger._output).not.toHaveBeenCalled();
       logger.warn('msg');
-      expect(logger._output).toHaveBeenCalledWith('warn', 'msg');
+      expect(logger._output).toHaveBeenCalledWith('warn', 'msg', {});
     });
   });
 
@@ -90,7 +96,7 @@ describe('BaseLogger', () => {
 
       it('restores output', () => {
         logger.info('msg');
-        expect(logger._output).toHaveBeenCalledWith('info', 'msg');
+        expect(logger._output).toHaveBeenCalledWith('info', 'msg', {});
       });
     });
   });
@@ -104,7 +110,7 @@ describe('BaseLogger', () => {
     it('lowers the level to allow previously-suppressed messages', () => {
       logger.setLevel('debug');
       logger.debug('msg');
-      expect(logger._output).toHaveBeenCalledWith('debug', 'msg');
+      expect(logger._output).toHaveBeenCalledWith('debug', 'msg', {});
     });
 
     it('raises the level to suppress previously-logged messages', () => {

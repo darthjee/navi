@@ -25,10 +25,11 @@ class LogBuffer {
    * If retention limit is reached, removes the oldest log.
    * @param {string} level - The log level.
    * @param {string} message - The log message.
+   * @param {object} [attributes={}] - Optional structured metadata for the log entry.
    * @returns {import('./Log.js').Log} The created log entry.
    */
-  add(level, message) {
-    const log = this.#factory.build(level, message);
+  add(level, message, attributes = {}) {
+    const log = this.#factory.build(level, message, attributes);
 
     this.#logs.push(log);
 
