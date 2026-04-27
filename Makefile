@@ -27,7 +27,7 @@ help:
 	@echo "  make build-dev  Build dev app image from $(DOCKERFILE_DEV)"
 	@echo "  make build-dev-app Build dev app image from $(DOCKERFILE_DEV)"
 
-setup: .env
+setup: .env docker_volumes/config/navi_config.yml
 	$(COMPOSE) build base_build
 	$(COMPOSE) run --rm $(APP_SERVICE) yarn install
 
@@ -69,6 +69,9 @@ update-description:
 
 .env:
 	cp .env.sample .env
+
+docker_volumes/config/navi_config.yml:
+	cp docker_volumes/config/navi_config.yml.sample docker_volumes/config/navi_config.yml
 
 output/source.js: $(SOURCE_FILES)
 	./scripts/export_js.sh -o output/source.js $(SOURCE_FILES) 
