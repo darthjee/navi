@@ -8,6 +8,7 @@ Two integration modes are covered:
 
 - **Option A** — use the `darthjee/navi-hey` Docker image directly in a CI step.
 - **Option B** — install the `navi-hey` npm package in a Node.js-capable CI image and run it from the command line.
+- **Option C** — use `darthjee/navi-hey:latest` as the CircleCI executor image (simplest for CircleCI).
 
 ---
 
@@ -16,6 +17,7 @@ Two integration modes are covered:
 - [Prerequisites](#prerequisites)
 - [Option A — Docker image (`darthjee/navi-hey`)](#option-a--docker-image-darthjee-navi-hey)
 - [Option B — Node.js image with `navi-hey` installed](#option-b--nodejs-image-with-navi-hey-installed)
+- [Option C — CircleCI executor image](#option-c--circleci-executor-image)
 - [Warming HTML pages and their assets](#warming-html-pages-and-their-assets)
 - [Reference](#reference)
 
@@ -100,6 +102,9 @@ Key points:
 ---
 
 ## Option A — Docker image (`darthjee/navi-hey`)
+
+> The `darthjee/navi-hey` image is available on [Docker Hub](https://hub.docker.com/r/darthjee/navi-hey).
+> It is built from `dockerfiles/production_navi_hey/Dockerfile` and installs `navi-hey` globally via npm.
 
 Use this option when your CI environment supports Docker.
 Mount your configuration file into the container and run Navi headlessly.
@@ -198,6 +203,42 @@ jobs:
       - run:
           name: Warm cache with Navi
           command: npx navi-hey --config navi_config.yml
+```
+
+---
+
+## Option C — CircleCI executor image
+
+Use this option when running on CircleCI. Instead of using `docker run` (which requires `setup_remote_docker`) or relying on a Node.js image with `npx`, you can declare `darthjee/navi-hey:latest` directly as the job's executor image. Since `navi-hey` is installed globally in that image, you can call it as a command without any additional setup.
+
+This is the recommended approach for CircleCI — no Docker-in-Docker, no npm install step.
+
+```yaml
+jobs:
+  warm-cache:
+    docker:
+      - image: darthjee/navi-hey:latest
+    steps:
+      - checkout
+      - run:
+          name: Warm cache with Navi
+          command: navi-hey --config .circleci/navi_config.yaml
+```
+
+If your Navi config references environment variables in headers (e.g. `$API_TOKEN`), pass them via the CircleCI `environment` key or project environment variables:
+
+```yaml
+jobs:
+  warm-cache:
+    docker:
+      - image: darthjee/navi-hey:latest
+    steps:
+      - checkout
+      - run:
+          name: Warm cache with Navi
+          command: navi-hey --config .circleci/navi_config.yaml
+          environment:
+            API_TOKEN: << pipeline.parameters.api_token >>
 ```
 
 ---
