@@ -118,9 +118,9 @@ resources:
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
-| `clients.<name>.base_url` | Base URL for the named HTTP client. |
+| `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
-| `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), which are resolved at configuration load time. |
+| `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
