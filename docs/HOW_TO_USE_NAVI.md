@@ -85,7 +85,7 @@ Key points:
 | `workers.sleep` | Milliseconds the engine waits between allocation ticks. Defaults to `500`. |
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
-| `clients.<name>.base_url` | Base URL prepended to every resource URL. |
+| `clients.<name>.base_url` | Base URL prepended to every resource URL. Supports `$VAR` / `${VAR}` environment variable references. |
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional headers sent with every request. Values support `$VAR` / `${VAR}` environment variable references. |
 | `resources.<name>` | A named group of URLs to warm. |
@@ -328,20 +328,22 @@ chaining. In practice, a resource would typically declare one or the other.
 |------|-------|---------|-------------|
 | `--config=<path>` | `-c <path>` | `config/navi_config.yml` | Path to the YAML configuration file. |
 
-### Environment variables in headers
+### Environment variables in client configuration
 
-Header values in the configuration file support environment variable substitution at load time:
+Both `base_url` and header values support environment variable substitution at load time using `$VAR` or `${VAR}` syntax:
 
 ```yaml
 clients:
+  default:
+    base_url: ${DOMAIN_BASE_URL}
   auth_api:
-    base_url: https://api.example.com
+    base_url: $API_BASE_URL
     headers:
       Authorization: Bearer $API_TOKEN
       X-Tenant: ${TENANT_ID}
 ```
 
-Pass the variables to the process in the usual way for your environment (e.g. `env` in Docker, `environment` in GitHub Actions / CircleCI).
+If a referenced variable is not set, it is replaced with an empty string and a warning is logged. Pass the variables to the process in the usual way for your environment (e.g. `env` in Docker, `environment` in GitHub Actions / CircleCI).
 
 ### Headless vs. web UI mode
 

@@ -122,7 +122,7 @@ When the web server is enabled, the following screens are available:
 | Dashboard | `/#/` | Real-time job queue stats (counts per status). |
 | Jobs list | `/#/jobs` | Table of all jobs across every status, with links to individual job pages. |
 | Job detail | `/#/job/:id` | Full details for a specific job (ID, status, attempt count). |
-| `clients.<name>.base_url` | Base URL for the named HTTP client. |
+| `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
