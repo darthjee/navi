@@ -110,6 +110,8 @@ class Client {
       timeout: this.timeout,
       responseType: 'text',
       headers: this.headers,
+      maxRedirects: 0,
+      validateStatus: () => true,
     });
 
     if (response.status !== expectedStatus) {

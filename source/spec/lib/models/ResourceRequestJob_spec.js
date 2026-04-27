@@ -58,7 +58,13 @@ describe('ResourceRequestJob', () => {
 
       it('resolves with the response', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, {
+          timeout: 5000,
+          responseType: 'text',
+          headers: {},
+          maxRedirects: 0,
+          validateStatus: jasmine.any(Function),
+        });
       });
 
       it('calls enqueueActions with a ResponseWrapper', async () => {
@@ -130,7 +136,13 @@ describe('ResourceRequestJob', () => {
 
       it('resolves placeholders and requests the resolved URL', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+        expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, {
+          timeout: 5000,
+          responseType: 'text',
+          headers: {},
+          maxRedirects: 0,
+          validateStatus: jasmine.any(Function),
+        });
       });
     });
 
@@ -148,7 +160,13 @@ describe('ResourceRequestJob', () => {
 
       it('leaves placeholders unchanged in the URL', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(unresolvedFullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+        expect(axios.get).toHaveBeenCalledWith(unresolvedFullUrl, {
+          timeout: 5000,
+          responseType: 'text',
+          headers: {},
+          maxRedirects: 0,
+          validateStatus: jasmine.any(Function),
+        });
       });
     });
 
