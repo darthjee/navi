@@ -30,7 +30,8 @@ class Client {
    *
    * @param {string} name The name identifying the client.
    * @param {object} config Client configuration object.
-   * @param {string} config.base_url Base URL for the client.
+   * @param {string} config.base_url Base URL for the client. Values matching
+   *   `$VAR` or `${VAR}` are resolved from `process.env` at parse time.
    * @param {number} [config.timeout] Optional request timeout in milliseconds.
    * @param {object} [config.headers] Optional HTTP headers. Values matching
    *   `$VAR` or `${VAR}` are resolved from `process.env` at parse time.
@@ -38,7 +39,8 @@ class Client {
    */
   static fromObject(name, config) {
     const headers = EnvResolver.resolveObject(config.headers || {});
-    return new Client({ name, baseUrl: config.base_url, timeout: config.timeout, headers });
+    const baseUrl = EnvResolver.resolveValue(config.base_url);
+    return new Client({ name, baseUrl, timeout: config.timeout, headers });
   }
 
   /**
