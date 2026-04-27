@@ -129,9 +129,78 @@ Configuration::buildRule([
 3. `FileCacheMiddleware` writes the response to `./cache` under key `/assets/app.js`.
 4. Next request `GET /assets/app.js` → served from cache.
 
+### Step 3 — Add `cacheCodes: ['2xx', '3xx']` to both backend rules
+
+The `default_proxy` handler includes `FileCacheMiddleware` automatically, but defaults to caching only `2xx` responses. Adding the `cacheCodes` option extends caching to also cover 3xx redirect responses.
+
+**Current code (`dev/proxy/rules/backend.php:9`):**
+
+```php
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'default_proxy',
+        'host' => 'http://backend:80'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware'],
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
+    ]
+]);
+
+Configuration::buildRule([
+    'handler' => [
+        'type' => 'default_proxy',
+        'host' => 'http://backend:80'
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
+    ]
+]);
+```
+
+**After change:**
+
+```php
+Configuration::buildRule([
+    'handler' => [
+        'type'       => 'default_proxy',
+        'host'       => 'http://backend:80',
+        'cacheCodes' => ['2xx', '3xx']
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware'],
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
+    ]
+]);
+
+Configuration::buildRule([
+    'handler' => [
+        'type'       => 'default_proxy',
+        'host'       => 'http://backend:80',
+        'cacheCodes' => ['2xx', '3xx']
+    ],
+    'matchers' => [
+        ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
+    ],
+    'middlewares' => [
+        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
+    ]
+]);
+```
+
 ## Files to Change
 
-- `dev/proxy/rules/frontend.php` — add `FileCacheMiddleware` to both frontend rules.
+- `dev/proxy/rules/frontend.php` — add `FileCacheMiddleware` (caching `2xx` and `3xx`) to both frontend rules.
+- `dev/proxy/rules/backend.php` — add `cacheCodes: ['2xx', '3xx']` to both backend `default_proxy` rules.
 
 ## Notes
 
