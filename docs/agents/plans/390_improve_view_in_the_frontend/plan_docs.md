@@ -19,8 +19,8 @@ In the **`JobShowSerializer` (detail view)** table, add the new fields and annot
 | `arguments` | object | all | Job-specific parameters. |
 | `remainingAttempts` | number | enqueued, processing, failed | `maxRetries − attempts`. |
 | `readyInMs` | number | failed | Milliseconds until the job is eligible for retry. |
-| `lastError` | string\|null | failed, dead | Last recorded error message; `null` if none. |
-| `backtrace` | string\|null | dead | Stack trace of the last error; `null` if none. |
+| `lastError` | string\|null | failed, dead | Exception message from `job._fail(error)`; omitted when no error has been recorded. |
+| `backtrace` | string\|null | failed, dead | Stack trace of the last error; included whenever `lastError` is present, omitted otherwise. Never present in index views. |
 
 ### Step 2 — Update `docs/agents/frontend.md`
 
