@@ -41,6 +41,17 @@ describe('LogBuffer', () => {
       expect(second.id).toBe(2);
     });
 
+    it('assigns empty attributes by default', () => {
+      const log = buffer.add('info', 'msg');
+      expect(log.attributes).toEqual({});
+    });
+
+    it('assigns the given attributes', () => {
+      const attrs = { jobId: 3 };
+      const log = buffer.add('info', 'msg', attrs);
+      expect(log.attributes).toEqual(attrs);
+    });
+
     describe('when retention limit is reached', () => {
       let smallBuffer;
 

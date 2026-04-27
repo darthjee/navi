@@ -80,8 +80,16 @@ describe('LoggerGroup', () => {
     it('calls debug on all loggers', () => {
       const group = new LoggerGroup([loggerA, loggerB]);
       group.debug('test message');
-      expect(loggerA.debug).toHaveBeenCalledWith('test message');
-      expect(loggerB.debug).toHaveBeenCalledWith('test message');
+      expect(loggerA.debug).toHaveBeenCalledWith('test message', {});
+      expect(loggerB.debug).toHaveBeenCalledWith('test message', {});
+    });
+
+    it('forwards attributes to all loggers', () => {
+      const attrs = { jobId: 1 };
+      const group = new LoggerGroup([loggerA, loggerB]);
+      group.debug('test message', attrs);
+      expect(loggerA.debug).toHaveBeenCalledWith('test message', attrs);
+      expect(loggerB.debug).toHaveBeenCalledWith('test message', attrs);
     });
 
     it('does not throw when group is empty', () => {
@@ -94,8 +102,16 @@ describe('LoggerGroup', () => {
     it('calls info on all loggers', () => {
       const group = new LoggerGroup([loggerA, loggerB]);
       group.info('test message');
-      expect(loggerA.info).toHaveBeenCalledWith('test message');
-      expect(loggerB.info).toHaveBeenCalledWith('test message');
+      expect(loggerA.info).toHaveBeenCalledWith('test message', {});
+      expect(loggerB.info).toHaveBeenCalledWith('test message', {});
+    });
+
+    it('forwards attributes to all loggers', () => {
+      const attrs = { resource: 'home' };
+      const group = new LoggerGroup([loggerA, loggerB]);
+      group.info('test message', attrs);
+      expect(loggerA.info).toHaveBeenCalledWith('test message', attrs);
+      expect(loggerB.info).toHaveBeenCalledWith('test message', attrs);
     });
 
     it('does not throw when group is empty', () => {
@@ -108,8 +124,16 @@ describe('LoggerGroup', () => {
     it('calls warn on all loggers', () => {
       const group = new LoggerGroup([loggerA, loggerB]);
       group.warn('test message');
-      expect(loggerA.warn).toHaveBeenCalledWith('test message');
-      expect(loggerB.warn).toHaveBeenCalledWith('test message');
+      expect(loggerA.warn).toHaveBeenCalledWith('test message', {});
+      expect(loggerB.warn).toHaveBeenCalledWith('test message', {});
+    });
+
+    it('forwards attributes to all loggers', () => {
+      const attrs = { status: 404 };
+      const group = new LoggerGroup([loggerA, loggerB]);
+      group.warn('test message', attrs);
+      expect(loggerA.warn).toHaveBeenCalledWith('test message', attrs);
+      expect(loggerB.warn).toHaveBeenCalledWith('test message', attrs);
     });
 
     it('does not throw when group is empty', () => {
@@ -122,8 +146,16 @@ describe('LoggerGroup', () => {
     it('calls error on all loggers', () => {
       const group = new LoggerGroup([loggerA, loggerB]);
       group.error('test message');
-      expect(loggerA.error).toHaveBeenCalledWith('test message');
-      expect(loggerB.error).toHaveBeenCalledWith('test message');
+      expect(loggerA.error).toHaveBeenCalledWith('test message', {});
+      expect(loggerB.error).toHaveBeenCalledWith('test message', {});
+    });
+
+    it('forwards attributes to all loggers', () => {
+      const attrs = { status: 500 };
+      const group = new LoggerGroup([loggerA, loggerB]);
+      group.error('test message', attrs);
+      expect(loggerA.error).toHaveBeenCalledWith('test message', attrs);
+      expect(loggerB.error).toHaveBeenCalledWith('test message', attrs);
     });
 
     it('does not throw when group is empty', () => {

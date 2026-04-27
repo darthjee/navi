@@ -21,7 +21,14 @@ describe('Logger', () => {
     it('delegates to the default logger instance', () => {
       spyOn(Logger.default(), 'debug');
       Logger.debug('static debug msg');
-      expect(Logger.default().debug).toHaveBeenCalledWith('static debug msg');
+      expect(Logger.default().debug).toHaveBeenCalledWith('static debug msg', {});
+    });
+
+    it('forwards attributes to the default logger instance', () => {
+      const attrs = { jobId: 1 };
+      spyOn(Logger.default(), 'debug');
+      Logger.debug('msg', attrs);
+      expect(Logger.default().debug).toHaveBeenCalledWith('msg', attrs);
     });
   });
 
@@ -29,7 +36,14 @@ describe('Logger', () => {
     it('delegates to the default logger instance', () => {
       spyOn(Logger.default(), 'info');
       Logger.info('static info msg');
-      expect(Logger.default().info).toHaveBeenCalledWith('static info msg');
+      expect(Logger.default().info).toHaveBeenCalledWith('static info msg', {});
+    });
+
+    it('forwards attributes to the default logger instance', () => {
+      const attrs = { resource: 'home' };
+      spyOn(Logger.default(), 'info');
+      Logger.info('msg', attrs);
+      expect(Logger.default().info).toHaveBeenCalledWith('msg', attrs);
     });
   });
 
@@ -37,7 +51,14 @@ describe('Logger', () => {
     it('delegates to the default logger instance', () => {
       spyOn(Logger.default(), 'warn');
       Logger.warn('static warn msg');
-      expect(Logger.default().warn).toHaveBeenCalledWith('static warn msg');
+      expect(Logger.default().warn).toHaveBeenCalledWith('static warn msg', {});
+    });
+
+    it('forwards attributes to the default logger instance', () => {
+      const attrs = { status: 404 };
+      spyOn(Logger.default(), 'warn');
+      Logger.warn('msg', attrs);
+      expect(Logger.default().warn).toHaveBeenCalledWith('msg', attrs);
     });
   });
 
@@ -45,7 +66,14 @@ describe('Logger', () => {
     it('delegates to the default logger instance', () => {
       spyOn(Logger.default(), 'error');
       Logger.error('static error msg');
-      expect(Logger.default().error).toHaveBeenCalledWith('static error msg');
+      expect(Logger.default().error).toHaveBeenCalledWith('static error msg', {});
+    });
+
+    it('forwards attributes to the default logger instance', () => {
+      const attrs = { status: 500 };
+      spyOn(Logger.default(), 'error');
+      Logger.error('msg', attrs);
+      expect(Logger.default().error).toHaveBeenCalledWith('msg', attrs);
     });
   });
 

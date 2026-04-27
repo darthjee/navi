@@ -23,10 +23,11 @@ class BufferedLogger extends BaseLogger {
    * Stores the message in the buffer.
    * @param {string} level - The log level ('debug', 'info', 'warn', 'error').
    * @param {string} message - The message to output.
+   * @param {object} [attributes={}] - Optional structured metadata for the log entry.
    * @returns {void}
    */
-  _output(level, message) {
-    this.#buffer.add(level, message);
+  _output(level, message, attributes = {}) {
+    this.#buffer.add(level, message, attributes);
   }
 
   /**

@@ -21,11 +21,12 @@ class LogFactory {
    * Builds a new Log entry with an auto-assigned id.
    * @param {string} level - The log level.
    * @param {string} message - The log message.
+   * @param {object} [attributes={}] - Optional structured metadata for the log entry.
    * @returns {Log} The created log entry.
    */
-  build(level, message) {
+  build(level, message, attributes = {}) {
     const id = this.#idGenerator.generate();
-    return new Log(id, level, message);
+    return new Log(id, level, message, attributes);
   }
 }
 
