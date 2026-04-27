@@ -3,7 +3,7 @@
 namespace Dev\Proxy\Middlewares;
 
 use Tent\Middlewares\Middleware;
-use Tent\Models\ProcessingRequest;
+use Tent\Models\Response;
 
 class DelayMiddleware extends Middleware
 {
@@ -12,15 +12,15 @@ class DelayMiddleware extends Middleware
         return new self();
     }
 
-    public function processResponse(ProcessingRequest $request): ProcessingRequest
+    public function processResponse(Response $response): Response
     {
         if ($this->noDelay()) {
-            return $request;
+            return $response;
         }
 
         usleep($this->delayMs() * 1000);
 
-        return $request;
+        return $response;
     }
 
     private function envMs(string $name): ?int
