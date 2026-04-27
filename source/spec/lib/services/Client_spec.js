@@ -220,5 +220,41 @@ describe('Client', () => {
         expect(result.headers).toEqual({ 'X-Token': 'secret-token-value' });
       });
     });
+
+    describe('when base_url references an environment variable', () => {
+      beforeEach(() => {
+        process.env.NAVI_TEST_BASE_URL = 'https://resolved.example.com';
+      });
+
+      afterEach(() => {
+        delete process.env.NAVI_TEST_BASE_URL;
+      });
+
+      it('resolves ${VAR} syntax in base_url', () => {
+        const config = { base_url: '${NAVI_TEST_BASE_URL}' };
+
+        const result = Client.fromObject('api', config);
+
+        expect(result.baseUrl).toEqual('https://resolved.example.com');
+      });
+
+      it('resolves $VAR syntax in base_url', () => {
+        const config = { base_url: '$NAVI_TEST_BASE_URL' };
+
+        const result = Client.fromObject('api', config);
+
+        expect(result.baseUrl).toEqual('https://resolved.example.com');
+      });
+    });
+
+    describe('when base_url references an unset environment variable', () => {
+      it('replaces the reference with an empty string', () => {
+        const config = { base_url: '${NAVI_UNSET_VAR_399}' };
+
+        const result = Client.fromObject('api', config);
+
+        expect(result.baseUrl).toEqual('');
+      });
+    });
   });
 });
