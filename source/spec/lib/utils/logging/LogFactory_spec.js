@@ -22,6 +22,15 @@ describe('LogFactory', () => {
       expect(factory.build('info', 'hello').message).toBe('hello');
     });
 
+    it('assigns empty attributes by default', () => {
+      expect(factory.build('info', 'msg').attributes).toEqual({});
+    });
+
+    it('assigns the given attributes', () => {
+      const attrs = { jobId: 7 };
+      expect(factory.build('info', 'msg', attrs).attributes).toEqual(attrs);
+    });
+
     it('assigns an incremental id starting at 1', () => {
       const log = factory.build('info', 'first');
       expect(log.id).toBe(1);

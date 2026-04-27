@@ -42,37 +42,41 @@ class Logger {
   /**
    * Logs a debug message using the default logger instance.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  static debug(message) {
-    this.default().debug(message);
+  static debug(message, attributes = {}) {
+    this.default().debug(message, attributes);
   }
 
   /**
    * Logs an info message using the default logger instance.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  static info(message) {
-    this.default().info(message);
+  static info(message, attributes = {}) {
+    this.default().info(message, attributes);
   }
 
   /**
    * Logs a warn message using the default logger instance.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  static warn(message) {
-    this.default().warn(message);
+  static warn(message, attributes = {}) {
+    this.default().warn(message, attributes);
   }
 
   /**
    * Logs an error message using the default logger instance.
    * @param {string} message - The message to log.
+   * @param {object} [attributes={}] - Optional structured metadata.
    * @returns {void}
    */
-  static error(message) {
-    this.default().error(message);
+  static error(message, attributes = {}) {
+    this.default().error(message, attributes);
   }
 
   /**

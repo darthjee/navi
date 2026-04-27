@@ -31,6 +31,12 @@ describe('BufferedLogger', () => {
       expect(logs[0].message).toBe('msg');
     });
 
+    it('stores attributes on the log entry', () => {
+      const attrs = { jobId: 5 };
+      logger.debug('msg', attrs);
+      expect(logger.getLogs()[0].attributes).toEqual(attrs);
+    });
+
     describe('when the log level is above debug', () => {
       it('does not add to the buffer', () => {
         const infoLogger = new BufferedLogger('info');
