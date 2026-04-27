@@ -55,7 +55,7 @@ Configuration::buildRule([
       'matchers' => [
         [
           'class' => 'Tent\Matchers\StatusCodeMatcher',
-          'httpCodes' => ['2xx']
+          'httpCodes' => ['2xx', '3xx']
         ]
       ]
     ],
@@ -114,7 +114,7 @@ Configuration::buildRule([
       'matchers' => [
         [
           'class' => 'Tent\Matchers\StatusCodeMatcher',
-          'httpCodes' => ['2xx']
+          'httpCodes' => ['2xx', '3xx']
         ]
       ]
     ],
