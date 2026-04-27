@@ -4,6 +4,19 @@ import ReadyCountdown from './ReadyCountdown.jsx';
 import fetchJob from '../clients/JobClient.js';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
+const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
+const STATUSES_WITH_READY_IN = new Set(['failed']);
+const STATUSES_WITH_ERROR = new Set(['failed', 'dead']);
+
+function CollapsibleSection({ label, children }) {
+  return (
+    <details>
+      <summary>{label}</summary>
+      {children}
+    </details>
+  );
+}
+
 function Job() {
   const { id } = useParams();
   const [job, setJob] = useState(undefined);
@@ -69,13 +82,37 @@ function Job() {
             <dd className="col-sm-9">{job.jobClass}</dd>
 
             <dt className="col-sm-3">Arguments</dt>
-            <dd className="col-sm-9"><pre>{JSON.stringify(job.arguments, null, 2)}</pre></dd>
+            <dd className="col-sm-9">
+              <CollapsibleSection label="Show arguments">
+                <pre>{JSON.stringify(job.arguments, null, 2)}</pre>
+              </CollapsibleSection>
+            </dd>
 
-            <dt className="col-sm-3">Remaining attempts</dt>
-            <dd className="col-sm-9">{job.remainingAttempts}</dd>
+            {STATUSES_WITH_REMAINING_ATTEMPTS.has(job.status) && (
+              <>
+                <dt className="col-sm-3">Remaining attempts</dt>
+                <dd className="col-sm-9">{job.remainingAttempts}</dd>
+              </>
+            )}
 
-            <dt className="col-sm-3">Ready in</dt>
-            <dd className="col-sm-9"><ReadyCountdown readyInMs={job.readyInMs} /></dd>
+            {STATUSES_WITH_READY_IN.has(job.status) && (
+              <>
+                <dt className="col-sm-3">Ready in</dt>
+                <dd className="col-sm-9"><ReadyCountdown readyInMs={job.readyInMs} /></dd>
+              </>
+            )}
+
+            {STATUSES_WITH_ERROR.has(job.status) && job.lastError !== null && job.lastError !== undefined && (
+              <>
+                <dt className="col-sm-3">Last error</dt>
+                <dd className="col-sm-9">
+                  <CollapsibleSection label="Show error">
+                    <p>{job.lastError}</p>
+                    {job.backtrace && <pre>{job.backtrace}</pre>}
+                  </CollapsibleSection>
+                </dd>
+              </>
+            )}
           </dl>
         </div>
       </div>

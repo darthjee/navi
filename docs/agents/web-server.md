@@ -75,15 +75,19 @@ All handlers read from global singletons populated before the server starts:
 
 **`JobShowSerializer`** (detail view — full):
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Job identifier. |
-| `status` | string | Current status name. |
-| `attempts` | number | Number of retry attempts made. |
-| `jobClass` | string | Constructor name. |
-| `arguments` | object | Job-specific parameters. |
-| `remainingAttempts` | number | `maxRetries − attempts`. |
-| `readyInMs` | number | Milliseconds until the job is eligible for retry. |
+Fields are included conditionally based on the job's status and whether an error has been recorded.
+
+| Field | Type | Statuses | Description |
+|-------|------|----------|-------------|
+| `id` | string | all | Job identifier. |
+| `status` | string | all | Current status name. |
+| `attempts` | number | all | Number of retry attempts made. |
+| `jobClass` | string | all | Constructor name. |
+| `arguments` | object | all | Job-specific parameters. |
+| `remainingAttempts` | number | `enqueued`, `processing`, `failed` | `maxRetries − attempts`. |
+| `readyInMs` | number | `failed` | Milliseconds until the job is eligible for retry. |
+| `lastError` | string | `failed`, `dead` | Exception message from the last recorded failure; omitted when no error has been recorded. |
+| `backtrace` | string | `failed`, `dead` | Stack trace of the last error; present whenever `lastError` is present. Never included in index views. |
 
 ## Error handling
 
