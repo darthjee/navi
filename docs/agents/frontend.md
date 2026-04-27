@@ -93,7 +93,9 @@ Layout
 └── <Outlet>
     ├── Jobs             (route: /jobs  or  /jobs/:status)
     └── Job              (route: /job/:id)
-        └── ReadyCountdown
+        ├── CollapsibleSection  (Arguments)
+        ├── ReadyCountdown      (failed only)
+        └── CollapsibleSection  (Last Error — failed/dead only, when error present)
 ```
 
 ### `Layout`
@@ -118,7 +120,24 @@ List page. Reads the optional `:status` route parameter and fetches either all j
 
 ### `Job`
 
-Detail page. Fetches a single job by `:id`. Displays: ID, Status, Attempts, Class, Arguments (JSON), Remaining Attempts, and `ReadyCountdown`. Shows "Job not found" on 404.
+Detail page. Fetches a single job by `:id`. Renders status-aware fields:
+
+| Field | Statuses |
+|-------|----------|
+| ID | all |
+| Status (badge) | all |
+| Attempts | all |
+| Class | all |
+| Arguments (collapsible, collapsed by default) | all |
+| Remaining Attempts | `enqueued`, `processing`, `failed` |
+| Ready In (`ReadyCountdown`) | `failed` |
+| Last Error + backtrace (collapsible, collapsed by default) | `failed`, `dead` — only when a recorded error is present |
+
+Shows "Job not found" on 404.
+
+### `CollapsibleSection`
+
+Thin wrapper around a native `<details>`/`<summary>` element. Used to wrap Arguments JSON and Last Error / backtrace content. Collapsed by default.
 
 ### `ReadyCountdown`
 
