@@ -101,7 +101,13 @@ describe('Worker', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, {
+          timeout: 5000,
+          responseType: 'text',
+          headers: {},
+          maxRedirects: 0,
+          validateStatus: jasmine.any(Function),
+        });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         expect(Logger.error).not.toHaveBeenCalled();
@@ -134,7 +140,13 @@ describe('Worker', () => {
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
         await worker.perform();
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, { timeout: 5000, responseType: 'text', headers: {} });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, {
+          timeout: 5000,
+          responseType: 'text',
+          headers: {},
+          maxRedirects: 0,
+          validateStatus: jasmine.any(Function),
+        });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
         expect(Logger.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
