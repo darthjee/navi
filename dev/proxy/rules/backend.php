@@ -8,8 +8,9 @@ use Tent\Models\RequestMatcher;
 
 Configuration::buildRule([
     'handler' => [
-        'type' => 'default_proxy',
-        'host' => 'http://backend:80'
+        'type'       => 'default_proxy',
+        'host'       => 'http://backend:80',
+        'cacheCodes' => ['2xx', '3xx']
     ],
     'matchers' => [
         ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
@@ -22,8 +23,9 @@ Configuration::buildRule([
 
 Configuration::buildRule([
     'handler' => [
-        'type' => 'default_proxy',
-        'host' => 'http://backend:80'
+        'type'       => 'default_proxy',
+        'host'       => 'http://backend:80',
+        'cacheCodes' => ['2xx', '3xx']
     ],
     'matchers' => [
         ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
