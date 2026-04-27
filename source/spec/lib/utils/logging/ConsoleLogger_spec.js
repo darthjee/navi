@@ -14,22 +14,22 @@ describe('ConsoleLogger', () => {
 
   it('routes debug messages to console.debug', () => {
     logger.debug('msg');
-    expect(console.debug).toHaveBeenCalledWith('msg');
+    expect(console.debug).toHaveBeenCalledWith('msg', {});
   });
 
   it('routes info messages to console.info', () => {
     logger.info('msg');
-    expect(console.info).toHaveBeenCalledWith('msg');
+    expect(console.info).toHaveBeenCalledWith('msg', {});
   });
 
   it('routes warn messages to console.warn', () => {
     logger.warn('msg');
-    expect(console.warn).toHaveBeenCalledWith('msg');
+    expect(console.warn).toHaveBeenCalledWith('msg', {});
   });
 
   it('routes error messages to console.error', () => {
     logger.error('msg');
-    expect(console.error).toHaveBeenCalledWith('msg');
+    expect(console.error).toHaveBeenCalledWith('msg', {});
   });
 
   describe('with attributes', () => {

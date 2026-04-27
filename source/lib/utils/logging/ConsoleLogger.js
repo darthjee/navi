@@ -13,12 +13,7 @@ class ConsoleLogger extends BaseLogger {
    * @returns {void}
    */
   _output(level, message, attributes = {}) {
-    const hasAttributes = Object.keys(attributes).length > 0;
-    if (hasAttributes) {
-      console[level](message, attributes); // eslint-disable-line no-console
-    } else {
-      console[level](message); // eslint-disable-line no-console
-    }
+    console[level](message, attributes); // eslint-disable-line no-console
   }
 }
 
