@@ -70,6 +70,8 @@ web_modules/
 .env.*
 !.env.sample
 
+docker_volumes/config/navi_config.yml
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
