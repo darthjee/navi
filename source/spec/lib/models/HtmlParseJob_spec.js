@@ -36,6 +36,34 @@ describe('HtmlParseJob', () => {
     });
   });
 
+  describe('#maxRetries', () => {
+    beforeEach(() => {
+      assetRequests = [];
+      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+    });
+
+    it('returns 1', () => {
+      expect(job.maxRetries).toBe(1);
+    });
+  });
+
+  describe('#arguments', () => {
+    it('returns the assetCount matching the number of asset requests', () => {
+      assetRequests = [
+        AssetRequestFactory.build({ selector: 'link', attribute: 'href' }),
+        AssetRequestFactory.build({ selector: 'script', attribute: 'src' }),
+      ];
+      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      expect(job.arguments).toEqual({ assetCount: 2 });
+    });
+
+    it('returns assetCount of 0 when no asset requests', () => {
+      assetRequests = [];
+      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      expect(job.arguments).toEqual({ assetCount: 0 });
+    });
+  });
+
   describe('#perform', () => {
     describe('with a single AssetRequest', () => {
       beforeEach(() => {

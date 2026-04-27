@@ -17,7 +17,8 @@ Configuration::buildRule([
     [
       'class' => 'Tent\Middlewares\SetPathMiddleware',
       'path' => '/index.html'
-    ]
+    ],
+    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
   ]
 ]);
 
@@ -28,5 +29,8 @@ Configuration::buildRule([
   ],
   'matchers' => [
     ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+  ],
+  'middlewares' => [
+    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
   ]
 ]);

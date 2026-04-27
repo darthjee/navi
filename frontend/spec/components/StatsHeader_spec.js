@@ -1,11 +1,16 @@
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from '../src/App.jsx';
+import { MemoryRouter } from 'react-router-dom';
+import StatsHeader from '../../src/components/StatsHeader.jsx';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
-describe('App', () => {
+const renderStatsHeader = (root) => {
+  root.render(createElement(MemoryRouter, null, createElement(StatsHeader)));
+};
+
+describe('StatsHeader', () => {
   let container;
   let root;
 
@@ -24,7 +29,7 @@ describe('App', () => {
       spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
       await act(async () => {
         root = createRoot(container);
-        root.render(createElement(App));
+        renderStatsHeader(root);
       });
     });
 
@@ -49,7 +54,7 @@ describe('App', () => {
       );
       await act(async () => {
         root = createRoot(container);
-        root.render(createElement(App));
+        renderStatsHeader(root);
       });
       await flushAsync();
     });
@@ -88,6 +93,16 @@ describe('App', () => {
       expect(text).toContain('Finished');
       expect(text).toContain('Dead');
     });
+
+    it('links each job stat item to its jobs list page', () => {
+      const links = Array.from(container.querySelectorAll('a'));
+      const hrefs = links.map((a) => a.getAttribute('href'));
+      expect(hrefs).toContain('/jobs/enqueued');
+      expect(hrefs).toContain('/jobs/processing');
+      expect(hrefs).toContain('/jobs/failed');
+      expect(hrefs).toContain('/jobs/finished');
+      expect(hrefs).toContain('/jobs/dead');
+    });
   });
 
   describe('when the fetch fails', () => {
@@ -97,7 +112,7 @@ describe('App', () => {
       );
       await act(async () => {
         root = createRoot(container);
-        root.render(createElement(App));
+        renderStatsHeader(root);
       });
       await flushAsync();
     });

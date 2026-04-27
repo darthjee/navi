@@ -1,14 +1,22 @@
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Jobs from '../../src/components/Jobs.jsx';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
-const render = async (container, root) => {
+const render = async (container, root, { initialPath = '/jobs' } = {}) => {
   await act(async () => {
-    root.render(createElement(MemoryRouter, null, createElement(Jobs)));
+    root.render(
+      createElement(
+        MemoryRouter, { initialEntries: [initialPath] },
+        createElement(Routes, null,
+          createElement(Route, { path: '/jobs', element: createElement(Jobs) }),
+          createElement(Route, { path: '/jobs/:status', element: createElement(Jobs) })
+        )
+      )
+    );
   });
 };
 
@@ -43,8 +51,8 @@ describe('Jobs', () => {
   });
 
   describe('when jobs load successfully', () => {
-    const enqueuedJobs = [{ id: 'abc', status: 'enqueued', attempts: 0 }];
-    const processingJobs = [{ id: 'def', status: 'processing', attempts: 1 }];
+    const enqueuedJobs = [{ id: 'abc', status: 'enqueued', attempts: 0, jobClass: 'ResourceRequestJob' }];
+    const processingJobs = [{ id: 'def', status: 'processing', attempts: 1, jobClass: 'AssetDownloadJob' }];
 
     beforeEach(async () => {
       spyOn(globalThis, 'fetch').and.callFake((url) => {
@@ -82,6 +90,10 @@ describe('Jobs', () => {
 
     it('shows the job attempts', () => {
       expect(container.textContent).toContain('0');
+    });
+
+    it('shows the job class', () => {
+      expect(container.textContent).toContain('ResourceRequestJob');
     });
   });
 
@@ -126,6 +138,29 @@ describe('Jobs', () => {
 
     it('includes the error details in the message', () => {
       expect(container.textContent).toContain('HTTP 503');
+    });
+  });
+
+  describe('when rendered with a status route param', () => {
+    const failedJobs = [{ id: 'xyz', status: 'failed', attempts: 3, jobClass: 'HtmlParseJob' }];
+
+    beforeEach(async () => {
+      spyOn(globalThis, 'fetch').and.callFake((url) => {
+        const data = url.includes('failed') ? failedJobs : [];
+        return Promise.resolve({ ok: true, json: () => Promise.resolve(data) });
+      });
+      await render(container, root, { initialPath: '/jobs/failed' });
+      await flushAsync();
+    });
+
+    it('fetches only the specified status', () => {
+      const calls = globalThis.fetch.calls.allArgs().map(([url]) => url);
+      expect(calls.length).toBe(1);
+      expect(calls[0]).toContain('failed');
+    });
+
+    it('renders jobs for that status', () => {
+      expect(container.textContent).toContain('xyz');
     });
   });
 });
