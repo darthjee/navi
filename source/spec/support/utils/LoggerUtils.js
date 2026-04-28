@@ -16,10 +16,11 @@ class LoggerUtils {
   }
 
   /**
-   * Stubs Logger.info and Logger.error as Jasmine spies.
+   * Stubs Logger.debug, Logger.info and Logger.error as Jasmine spies.
    * Use in specs that need to suppress logger output and/or assert on log calls.
    */
   static stubLoggerMethods() {
+    spyOn(Logger, 'debug').and.stub();
     spyOn(Logger, 'info').and.stub();
     spyOn(Logger, 'error').and.stub();
   }

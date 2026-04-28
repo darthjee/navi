@@ -116,10 +116,14 @@ class Client {
       validateStatus: () => true,
     });
 
+    Logger.info(`[Client:${this.name}] Response ${requestUrl} → ${response.status}`);
+
     if (response.status !== expectedStatus) {
+      Logger.info(`[Client:${this.name}] ${requestUrl} did not match (got ${response.status}, expected ${expectedStatus})`);
       throw new RequestFailed(response.status, requestUrl);
     }
 
+    Logger.info(`[Client:${this.name}] ${requestUrl} matched (expected ${expectedStatus})`);
     return response;
   }
 

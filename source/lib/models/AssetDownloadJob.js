@@ -43,7 +43,7 @@ class AssetDownloadJob extends Job {
    * @returns {Promise<object>} The HTTP response.
    */
   async perform() {
-    Logger.info(`AssetDownloadJob #${this.id} performing`);
+    Logger.debug(`AssetDownloadJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       const client = this.#clientRegistry.getClient(this.#clientName);
