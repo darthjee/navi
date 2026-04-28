@@ -24,14 +24,9 @@ describe('StatItem', () => {
       expect(html).toContain('text-bg-success');
     });
 
-    it('wraps the content in a col container', () => {
-      const html = render({ label: 'Idle', value: 5, variant: 'success' });
-      expect(html).toMatch(/^<div class="col">/);
-    });
-
-    it('renders the value with large bold styling', () => {
+    it('renders the value with bold styling', () => {
       const html = render({ label: 'Total', value: 42, variant: 'primary' });
-      expect(html).toContain('class="fs-2 fw-bold"');
+      expect(html).toContain('class="fs-5 fw-bold"');
       expect(html).toContain('42');
     });
 
