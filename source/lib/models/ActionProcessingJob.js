@@ -47,7 +47,7 @@ class ActionProcessingJob extends Job {
    * @returns {Promise<void>}
    */
   async perform() {
-    Logger.info(`ActionProcessingJob #${this.id} performing`);
+    Logger.debug(`ActionProcessingJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       await this.#action.execute(this.#item);

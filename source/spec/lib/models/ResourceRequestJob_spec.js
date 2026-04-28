@@ -80,9 +80,9 @@ describe('ResourceRequestJob', () => {
         expect(wrapper.parameters).toBe(parameters);
       });
 
-      it('logs info when performing', async () => {
+      it('logs debug when performing', async () => {
         await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(Logger.info).toHaveBeenCalled();
+        expect(Logger.debug).toHaveBeenCalled();
       });
 
       it('does not exhaust after several successful attempts', async () => {

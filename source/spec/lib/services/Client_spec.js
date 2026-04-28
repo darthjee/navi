@@ -34,6 +34,8 @@ describe('Client', () => {
       validateStatus: jasmine.any(Function),
     });
     expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
+    expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 200`));
+    expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} matched (expected 200)`));
   });
 
   describe('when request status is not a match', () => {
@@ -50,6 +52,8 @@ describe('Client', () => {
       AxiosUtils.stubGet(404);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
+      expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 404`));
+      expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
       expect(Logger.error).toHaveBeenCalled();
     });
   });
