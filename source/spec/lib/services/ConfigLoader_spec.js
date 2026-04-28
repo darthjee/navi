@@ -98,5 +98,32 @@ describe('ConfigLoader', () => {
         expect(Logger.error).toHaveBeenCalled();
       });
     });
+
+    describe('when the yaml contains env var references', () => {
+      let config;
+
+      beforeEach(() => {
+        process.env.NAVI_TEST_BASE_URL = 'https://resolved.example.com';
+        process.env.NAVI_TEST_TOKEN = 'resolved-token';
+
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_env_vars.yml');
+        config = ConfigLoader.fromFile(configFilePath);
+      });
+
+      afterEach(() => {
+        delete process.env.NAVI_TEST_BASE_URL;
+        delete process.env.NAVI_TEST_TOKEN;
+      });
+
+      it('resolves env vars in base_url', () => {
+        expect(config.clients['default'].baseUrl).toEqual('https://resolved.example.com');
+      });
+
+      it('resolves env vars in headers', () => {
+        expect(config.clients['default'].headers).toEqual({
+          Authorization: 'Bearer resolved-token',
+        });
+      });
+    });
   });
 });

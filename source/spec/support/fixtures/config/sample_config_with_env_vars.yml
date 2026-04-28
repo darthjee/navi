@@ -1,0 +1,12 @@
+workers:
+  quantity: 5
+clients:
+  default:
+    base_url: $NAVI_TEST_BASE_URL
+    timeout: 5000
+    headers:
+      Authorization: Bearer $NAVI_TEST_TOKEN
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
