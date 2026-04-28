@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
 import { ConfigParser } from './ConfigParser.js';
 import { ConfigurationFileNotFound } from '../exceptions/ConfigurationFileNotFound.js';
+import { EnvResolver } from '../utils/EnvResolver.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -54,7 +55,7 @@ class ConfigLoader {
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
    */
   #parseYaml() {
-    return YAML.parse(this.#yamlContent());
+    return YAML.parse(EnvResolver.resolveString(this.#yamlContent()));
   }
 
   /**
