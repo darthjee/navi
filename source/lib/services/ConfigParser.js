@@ -1,6 +1,7 @@
 import { Client } from './Client.js';
 import { MissingClientsConfig } from '../exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../exceptions/MissingResourceConfig.js';
+import { FailureConfig } from '../models/FailureConfig.js';
 import { LogConfig } from '../models/LogConfig.js';
 import { Resource } from '../models/Resource.js';
 import { WebConfig } from '../models/WebConfig.js';
@@ -41,8 +42,9 @@ class ConfigParser {
    * clients: Record<string, Client>,
    * workersConfig: WorkersConfig,
    * webConfig: WebConfig|null,
-   * logConfig: LogConfig
-   * }} Parsed configuration with resources, clients, workersConfig, webConfig, and logConfig.
+   * logConfig: LogConfig,
+   * failureConfig: FailureConfig|null
+   * }} Parsed configuration with resources, clients, workersConfig, webConfig, logConfig, and failureConfig.
    */
   parse() {
     const mappedResources = Object.fromEntries(
@@ -59,6 +61,7 @@ class ConfigParser {
       workersConfig: this.#workersConfig(),
       webConfig:     this.#webConfig(),
       logConfig:     this.#logConfig(),
+      failureConfig: this.#failureConfig(),
     };
   }
 
@@ -85,6 +88,14 @@ class ConfigParser {
    */
   #logConfig() {
     return LogConfig.fromObject(this.config.log);
+  }
+
+  /**
+   * Creates a FailureConfig from the parsed YAML failure section, or null if absent.
+   * @returns {FailureConfig|null} The failure configuration instance or null.
+   */
+  #failureConfig() {
+    return FailureConfig.fromObject(this.config.failure);
   }
 
   /**

@@ -1,5 +1,6 @@
 import { MissingClientsConfig } from '../../../lib/exceptions/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../../lib/exceptions/MissingResourceConfig.js';
+import { FailureConfig } from '../../../lib/models/FailureConfig.js';
 import { LogConfig } from '../../../lib/models/LogConfig.js';
 import { WebConfig } from '../../../lib/models/WebConfig.js';
 import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
@@ -241,6 +242,33 @@ describe('ConfigParser', () => {
       it('returns a LogConfig with the default size', () => {
         const result = ConfigParser.fromObject(config);
         expect(result.logConfig.size).toBe(100);
+      });
+    });
+
+    describe('when the config has a failure key', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config_with_failure.yml');
+      });
+
+      it('returns a FailureConfig instance', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.failureConfig instanceof FailureConfig).toBeTrue();
+      });
+
+      it('returns a FailureConfig with the configured threshold', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.failureConfig.threshold).toBe(10.0);
+      });
+    });
+
+    describe('when the config has no failure key', () => {
+      beforeEach(() => {
+        config = FixturesUtils.loadYamlFixture('config/sample_config.yml');
+      });
+
+      it('returns null for failureConfig', () => {
+        const result = ConfigParser.fromObject(config);
+        expect(result.failureConfig).toBeNull();
       });
     });
   });
