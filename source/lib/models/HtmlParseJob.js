@@ -56,7 +56,7 @@ class HtmlParseJob extends Job {
    * @returns {Promise<void>}
    */
   async perform() {
-    Logger.info(`HtmlParseJob #${this.id} performing`);
+    Logger.debug(`HtmlParseJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       for (const assetRequest of this.#assetRequests) {

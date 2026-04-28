@@ -66,9 +66,9 @@ describe('AssetDownloadJob', () => {
         expect(job.exhausted()).toBeFalse();
       });
 
-      it('logs info when performing', async () => {
+      it('logs debug when performing', async () => {
         await job.perform();
-        expect(Logger.info).toHaveBeenCalled();
+        expect(Logger.debug).toHaveBeenCalled();
       });
     });
 

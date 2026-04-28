@@ -15,6 +15,7 @@ describe('HtmlParseJob', () => {
   const baseUrl = 'https://example.com';
 
   beforeEach(() => {
+    spyOn(Logger, 'debug').and.stub();
     spyOn(Logger, 'info').and.stub();
     spyOn(Logger, 'warn').and.stub();
     spyOn(Logger, 'error').and.stub();
