@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
-import { EnvResolver } from '../utils/EnvResolver.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -30,16 +29,14 @@ class Client {
    *
    * @param {string} name The name identifying the client.
    * @param {object} config Client configuration object.
-   * @param {string} config.base_url Base URL for the client. Values matching
-   *   `$VAR` or `${VAR}` are resolved from `process.env` at parse time.
+   * @param {string} config.base_url Base URL for the client.
    * @param {number} [config.timeout] Optional request timeout in milliseconds.
-   * @param {object} [config.headers] Optional HTTP headers. Values matching
-   *   `$VAR` or `${VAR}` are resolved from `process.env` at parse time.
+   * @param {object} [config.headers] Optional HTTP headers.
    * @returns {Client} A new Client instance.
    */
   static fromObject(name, config) {
-    const headers = EnvResolver.resolveObject(config.headers || {});
-    const baseUrl = EnvResolver.resolveValue(config.base_url);
+    const headers = config.headers || {};
+    const baseUrl = config.base_url;
     return new Client({ name, baseUrl, timeout: config.timeout, headers });
   }
 
