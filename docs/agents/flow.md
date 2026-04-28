@@ -135,6 +135,12 @@ Each `ResourceRequest` entry may specify:
 - `actions` — optional list of actions to execute after a successful response (see section 6).
 - `assets` — optional list of asset extraction rules (see section 7). When declared, the response body is treated as HTML and the listed selector+attribute rules are used to discover asset URLs, each of which is fetched as an `AssetDownloadJob`.
 
+> **Path expression namespace: `parsedBody` is camelCase.**
+> In `actions.parameters` values, always write `parsedBody.field` — never `parsed_body.field`.
+> `parsed_body` (snake_case) is not a recognised namespace; using it causes a `MissingMappingVariable`
+> error at runtime and silently breaks all chained requests.
+> Valid namespaces: `parsedBody`, `headers`, `parameters`.
+
 The optional top-level `workers:` key configures the worker pool:
 
 - `quantity` — number of concurrent workers (default: `1`).

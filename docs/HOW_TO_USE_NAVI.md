@@ -65,7 +65,7 @@ resources:
       actions:
         - resource: product_detail
           parameters:
-            id: parsed_body.id   # extract "id" from each response item
+            id: parsedBody.id   # extract "id" from each response item
     - url: /products         # redirect — Navi validates the 302 status
       status: 302
     - url: /#/products       # hash-based SPA route — same HTML template as home
@@ -93,11 +93,24 @@ Key points:
 | `status` | Expected HTTP status code. Requests returning a different code are retried. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
 | `actions[].resource` | Resource to enqueue after a successful response (resource chaining). |
-| `actions[].parameters` | Path expressions that extract values from the response (e.g. `parsed_body.id`, `headers['x-next-page']`). |
+| `actions[].parameters` | Path expressions that extract values from the response (e.g. `parsedBody.id`, `headers['x-next-page']`). |
 | `assets[].selector` | CSS selector used to find elements in an HTML response body. |
 | `assets[].attribute` | Attribute name on matched elements that holds the asset URL (e.g. `href`, `src`). |
 | `assets[].client` | Optional named client to use when fetching each discovered asset. Defaults to `default`. |
 | `assets[].status` | Expected HTTP status for asset fetches. Defaults to `200`. |
+
+> **`parsedBody` is camelCase — never `parsed_body`.**
+> Path expressions in `actions[].parameters` values must use `parsedBody.<field>` (camelCase).
+> Writing `parsed_body.<field>` (snake_case) is silently unrecognised and throws a
+> `MissingMappingVariable` error at runtime, breaking every chained request.
+>
+> Valid namespaces for path expressions:
+>
+> | Namespace | Example | Resolves to |
+> |-----------|---------|-------------|
+> | `parsedBody` | `parsedBody.id` | field `id` in the parsed JSON response body |
+> | `headers` | `headers['x-next-page']` | HTTP response header value |
+> | `parameters` | `parameters.category_id` | parameter inherited from the parent chain |
 
 ---
 
