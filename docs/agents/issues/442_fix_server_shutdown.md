@@ -1,21 +1,21 @@
-# Issue: Add a Button to Shut Down the Server
+# Issue: Fix Server Shutdown
 
 ## Description
 
-The UI already has a "Shut Down" button and the backend already has a `PATCH /engine/shutdown` endpoint, but the shutdown does not actually terminate the application. The root cause is that `WebServer.start()` returns an `http.Server` instance instead of a Promise, so `PromiseAggregator` immediately resolves it (via `Promise.allSettled`) and never truly waits for the web server to close.
+When calling shutdown on the server, the application never actually terminates. The root cause is that `WebServer.start()` returns an `http.Server` instance instead of a Promise, so `PromiseAggregator` wraps it with `Promise.resolve()` via `Promise.allSettled` and resolves it immediately — it never truly waits for the web server to close.
 
 ## Problem
 
 - `WebServer.start()` returns `this.#app.listen(port)` — an `http.Server`, not a Promise
 - `PromiseAggregator.add(webServer.start())` pushes the `http.Server` into the promises array; `Promise.allSettled` wraps it with `Promise.resolve()` and it settles immediately
 - `ApplicationInstance.run()` is therefore not waiting on the web server at all
-- Calling `shutdown()` closes the HTTP server, but nothing in the aggregator is unblocked by that
+- Calling `shutdown()` closes the HTTP server, but nothing in the aggregator is unblocked by that, so the application does not exit
 
 ## Expected Behavior
 
 - `WebServer.start()` returns a Promise that resolves when the HTTP server fires its `'close'` event
 - `PromiseAggregator` correctly waits for the web server alongside the engine promise
-- Clicking "Shut Down" in the UI causes `run()` to complete and the application to exit cleanly
+- Calling shutdown causes `run()` to complete and the application to exit cleanly
 
 ## Solution
 
@@ -33,8 +33,7 @@ The UI already has a "Shut Down" button and the backend already has a `PATCH /en
 
 ## Benefits
 
-- Clean, user-initiated shutdown from the browser without killing the process externally
-- `run()` completes naturally once both the engine and the web server have finished
+- Shutdown triggered via `PATCH /engine/shutdown` (or the "Shut Down" UI button) causes the application to exit cleanly without killing the process externally
 
 ---
-See issue for details: https://github.com/darthjee/navi/issues/422
+See issue for details: https://github.com/darthjee/navi/issues/442
