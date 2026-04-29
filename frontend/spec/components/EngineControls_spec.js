@@ -11,6 +11,9 @@ const renderControls = async (root) => {
   });
 };
 
+const findButtonByText = (container, text) =>
+  Array.from(container.querySelectorAll('button')).find((b) => b.textContent === text);
+
 describe('EngineControls', () => {
   let container;
   let root;
@@ -40,31 +43,31 @@ describe('EngineControls', () => {
     });
 
     it('renders the Pause button enabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Pause');
+      const button = findButtonByText(container, 'Pause');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeFalse();
     });
 
     it('renders the Stop button enabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Stop');
+      const button = findButtonByText(container, 'Stop');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeFalse();
     });
 
     it('renders the Restart button enabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Restart');
+      const button = findButtonByText(container, 'Restart');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeFalse();
     });
 
     it('renders the Continue button disabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Continue');
+      const button = findButtonByText(container, 'Continue');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeTrue();
     });
 
     it('renders the Start button disabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Start');
+      const button = findButtonByText(container, 'Start');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeTrue();
     });
@@ -80,13 +83,13 @@ describe('EngineControls', () => {
     });
 
     it('renders the Pause button disabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Pause');
+      const button = findButtonByText(container, 'Pause');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeTrue();
     });
 
     it('renders the Continue button enabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Continue');
+      const button = findButtonByText(container, 'Continue');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeFalse();
     });
@@ -102,13 +105,13 @@ describe('EngineControls', () => {
     });
 
     it('renders the Start button enabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Start');
+      const button = findButtonByText(container, 'Start');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeFalse();
     });
 
     it('renders the Pause button disabled', () => {
-      const button = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'Pause');
+      const button = findButtonByText(container, 'Pause');
       expect(button).not.toBeNull();
       expect(button.disabled).toBeTrue();
     });

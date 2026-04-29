@@ -234,68 +234,30 @@ describe('Application', () => {
     });
   });
 
-  describe('.isRunning', () => {
-    describe('when status is running', () => {
-      beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('running');
+  [
+    { method: 'isRunning', trueStatus: 'running', falseStatus: 'paused' },
+    { method: 'isPaused',  trueStatus: 'paused',  falseStatus: 'running' },
+    { method: 'isStopped', trueStatus: 'stopped', falseStatus: 'running' },
+  ].forEach(({ method, trueStatus, falseStatus }) => {
+    describe(`.${method}`, () => {
+      describe(`when status is ${trueStatus}`, () => {
+        beforeEach(() => {
+          spyOn(Application, 'status').and.returnValue(trueStatus);
+        });
+
+        it('returns true', () => {
+          expect(Application[method]()).toBeTrue();
+        });
       });
 
-      it('returns true', () => {
-        expect(Application.isRunning()).toBeTrue();
-      });
-    });
+      describe(`when status is not ${trueStatus}`, () => {
+        beforeEach(() => {
+          spyOn(Application, 'status').and.returnValue(falseStatus);
+        });
 
-    describe('when status is not running', () => {
-      beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('paused');
-      });
-
-      it('returns false', () => {
-        expect(Application.isRunning()).toBeFalse();
-      });
-    });
-  });
-
-  describe('.isPaused', () => {
-    describe('when status is paused', () => {
-      beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('paused');
-      });
-
-      it('returns true', () => {
-        expect(Application.isPaused()).toBeTrue();
-      });
-    });
-
-    describe('when status is not paused', () => {
-      beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('running');
-      });
-
-      it('returns false', () => {
-        expect(Application.isPaused()).toBeFalse();
-      });
-    });
-  });
-
-  describe('.isStopped', () => {
-    describe('when status is stopped', () => {
-      beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('stopped');
-      });
-
-      it('returns true', () => {
-        expect(Application.isStopped()).toBeTrue();
-      });
-    });
-
-    describe('when status is not stopped', () => {
-      beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('running');
-      });
-
-      it('returns false', () => {
-        expect(Application.isStopped()).toBeFalse();
+        it('returns false', () => {
+          expect(Application[method]()).toBeFalse();
+        });
       });
     });
   });
