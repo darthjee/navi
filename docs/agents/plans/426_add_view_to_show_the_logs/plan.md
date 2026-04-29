@@ -31,6 +31,7 @@ Display:
 - Dark/black terminal-style container (e.g. `bg-dark text-light`, monospace font).
 - Each log line shows `[timestamp] [level] message`.
 - Per-level colour coding:
+  - `debug` → phosphor green (`#00FF41` or similar, inline style)
   - `info` → default light text
   - `warn` → yellow (`text-warning`)
   - `error` → red (`text-danger`)
