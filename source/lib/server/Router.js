@@ -13,6 +13,7 @@ import { EngineStopRequestHandler } from './EngineStopRequestHandler.js';
 import { IndexRequestHandler } from './IndexRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
+import { LogsRequestHandler } from './LogsRequestHandler.js';
 import { RouteRegister } from './RouteRegister.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
@@ -25,10 +26,16 @@ const staticDir = path.join(__dirname, '../../static');
  * @author darthjee
  */
 class Router {
+  #webConfig;
+
   /**
    * Creates a new Router instance.
+   * @param {object} [options={}]
+   * @param {object} [options.webConfig={}] - Web configuration, used by handlers that need it.
    */
-  constructor() {}
+  constructor({ webConfig = {} } = {}) {
+    this.#webConfig = webConfig;
+  }
 
   /**
    * Creates and returns an Express Router with all routes registered.
@@ -39,30 +46,31 @@ class Router {
     const register = new RouteRegister(router);
 
     const GET_ROUTES = {
-      '/stats.json':              StatsRequestHandler,
-      '/clients/base_urls.json':  BaseUrlsRequestHandler,
-      '/jobs/:status.json':       JobsRequestHandler,
-      '/job/:id.json':            JobRequestHandler,
-      '/engine/status':           EngineStatusRequestHandler,
-      '/':                        IndexRequestHandler,
-      '/assets/*path':            AssetsRequestHandler,
+      '/stats.json':              new StatsRequestHandler(),
+      '/clients/base_urls.json':  new BaseUrlsRequestHandler(),
+      '/jobs/:status.json':       new JobsRequestHandler(),
+      '/job/:id.json':            new JobRequestHandler(),
+      '/engine/status':           new EngineStatusRequestHandler(),
+      '/logs.json':               new LogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
+      '/':                        new IndexRequestHandler(),
+      '/assets/*path':            new AssetsRequestHandler(),
     };
 
     const PATCH_ROUTES = {
-      '/engine/pause':     EnginePauseRequestHandler,
-      '/engine/stop':      EngineStopRequestHandler,
-      '/engine/continue':  EngineContinueRequestHandler,
-      '/engine/start':     EngineStartRequestHandler,
-      '/engine/restart':   EngineRestartRequestHandler,
-      '/engine/shutdown':  EngineShutdownRequestHandler,
+      '/engine/pause':     new EnginePauseRequestHandler(),
+      '/engine/stop':      new EngineStopRequestHandler(),
+      '/engine/continue':  new EngineContinueRequestHandler(),
+      '/engine/start':     new EngineStartRequestHandler(),
+      '/engine/restart':   new EngineRestartRequestHandler(),
+      '/engine/shutdown':  new EngineShutdownRequestHandler(),
     };
 
-    Object.entries(GET_ROUTES).forEach(([route, HandlerClass]) => {
-      register.register({ route, handler: new HandlerClass() });
+    Object.entries(GET_ROUTES).forEach(([route, handler]) => {
+      register.register({ route, handler });
     });
 
-    Object.entries(PATCH_ROUTES).forEach(([route, HandlerClass]) => {
-      register.registerPatch({ route, handler: new HandlerClass() });
+    Object.entries(PATCH_ROUTES).forEach(([route, handler]) => {
+      register.registerPatch({ route, handler });
     });
 
     router.use(express.static(staticDir));

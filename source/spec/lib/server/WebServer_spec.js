@@ -1,6 +1,7 @@
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { WebConfig } from '../../../lib/models/WebConfig.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
@@ -8,11 +9,14 @@ describe('WebServer', () => {
   beforeEach(() => {
     Logger.suppress();
     JobRegistry.build({ cooldown: -1 });
+    LogRegistry.build();
     WorkersRegistry.build({ quantity: 0 });
   });
 
   afterEach(() => {
     JobRegistry.reset();
+    LogRegistry.reset();
+    Logger.reset();
     WorkersRegistry.reset();
   });
 
