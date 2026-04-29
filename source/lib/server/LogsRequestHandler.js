@@ -11,6 +11,7 @@ class LogsRequestHandler extends RequestHandler {
   #pageSize;
 
   /**
+   * Creates a new LogsRequestHandler.
    * @param {object} [options={}]
    * @param {number} [options.pageSize=20] - Maximum number of log entries to return.
    */

@@ -10,6 +10,7 @@ class LogRegistryInstance {
   #bufferedLogger;
 
   /**
+   * Creates a new LogRegistryInstance.
    * @param {object} [options={}] - Options for the BufferedLogger.
    * @param {string} [options.level] - Log level threshold.
    * @param {number} [options.retention=100] - Maximum number of logs to retain.

@@ -3,6 +3,7 @@ import { Serializer } from './Serializer.js';
 /**
  * Serializes one or more Log instances into plain data objects.
  * @augments Serializer
+ * @author darthjee
  */
 class LogSerializer extends Serializer {
   /**
