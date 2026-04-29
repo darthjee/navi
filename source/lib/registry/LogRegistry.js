@@ -1,5 +1,5 @@
-import { Logger } from '../utils/logging/Logger.js';
 import { LogRegistryInstance } from './LogRegistryInstance.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * LogRegistry is a static singleton facade for the application's BufferedLogger.
