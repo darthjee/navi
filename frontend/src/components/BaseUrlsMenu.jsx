@@ -42,42 +42,34 @@ function BaseUrlsMenu() {
     );
   }
 
+  const menuStyle = baseUrls.length > MAX_VISIBLE
+    ? { overflowY: 'auto', maxHeight: '20rem' }
+    : {};
+
   return (
-    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
+    <div ref={containerRef} className="dropdown d-inline-block">
       <button
-        className="btn btn-sm btn-outline-secondary"
+        className="btn btn-sm btn-outline-secondary dropdown-toggle"
         onClick={() => setOpen((prev) => !prev)}
-        aria-haspopup="true"
         aria-expanded={open}
       >
-        Base URLs ▾
+        Base URLs
       </button>
       {open && (
-        <div
-          className="shadow border rounded bg-white"
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            zIndex: 1000,
-            minWidth: '200px',
-            overflowY: baseUrls.length > MAX_VISIBLE ? 'auto' : 'visible',
-            maxHeight: baseUrls.length > MAX_VISIBLE ? '20rem' : 'none',
-          }}
-        >
+        <ul className="dropdown-menu show" style={menuStyle}>
           {baseUrls.map((url) => (
-            <a
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noreferrer"
-              className="d-block px-3 py-2 text-decoration-none text-dark"
-              style={{ whiteSpace: 'nowrap' }}
-            >
-              {url}
-            </a>
+            <li key={url}>
+              <a
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="dropdown-item"
+              >
+                {url}
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
