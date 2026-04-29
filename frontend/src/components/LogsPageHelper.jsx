@@ -23,29 +23,7 @@ class LogsPageHelper {
   buildPollingEffect(cancelledRef, lastIdRef, setLogs) {
     return () => {
       cancelledRef.current = false;
-
-      const poll = () => {
-        if (cancelledRef.current) return;
-
-        fetchLogs({ lastId: lastIdRef.current })
-          .then((entries) => {
-            if (cancelledRef.current) return;
-
-            if (entries.length === 0) {
-              setTimeout(poll, POLL_DELAY_MS);
-            } else {
-              lastIdRef.current = entries[entries.length - 1].id;
-              setLogs((prev) => [...prev, ...entries]);
-              poll();
-            }
-          })
-          .catch(() => {
-            if (!cancelledRef.current) setTimeout(poll, POLL_DELAY_MS);
-          });
-      };
-
-      poll();
-
+      this.#poll(cancelledRef, lastIdRef, setLogs);
       return () => {
         cancelledRef.current = true;
       };
@@ -77,6 +55,28 @@ class LogsPageHelper {
         <div ref={bottomRef} />
       </div>
     );
+  }
+
+  #handleEntries(entries, cancelledRef, lastIdRef, setLogs) {
+    if (cancelledRef.current) return;
+
+    if (entries.length === 0) {
+      setTimeout(() => this.#poll(cancelledRef, lastIdRef, setLogs), POLL_DELAY_MS);
+    } else {
+      lastIdRef.current = entries[entries.length - 1].id;
+      setLogs((prev) => [...prev, ...entries]);
+      this.#poll(cancelledRef, lastIdRef, setLogs);
+    }
+  }
+
+  #poll(cancelledRef, lastIdRef, setLogs) {
+    if (cancelledRef.current) return;
+
+    fetchLogs({ lastId: lastIdRef.current })
+      .then((entries) => this.#handleEntries(entries, cancelledRef, lastIdRef, setLogs))
+      .catch(() => {
+        if (!cancelledRef.current) setTimeout(() => this.#poll(cancelledRef, lastIdRef, setLogs), POLL_DELAY_MS);
+      });
   }
 }
 
