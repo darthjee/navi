@@ -105,6 +105,8 @@ class ApplicationInstance {
 
   /**
    * Enqueues all parameter-free ResourceRequests into the job registry.
+   * These are requests whose URLs contain no {:placeholder} tokens and can be
+   * processed immediately without any external parameters.
    * @returns {void}
    */
   enqueueFirstJobs() {
