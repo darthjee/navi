@@ -46,9 +46,9 @@ describe('WebServer', () => {
     it('closes the HTTP server', (done) => {
       const webConfig = new WebConfig({ port: 19998 });
       const server = WebServer.build({ webConfig });
-      server.start();
+      const httpServer = server.start();
+      httpServer.on('close', done);
       server.shutdown();
-      done();
     });
 
     it('does not throw when called before start', () => {
