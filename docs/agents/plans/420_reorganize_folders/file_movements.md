@@ -26,6 +26,20 @@ All files listed below move to a new path. No files are deleted or renamed — o
 | `source/lib/models/HtmlParseJob.js` | `source/lib/jobs/HtmlParseJob.js` |
 | `source/lib/models/AssetDownloadJob.js` | `source/lib/jobs/AssetDownloadJob.js` |
 
+## Source files → `source/lib/enqueuers/`
+
+| From | To |
+|------|----|
+| `source/lib/models/ActionEnqueuer.js` | `source/lib/enqueuers/ActionEnqueuer.js` |
+| `source/lib/models/ActionsEnqueuer.js` | `source/lib/enqueuers/ActionsEnqueuer.js` |
+| `source/lib/models/AssetRequestEnqueuer.js` | `source/lib/enqueuers/AssetRequestEnqueuer.js` |
+
+## Source files → `source/lib/factory/`
+
+| From | To |
+|------|----|
+| `source/lib/factories/Factory.js` | `source/lib/factory/Factory.js` |
+
 ---
 
 ## Spec files → `source/spec/lib/background/`
@@ -50,17 +64,16 @@ All files listed below move to a new path. No files are deleted or renamed — o
 | `source/spec/lib/models/HtmlParseJob_spec.js` | `source/spec/lib/jobs/HtmlParseJob_spec.js` |
 | `source/spec/lib/models/AssetDownloadJob_spec.js` | `source/spec/lib/jobs/AssetDownloadJob_spec.js` |
 
----
+## Spec files → `source/spec/lib/enqueuers/`
 
-## Open questions (not yet assigned)
+| From | To |
+|------|----|
+| `source/spec/lib/models/ActionEnqueuer_spec.js` | `source/spec/lib/enqueuers/ActionEnqueuer_spec.js` |
+| `source/spec/lib/models/ActionsEnqueuer_spec.js` | `source/spec/lib/enqueuers/ActionsEnqueuer_spec.js` |
+| `source/spec/lib/models/AssetRequestEnqueuer_spec.js` | `source/spec/lib/enqueuers/AssetRequestEnqueuer_spec.js` |
 
-| File | Current location | Candidates |
-|------|-----------------|------------|
-| `ActionEnqueuer.js` | `source/lib/models/` | `models/` (stay) or `jobs/` |
-| `ActionsEnqueuer.js` | `source/lib/models/` | `models/` (stay) or `jobs/` |
-| `AssetRequestEnqueuer.js` | `source/lib/models/` | `models/` (stay) or `jobs/` |
-| `Factory.js` | `source/lib/factories/` | `factories/` (stay) or `background/` |
-| `ActionEnqueuer_spec.js` | `source/spec/lib/models/` | follows source decision |
-| `ActionsEnqueuer_spec.js` | `source/spec/lib/models/` | follows source decision |
-| `AssetRequestEnqueuer_spec.js` | `source/spec/lib/models/` | follows source decision |
-| `Factory_spec.js` | `source/spec/lib/factories/` | follows source decision |
+## Spec files → `source/spec/lib/factory/`
+
+| From | To |
+|------|----|
+| `source/spec/lib/factories/Factory_spec.js` | `source/spec/lib/factory/Factory_spec.js` |

@@ -2,9 +2,14 @@
 
 ## Overview
 
-Reorganize the background job system within `source/lib/` into two dedicated folders:
-- `source/lib/background/` — generic background infrastructure (extractable as a future standalone package)
-- `source/lib/jobs/` — Navi-specific `Job` subclasses
+Reorganize the background job system within `source/lib/` into four dedicated folders:
+
+| Folder | Contents | Future extraction order |
+|--------|----------|------------------------|
+| `source/lib/factory/` | Base `Factory` class | 1st — dependency of both `background/` and Navi code |
+| `source/lib/background/` | Generic background infrastructure | 2nd — depends on `factory/` |
+| `source/lib/enqueuers/` | Navi-specific enqueuers | stays in Navi |
+| `source/lib/jobs/` | Navi-specific `Job` subclasses | stays in Navi |
 
 No behavior changes. All imports, specs, and documentation must be updated to reflect the new locations.
 
@@ -14,12 +19,16 @@ The background job system has grown across `source/lib/models/`, `source/lib/fac
 
 ## Folder Mapping
 
+### `source/lib/factory/` — Extractable base factory
+
+| File | From |
+|------|------|
+| `Factory.js` | `source/lib/factories/` |
+
 ### `source/lib/background/` — Generic infrastructure
 
-Moved from their current locations:
-
-| File | Current location |
-|------|-----------------|
+| File | From |
+|------|------|
 | `Job.js` | `source/lib/models/` |
 | `Worker.js` | `source/lib/models/` |
 | `JobRegistry.js` | `source/lib/registry/` |
@@ -29,22 +38,28 @@ Moved from their current locations:
 | `JobFactory.js` | `source/lib/factories/` |
 | `WorkerFactory.js` | `source/lib/factories/` |
 
+### `source/lib/enqueuers/` — Navi-specific enqueuers
+
+| File | From |
+|------|------|
+| `ActionEnqueuer.js` | `source/lib/models/` |
+| `ActionsEnqueuer.js` | `source/lib/models/` |
+| `AssetRequestEnqueuer.js` | `source/lib/models/` |
+
 ### `source/lib/jobs/` — Navi-specific Job subclasses
 
-Moved from `source/lib/models/`:
-
-| File |
-|------|
-| `ResourceRequestJob.js` |
-| `ActionProcessingJob.js` |
-| `HtmlParseJob.js` |
-| `AssetDownloadJob.js` |
+| File | From |
+|------|------|
+| `ResourceRequestJob.js` | `source/lib/models/` |
+| `ActionProcessingJob.js` | `source/lib/models/` |
+| `HtmlParseJob.js` | `source/lib/models/` |
+| `AssetDownloadJob.js` | `source/lib/models/` |
 
 ## Implementation Steps
 
 ### Step 1 — Create the new folders and move files
 
-Create `source/lib/background/` and `source/lib/jobs/`. Move each file listed above to its new location.
+Create `source/lib/factory/`, `source/lib/background/`, `source/lib/enqueuers/`, and `source/lib/jobs/`. Move each file listed above to its new location.
 
 ### Step 2 — Update imports throughout the codebase
 
@@ -52,10 +67,11 @@ Update every `import` statement in `source/lib/` that references a moved file. T
 
 ### Step 3 — Update specs
 
-The spec tree under `source/spec/lib/` mirrors the source tree exactly. Move the spec files for each moved class to the corresponding new path:
-- `source/spec/lib/models/<Class>_spec.js` → `source/spec/lib/background/<Class>_spec.js` or `source/spec/lib/jobs/<Class>_spec.js`
-- `source/spec/lib/factories/<Class>_spec.js` → `source/spec/lib/background/<Class>_spec.js`
-- `source/spec/lib/registry/<Class>_spec.js` → `source/spec/lib/background/<Class>_spec.js`
+The spec tree under `source/spec/lib/` mirrors the source tree exactly. Move spec files to their new mirrored paths:
+- `source/spec/lib/factory/` — for `Factory_spec.js`
+- `source/spec/lib/background/` — for Job, Worker, registries, and factory specs
+- `source/spec/lib/enqueuers/` — for the three enqueuer specs
+- `source/spec/lib/jobs/` — for the four Job subclass specs
 
 Update any imports inside those spec files and in any shared support files under `source/spec/support/` that reference moved classes.
 
@@ -76,7 +92,6 @@ Additionally:
 
 ## Notes
 
-- **Open question — enqueuers:** `ActionEnqueuer.js`, `ActionsEnqueuer.js`, and `AssetRequestEnqueuer.js` currently live in `source/lib/models/`. They do not extend `Job` but are tightly coupled to Navi-specific job types. Decision needed: do they stay in `models/`, or move to `jobs/`?
-- **`Factory.js`:** The base `Factory` class in `source/lib/factories/` is used by `WorkerFactory`. Decision needed: does it stay in `factories/` or move to `background/`?
 - This is a pure refactor — no logic changes. All tests should pass without modification to test logic.
+- `factory/` must be extracted as a standalone package before `background/` can be extracted, since it is a shared dependency of both.
 - Run `yarn lint` and `yarn test` (via Docker) after each step to catch broken imports early.
