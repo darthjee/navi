@@ -20,11 +20,31 @@ Create `source/lib/server/EngineShutdownRequestHandler.js` following the existin
 - Call the shutdown method added in Step 1
 - Respond with `{ status: 'stopping' }` (or similar) on success
 
-### Step 3 — Register the new route in `Router`
+### Step 3 — Refactor `Router` to use a route map
 
-Add `PATCH /engine/shutdown` to `source/lib/server/Router.js`, wiring it to `EngineShutdownRequestHandler` via `RouteRegister.registerPatch()`.
+Before adding the new route, refactor `source/lib/server/Router.js` to replace the individual `RouteRegister` calls with a declarative map of `path => handlerClass`, one for GET routes and one for PATCH routes. Example structure:
 
-### Step 4 — Add the Shut Down button to the frontend
+```js
+const GET_ROUTES = {
+  '/stats.json': StatsRequestHandler,
+  '/jobs/:status.json': JobsRequestHandler,
+  // ...
+};
+
+const PATCH_ROUTES = {
+  '/engine/pause': EnginePauseRequestHandler,
+  '/engine/stop': EngineStopRequestHandler,
+  // ...
+};
+```
+
+The router then iterates these maps and calls `RouteRegister.register()` / `RouteRegister.registerPatch()` for each entry. This makes adding new routes a one-line change.
+
+### Step 4 — Register the new route in `Router`
+
+Add `'/engine/shutdown': EngineShutdownRequestHandler` to the PATCH routes map.
+
+### Step 5 — Add the Shut Down button to the frontend
 
 In `frontend/`, add a "Shut Down" button to the appropriate component (likely the engine controls area). Clicking it should:
 - Send `PATCH /engine/shutdown`
@@ -35,7 +55,7 @@ In `frontend/`, add a "Shut Down" button to the appropriate component (likely th
 - `source/lib/server/WebServer.js` — add shutdown method
 - `source/lib/services/Application.js` — expose shutdown delegate (if needed)
 - `source/lib/server/EngineShutdownRequestHandler.js` — new handler
-- `source/lib/server/Router.js` — register `PATCH /engine/shutdown`
+- `source/lib/server/Router.js` — refactor routes to declarative map; add `PATCH /engine/shutdown`
 - `frontend/` — new Shut Down button and API call
 - `source/spec/lib/server/EngineShutdownRequestHandler_spec.js` — new spec
 - `source/spec/lib/server/Router_spec.js` — updated to cover new route
