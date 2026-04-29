@@ -81,6 +81,55 @@ describe('PromiseAggregator', () => {
       });
     });
 
+    describe('when a promise is added while wait() is running', () => {
+      it('still awaits the newly added promise', async () => {
+        let resolved = false;
+
+        const promise2 = new Promise((resolve) => {
+          setTimeout(() => {
+            resolved = true;
+            resolve();
+          }, 20);
+        });
+
+        const promise1 = new Promise((resolve) => {
+          setTimeout(() => {
+            aggregator.add(promise2);
+            resolve();
+          }, 10);
+        });
+
+        aggregator.add(promise1);
+
+        await aggregator.wait();
+
+        expect(resolved).toBeTrue();
+      });
+
+      it('raises rejection from the newly added promise', async () => {
+        const error = new Error('late rejection');
+        let rejectFn;
+
+        const promise2 = new Promise((_, reject) => {
+          rejectFn = reject;
+        });
+
+        const promise1 = new Promise((resolve) => {
+          setTimeout(() => {
+            aggregator.add(promise2);
+            resolve();
+          }, 10);
+        });
+
+        // Reject promise2 after it has been added and allSettled has attached a handler
+        setTimeout(() => rejectFn(error), 15);
+
+        aggregator.add(promise1);
+
+        await expectAsync(aggregator.wait()).toBeRejectedWith(error);
+      });
+    });
+
     describe('when null and undefined are added alongside real promises', () => {
       it('resolves after the real promises resolve', async () => {
         let resolved = false;

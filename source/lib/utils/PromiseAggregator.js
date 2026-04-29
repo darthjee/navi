@@ -19,17 +19,23 @@ class PromiseAggregator {
   }
 
   /**
-   * Waits for all registered promises to settle.
+   * Waits for all registered promises to settle, including any added during the wait.
+   * Loops until the internal list is empty, draining settled promises each iteration.
    * If one or more promises reject, it still waits for the remaining
    * ones and then re-throws the first rejection error.
    * @returns {Promise<void>}
    */
   async wait() {
-    const results = await Promise.allSettled(this.#promises);
-    const firstRejection = results.find((r) => r.status === 'rejected');
+    while (this.#promises.length > 0) {
+      const current = [...this.#promises];
+      const results = await Promise.allSettled(current);
 
-    if (firstRejection) {
-      throw firstRejection.reason;
+      this.#promises = this.#promises.filter((p) => !current.includes(p));
+
+      const firstRejection = results.find((r) => r.status === 'rejected');
+      if (firstRejection) {
+        throw firstRejection.reason;
+      }
     }
   }
 }
