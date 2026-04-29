@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import LogsPageHelper from '../../src/components/LogsPageHelper.jsx';
+import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
@@ -124,7 +125,7 @@ describe('LogsPageHelper', () => {
           if (callCount === 1) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(entries) });
           }
-          return new Promise(() => {});
+          return new Promise(noop);
         });
 
         cancelledRef = { current: false };
@@ -176,7 +177,7 @@ describe('LogsPageHelper', () => {
 
     describe('cleanup', () => {
       it('sets cancelledRef to true', async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+        spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
 
         const cancelledRef = { current: false };
         const lastIdRef = { current: null };

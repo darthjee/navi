@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import StatsHeader from '../../src/components/StatsHeader.jsx';
+import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
@@ -26,7 +27,7 @@ describe('StatsHeader', () => {
 
   describe('while loading', () => {
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
       await act(async () => {
         root = createRoot(container);
         renderStatsHeader(root);

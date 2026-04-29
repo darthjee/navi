@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import LogsPage from '../../src/components/LogsPage.jsx';
+import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
@@ -28,7 +29,7 @@ describe('LogsPage', () => {
 
   describe('initial render', () => {
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
       await render(root);
     });
 
@@ -62,7 +63,7 @@ describe('LogsPage', () => {
         if (callCount === 1) {
           return Promise.resolve({ ok: true, json: () => Promise.resolve(logs) });
         }
-        return new Promise(() => {}); // Prevent further polling
+        return new Promise(noop); // Prevent further polling
       });
       await render(root);
       await flushAsync();
