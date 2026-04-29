@@ -29,6 +29,7 @@ describe('Application failure threshold', () => {
     JobFactory.reset();
     WorkersRegistry.reset();
     ResourceRegistry.reset();
+    Application.reset();
   });
 
   describe('when failure threshold is configured and dead ratio exceeds it', () => {
@@ -37,7 +38,7 @@ describe('Application failure threshold', () => {
 
       configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_failure.yml');
 
-      app = new Application();
+      app = Application.build();
       app.loadConfig(configFilePath);
       WorkersRegistry.reset();
       WorkersRegistry.build({ quantity: 1, factory: workerFactory });
@@ -59,7 +60,7 @@ describe('Application failure threshold', () => {
 
       configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_failure.yml');
 
-      app = new Application();
+      app = Application.build();
       app.loadConfig(configFilePath);
       WorkersRegistry.reset();
       WorkersRegistry.build({ quantity: 1, factory: workerFactory });
@@ -81,7 +82,7 @@ describe('Application failure threshold', () => {
 
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
-      app = new Application();
+      app = Application.build();
       app.loadConfig(configFilePath);
       WorkersRegistry.reset();
       WorkersRegistry.build({ quantity: 1, factory: workerFactory });

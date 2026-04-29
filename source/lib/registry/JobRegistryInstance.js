@@ -118,6 +118,17 @@ class JobRegistryInstance {
   }
 
   /**
+   * Clears all pending queues (enqueued, retryQueue, and failed), leaving
+   * processing, finished, and dead collections intact.
+   * @returns {void}
+   */
+  clearQueues() {
+    this.#enqueued = new Queue();
+    this.#retryQueue = new Queue();
+    this.#failed = new SortedCollection([], { sortBy: FAILED_SORT_BY });
+  }
+
+  /**
    * Returns whether the registry has any jobs pending (including those in cooldown).
    * @returns {boolean} True if any of enqueued, failed, or retryQueue is non-empty.
    */

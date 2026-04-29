@@ -1,129 +1,175 @@
-import { Engine } from './Engine.js';
-import { FailureChecker } from './FailureChecker.js';
-import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
-import { JobFactory } from '../factories/JobFactory.js';
-import { ActionProcessingJob } from '../models/ActionProcessingJob.js';
-import { AssetDownloadJob } from '../models/AssetDownloadJob.js';
-import { Config } from '../models/Config.js';
-import { HtmlParseJob } from '../models/HtmlParseJob.js';
-import { JobRegistry } from '../registry/JobRegistry.js';
-import { WorkersRegistry } from '../registry/WorkersRegistry.js';
-import { WebServer } from '../server/WebServer.js';
-import { BufferedLogger } from '../utils/logging/BufferedLogger.js';
-import { Logger } from '../utils/logging/Logger.js';
-import { PromiseAggregator } from '../utils/PromiseAggregator.js';
-import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
+import { ApplicationInstance } from './ApplicationInstance.js';
 
 /**
- * Application orchestrates the startup of Navi by loading configuration,
- * building registries, and running the Engine loop together with the WebServer.
+ * Application is a static singleton facade that orchestrates the startup of Navi
+ * by loading configuration, building registries, and running the Engine loop
+ * together with the WebServer.
+ *
+ * Call `Application.build()` once during bootstrap and `Application.reset()` in tests.
  * @author darthjee
  */
 class Application {
-  #workers;
-  #bufferedLogger;
+  static #instance = null;
 
   /**
-   * Creates a new Application instance.
-   * @param {object} [params={}] - Optional parameters for dependency injection.
-   * @param {IdentifyableCollection} [params.workers] - Workers collection (injected for testing).
+   * Creates and stores the singleton ApplicationInstance.
+   * @param {object} [params={}] - Forwarded to `ApplicationInstance` constructor.
+   * @returns {ApplicationInstance} The created instance.
    */
-  constructor({ workers } = {}) {
-    this.#workers = workers;
+  static build(params = {}) {
+    Application.#instance = new ApplicationInstance(params);
+    return Application.#instance;
+  }
+
+  /**
+   * Destroys the singleton instance. Intended for test teardown.
+   * @returns {void}
+   */
+  static reset() {
+    Application.#instance = null;
+  }
+
+  /**
+   * Returns the singleton instance (for test inspection).
+   * @returns {ApplicationInstance|null} The current instance.
+   */
+  static get instance() {
+    return Application.#instance;
+  }
+
+  /**
+   * Returns the current engine status.
+   * Returns 'running' if no instance has been built yet.
+   * @returns {string} The current status.
+   */
+  static status() {
+    if (!Application.#instance) return 'running';
+    return Application.#instance.status();
+  }
+
+  /**
+   * Returns true if the engine is currently running.
+   * @returns {boolean} True if the current status is 'running'.
+   */
+  static isRunning() {
+    return Application.status() === 'running';
+  }
+
+  /**
+   * Returns true if the engine is currently paused.
+   * @returns {boolean} True if the current status is 'paused'.
+   */
+  static isPaused() {
+    return Application.status() === 'paused';
+  }
+
+  /**
+   * Returns true if the engine is currently stopped.
+   * @returns {boolean} True if the current status is 'stopped'.
+   */
+  static isStopped() {
+    return Application.status() === 'stopped';
   }
 
   /**
    * Loads the configuration from the specified file path.
    * @param {string} configPath - The path to the configuration file.
-   * @throws {ConfigurationFileNotProvided} If the configuration file path is not provided.
-   * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
    * @returns {void}
    */
-  loadConfig(configPath) {
-    if (!configPath) {
-      throw new ConfigurationFileNotProvided();
-    }
-
-    // Load the configuration from the specified path.
-    this.config = Config.fromFile(configPath);
-    this.#bufferedLogger = new BufferedLogger(undefined, this.config.logConfig.size);
-    Logger.addLogger(this.#bufferedLogger);
-    this.#initRegistries();
+  static loadConfig(configPath) {
+    return Application.#getInstance().loadConfig(configPath);
   }
 
   /**
-   * Starts the application by building the engine, web server, enqueueing initial jobs, and starting both.
-   * After the engine finishes, checks the dead-job ratio against the configured failure threshold.
+   * Starts the application.
    * @returns {Promise<void>}
    */
-  async run() {
-    const aggregator = new PromiseAggregator();
-
-    this.engine = this.buildEngine();
-    this.webServer = this.buildWebServer();
-    this.enqueueFirstJobs();
-
-    aggregator.add(this.webServer?.start());
-    aggregator.add(this.engine.start());
-
-    await aggregator.wait();
-
-    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
+  static async run() {
+    return Application.#getInstance().run();
   }
 
   /**
-   * Builds and returns a new Engine instance wired to the current registries.
+   * Builds and returns a new Engine instance.
    * @returns {Engine} The created Engine instance.
    */
-  buildEngine() {
-    return new Engine({ sleepMs: this.config.workersConfig.sleep });
+  static buildEngine() {
+    return Application.#getInstance().buildEngine();
   }
+
   /**
-   * Builds and returns a WebServer if web configuration is present, otherwise null.
+   * Builds and returns a WebServer or null.
    * @returns {WebServer|null} The created WebServer instance or null.
    */
-  buildWebServer() {
-    return WebServer.build({
-      webConfig: this.config.webConfig,
-    });
+  static buildWebServer() {
+    return Application.#getInstance().buildWebServer();
   }
+
   /**
-   * Gets the buffered logger instance created during config loading.
+   * Enqueues all parameter-free ResourceRequests.
+   * @returns {void}
+   */
+  static enqueueFirstJobs() {
+    return Application.#getInstance().enqueueFirstJobs();
+  }
+
+  /**
+   * Gets the buffered logger from the singleton instance.
    * @returns {BufferedLogger} The buffered logger instance.
    */
-  get bufferedLogger() {
-    return this.#bufferedLogger;
+  static get bufferedLogger() {
+    return Application.#getInstance().bufferedLogger;
   }
+
   /**
-   * Enqueues all parameter-free ResourceRequests into the job registry.
-   * These are requests whose URLs contain no {:placeholder} tokens and can be
-   * processed immediately without any external parameters.
-   * @returns {void}
+   * Pauses the engine and waits for workers to become idle.
+   * @returns {Promise<void>}
    */
-  enqueueFirstJobs() {
-    new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
-      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
-    });
+  static async pause() {
+    return Application.#getInstance().pause();
   }
+
   /**
-   * Initializes the job factory, job registry, and workers registry from the loaded configuration.
-   * @returns {void}
+   * Stops the engine, waits for workers to idle, then clears job queues.
+   * @returns {Promise<void>}
    */
-  #initRegistries() {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
-    JobFactory.build('Action', { klass: ActionProcessingJob });
-    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.clientRegistry } });
-    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.clientRegistry } });
+  static async stop() {
+    return Application.#getInstance().stop();
+  }
 
-    JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
+  /**
+   * Resumes processing after a pause.
+   * @returns {Promise<void>}
+   */
+  static async continue() {
+    return Application.#getInstance().continue();
+  }
 
-    WorkersRegistry.build({
-      workers: this.#workers,
-      jobRegistry: JobRegistry,
-      workersRegistry: WorkersRegistry,
-      ...this.config.workersConfig,
-    });
-    WorkersRegistry.initWorkers();
+  /**
+   * Starts processing from a stopped state.
+   * @returns {Promise<void>}
+   */
+  static async start() {
+    return Application.#getInstance().start();
+  }
+
+  /**
+   * Restarts processing.
+   * @returns {Promise<void>}
+   */
+  static async restart() {
+    return Application.#getInstance().restart();
+  }
+
+  /**
+   * Returns the singleton instance, throwing if not yet built.
+   * @returns {ApplicationInstance} The singleton instance.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static #getInstance() {
+    if (!Application.#instance) {
+      throw new Error('Application has not been initialized. Call Application.build() before calling static methods that require an instance.');
+    }
+    return Application.#instance;
   }
 }
 

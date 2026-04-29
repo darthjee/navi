@@ -1,3 +1,4 @@
+import { Application } from '../services/Application.js';
 import { HtmlParser } from '../utils/HtmlParser.js';
 
 /**
@@ -28,9 +29,11 @@ class AssetRequestEnqueuer {
   /**
    * Parses the HTML body for URLs matching the asset request rule, resolves each URL
    * to absolute form, and enqueues one AssetDownloadJob per URL.
+   * Does nothing if the application is in 'stopped' status.
    * @returns {void}
    */
   enqueue() {
+    if (Application.isStopped()) return;
     const urls = HtmlParser.parse(this.#rawHtml, this.#assetRequest.selector, this.#assetRequest.attribute);
     for (const url of urls) {
       this.#jobRegistry.enqueue('AssetDownload', {

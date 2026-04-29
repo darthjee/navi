@@ -8,7 +8,7 @@ class ActionEnqueuerUtils {
    * Installs a beforeEach that creates an action spy and builds the JobRegistry,
    * and an afterEach that resets it.
    * Returns a context object whose `action` property is populated before each spec.
-   * @returns {{ action: jasmine.SpyObj }}
+   * @returns {{ action: jasmine.SpyObj }} Context object populated before each spec.
    */
   static setup() {
     const ctx = {};

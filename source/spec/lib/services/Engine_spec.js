@@ -61,6 +61,15 @@ describe('Engine', () => {
       });
     });
 
+    describe('when stop() is called before start()', () => {
+      it('completes immediately without processing any jobs', async () => {
+        enqueueJobs(2);
+        engine.stop();
+        await engine.start();
+        expect(finished.size()).toBe(0);
+      });
+    });
+
     describe('when there are jobs to process', () => {
       beforeEach(() => { enqueueJobs(2); });
 

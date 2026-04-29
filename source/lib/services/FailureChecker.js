@@ -59,7 +59,7 @@ class FailureChecker {
 
   /**
    * Returns true when the dead-job ratio exceeds the configured threshold.
-   * @returns {boolean}
+   * @returns {boolean} True if the ratio is above the configured threshold.
    */
   #isOverThreshold() {
     return this.#ratio() > this.#failureConfig.threshold;

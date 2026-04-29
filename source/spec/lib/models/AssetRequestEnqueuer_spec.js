@@ -1,4 +1,5 @@
 import { AssetRequestEnqueuer } from '../../../lib/models/AssetRequestEnqueuer.js';
+import { Application } from '../../../lib/services/Application.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
@@ -107,6 +108,18 @@ describe('AssetRequestEnqueuer', () => {
           url: `${baseUrl}/assets/app.css`,
         }));
       });
+    });
+  });
+
+  describe('when the application is stopped', () => {
+    beforeEach(() => {
+      spyOn(Application, 'isStopped').and.returnValue(true);
+      spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css']);
+    });
+
+    it('does not enqueue any job', () => {
+      new AssetRequestEnqueuer(rawHtml, assetRequest, jobRegistry, clientRegistry).enqueue();
+      expect(jobRegistry.enqueue).not.toHaveBeenCalled();
     });
   });
 });

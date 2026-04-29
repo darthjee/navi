@@ -1,3 +1,4 @@
+import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 import { ForbiddenError } from '../../../lib/exceptions/ForbiddenError.js';
 import { NotFoundError } from '../../../lib/exceptions/NotFoundError.js';
 import { RouteRegister } from '../../../lib/server/RouteRegister.js';
@@ -7,7 +8,7 @@ describe('RouteRegister', () => {
   let register;
 
   beforeEach(() => {
-    router = { get: jasmine.createSpy('get') };
+    router = { get: jasmine.createSpy('get'), patch: jasmine.createSpy('patch') };
     register = new RouteRegister(router);
   });
 
@@ -132,6 +133,117 @@ describe('RouteRegister', () => {
         callback(req, res);
 
         expect(jsonSpy).toHaveBeenCalledWith({ error: 'Internal Server Error' });
+      });
+    });
+  });
+
+  describe('#registerPatch', () => {
+    it('registers a PATCH route on the router', () => {
+      const handler = { handle: jasmine.createSpy('handle') };
+
+      register.registerPatch({ route: '/engine/pause', handler });
+
+      expect(router.patch).toHaveBeenCalledWith('/engine/pause', jasmine.any(Function));
+    });
+
+    it('calls handler.handle when the route is triggered', async () => {
+      const handler = { handle: jasmine.createSpy('handle').and.returnValue(Promise.resolve()) };
+      const req = {};
+      const res = {};
+
+      register.registerPatch({ route: '/engine/pause', handler });
+
+      const callback = router.patch.calls.mostRecent().args[1];
+      await callback(req, res);
+
+      expect(handler.handle).toHaveBeenCalledWith(req, res);
+    });
+
+    describe('when the handler throws a ConflictError', () => {
+      it('responds with 409', async () => {
+        const handler = {
+          handle: jasmine.createSpy('handle').and.rejectWith(new ConflictError()),
+        };
+        const req = {};
+        const jsonSpy = jasmine.createSpy('json');
+        const res = { status: jasmine.createSpy('status').and.returnValue({ json: jsonSpy }) };
+
+        register.registerPatch({ route: '/engine/pause', handler });
+
+        const callback = router.patch.calls.mostRecent().args[1];
+        await callback(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(409);
+      });
+
+      it('responds with a Conflict error body', async () => {
+        const handler = {
+          handle: jasmine.createSpy('handle').and.rejectWith(new ConflictError()),
+        };
+        const req = {};
+        const jsonSpy = jasmine.createSpy('json');
+        const res = { status: jasmine.createSpy('status').and.returnValue({ json: jsonSpy }) };
+
+        register.registerPatch({ route: '/engine/pause', handler });
+
+        const callback = router.patch.calls.mostRecent().args[1];
+        await callback(req, res);
+
+        expect(jsonSpy).toHaveBeenCalledWith({ error: 'Conflict' });
+      });
+    });
+
+    describe('when the handler throws a ForbiddenError', () => {
+      it('responds with 403', async () => {
+        const handler = {
+          handle: jasmine.createSpy('handle').and.rejectWith(new ForbiddenError()),
+        };
+        const req = {};
+        const jsonSpy = jasmine.createSpy('json');
+        const res = { status: jasmine.createSpy('status').and.returnValue({ json: jsonSpy }) };
+
+        register.registerPatch({ route: '/engine/pause', handler });
+
+        const callback = router.patch.calls.mostRecent().args[1];
+        await callback(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(403);
+      });
+    });
+
+    describe('when the handler throws a NotFoundError', () => {
+      it('responds with 404', async () => {
+        const handler = {
+          handle: jasmine.createSpy('handle').and.rejectWith(new NotFoundError('Not found')),
+        };
+        const req = {};
+        const jsonSpy = jasmine.createSpy('json');
+        const res = { status: jasmine.createSpy('status').and.returnValue({ json: jsonSpy }) };
+
+        register.registerPatch({ route: '/engine/pause', handler });
+
+        const callback = router.patch.calls.mostRecent().args[1];
+        await callback(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+      });
+    });
+
+    describe('when the handler throws an unexpected error', () => {
+      it('responds with 500', async () => {
+        const handler = {
+          handle: jasmine.createSpy('handle').and.rejectWith(new Error('Unexpected')),
+        };
+        const req = {};
+        const jsonSpy = jasmine.createSpy('json');
+        const res = { status: jasmine.createSpy('status').and.returnValue({ json: jsonSpy }) };
+
+        register.registerPatch({ route: '/engine/pause', handler });
+
+        const callback = router.patch.calls.mostRecent().args[1];
+        await callback(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
       });
     });
   });

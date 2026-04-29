@@ -2,6 +2,7 @@ import { ActionsEnqueuer } from './ActionsEnqueuer.js';
 import { AssetRequest } from './AssetRequest.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
 import { JobRegistry as DefaultJobRegistry } from '../registry/JobRegistry.js';
+import { Application } from '../services/Application.js';
 
 /**
  * ResourceRequest represents a request to a specific URL with an expected status code.
@@ -50,12 +51,14 @@ class ResourceRequest {
 
   /**
    * Enqueues one HtmlParseJob for this resource request's asset extraction rules.
+   * Does nothing if the application is in 'stopped' status.
    * @param {string} rawHtml The raw HTML response body string.
    * @param {object} [jobRegistry=JobRegistry] The job registry used to enqueue the HtmlParseJob.
    * @param {object} clientRegistry The client registry for URL resolution inside HtmlParseJob.
    * @returns {void}
    */
   enqueueAssets(rawHtml, jobRegistry = DefaultJobRegistry, clientRegistry) {
+    if (Application.isStopped()) return;
     jobRegistry.enqueue('HtmlParse', { rawHtml, assetRequests: this.assets, clientRegistry });
   }
 

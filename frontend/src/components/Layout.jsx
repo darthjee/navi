@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import BaseUrlsMenu from './BaseUrlsMenu.jsx';
+import EngineControls from './EngineControls.jsx';
 import StatsHeader from './StatsHeader.jsx';
 
 function Layout() {
@@ -10,6 +11,9 @@ function Layout() {
         <BaseUrlsMenu />
       </div>
       <StatsHeader />
+      <div className="mb-3">
+        <EngineControls />
+      </div>
       <Outlet />
     </div>
   );
