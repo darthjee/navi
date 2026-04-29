@@ -1,6 +1,6 @@
 const fetchLogs = ({ lastId } = {}) => {
   const url = lastId !== null && lastId !== undefined
-    ? `/logs.json?last_id=${lastId}`
+    ? `/logs.json?last_id=${encodeURIComponent(lastId)}`
     : '/logs.json';
 
   return fetch(url)

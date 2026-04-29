@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import fetchLogs from '../clients/LogsClient.js';
 
+const POLL_DELAY_MS = 1000;
+
 const LEVEL_STYLE = {
   debug: { color: '#00FF41' },
   info: {},
@@ -32,7 +34,7 @@ function LogsPage() {
           if (cancelledRef.current) return;
 
           if (entries.length === 0) {
-            setTimeout(poll, 1000);
+            setTimeout(poll, POLL_DELAY_MS);
           } else {
             lastIdRef.current = entries[entries.length - 1].id;
             setLogs((prev) => [...prev, ...entries]);
@@ -40,7 +42,7 @@ function LogsPage() {
           }
         })
         .catch(() => {
-          if (!cancelledRef.current) setTimeout(poll, 1000);
+          if (!cancelledRef.current) setTimeout(poll, POLL_DELAY_MS);
         });
     };
 
