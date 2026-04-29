@@ -38,21 +38,22 @@ describe('WebServer', () => {
   });
 
   describe('#start', () => {
-    it('starts listening on the configured port', (done) => {
+    it('returns a Promise that resolves when the server closes', async () => {
       const webConfig = new WebConfig({ port: 19999 });
       const server = WebServer.build({ webConfig });
-      const httpServer = server.start();
-      httpServer.close(done);
+      const promise = server.start();
+      server.shutdown();
+      await promise;
     });
   });
 
   describe('#shutdown', () => {
-    it('closes the HTTP server', (done) => {
+    it('closes the HTTP server', async () => {
       const webConfig = new WebConfig({ port: 19998 });
       const server = WebServer.build({ webConfig });
-      const httpServer = server.start();
-      httpServer.on('close', done);
+      const promise = server.start();
       server.shutdown();
+      await promise;
     });
 
     it('does not throw when called before start', () => {
