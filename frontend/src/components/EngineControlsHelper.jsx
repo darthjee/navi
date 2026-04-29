@@ -4,9 +4,11 @@ import {
   continueEngine,
   startEngine,
   restartEngine,
+  getEngineStatus,
 } from '../clients/EngineClient.js';
 import noop from '../utils/noop.js';
 
+const POLL_INTERVAL_MS = 2000;
 const TRANSITIONAL_STATUSES = new Set(['pausing', 'stopping']);
 
 class EngineControlsHelper {
@@ -16,6 +18,16 @@ class EngineControlsHelper {
   constructor(status, refreshStatus) {
     this.#status = status;
     this.#refreshStatus = refreshStatus;
+  }
+
+  static build(status, refreshStatus) {
+    return new EngineControlsHelper(status, refreshStatus);
+  }
+
+  static fetchStatus(setStatus) {
+    getEngineStatus()
+      .then(setStatus)
+      .catch(noop);
   }
 
   isTransitioning() {
@@ -36,6 +48,14 @@ class EngineControlsHelper {
 
   handleAction(action) {
     action().then(this.#refreshStatus).catch(noop);
+  }
+
+  buildPollingEffect(intervalRef, refreshStatus) {
+    return () => {
+      refreshStatus();
+      intervalRef.current = setInterval(refreshStatus, POLL_INTERVAL_MS);
+      return () => clearInterval(intervalRef.current);
+    };
   }
 
   renderSpinner() {
