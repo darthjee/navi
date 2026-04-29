@@ -1,4 +1,5 @@
 import { BufferedLogger } from '../utils/logging/BufferedLogger.js';
+import { LogFilter } from '../utils/logging/LogFilter.js';
 
 /**
  * Holds the BufferedLogger instance for the LogRegistry singleton.
@@ -33,16 +34,7 @@ class LogRegistryInstance {
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
   getLogs({ lastId } = {}) {
-    const logs = this.#bufferedLogger.getLogs();
-
-    if (lastId === undefined) return logs;
-
-    const id = parseInt(lastId, 10);
-    const index = logs.findIndex(log => log.id === id);
-
-    if (index === -1) return [];
-
-    return logs.slice(index + 1);
+    return new LogFilter(this.#bufferedLogger.getLogs()).filter({ lastId });
   }
 
   /**
