@@ -1,4 +1,4 @@
-# Plan: Engine Control Endpoints
+# Plan: API — Engine Control Endpoints
 
 ## Context
 

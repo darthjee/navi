@@ -1,4 +1,4 @@
-# Plan: Engine Control and Enqueue Gating
+# Plan: Backend — Engine Control and Enqueue Gating
 
 ## Context
 

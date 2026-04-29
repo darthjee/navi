@@ -25,16 +25,16 @@ Key architectural decisions established during planning:
 
 | File | Covers |
 |------|--------|
-| [plan_application_singleton.md](plan_application_singleton.md) | Convert `Application` to static singleton + add `engine_status` management |
-| [plan_engine_control.md](plan_engine_control.md) | Engine stop-flag, status transitions, enqueue gating |
-| [plan_endpoints.md](plan_endpoints.md) | New HTTP endpoints, request handlers, Router wiring |
+| [plan_refactoring.md](plan_refactoring.md) | Convert `Application` to static singleton + add `engine_status` management |
+| [plan_backend.md](plan_backend.md) | Engine stop-flag, status transitions, enqueue gating |
+| [plan_api.md](plan_api.md) | New HTTP endpoints, request handlers, Router wiring |
 | [plan_frontend.md](plan_frontend.md) | Frontend control buttons with conditional availability |
 
 ## Implementation Order
 
-1. `plan_application_singleton.md` — foundation; everything else depends on `Application.status()`
-2. `plan_engine_control.md` — Engine behavior + enqueue gating
-3. `plan_endpoints.md` — web layer
+1. `plan_refactoring.md` — foundation; everything else depends on `Application.status()`
+2. `plan_backend.md` — Engine behavior + enqueue gating
+3. `plan_api.md` — web layer
 4. `plan_frontend.md` — UI
 
 ## CI Checks

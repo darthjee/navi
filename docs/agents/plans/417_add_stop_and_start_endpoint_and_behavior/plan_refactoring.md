@@ -1,4 +1,4 @@
-# Plan: Application Static Singleton
+# Plan: Refactoring — Application Static Singleton
 
 ## Context
 
