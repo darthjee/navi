@@ -15,23 +15,27 @@ Add a `GET /logs.json` endpoint to the web server that returns a paginated list 
 GET /logs.json
 ```
 
-Returns a JSON array of serialized log entries (up to `page_size` entries):
+Returns a JSON array of serialized log entries (up to `page_size` entries, oldest first):
 
 ```json
 [{
-  "id": "some_uuid",
-  "level": "log_level",
-  "message": "log message"
+  "id": 1,
+  "level": "info",
+  "message": "log message",
+  "attributes": {},
+  "timestamp": "2026-04-29T12:00:00.000Z"
 }]
 ```
+
+The serialization maps directly to `Log#toJSON()`, which exposes `id` (incremental integer), `level`, `message`, `attributes`, and `timestamp` (ISO 8601 string).
 
 ### Filtered request
 
 ```
-GET /logs.json?last_id=some_uuid
+GET /logs.json?last_id=<id>
 ```
 
-Returns only logs **newer** than the given `last_id`, up to `page_size` entries. Since logs are stored in reverse order (newest first), the implementation counts how many entries exist before reaching `last_id`, then returns the oldest among those (respecting page size).
+Returns only logs **newer** than the given `last_id`, up to `page_size` entries (oldest of the new ones first). Since `BufferedLogger#getLogs()` returns logs in chronological order (oldest first), the handler finds the index of `last_id` in the list and slices from the next position. If more entries exist than `page_size`, the oldest new ones are returned first.
 
 ### Pagination
 
@@ -46,9 +50,9 @@ web:
 ## Solution
 
 - Add `logs_page_size` to `WebConfig` (default: 20), parsed from the `web:` YAML key
-- Add a `LogsRequestHandler` in `source/lib/server/` that reads logs from `BufferedLogger` and applies pagination and `last_id` filtering
+- Add a `LogsRequestHandler` in `source/lib/server/` that reads logs via `BufferedLogger#getLogs()`, applies `last_id` filtering (finding the index of the given ID then slicing), and limits results to `page_size`
 - Register `GET /logs.json` in `Router`
-- Add a `LogSerializer` (or reuse/extend existing serializers) to format log entries
+- Serialize each entry using `Log#toJSON()` directly (no separate serializer needed)
 
 ## Benefits
 - Enables the frontend to display and poll application logs in real time
