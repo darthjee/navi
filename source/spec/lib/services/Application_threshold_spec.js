@@ -1,4 +1,5 @@
 import { JobFactory } from '../../../lib/factories/JobFactory.js';
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
@@ -23,6 +24,7 @@ describe('Application failure threshold', () => {
   afterEach(() => {
     Logger.suppress();
     Logger.reset();
+    ClientRegistry.reset();
     JobRegistry.reset();
     JobFactory.reset();
     WorkersRegistry.reset();
