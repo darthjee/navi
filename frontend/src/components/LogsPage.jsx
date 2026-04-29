@@ -55,7 +55,7 @@ function LogsPage() {
 
   useEffect(() => {
     if (logs.length > 0) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
     }
   }, [logs]);
 
