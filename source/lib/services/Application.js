@@ -123,18 +123,6 @@ class Application {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
   /**
    * Initializes the job factory, job registry, and workers registry from the loaded configuration.
    * @returns {void}
