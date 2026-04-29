@@ -5,7 +5,12 @@ describe('JobSerializer', () => {
 
   describe('.serialize', () => {
     describe('when view is "index" (default)', () => {
-      const job = { id: 'abc-1', _attempts: 2, constructor: { name: 'ResourceRequestJob' } };
+      const job = {
+        id: 'abc-1',
+        _attempts: 2,
+        constructor: { name: 'ResourceRequestJob' },
+        arguments: { url: '/items.json' },
+      };
 
       it('delegates to JobIndexSerializer for a single job', () => {
         expect(JobSerializer.serialize(job, { status })).toEqual({
@@ -13,6 +18,7 @@ describe('JobSerializer', () => {
           status: 'enqueued',
           attempts: 2,
           jobClass: 'ResourceRequestJob',
+          url: '/items.json',
         });
       });
 

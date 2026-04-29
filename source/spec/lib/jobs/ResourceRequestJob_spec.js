@@ -41,8 +41,23 @@ describe('ResourceRequestJob', () => {
   });
 
   describe('#arguments', () => {
-    it('returns url and parameters', () => {
-      expect(job.arguments).toEqual({ url, parameters });
+    it('returns resolved url', () => {
+      expect(job.arguments).toEqual({ url });
+    });
+
+    describe('when job has a parameterized URL', () => {
+      const paramUrl = '/categories/{:id}.json';
+      const resolvedUrl = '/categories/7.json';
+
+      beforeEach(() => {
+        resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
+        parameters = { id: 7 };
+        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+      });
+
+      it('returns the resolved url with parameters substituted', () => {
+        expect(job.arguments).toEqual({ url: resolvedUrl });
+      });
     });
   });
 
