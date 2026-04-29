@@ -31,10 +31,10 @@ class LogBuffer {
   add(level, message, attributes = {}) {
     const log = this.#factory.build(level, message, attributes);
 
-    this.#logs.push(log);
+    this.#logs.unshift(log);
 
     if (this.#logs.length > this.#retention) {
-      this.#logs.shift();
+      this.#logs.pop();
     }
 
     return log;
@@ -45,7 +45,7 @@ class LogBuffer {
    * @returns {Array<Log>} Array of log entries.
    */
   getLogs() {
-    return [...this.#logs];
+    return [...this.#logs].reverse();
   }
 
   /**
@@ -63,7 +63,7 @@ class LogBuffer {
    * @returns {Array<Log>} Array of log entries matching the level.
    */
   getLogsByLevel(level) {
-    return this.#logs.filter(log => log.level === level);
+    return this.#logs.filter(log => log.level === level).reverse();
   }
 
   /**
@@ -95,7 +95,7 @@ class LogBuffer {
    * @returns {Array<object>} Array of log objects.
    */
   toJSON() {
-    return this.#logs.map(log => log.toJSON());
+    return [...this.#logs].reverse().map(log => log.toJSON());
   }
 }
 
