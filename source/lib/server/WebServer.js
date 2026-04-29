@@ -10,6 +10,7 @@ class WebServer {
   #port;
   #app;
   #httpServer;
+  #startPromise;
 
   /**
    * @param {object} params - Options for initializing the WebServer.
@@ -29,19 +30,21 @@ class WebServer {
    */
   start() {
     Logger.info(`Listening to port ${this.#port}`);
-    return new Promise((resolve, reject) => {
+    this.#startPromise = new Promise((resolve, reject) => {
       this.#httpServer = this.#app.listen(this.#port);
       this.#httpServer.on('close', resolve);
       this.#httpServer.on('error', reject);
     });
+    return this.#startPromise;
   }
 
   /**
    * Closes the HTTP server, stopping it from accepting new connections.
-   * @returns {void}
+   * @returns {Promise<void>|undefined} The promise from start(), or undefined if not started.
    */
   shutdown() {
     this.#httpServer?.close();
+    return this.#startPromise;
   }
 
   /**
