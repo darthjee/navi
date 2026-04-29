@@ -1,4 +1,4 @@
-import { JobFactory } from '../factories/JobFactory.js';
+import { JobFactory } from './JobFactory.js';
 import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
 import { Queue } from '../utils/collections/Queue.js';
 import { SortedCollection } from '../utils/collections/SortedCollection.js';

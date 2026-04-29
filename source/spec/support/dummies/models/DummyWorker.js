@@ -1,4 +1,4 @@
-import { Worker } from '../../../../lib/models/Worker.js';
+import { Worker } from '../../../../lib/background/Worker.js';
 
 class DummyWorker extends Worker {
   #jobRegistry;

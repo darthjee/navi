@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
-import { Job } from '../../../lib/models/Job.js';
-import { Worker } from '../../../lib/models/Worker.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
-import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
+import { Job } from '../../../lib/background/Job.js';
+import { Worker } from '../../../lib/background/Worker.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';

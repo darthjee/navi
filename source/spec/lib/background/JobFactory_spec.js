@@ -1,5 +1,5 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
-import { ResourceRequestJob } from '../../../lib/models/ResourceRequestJob.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
+import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 

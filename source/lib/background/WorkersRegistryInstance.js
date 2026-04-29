@@ -1,4 +1,4 @@
-import { WorkerFactory } from '../factories/WorkerFactory.js';
+import { WorkerFactory } from './WorkerFactory.js';
 import { IdentifyableCollection } from '../utils/collections/IdentifyableCollection.js';
 
 /**

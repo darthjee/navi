@@ -1,4 +1,4 @@
-import { JobRegistry } from '../registry/JobRegistry.js';
+import { JobRegistry } from '../background/JobRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**

@@ -1,6 +1,6 @@
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
-import { AssetDownloadJob } from '../../../lib/models/AssetDownloadJob.js';
-import { Job } from '../../../lib/models/Job.js';
+import { AssetDownloadJob } from '../../../lib/jobs/AssetDownloadJob.js';
+import { Job } from '../../../lib/background/Job.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';

@@ -1,4 +1,4 @@
-import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
+import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 
 /**
  * Factory for creating WorkersRegistry instances in tests.

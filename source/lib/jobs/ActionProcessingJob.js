@@ -1,4 +1,4 @@
-import { Job } from './Job.js';
+import { Job } from '../background/Job.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**

@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 
 /**
  * Test utility for setting up the shared ActionEnqueuer/ActionsEnqueuer spec context.

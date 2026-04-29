@@ -1,6 +1,6 @@
 import { ClientRegistryFactory } from './ClientRegistryFactory.js';
 import { ResourceRequestFactory } from './ResourceRequestFactory.js';
-import { ResourceRequestJob } from '../../../lib/models/ResourceRequestJob.js';
+import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 
 /**
  * Factory for creating ResourceRequestJob instances in tests.

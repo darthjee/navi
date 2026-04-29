@@ -1,6 +1,6 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 

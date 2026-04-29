@@ -2,7 +2,7 @@ import { MissingActionResource } from '../../../lib/exceptions/MissingActionReso
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
 import { ResourceNotFound } from '../../../lib/exceptions/ResourceNotFound.js';
 import { ResourceRequestAction } from '../../../lib/models/ResourceRequestAction.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { Application } from '../../../lib/services/Application.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';

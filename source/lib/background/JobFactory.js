@@ -1,5 +1,5 @@
-import { Factory } from './Factory.js';
-import { ResourceRequestJob } from '../models/ResourceRequestJob.js';
+import { Factory } from '../factory/Factory.js';
+import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
 import { IdGenerator } from '../utils/generators/IdGenerator.js';
 
 /**
