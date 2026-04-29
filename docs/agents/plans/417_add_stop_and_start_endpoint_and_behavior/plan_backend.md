@@ -25,7 +25,7 @@ Add the following static methods to `Application` (delegating to `ApplicationIns
 | Method | Behaviour |
 |--------|-----------|
 | `Application.pause()` | Sets status → `'pausing'`. Calls `engine.stop()`. Once `WorkersRegistry.hasBusyWorker()` is false (poll or hook), sets status → `'paused'`. |
-| `Application.stop()` | Sets status → `'stopping'`. Calls `engine.stop()`. Once workers are idle, clears all job queues (`JobRegistry.reset()` or equivalent clear), sets status → `'stopped'`. |
+| `Application.stop()` | Sets status → `'stopping'`. Calls `engine.stop()`. Once workers are idle, calls `JobRegistry.clearQueues()` to clear all job queues, sets status → `'stopped'`. |
 | `Application.continue()` | Only valid from `'paused'`. Creates a new Engine (`buildEngine()`), adds its promise to the existing `PromiseAggregator`, sets status → `'running'`, starts the Engine. |
 | `Application.start()` | Only valid from `'stopped'`. Creates a new Engine, adds its promise to aggregator, calls `enqueueFirstJobs()`, sets status → `'running'`, starts the Engine. |
 | `Application.restart()` | Only valid when `'running'`. Calls `stop()` internally (waits for `'stopped'`), then calls `start()`. |
@@ -70,6 +70,10 @@ from `start()` / `restart()` when the status is already transitioning to `'runni
 
 ## Files to Change
 
+- `source/lib/registry/JobRegistry.js` — add `clearQueues()` static method (and
+  corresponding instance method on `JobRegistryInstance`) that empties all queues without
+  destroying the registry instance
+- `source/spec/lib/registry/JobRegistry_spec.js` — add coverage for `clearQueues()`
 - `source/lib/services/Engine.js` — add `#stopped` flag and `stop()` method
 - `source/lib/services/Application.js` — add `pause()`, `stop()`, `continue()`, `start()`,
   `restart()` static methods + `PromiseAggregator` instance kept across Engine restarts

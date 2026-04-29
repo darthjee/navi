@@ -21,6 +21,8 @@ pattern):
 - `enqueueFirstJobs()`
 - `bufferedLogger` getter
 - New: `#engineStatus` private field (string)
+- New: `#aggregator` private field — the `PromiseAggregator` instance, kept for the lifetime
+  of the application so that `continue`/`start` can `add` new Engine promises to it.
 - New: `status()` instance method — returns `#engineStatus`
 - New: `setStatus(value)` instance method — sets `#engineStatus`
 
@@ -36,8 +38,11 @@ pattern):
 
 ### Step 3 — Initialize status on run
 
-In `ApplicationInstance.run()`, set `#engineStatus = 'running'` before starting the Engine.
-After `aggregator.wait()` resolves (Engine finished normally), set status to `'stopped'`.
+In `ApplicationInstance.run()`:
+- Create `this.#aggregator = new PromiseAggregator()` (stored as instance field).
+- Set `#engineStatus = 'running'` before starting the Engine.
+- `add` both the WebServer and Engine promises to `this.#aggregator`.
+- After `this.#aggregator.wait()` resolves (Engine finished normally), set status to `'stopped'`.
 
 ### Step 4 — Update call-sites
 
