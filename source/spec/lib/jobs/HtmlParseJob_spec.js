@@ -1,5 +1,5 @@
-import { HtmlParseJob } from '../../../lib/jobs/HtmlParseJob.js';
 import { Job } from '../../../lib/background/Job.js';
+import { HtmlParseJob } from '../../../lib/jobs/HtmlParseJob.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';

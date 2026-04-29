@@ -1,6 +1,6 @@
-import { WebConfig } from '../../../lib/models/WebConfig.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { WebConfig } from '../../../lib/models/WebConfig.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 

@@ -1,6 +1,6 @@
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
 import { Client } from '../../../lib/services/Client.js';
 

@@ -1,5 +1,5 @@
-import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { Job } from '../../../lib/background/Job.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { WorkersAllocator } from '../../../lib/services/WorkersAllocator.js';

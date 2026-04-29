@@ -1,5 +1,5 @@
-import { NotFoundError } from '../../../lib/exceptions/NotFoundError.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { NotFoundError } from '../../../lib/exceptions/NotFoundError.js';
 import { JobRequestHandler } from '../../../lib/server/JobRequestHandler.js';
 
 describe('JobRequestHandler', () => {

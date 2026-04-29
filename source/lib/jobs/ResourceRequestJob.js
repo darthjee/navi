@@ -1,6 +1,6 @@
 import { Job } from '../background/Job.js';
-import { ResponseWrapper } from '../models/ResponseWrapper.js';
 import { JobRegistry } from '../background/JobRegistry.js';
+import { ResponseWrapper } from '../models/ResponseWrapper.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**

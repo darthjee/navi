@@ -1,6 +1,6 @@
-import { WorkerFactory } from '../../../lib/background/WorkerFactory.js';
-import { Worker } from '../../../lib/background/Worker.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { Worker } from '../../../lib/background/Worker.js';
+import { WorkerFactory } from '../../../lib/background/WorkerFactory.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 
 describe('WorkerFactory', () => {
