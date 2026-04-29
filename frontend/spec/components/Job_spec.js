@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Job from '../../src/components/Job.jsx';
+import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
@@ -35,7 +36,7 @@ describe('Job', () => {
 
   describe('while loading', () => {
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
       await renderJob(root);
     });
 

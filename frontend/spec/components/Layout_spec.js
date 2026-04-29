@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Layout from '../../src/components/Layout.jsx';
+import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
@@ -37,7 +38,7 @@ describe('Layout', () => {
 
   describe('always', () => {
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
       await renderLayout(root);
     });
 
@@ -77,7 +78,7 @@ describe('Layout', () => {
 
   describe('with page-specific content', () => {
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
       const pageContent = createElement('div', { className: 'page-content' }, 'Page Content');
       await renderLayout(root, { children: pageContent });
     });
