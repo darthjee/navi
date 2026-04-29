@@ -67,12 +67,11 @@ Update `docs/agents/architecture.md`:
 
 ## Files to Change
 
-- `source/lib/background/` — new folder with moved infrastructure files
-- `source/lib/jobs/` — new folder with moved Navi-specific job files
-- All files in `source/lib/` that import any of the moved classes
-- `source/spec/lib/background/` — new spec folder mirroring `background/`
-- `source/spec/lib/jobs/` — new spec folder mirroring `jobs/`
-- All spec files that import moved classes
+See [file_movements.md](file_movements.md) for the full source-to-destination table.
+
+Additionally:
+- All files in `source/lib/` that import any of the moved classes (import paths updated)
+- All spec files that import moved classes (import paths updated)
 - `docs/agents/architecture.md` — updated folder descriptions
 
 ## Notes
