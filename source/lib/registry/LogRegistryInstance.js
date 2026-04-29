@@ -26,11 +26,23 @@ class LogRegistryInstance {
   }
 
   /**
-   * Gets all logs in chronological order (oldest first).
+   * Gets logs in chronological order (oldest first), optionally filtered to entries newer than lastId.
+   * @param {object} [options={}]
+   * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
+   *   Returns an empty array if the ID is not found.
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
-  getLogs() {
-    return this.#bufferedLogger.getLogs();
+  getLogs({ lastId } = {}) {
+    const logs = this.#bufferedLogger.getLogs();
+
+    if (lastId === undefined) return logs;
+
+    const id = parseInt(lastId, 10);
+    const index = logs.findIndex(log => log.id === id);
+
+    if (index === -1) return [];
+
+    return logs.slice(index + 1);
   }
 
   /**

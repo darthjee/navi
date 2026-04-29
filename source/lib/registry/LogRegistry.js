@@ -35,11 +35,14 @@ class LogRegistry {
   }
 
   /**
-   * Gets all logs in chronological order (oldest first).
+   * Gets logs in chronological order (oldest first), optionally filtered to entries newer than lastId.
+   * @param {object} [options={}]
+   * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
+   *   Returns an empty array if the ID is not found.
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
-  static getLogs() {
-    return LogRegistry.#getInstance().getLogs();
+  static getLogs({ lastId } = {}) {
+    return LogRegistry.#getInstance().getLogs({ lastId });
   }
 
   /**

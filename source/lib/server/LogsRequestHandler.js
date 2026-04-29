@@ -25,20 +25,8 @@ class LogsRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(req, res) {
-    let logs = LogRegistry.getLogs();
     const { last_id: lastId } = req.query;
-
-    if (lastId !== undefined) {
-      const id = parseInt(lastId, 10);
-      const index = logs.findIndex(log => log.id === id);
-
-      if (index === -1) {
-        return res.json([]);
-      }
-
-      logs = logs.slice(index + 1);
-    }
-
+    const logs = LogRegistry.getLogs({ lastId });
     res.json(logs.slice(0, this.#pageSize).map(log => log.toJSON()));
   }
 }

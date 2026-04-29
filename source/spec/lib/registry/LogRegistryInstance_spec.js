@@ -25,6 +25,38 @@ describe('LogRegistryInstance', () => {
       expect(logs[0].message).toBe('first');
       expect(logs[1].message).toBe('second');
     });
+
+    describe('when lastId is provided', () => {
+      beforeEach(() => {
+        instance.bufferedLogger.info('first');
+        instance.bufferedLogger.warn('second');
+        instance.bufferedLogger.info('third');
+      });
+
+      it('returns only logs newer than lastId', () => {
+        const secondId = instance.getLogs()[1].id;
+        const logs = instance.getLogs({ lastId: secondId });
+        expect(logs.length).toBe(1);
+        expect(logs[0].message).toBe('third');
+      });
+
+      it('accepts lastId as a string', () => {
+        const secondId = String(instance.getLogs()[1].id);
+        const logs = instance.getLogs({ lastId: secondId });
+        expect(logs.length).toBe(1);
+        expect(logs[0].message).toBe('third');
+      });
+
+      it('returns an empty array when lastId is not found', () => {
+        expect(instance.getLogs({ lastId: 99999 })).toEqual([]);
+      });
+
+      it('returns an empty array when lastId is the most recent log', () => {
+        const logs = instance.getLogs();
+        const lastId = logs[logs.length - 1].id;
+        expect(instance.getLogs({ lastId })).toEqual([]);
+      });
+    });
   });
 
   describe('#getLogById', () => {

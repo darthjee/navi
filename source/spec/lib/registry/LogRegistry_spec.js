@@ -44,6 +44,32 @@ describe('LogRegistry', () => {
       LogRegistry.build();
       expect(LogRegistry.getLogs()).toEqual([]);
     });
+
+    describe('when lastId is provided', () => {
+      beforeEach(() => {
+        LogRegistry.build();
+        Logger.info('first');
+        Logger.warn('second');
+        Logger.info('third');
+      });
+
+      it('returns only logs newer than lastId', () => {
+        const secondId = LogRegistry.getLogs()[1].id;
+        const logs = LogRegistry.getLogs({ lastId: secondId });
+        expect(logs.length).toBe(1);
+        expect(logs[0].message).toBe('third');
+      });
+
+      it('returns an empty array when lastId is not found', () => {
+        expect(LogRegistry.getLogs({ lastId: 99999 })).toEqual([]);
+      });
+
+      it('returns an empty array when lastId is the most recent log', () => {
+        const logs = LogRegistry.getLogs();
+        const lastId = logs[logs.length - 1].id;
+        expect(LogRegistry.getLogs({ lastId })).toEqual([]);
+      });
+    });
   });
 
   describe('.getLogById', () => {

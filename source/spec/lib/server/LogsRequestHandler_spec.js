@@ -60,40 +60,14 @@ describe('LogsRequestHandler', () => {
       });
 
       describe('when last_id is provided', () => {
-        it('returns only logs newer than last_id', () => {
-          const logs = LogRegistry.getLogs();
-          const secondId = logs[1].id;
-          const handler = new LogsRequestHandler({ pageSize: 20 });
-          handler.handle({ query: { last_id: String(secondId) } }, res);
-          const result = res.json.calls.mostRecent().args[0];
-          expect(result.length).toBe(1);
-          expect(result[0].message).toBe('third');
-        });
-
-        it('respects page size when filtering by last_id', () => {
-          Logger.info('fourth');
-          Logger.info('fifth');
+        it('passes last_id to LogRegistry and paginates the result', () => {
           const logs = LogRegistry.getLogs();
           const firstId = logs[0].id;
-          const handler = new LogsRequestHandler({ pageSize: 2 });
+          const handler = new LogsRequestHandler({ pageSize: 1 });
           handler.handle({ query: { last_id: String(firstId) } }, res);
           const result = res.json.calls.mostRecent().args[0];
-          expect(result.length).toBe(2);
+          expect(result.length).toBe(1);
           expect(result[0].message).toBe('second');
-        });
-
-        it('returns an empty array when last_id is not found', () => {
-          const handler = new LogsRequestHandler();
-          handler.handle({ query: { last_id: '99999' } }, res);
-          expect(res.json).toHaveBeenCalledWith([]);
-        });
-
-        it('returns an empty array when last_id is the most recent log', () => {
-          const logs = LogRegistry.getLogs();
-          const lastId = logs[logs.length - 1].id;
-          const handler = new LogsRequestHandler();
-          handler.handle({ query: { last_id: String(lastId) } }, res);
-          expect(res.json).toHaveBeenCalledWith([]);
         });
       });
     });
