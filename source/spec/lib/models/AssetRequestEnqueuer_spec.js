@@ -111,9 +111,9 @@ describe('AssetRequestEnqueuer', () => {
     });
   });
 
-  describe('when the application is not running', () => {
+  describe('when the application is stopped', () => {
     beforeEach(() => {
-      spyOn(Application, 'status').and.returnValue('paused');
+      spyOn(Application, 'status').and.returnValue('stopped');
       spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css']);
     });
 

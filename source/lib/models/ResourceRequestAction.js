@@ -40,13 +40,13 @@ class ResourceRequestAction {
   /**
    * Maps the response wrapper to variables, looks up the target resource, and
    * enqueues one ResourceRequestJob per ResourceRequest in that resource.
-   * Does nothing if the application is not in 'running' status.
+   * Does nothing if the application is in 'stopped' status.
    * @param {ResponseWrapper} responseWrapper A ResponseWrapper instance exposing
    * parsedBody and headers.
    * @returns {void}
    */
   execute(responseWrapper) {
-    if (Application.status() !== 'running') return;
+    if (Application.status() === 'stopped') return;
     const vars = this.#mapper.map(responseWrapper);
     const resource = this.#resourceRegistry.getItem(this.resource);
 

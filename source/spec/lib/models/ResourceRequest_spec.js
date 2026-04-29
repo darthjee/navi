@@ -250,9 +250,9 @@ describe('ResourceRequest', () => {
       );
     });
 
-    describe('when the application is not running', () => {
+    describe('when the application is stopped', () => {
       beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('paused');
+        spyOn(Application, 'status').and.returnValue('stopped');
       });
 
       it('does not enqueue any job', () => {

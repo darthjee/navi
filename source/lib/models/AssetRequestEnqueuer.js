@@ -29,11 +29,11 @@ class AssetRequestEnqueuer {
   /**
    * Parses the HTML body for URLs matching the asset request rule, resolves each URL
    * to absolute form, and enqueues one AssetDownloadJob per URL.
-   * Does nothing if the application is not in 'running' status.
+   * Does nothing if the application is in 'stopped' status.
    * @returns {void}
    */
   enqueue() {
-    if (Application.status() !== 'running') return;
+    if (Application.status() === 'stopped') return;
     const urls = HtmlParser.parse(this.#rawHtml, this.#assetRequest.selector, this.#assetRequest.attribute);
     for (const url of urls) {
       this.#jobRegistry.enqueue('AssetDownload', {

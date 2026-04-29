@@ -51,14 +51,14 @@ class ResourceRequest {
 
   /**
    * Enqueues one HtmlParseJob for this resource request's asset extraction rules.
-   * Does nothing if the application is not in 'running' status.
+   * Does nothing if the application is in 'stopped' status.
    * @param {string} rawHtml The raw HTML response body string.
    * @param {object} [jobRegistry=JobRegistry] The job registry used to enqueue the HtmlParseJob.
    * @param {object} clientRegistry The client registry for URL resolution inside HtmlParseJob.
    * @returns {void}
    */
   enqueueAssets(rawHtml, jobRegistry = DefaultJobRegistry, clientRegistry) {
-    if (Application.status() !== 'running') return;
+    if (Application.status() === 'stopped') return;
     jobRegistry.enqueue('HtmlParse', { rawHtml, assetRequests: this.assets, clientRegistry });
   }
 

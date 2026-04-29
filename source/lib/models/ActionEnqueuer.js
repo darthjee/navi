@@ -23,11 +23,11 @@ class ActionEnqueuer {
 
   /**
    * Enqueues one ActionProcessingJob per item for the configured action.
-   * Does nothing if the application is not in 'running' status.
+   * Does nothing if the application is in 'stopped' status.
    * @returns {void}
    */
   enqueue() {
-    if (Application.status() !== 'running') return;
+    if (Application.status() === 'stopped') return;
     for (const item of this.#items) {
       this.#jobRegistry.enqueue('Action', { action: this.#action, item });
     }
