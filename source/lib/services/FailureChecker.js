@@ -8,6 +8,8 @@ import { Logger } from '../utils/logging/Logger.js';
  */
 class FailureChecker {
   #failureConfig;
+  #dead;
+  #total;
 
   /**
    * Creates a new FailureChecker instance.
@@ -26,14 +28,47 @@ class FailureChecker {
   check() {
     if (!this.#failureConfig) return;
 
-    const { dead, total } = JobRegistry.stats();
-    if (total === 0) return;
+    this.#loadStats();
+    if (this.#total === 0) return;
 
-    const ratio = (dead / total) * 100;
-    if (ratio > this.#failureConfig.threshold) {
-      Logger.error(`Failure threshold exceeded: ${ratio.toFixed(2)}% of jobs are dead (threshold: ${this.#failureConfig.threshold}%)`);
-      process.exit(1);
+    if (this.#isOverThreshold()) {
+      this.#fail();
     }
+  }
+
+  /**
+   * Loads dead and total job counts from the registry into instance attributes.
+   * @returns {void}
+   */
+  #loadStats() {
+    const { dead, total } = JobRegistry.stats();
+    this.#dead = dead;
+    this.#total = total;
+  }
+
+  /**
+   * Calculates the percentage of dead jobs relative to total jobs.
+   * @returns {number} The dead-job ratio as a percentage (0–100).
+   */
+  #ratio() {
+    return (this.#dead / this.#total) * 100;
+  }
+
+  /**
+   * Returns true when the dead-job ratio exceeds the configured threshold.
+   * @returns {boolean}
+   */
+  #isOverThreshold() {
+    return this.#ratio() > this.#failureConfig.threshold;
+  }
+
+  /**
+   * Logs a descriptive error message and exits the process with a non-zero code.
+   * @returns {void}
+   */
+  #fail() {
+    Logger.error(`Failure threshold exceeded: ${this.#ratio().toFixed(2)}% of jobs are dead (threshold: ${this.#failureConfig.threshold}%)`);
+    process.exit(1);
   }
 }
 
