@@ -1,21 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import fetchLogs from '../clients/LogsClient.js';
-
-const POLL_DELAY_MS = 1000;
-
-const LEVEL_STYLE = {
-  debug: { color: '#00FF41' },
-  info: {},
-  warn: {},
-  error: {},
-};
-
-const LEVEL_CLASS = {
-  debug: '',
-  info: '',
-  warn: 'text-warning',
-  error: 'text-danger',
-};
+import { useEffect, useMemo, useRef, useState } from 'react';
+import LogsPageHelper from './LogsPageHelper.jsx';
+import './LogsPage.css';
 
 function LogsPage() {
   const [logs, setLogs] = useState([]);
@@ -23,59 +8,13 @@ function LogsPage() {
   const cancelledRef = useRef(false);
   const lastIdRef = useRef(null);
 
-  useEffect(() => {
-    cancelledRef.current = false;
+  const helper = useMemo(() => LogsPageHelper.build(logs), [logs]);
 
-    const poll = () => {
-      if (cancelledRef.current) return;
+  useEffect(helper.buildPollingEffect(cancelledRef, lastIdRef, setLogs), []);
 
-      fetchLogs({ lastId: lastIdRef.current })
-        .then((entries) => {
-          if (cancelledRef.current) return;
+  useEffect(helper.buildScrollEffect(bottomRef), [helper]);
 
-          if (entries.length === 0) {
-            setTimeout(poll, POLL_DELAY_MS);
-          } else {
-            lastIdRef.current = entries[entries.length - 1].id;
-            setLogs((prev) => [...prev, ...entries]);
-            poll();
-          }
-        })
-        .catch(() => {
-          if (!cancelledRef.current) setTimeout(poll, POLL_DELAY_MS);
-        });
-    };
-
-    poll();
-
-    return () => {
-      cancelledRef.current = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (logs.length > 0) {
-      bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
-    }
-  }, [logs]);
-
-  return (
-    <div
-      className="bg-dark text-light p-3 rounded"
-      style={{ fontFamily: 'monospace', minHeight: '400px', overflowY: 'auto', maxHeight: '80vh' }}
-    >
-      {logs.map((log) => (
-        <div
-          key={log.id}
-          className={LEVEL_CLASS[log.level] ?? ''}
-          style={LEVEL_STYLE[log.level] ?? {}}
-        >
-          [{log.timestamp}] [{log.level}] {log.message}
-        </div>
-      ))}
-      <div ref={bottomRef} />
-    </div>
-  );
+  return helper.render(bottomRef);
 }
 
 export default LogsPage;

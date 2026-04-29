@@ -95,18 +95,15 @@ describe('LogsPage', () => {
       expect(container.querySelector('.text-danger')).not.toBeNull();
     });
 
-    it('applies a colour style to debug entries', () => {
-      const entries = Array.from(container.querySelectorAll('.bg-dark > div'));
-      const debugEntry = entries.find((el) => el.textContent.includes('Cache hit'));
-      expect(debugEntry).not.toBeNull();
-      expect(debugEntry.style.color).not.toBe('');
+    it('applies the text-debug class to debug entries', () => {
+      expect(container.querySelector('.text-debug')).not.toBeNull();
     });
 
-    it('does not apply a colour style to info entries', () => {
+    it('does not apply the text-debug class to info entries', () => {
       const entries = Array.from(container.querySelectorAll('.bg-dark > div'));
       const infoEntry = entries.find((el) => el.textContent.includes('Server started'));
       expect(infoEntry).not.toBeNull();
-      expect(infoEntry.style.color).toBe('');
+      expect(infoEntry.classList.contains('text-debug')).toBeFalse();
     });
 
     it('polls again immediately after receiving entries', () => {
