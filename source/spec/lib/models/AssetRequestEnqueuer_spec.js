@@ -1,7 +1,7 @@
 import { AssetRequestEnqueuer } from '../../../lib/models/AssetRequestEnqueuer.js';
+import { Application } from '../../../lib/services/Application.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
-import { Application } from '../../../lib/services/Application.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 

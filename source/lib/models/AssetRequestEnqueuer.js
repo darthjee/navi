@@ -1,5 +1,5 @@
-import { HtmlParser } from '../utils/HtmlParser.js';
 import { Application } from '../services/Application.js';
+import { HtmlParser } from '../utils/HtmlParser.js';
 
 /**
  * AssetRequestEnqueuer processes a single AssetRequest against a raw HTML body:

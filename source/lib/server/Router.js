@@ -3,6 +3,12 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import { AssetsRequestHandler } from './AssetsRequestHandler.js';
 import { BaseUrlsRequestHandler } from './BaseUrlsRequestHandler.js';
+import { EngineContinueRequestHandler } from './EngineContinueRequestHandler.js';
+import { EnginePauseRequestHandler } from './EnginePauseRequestHandler.js';
+import { EngineRestartRequestHandler } from './EngineRestartRequestHandler.js';
+import { EngineStartRequestHandler } from './EngineStartRequestHandler.js';
+import { EngineStatusRequestHandler } from './EngineStatusRequestHandler.js';
+import { EngineStopRequestHandler } from './EngineStopRequestHandler.js';
 import { IndexRequestHandler } from './IndexRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
@@ -49,6 +55,36 @@ class Router {
     register.register({
       route:   '/job/:id.json',
       handler: new JobRequestHandler(),
+    });
+
+    register.register({
+      route:   '/engine/status',
+      handler: new EngineStatusRequestHandler(),
+    });
+
+    register.registerPatch({
+      route:   '/engine/pause',
+      handler: new EnginePauseRequestHandler(),
+    });
+
+    register.registerPatch({
+      route:   '/engine/stop',
+      handler: new EngineStopRequestHandler(),
+    });
+
+    register.registerPatch({
+      route:   '/engine/continue',
+      handler: new EngineContinueRequestHandler(),
+    });
+
+    register.registerPatch({
+      route:   '/engine/start',
+      handler: new EngineStartRequestHandler(),
+    });
+
+    register.registerPatch({
+      route:   '/engine/restart',
+      handler: new EngineRestartRequestHandler(),
     });
 
     register.register({
