@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import fetchBaseUrls from '../clients/BaseUrlsClient.js';
+import BaseUrlsClient from '../clients/BaseUrlsClient.js';
 
 const MAX_VISIBLE = 10;
 
@@ -9,7 +9,7 @@ function BaseUrlsMenu() {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    fetchBaseUrls()
+    BaseUrlsClient.fetchBaseUrls()
       .then(setBaseUrls)
       .catch(() => {});
   }, []);

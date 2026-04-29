@@ -1,7 +1,7 @@
-import fetchBaseUrls from '../../src/clients/BaseUrlsClient.js';
+import BaseUrlsClient from '../../src/clients/BaseUrlsClient.js';
 
 describe('BaseUrlsClient', () => {
-  describe('fetchBaseUrls', () => {
+  describe('.fetchBaseUrls', () => {
     describe('when the request succeeds', () => {
       describe('with a list of base URLs', () => {
         const data = { base_urls: ['https://example.com', 'https://other.com'] };
@@ -13,12 +13,12 @@ describe('BaseUrlsClient', () => {
         });
 
         it('returns the array of base URLs', async () => {
-          const result = await fetchBaseUrls();
+          const result = await BaseUrlsClient.fetchBaseUrls();
           expect(result).toEqual(['https://example.com', 'https://other.com']);
         });
 
         it('fetches from /clients/base_urls.json', async () => {
-          await fetchBaseUrls();
+          await BaseUrlsClient.fetchBaseUrls();
           expect(globalThis.fetch).toHaveBeenCalledWith('/clients/base_urls.json');
         });
       });
@@ -31,7 +31,7 @@ describe('BaseUrlsClient', () => {
         });
 
         it('returns an empty array', async () => {
-          const result = await fetchBaseUrls();
+          const result = await BaseUrlsClient.fetchBaseUrls();
           expect(result).toEqual([]);
         });
       });
@@ -44,7 +44,7 @@ describe('BaseUrlsClient', () => {
         });
 
         it('returns an empty array', async () => {
-          const result = await fetchBaseUrls();
+          const result = await BaseUrlsClient.fetchBaseUrls();
           expect(result).toEqual([]);
         });
       });
@@ -58,7 +58,7 @@ describe('BaseUrlsClient', () => {
       });
 
       it('throws an error with the status code', async () => {
-        await expectAsync(fetchBaseUrls()).toBeRejectedWithError('HTTP 503');
+        await expectAsync(BaseUrlsClient.fetchBaseUrls()).toBeRejectedWithError('HTTP 503');
       });
     });
   });
