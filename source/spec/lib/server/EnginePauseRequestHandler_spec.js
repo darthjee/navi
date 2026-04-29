@@ -1,6 +1,6 @@
+import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 import { EnginePauseRequestHandler } from '../../../lib/server/EnginePauseRequestHandler.js';
 import { Application } from '../../../lib/services/Application.js';
-import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 
 describe('EnginePauseRequestHandler', () => {
   let handler;

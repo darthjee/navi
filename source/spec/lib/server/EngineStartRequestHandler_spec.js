@@ -1,6 +1,6 @@
+import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 import { EngineStartRequestHandler } from '../../../lib/server/EngineStartRequestHandler.js';
 import { Application } from '../../../lib/services/Application.js';
-import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 
 describe('EngineStartRequestHandler', () => {
   let handler;
