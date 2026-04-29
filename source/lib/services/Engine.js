@@ -11,6 +11,7 @@ import { Logger } from '../utils/logging/Logger.js';
  */
 class Engine {
   #sleepMs;
+  #stopped = false;
 
   /**
    * Creates an instance of Engine.
@@ -25,14 +26,24 @@ class Engine {
   }
 
   /**
+   * Stops the engine by setting the stop flag.
+   * The current iteration will complete before the loop exits.
+   * @returns {void}
+   */
+  stop() {
+    this.#stopped = true;
+  }
+
+  /**
    * Starts the engine by processing jobs.
    *
    * This method continuously checks for available jobs and idle workers, and assigns
-   * jobs to workers until there are no more jobs and no more busy workers.
+   * jobs to workers until there are no more jobs and no more busy workers,
+   * or until `stop()` has been called.
    * @returns {Promise<void>}
    */
   async start() {
-    while (this.#continueAllocating()) {
+    while (!this.#stopped && this.#continueAllocating()) {
       Logger.debug('Promoting ready jobs and allocating to idle workers if available...');
       JobRegistry.promoteReadyJobs();
 
