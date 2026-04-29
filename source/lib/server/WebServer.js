@@ -23,14 +23,16 @@ class WebServer {
 
   /**
    * Starts the Express server on the configured port.
-   * Returns a Promise that resolves when the HTTP server fires its 'close' event.
+   * Returns a Promise that resolves when the HTTP server fires its 'close' event,
+   * or rejects if the server fails to start.
    * @returns {Promise<void>} A Promise that resolves when the server closes.
    */
   start() {
     Logger.info(`Listening to port ${this.#port}`);
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.#httpServer = this.#app.listen(this.#port);
       this.#httpServer.on('close', resolve);
+      this.#httpServer.on('error', reject);
     });
   }
 

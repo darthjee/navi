@@ -45,6 +45,16 @@ describe('WebServer', () => {
       server.shutdown();
       await promise;
     });
+
+    it('returns a Promise that rejects when the server fails to start', async () => {
+      const webConfig = new WebConfig({ port: 19999 });
+      const server1 = WebServer.build({ webConfig });
+      const server2 = WebServer.build({ webConfig });
+      const promise1 = server1.start();
+      await expectAsync(server2.start()).toBeRejected();
+      server1.shutdown();
+      await promise1;
+    });
   });
 
   describe('#shutdown', () => {
