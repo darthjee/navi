@@ -56,11 +56,11 @@ function BaseUrlsMenu() {
         <div
           className="shadow border rounded bg-white"
           style={{
-            position:  'absolute',
-            top:       '100%',
-            left:      0,
-            zIndex:    1000,
-            minWidth:  '200px',
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            zIndex: 1000,
+            minWidth: '200px',
             overflowY: baseUrls.length > MAX_VISIBLE ? 'auto' : 'visible',
             maxHeight: baseUrls.length > MAX_VISIBLE ? '20rem' : 'none',
           }}
