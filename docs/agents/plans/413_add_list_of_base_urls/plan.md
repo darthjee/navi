@@ -42,21 +42,23 @@ is made available there and thread it through if needed (likely via `WebServer` 
 
 Update `Router_spec.js` to cover the new route.
 
-### Step 3 — Thread `ClientRegistry` to `WebServer` / `Router`
+### Step 3 — Convert `ClientRegistry` to a static singleton facade
 
-If `ClientRegistry` is not already available in `WebServer`, update the build chain:
+See [plan_client_registry.md](plan_client_registry.md) for the full detail.
 
-- `Application` builds `WebServer` with `clientRegistry` included.
-- `WebServer` passes it to `Router`.
-- `Router` passes it to `BaseUrlsRequestHandler`.
+`ClientRegistry` should be refactored into a static singleton facade (same pattern as
+`JobRegistry` / `WorkersRegistry`), so `BaseUrlsRequestHandler` can call it directly
+without any constructor injection or threading through `WebServer` / `Router`.
 
-Update specs along the chain as needed.
+### Step 4 — Add `BaseUrlsSerializer`
 
-### Step 4 — Add a serializer for base URLs (if applicable)
+The project has serializers in `source/lib/serializers/`. Add `BaseUrlsSerializer` following
+the existing `Serializer` pattern, formatting the response as `{ base_urls: [...] }`.
 
-If the project uses serializer classes for JSON responses (check existing handlers), add a
-`BaseUrlsSerializer` that formats the response object. Otherwise, inline the JSON shape
-directly in the handler.
+`BaseUrlsRequestHandler` uses `BaseUrlsSerializer` to build the response, consistent with
+how other handlers use their serializers.
+
+Add spec `source/spec/lib/serializers/BaseUrlsSerializer_spec.js`.
 
 ### Step 5 — Add frontend API client method
 
@@ -74,6 +76,8 @@ Create a new React component (e.g. `BaseUrlsMenu`) in `frontend/src/` that:
   links/buttons.
   - The floating menu has `overflow-y: auto` and a `max-height` that caps at ~10 items;
     beyond that, it scrolls.
+  - The floating menu closes when the user clicks outside of it (use a click-outside
+    listener, e.g. `mousedown` on `document`).
 
 Integrate `BaseUrlsMenu` into the header component (updated in issue #408).
 
@@ -82,12 +86,15 @@ Integrate `BaseUrlsMenu` into the header component (updated in issue #408).
 ### Backend
 - `source/lib/server/BaseUrlsRequestHandler.js` — new handler
 - `source/lib/server/Router.js` — register new route
-- `source/lib/server/WebServer.js` — thread `clientRegistry` if needed
-- `source/lib/services/Application.js` — pass `clientRegistry` to `WebServer` if needed
+- `source/lib/registry/ClientRegistry.js` — refactor to static facade (see plan_client_registry.md)
+- `source/lib/services/Application.js` — call `ClientRegistry.build(clients)` instead of manual instantiation
 - `source/spec/lib/server/BaseUrlsRequestHandler_spec.js` — new spec
 - `source/spec/lib/server/Router_spec.js` — update
+- `source/lib/serializers/BaseUrlsSerializer.js` — new serializer
+- `source/spec/lib/registry/ClientRegistry_spec.js` — update for static facade
 - `source/spec/lib/server/WebServer_spec.js` — update if needed
-- `source/spec/lib/services/Application_spec.js` — update if needed
+- `source/spec/lib/services/Application_spec.js` — update for `ClientRegistry.build`
+- `source/spec/lib/serializers/BaseUrlsSerializer_spec.js` — new spec
 
 ### Frontend
 - `frontend/src/` — new `BaseUrlsMenu` component
@@ -98,7 +105,8 @@ Integrate `BaseUrlsMenu` into the header component (updated in issue #408).
 - `docs/agents/web-server.md` — document the new `GET /clients/base_urls.json` route and
   `BaseUrlsRequestHandler`
 - `docs/agents/frontend.md` — document the new `BaseUrlsMenu` component and its behaviour
-- `docs/agents/architecture.md` — add `BaseUrlsRequestHandler` to the server module table
+- `docs/agents/architecture.md` — add `BaseUrlsRequestHandler` and `BaseUrlsSerializer` to
+  the server/serializers module tables; update `ClientRegistry` entry to reflect static facade
 
 ## Notes
 
