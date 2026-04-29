@@ -161,6 +161,14 @@ class Application {
   }
 
   /**
+   * Shuts down the web server and stops the engine.
+   * @returns {Promise<void>}
+   */
+  static async shutdown() {
+    return Application.#getInstance().shutdown();
+  }
+
+  /**
    * Returns the singleton instance, throwing if not yet built.
    * @returns {ApplicationInstance} The singleton instance.
    * @throws {Error} If `build()` has not been called.
