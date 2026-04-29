@@ -43,6 +43,25 @@ class BaseUrlsMenuHelper {
     );
   }
 
+  renderDropdownMenu() {
+    return (
+      <ul className="dropdown-menu show" style={this.menuStyle()}>
+        {this.#baseUrls.map((url) => (
+          <li key={url}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="dropdown-item"
+            >
+              {url}
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   renderDropdown(containerRef, open, setOpen) {
     return (
       <div ref={containerRef} className="dropdown d-inline-block">
@@ -53,22 +72,7 @@ class BaseUrlsMenuHelper {
         >
           Base URLs
         </button>
-        {open && (
-          <ul className="dropdown-menu show" style={this.menuStyle()}>
-            {this.#baseUrls.map((url) => (
-              <li key={url}>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="dropdown-item"
-                >
-                  {url}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
+        {open && this.renderDropdownMenu()}
       </div>
     );
   }
