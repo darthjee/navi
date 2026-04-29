@@ -52,11 +52,19 @@ without any constructor injection or threading through `WebServer` / `Router`.
 
 ### Step 4 — Add `BaseUrlsSerializer`
 
-The project has serializers in `source/lib/serializers/`. Add `BaseUrlsSerializer` following
-the existing `Serializer` pattern, formatting the response as `{ base_urls: [...] }`.
+The project uses a `Serializer` base class (`source/lib/serializers/Serializer.js`) where
+subclasses implement `static _serializeObject(item, options)` for a single item and the base
+handles array mapping automatically.
 
-`BaseUrlsRequestHandler` uses `BaseUrlsSerializer` to build the response, consistent with
-how other handlers use their serializers.
+`BaseUrlsSerializer` extends `Serializer` and implements `_serializeObject(client)` returning
+`client.baseUrl` (a string). The handler calls:
+
+```js
+res.json({ base_urls: BaseUrlsSerializer.serialize(ClientRegistry.all()) });
+```
+
+This reuses the base-class array mapping and keeps the serializer focused on a single
+responsibility: extracting `baseUrl` from a `Client` instance.
 
 Add spec `source/spec/lib/serializers/BaseUrlsSerializer_spec.js`.
 

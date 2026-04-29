@@ -16,10 +16,14 @@ Refactor `source/lib/registry/ClientRegistry.js` following the exact pattern of
 
 - The public class (`ClientRegistry`) becomes a static facade.
 - An internal `ClientRegistryInstance` class holds the actual data and logic (client map,
-  `getClient`, `getItem`, etc.).
+  `getClient`, `getItem`, etc.). It extends `NamedRegistry` (current `ClientRegistry` logic
+  moves here, including `#getDefaultClient` and `#fetchDefaultClient`).
 - `ClientRegistry.build(clients)` creates the singleton instance.
 - `ClientRegistry.reset()` clears it (used in tests).
-- All existing static-style calls (`getClient`, `getItem`) delegate to the internal instance.
+- All existing instance calls (`getClient`, `getItem`, `filter`, `size`) become static methods
+  that delegate to the internal instance.
+- Add `ClientRegistry.all()` static method (delegates to `ClientRegistryInstance#all()`)
+  which returns `Object.values(this.items)` — all registered client instances.
 
 ### Step 2 — Update `Application` bootstrap
 
