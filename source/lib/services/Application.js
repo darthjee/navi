@@ -49,7 +49,7 @@ class Application {
 
   /**
    * Returns true if the engine is currently running.
-   * @returns {boolean}
+   * @returns {boolean} True if the current status is 'running'.
    */
   static isRunning() {
     return Application.status() === 'running';
@@ -57,7 +57,7 @@ class Application {
 
   /**
    * Returns true if the engine is currently paused.
-   * @returns {boolean}
+   * @returns {boolean} True if the current status is 'paused'.
    */
   static isPaused() {
     return Application.status() === 'paused';
@@ -65,7 +65,7 @@ class Application {
 
   /**
    * Returns true if the engine is currently stopped.
-   * @returns {boolean}
+   * @returns {boolean} True if the current status is 'stopped'.
    */
   static isStopped() {
     return Application.status() === 'stopped';

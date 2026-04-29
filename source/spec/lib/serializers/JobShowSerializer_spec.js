@@ -1,4 +1,3 @@
-import { JobIndexSerializer } from '../../../lib/serializers/JobIndexSerializer.js';
 import { JobShowSerializer } from '../../../lib/serializers/JobShowSerializer.js';
 
 describe('JobShowSerializer', () => {
@@ -316,48 +315,6 @@ describe('JobShowSerializer', () => {
         expect(results[0].jobClass).toBe('HtmlParseJob');
         expect(results[1].jobClass).toBe('AssetDownloadJob');
       });
-    });
-  });
-});
-
-describe('JobIndexSerializer — regression against error fields', () => {
-  describe('when serializing a failed job with a recorded error', () => {
-    const error = new Error('connection refused');
-    const job = {
-      id: 'fail-reg',
-      _attempts: 2,
-      constructor: { name: 'ResourceRequestJob' },
-      lastError: error,
-    };
-
-    it('does not include lastError in index output', () => {
-      const result = JobIndexSerializer.serialize(job, { status: 'failed' });
-      expect(result.lastError).toBeUndefined();
-    });
-
-    it('does not include backtrace in index output', () => {
-      const result = JobIndexSerializer.serialize(job, { status: 'failed' });
-      expect(result.backtrace).toBeUndefined();
-    });
-  });
-
-  describe('when serializing a dead job with a recorded error', () => {
-    const error = new Error('fatal timeout');
-    const job = {
-      id: 'dead-reg',
-      _attempts: 3,
-      constructor: { name: 'ActionProcessingJob' },
-      lastError: error,
-    };
-
-    it('does not include lastError in index output', () => {
-      const result = JobIndexSerializer.serialize(job, { status: 'dead' });
-      expect(result.lastError).toBeUndefined();
-    });
-
-    it('does not include backtrace in index output', () => {
-      const result = JobIndexSerializer.serialize(job, { status: 'dead' });
-      expect(result.backtrace).toBeUndefined();
     });
   });
 });

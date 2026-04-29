@@ -127,7 +127,7 @@ class ApplicationInstance {
 
   /**
    * Returns true if the engine is currently running.
-   * @returns {boolean}
+   * @returns {boolean} True if the current status is 'running'.
    */
   isRunning() {
     return this.#engineStatus === 'running';
@@ -135,7 +135,7 @@ class ApplicationInstance {
 
   /**
    * Returns true if the engine is currently paused.
-   * @returns {boolean}
+   * @returns {boolean} True if the current status is 'paused'.
    */
   isPaused() {
     return this.#engineStatus === 'paused';
@@ -143,7 +143,7 @@ class ApplicationInstance {
 
   /**
    * Returns true if the engine is currently stopped.
-   * @returns {boolean}
+   * @returns {boolean} True if the current status is 'stopped'.
    */
   isStopped() {
     return this.#engineStatus === 'stopped';

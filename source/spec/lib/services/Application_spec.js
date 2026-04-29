@@ -236,7 +236,7 @@ describe('Application', () => {
 
   [
     { method: 'isRunning', trueStatus: 'running', falseStatus: 'paused' },
-    { method: 'isPaused',  trueStatus: 'paused',  falseStatus: 'running' },
+    { method: 'isPaused', trueStatus: 'paused', falseStatus: 'running' },
     { method: 'isStopped', trueStatus: 'stopped', falseStatus: 'running' },
   ].forEach(({ method, trueStatus, falseStatus }) => {
     describe(`.${method}`, () => {
