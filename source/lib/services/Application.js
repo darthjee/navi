@@ -1,4 +1,5 @@
 import { Engine } from './Engine.js';
+import { FailureChecker } from './FailureChecker.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
 import { JobFactory } from '../factories/JobFactory.js';
 import { ActionProcessingJob } from '../models/ActionProcessingJob.js';
@@ -52,6 +53,7 @@ class Application {
 
   /**
    * Starts the application by building the engine, web server, enqueueing initial jobs, and starting both.
+   * After the engine finishes, checks the dead-job ratio against the configured failure threshold.
    * @returns {Promise<void>}
    */
   async run() {
@@ -65,6 +67,8 @@ class Application {
     aggregator.add(this.engine.start());
 
     await aggregator.wait();
+
+    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
   }
 
   /**
@@ -74,7 +78,6 @@ class Application {
   buildEngine() {
     return new Engine({ sleepMs: this.config.workersConfig.sleep });
   }
-
   /**
    * Builds and returns a WebServer if web configuration is present, otherwise null.
    * @returns {WebServer|null} The created WebServer instance or null.
@@ -84,7 +87,6 @@ class Application {
       webConfig: this.config.webConfig,
     });
   }
-
   /**
    * Gets the buffered logger instance created during config loading.
    * @returns {BufferedLogger} The buffered logger instance.
@@ -92,7 +94,6 @@ class Application {
   get bufferedLogger() {
     return this.#bufferedLogger;
   }
-
   /**
    * Enqueues all parameter-free ResourceRequests into the job registry.
    * These are requests whose URLs contain no {:placeholder} tokens and can be
@@ -104,7 +105,6 @@ class Application {
       JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
     });
   }
-
   /**
    * Initializes the job factory, job registry, and workers registry from the loaded configuration.
    * @returns {void}

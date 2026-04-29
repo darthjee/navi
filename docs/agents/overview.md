@@ -84,3 +84,4 @@ HTTP headers. A resource with no actions is a leaf node and ends the chain.
 - [ ] Graceful shutdown (drain queue before exiting)
 - [ ] Health-check endpoint (`GET /health`)
 - [ ] Configurable max retry count per resource (currently hardcoded)
+- [x] Failure threshold: exit with non-zero code when dead-job ratio exceeds a configurable percentage (`failure.threshold`)

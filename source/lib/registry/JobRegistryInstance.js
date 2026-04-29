@@ -161,16 +161,20 @@ class JobRegistryInstance {
 
   /**
    * Returns counts of jobs in each state.
-   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Counts of jobs in each state.
+   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number, total: number }} Counts of jobs in each state, plus total (dead + finished).
    */
   stats() {
+    const dead = this.#dead.size();
+    const finished = this.#finished.size();
+
     return {
-      enqueued: this.#enqueued.size(),
+      enqueued:   this.#enqueued.size(),
       processing: this.#processing.size(),
-      failed: this.#failed.size(),
+      failed:     this.#failed.size(),
       retryQueue: this.#retryQueue.size(),
-      finished: this.#finished.size(),
-      dead: this.#dead.size(),
+      finished,
+      dead,
+      total:      dead + finished,
     };
   }
 

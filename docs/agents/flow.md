@@ -303,7 +303,33 @@ managed inside `JobRegistryInstance`, accessed via the `JobRegistry` singleton f
 
 ---
 
-## 10. Web UI
+## 10. Failure Threshold Check
+
+After `Application.run()` finishes (the Engine loop and the optional WebServer have both
+resolved), `Application` performs an optional post-run check:
+
+1. If the loaded `Config` has no `failureConfig` (i.e., the YAML file has no `failure:` key),
+   the check is skipped and the process exits normally — **current behaviour is preserved**.
+2. Otherwise, `JobRegistry.stats()` is queried for `dead` and `finished` counts.
+   - `total = dead + finished`
+   - If `total === 0` the check is skipped (nothing ran).
+3. `ratio = (dead / total) * 100` is computed.
+4. If `ratio > failureConfig.threshold`, `process.exit(1)` is called so that CI pipelines
+   detect the partial failure.
+
+### Configuration
+
+```yaml
+failure:
+  threshold: 10.0   # exit with failure if more than 10 % of jobs are dead
+```
+
+The `failure:` key is **optional**. When absent, Navi continues to exit with success
+regardless of how many jobs died.
+
+---
+
+## 11. Web UI
 
 When the `web:` key is present in the configuration, `Application` starts a local
 **read-only monitoring web UI** built with React, served by an Express.js `WebServer`.
