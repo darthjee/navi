@@ -113,12 +113,12 @@ class Application {
     const failureConfig = this.config.failureConfig;
     if (!failureConfig) return;
 
-    const { dead, finished } = JobRegistry.stats();
-    const total = dead + finished;
+    const { dead, total } = JobRegistry.stats();
     if (total === 0) return;
 
     const ratio = (dead / total) * 100;
     if (ratio > failureConfig.threshold) {
+      Logger.error(`Failure threshold exceeded: ${ratio.toFixed(2)}% of jobs are dead (threshold: ${failureConfig.threshold}%)`);
       process.exit(1);
     }
   }

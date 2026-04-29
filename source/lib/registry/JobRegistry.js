@@ -121,7 +121,7 @@ class JobRegistry {
 
   /**
    * Returns counts of jobs in each state.
-   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number }} Job counts per state.
+   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number, total: number }} Job counts per state, plus total (dead + finished).
    */
   static stats() {
     return JobRegistry.#getInstance().stats();
