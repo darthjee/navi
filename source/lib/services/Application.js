@@ -1,4 +1,5 @@
 import { Engine } from './Engine.js';
+import { FailureChecker } from './FailureChecker.js';
 import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNotProvided.js';
 import { JobFactory } from '../factories/JobFactory.js';
 import { ActionProcessingJob } from '../models/ActionProcessingJob.js';
@@ -67,7 +68,7 @@ class Application {
 
     await aggregator.wait();
 
-    this.#checkFailureThreshold();
+    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
   }
 
   /**
@@ -104,25 +105,6 @@ class Application {
       JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
     });
   }
-  /**
-   * Checks the dead-job ratio against the configured failure threshold and exits with
-   * a non-zero code if the threshold is exceeded.
-   * @returns {void}
-   */
-  #checkFailureThreshold() {
-    const failureConfig = this.config.failureConfig;
-    if (!failureConfig) return;
-
-    const { dead, total } = JobRegistry.stats();
-    if (total === 0) return;
-
-    const ratio = (dead / total) * 100;
-    if (ratio > failureConfig.threshold) {
-      Logger.error(`Failure threshold exceeded: ${ratio.toFixed(2)}% of jobs are dead (threshold: ${failureConfig.threshold}%)`);
-      process.exit(1);
-    }
-  }
-
   /**
    * Initializes the job factory, job registry, and workers registry from the loaded configuration.
    * @returns {void}
