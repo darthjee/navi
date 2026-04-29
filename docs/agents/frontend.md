@@ -25,11 +25,13 @@ frontend/
 │   │   ├── StatsClient.js        # GET /stats.json
 │   │   ├── JobsClient.js         # GET /jobs/:status.json (all or single status)
 │   │   └── JobClient.js          # GET /job/:id.json
+│   │   └── EngineClient.js       # GET /engine/status + PATCH /engine/{pause,stop,continue,start,restart}
 │   ├── constants/
 │   │   └── jobStatus.js          # Status → Bootstrap color variant mapping
 │   └── components/
-│       ├── Layout.jsx            # Root layout: header + StatsHeader + Outlet
+│       ├── Layout.jsx            # Root layout: header + StatsHeader + EngineControls + Outlet
 │       ├── StatsHeader.jsx       # Live stats bar (auto-refreshes every 5 s)
+│       ├── EngineControls.jsx    # Engine lifecycle control buttons (auto-refreshes every 2 s)
 │       ├── StatItem.jsx          # Generic stat card (label + value, optional link)
 │       ├── JobStatItem.jsx       # Stat card that links to /jobs/:status
 │       ├── Jobs.jsx              # Job list page
@@ -87,9 +89,10 @@ GET /job/:id.json
 
 ```
 Layout
-├── StatsHeader  (auto-refresh every 5 s)
+├── StatsHeader    (auto-refresh every 5 s)
 │   ├── StatItem         (workers: idle, busy)
 │   └── JobStatItem[]    (jobs: enqueued, processing, failed, finished, dead)
+├── EngineControls (auto-refresh every 2 s)
 └── <Outlet>
     ├── Jobs             (route: /jobs  or  /jobs/:status)
     └── Job              (route: /job/:id)
@@ -100,11 +103,26 @@ Layout
 
 ### `Layout`
 
-Root component. Renders the application header and `StatsHeader`, then delegates the main content to the React Router `Outlet`.
+Root component. Renders the application header, `StatsHeader`, `EngineControls`, then delegates the main content to the React Router `Outlet`.
 
 ### `StatsHeader`
 
 Fetches `/stats.json` every 5 seconds. Displays worker counts (idle / busy) and clickable job-count cards for each status. Cleans up the interval on unmount.
+
+### `EngineControls`
+
+Fetches `GET /engine/status` every 2 seconds (polling interval: `POLL_INTERVAL_MS = 2000`) to track the current engine state. Renders five buttons with conditional availability:
+
+| Button | Enabled when |
+|--------|-------------|
+| Pause | `running` |
+| Stop | `running` |
+| Restart | `running` |
+| Continue | `paused` |
+| Start | `stopped` |
+| *(all disabled)* | `pausing`, `stopping` |
+
+During transitional states (`pausing`, `stopping`) a spinner is shown alongside the buttons. On button click, the corresponding `EngineClient` method is called and the status is immediately refreshed. The polling interval is cancelled on unmount to prevent memory leaks.
 
 ### `StatItem`
 

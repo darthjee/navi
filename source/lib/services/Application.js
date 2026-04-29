@@ -143,7 +143,7 @@ class Application {
    */
   static #getInstance() {
     if (!Application.#instance) {
-      throw new Error('Application has not been built. Call Application.build() first.');
+      throw new Error('Application has not been initialized. Call Application.build() before calling static methods that require an instance.');
     }
     return Application.#instance;
   }

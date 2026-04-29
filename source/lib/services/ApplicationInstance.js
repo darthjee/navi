@@ -14,6 +14,8 @@ import { Logger } from '../utils/logging/Logger.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
+const DEFAULT_POLL_SLEEP_MS = 10;
+
 /**
  * ApplicationInstance holds all instance-level state and logic for a single
  * application lifecycle. Use the static `Application` facade to access it.
@@ -199,7 +201,7 @@ class ApplicationInstance {
    */
   async #waitForWorkersIdle() {
     while (WorkersRegistry.hasBusyWorker()) {
-      await new Promise(resolve => setTimeout(resolve, this.#sleepMs ?? 10));
+      await new Promise(resolve => setTimeout(resolve, this.#sleepMs ?? DEFAULT_POLL_SLEEP_MS));
     }
   }
 

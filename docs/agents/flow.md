@@ -426,3 +426,38 @@ navi_app ──► navi_proxy (:3010) ──► navi_dev_app (:3020)  (cache-war
 2. `navi_dev_frontend` runs `yarn build` (Vite), writing `dist/` to `dev/proxy/static/`.
 3. `navi_proxy` starts (depends on both above services).
 4. `navi_app` starts (depends on `navi_proxy`).
+
+
+---
+
+## Engine Lifecycle States
+
+The Engine can be in one of five states, tracked by `Application.status()`:
+
+| Status | Meaning |
+|--------|---------|
+| `running` | Engine loop is active and processing jobs. |
+| `pausing` | Pause requested; waiting for active workers to finish their current job. |
+| `paused` | Engine loop stopped; jobs remain in queues. |
+| `stopping` | Stop requested; waiting for active workers to finish their current job. |
+| `stopped` | Engine loop stopped and all job queues cleared. |
+
+### Transitions
+
+```
+running  ──[PATCH /engine/pause]──►  pausing  ──[workers idle]──►  paused
+running  ──[PATCH /engine/stop]───►  stopping ──[workers idle]──►  stopped
+running  ──[PATCH /engine/restart]►  stopping ──[workers idle]──►  running
+paused   ──[PATCH /engine/continue]──────────────────────────────►  running
+stopped  ──[PATCH /engine/start]─────────────────────────────────►  running
+```
+
+During `pausing` and `stopping`, all control endpoints return `409 Conflict`.
+
+### Enqueue gating
+
+Any call-site that enqueues a side-effect job (`ActionEnqueuer`, `AssetRequestEnqueuer`, `ResourceRequestAction`, `ResourceRequest.enqueueAssets`) checks `Application.status() !== 'running'` before calling `JobRegistry.enqueue()`. If the engine is not `running`, the enqueue is silently skipped. `Application.enqueueFirstJobs()` does not check this — it is only called explicitly from `start()` / `restart()` when status is transitioning to `running`.
+
+### PromiseAggregator persistence
+
+`ApplicationInstance` keeps a single `PromiseAggregator` (stored as `#aggregator`) for the lifetime of the process. When the Engine is continued or started, the new Engine promise is `add()`ed to the existing aggregator. The aggregator resolves only after all added promises have settled — i.e., after the web server stops and all Engine runs have completed.
