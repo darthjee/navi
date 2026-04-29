@@ -48,6 +48,30 @@ class Application {
   }
 
   /**
+   * Returns true if the engine is currently running.
+   * @returns {boolean}
+   */
+  static isRunning() {
+    return Application.status() === 'running';
+  }
+
+  /**
+   * Returns true if the engine is currently paused.
+   * @returns {boolean}
+   */
+  static isPaused() {
+    return Application.status() === 'paused';
+  }
+
+  /**
+   * Returns true if the engine is currently stopped.
+   * @returns {boolean}
+   */
+  static isStopped() {
+    return Application.status() === 'stopped';
+  }
+
+  /**
    * Loads the configuration from the specified file path.
    * @param {string} configPath - The path to the configuration file.
    * @returns {void}

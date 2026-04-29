@@ -113,7 +113,7 @@ describe('AssetRequestEnqueuer', () => {
 
   describe('when the application is stopped', () => {
     beforeEach(() => {
-      spyOn(Application, 'status').and.returnValue('stopped');
+      spyOn(Application, 'isStopped').and.returnValue(true);
       spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css']);
     });
 

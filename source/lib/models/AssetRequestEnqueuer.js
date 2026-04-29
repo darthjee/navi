@@ -33,7 +33,7 @@ class AssetRequestEnqueuer {
    * @returns {void}
    */
   enqueue() {
-    if (Application.status() === 'stopped') return;
+    if (Application.isStopped()) return;
     const urls = HtmlParser.parse(this.#rawHtml, this.#assetRequest.selector, this.#assetRequest.attribute);
     for (const url of urls) {
       this.#jobRegistry.enqueue('AssetDownload', {

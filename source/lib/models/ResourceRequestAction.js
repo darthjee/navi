@@ -46,7 +46,7 @@ class ResourceRequestAction {
    * @returns {void}
    */
   execute(responseWrapper) {
-    if (Application.status() === 'stopped') return;
+    if (Application.isStopped()) return;
     const vars = this.#mapper.map(responseWrapper);
     const resource = this.#resourceRegistry.getItem(this.resource);
 

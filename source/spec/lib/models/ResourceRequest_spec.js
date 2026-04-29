@@ -252,7 +252,7 @@ describe('ResourceRequest', () => {
 
     describe('when the application is stopped', () => {
       beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('stopped');
+        spyOn(Application, 'isStopped').and.returnValue(true);
       });
 
       it('does not enqueue any job', () => {

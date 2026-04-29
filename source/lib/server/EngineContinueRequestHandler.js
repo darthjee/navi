@@ -21,7 +21,7 @@ class EngineContinueRequestHandler extends RequestHandler {
    * @returns {Promise<void>}
    */
   async handle(_req, res) {
-    if (Application.status() !== 'paused') {
+    if (!Application.isPaused()) {
       res.status(409).json({ error: 'Conflict', status: Application.status() });
       return;
     }

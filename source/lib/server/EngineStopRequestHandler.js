@@ -21,7 +21,7 @@ class EngineStopRequestHandler extends RequestHandler {
    * @returns {Promise<void>}
    */
   async handle(_req, res) {
-    if (Application.status() !== 'running') {
+    if (!Application.isRunning()) {
       res.status(409).json({ error: 'Conflict', status: Application.status() });
       return;
     }

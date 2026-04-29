@@ -58,7 +58,7 @@ class ResourceRequest {
    * @returns {void}
    */
   enqueueAssets(rawHtml, jobRegistry = DefaultJobRegistry, clientRegistry) {
-    if (Application.status() === 'stopped') return;
+    if (Application.isStopped()) return;
     jobRegistry.enqueue('HtmlParse', { rawHtml, assetRequests: this.assets, clientRegistry });
   }
 

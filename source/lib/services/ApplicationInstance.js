@@ -126,6 +126,30 @@ class ApplicationInstance {
   }
 
   /**
+   * Returns true if the engine is currently running.
+   * @returns {boolean}
+   */
+  isRunning() {
+    return this.#engineStatus === 'running';
+  }
+
+  /**
+   * Returns true if the engine is currently paused.
+   * @returns {boolean}
+   */
+  isPaused() {
+    return this.#engineStatus === 'paused';
+  }
+
+  /**
+   * Returns true if the engine is currently stopped.
+   * @returns {boolean}
+   */
+  isStopped() {
+    return this.#engineStatus === 'stopped';
+  }
+
+  /**
    * Sets the engine status string.
    * @param {string} value - The new status value.
    * @returns {void}

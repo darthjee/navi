@@ -5,16 +5,17 @@ import {
   startEngine,
   restartEngine,
 } from '../clients/EngineClient.js';
+import noop from '../utils/noop.js';
 
 const TRANSITIONAL_STATUSES = new Set(['pausing', 'stopping']);
 
 class EngineControlsHelper {
   #status;
-  #handleAction;
+  #refreshStatus;
 
-  constructor(status, handleAction) {
+  constructor(status, refreshStatus) {
     this.#status = status;
-    this.#handleAction = handleAction;
+    this.#refreshStatus = refreshStatus;
   }
 
   isTransitioning() {
@@ -33,6 +34,10 @@ class EngineControlsHelper {
     return this.#status === 'stopped';
   }
 
+  handleAction(action) {
+    action().then(this.#refreshStatus).catch(noop);
+  }
+
   renderSpinner() {
     return (
       <span className="spinner-border spinner-border-sm text-secondary" role="status" aria-label="transitioning" />
@@ -48,35 +53,35 @@ class EngineControlsHelper {
           <button
             className="btn btn-sm btn-outline-warning"
             disabled={!this.isRunning()}
-            onClick={() => this.#handleAction(pauseEngine)}
+            onClick={() => this.handleAction(pauseEngine)}
           >
             Pause
           </button>
           <button
             className="btn btn-sm btn-outline-danger"
             disabled={!this.isRunning()}
-            onClick={() => this.#handleAction(stopEngine)}
+            onClick={() => this.handleAction(stopEngine)}
           >
             Stop
           </button>
           <button
             className="btn btn-sm btn-outline-primary"
             disabled={!this.isRunning()}
-            onClick={() => this.#handleAction(restartEngine)}
+            onClick={() => this.handleAction(restartEngine)}
           >
             Restart
           </button>
           <button
             className="btn btn-sm btn-outline-success"
             disabled={!this.isPaused()}
-            onClick={() => this.#handleAction(continueEngine)}
+            onClick={() => this.handleAction(continueEngine)}
           >
             Continue
           </button>
           <button
             className="btn btn-sm btn-outline-success"
             disabled={!this.isStopped()}
-            onClick={() => this.#handleAction(startEngine)}
+            onClick={() => this.handleAction(startEngine)}
           >
             Start
           </button>

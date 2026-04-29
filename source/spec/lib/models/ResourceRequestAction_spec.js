@@ -198,7 +198,7 @@ describe('ResourceRequestAction', () => {
 
     describe('when the application is stopped', () => {
       beforeEach(() => {
-        spyOn(Application, 'status').and.returnValue('stopped');
+        spyOn(Application, 'isStopped').and.returnValue(true);
         const resource = ResourceFactory.build({ name: 'products' });
         ResourceRegistry.build({ products: resource });
       });

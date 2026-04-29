@@ -21,13 +21,9 @@ function EngineControls() {
     return () => clearInterval(intervalRef.current);
   }, [refreshStatus]);
 
-  const handleAction = useCallback((action) => {
-    action().then(refreshStatus).catch(noop);
-  }, [refreshStatus]);
-
   const helper = useMemo(
-    () => new EngineControlsHelper(status, handleAction),
-    [status, handleAction]
+    () => new EngineControlsHelper(status, refreshStatus),
+    [status, refreshStatus]
   );
 
   return helper.render();

@@ -27,7 +27,7 @@ class ActionEnqueuer {
    * @returns {void}
    */
   enqueue() {
-    if (Application.status() === 'stopped') return;
+    if (Application.isStopped()) return;
     for (const item of this.#items) {
       this.#jobRegistry.enqueue('Action', { action: this.#action, item });
     }
