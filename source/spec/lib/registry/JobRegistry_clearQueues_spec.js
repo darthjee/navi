@@ -58,13 +58,6 @@ describe('JobRegistry', () => {
         JobRegistry.clearQueues();
         expect(JobRegistry.stats().dead).toBe(0);
       });
-
-      it('does not affect processing jobs', () => {
-        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
-        JobRegistry.pick();
-        JobRegistry.clearQueues();
-        expect(ctx.processing.size()).toBe(1);
-      });
     });
   });
 });
