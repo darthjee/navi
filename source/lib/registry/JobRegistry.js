@@ -33,6 +33,14 @@ class JobRegistry {
   }
 
   /**
+   * Clears all pending queues (enqueued, retryQueue, and failed).
+   * @returns {void}
+   */
+  static clearQueues() {
+    return JobRegistry.#getInstance().clearQueues();
+  }
+
+  /**
    * Enqueues a new job using the factory registered under the given key.
    * @param {string} factoryKey - The factory key to use.
    * @param {object} [params={}] - Build params forwarded to the factory.

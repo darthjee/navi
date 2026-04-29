@@ -2,6 +2,7 @@ import { ParametersMapper } from './ParametersMapper.js';
 import { MissingActionResource } from '../exceptions/MissingActionResource.js';
 import { JobRegistry as DefaultJobRegistry } from '../registry/JobRegistry.js';
 import { ResourceRegistry as DefaultResourceRegistry } from '../registry/ResourceRegistry.js';
+import { Application } from '../services/Application.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -39,11 +40,13 @@ class ResourceRequestAction {
   /**
    * Maps the response wrapper to variables, looks up the target resource, and
    * enqueues one ResourceRequestJob per ResourceRequest in that resource.
+   * Does nothing if the application is not in 'running' status.
    * @param {ResponseWrapper} responseWrapper A ResponseWrapper instance exposing
    * parsedBody and headers.
    * @returns {void}
    */
   execute(responseWrapper) {
+    if (Application.status() !== 'running') return;
     const vars = this.#mapper.map(responseWrapper);
     const resource = this.#resourceRegistry.getItem(this.resource);
 

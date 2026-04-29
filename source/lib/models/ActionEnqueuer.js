@@ -1,4 +1,5 @@
 import { JobRegistry as DefaultJobRegistry } from '../registry/JobRegistry.js';
+import { Application } from '../services/Application.js';
 
 /**
  * ActionEnqueuer enqueues one ActionProcessingJob per item for a single Action.
@@ -22,9 +23,11 @@ class ActionEnqueuer {
 
   /**
    * Enqueues one ActionProcessingJob per item for the configured action.
+   * Does nothing if the application is not in 'running' status.
    * @returns {void}
    */
   enqueue() {
+    if (Application.status() !== 'running') return;
     for (const item of this.#items) {
       this.#jobRegistry.enqueue('Action', { action: this.#action, item });
     }

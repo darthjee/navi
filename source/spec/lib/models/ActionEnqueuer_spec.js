@@ -1,5 +1,6 @@
 import { ActionEnqueuer } from '../../../lib/models/ActionEnqueuer.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { Application } from '../../../lib/services/Application.js';
 import { ActionEnqueuerUtils } from '../../support/utils/ActionEnqueuerUtils.js';
 
 describe('ActionEnqueuer', () => {
@@ -30,6 +31,17 @@ describe('ActionEnqueuer', () => {
         expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
         expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: ctx.action, item: { id: 1 } });
         expect(JobRegistry.enqueue).toHaveBeenCalledWith('Action', { action: ctx.action, item: { id: 2 } });
+      });
+    });
+
+    describe('when the application is not running', () => {
+      beforeEach(() => {
+        spyOn(Application, 'status').and.returnValue('paused');
+      });
+
+      it('does not call enqueue', () => {
+        new ActionEnqueuer(ctx.action, [{ id: 1 }]).enqueue();
+        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });
   });

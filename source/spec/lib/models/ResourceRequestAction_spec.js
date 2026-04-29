@@ -4,6 +4,7 @@ import { ResourceNotFound } from '../../../lib/exceptions/ResourceNotFound.js';
 import { ResourceRequestAction } from '../../../lib/models/ResourceRequestAction.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
+import { Application } from '../../../lib/services/Application.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { ResourceRequestActionFactory } from '../../support/factories/ResourceRequestActionFactory.js';
@@ -192,6 +193,19 @@ describe('ResourceRequestAction', () => {
         });
         expect(() => action.execute(responseWrapper))
           .toThrowMatching((error) => error instanceof MissingMappingVariable);
+      });
+    });
+
+    describe('when the application is not running', () => {
+      beforeEach(() => {
+        spyOn(Application, 'status').and.returnValue('paused');
+        const resource = ResourceFactory.build({ name: 'products' });
+        ResourceRegistry.build({ products: resource });
+      });
+
+      it('does not enqueue any job', () => {
+        ResourceRequestActionFactory.build({ resource: 'products' }).execute(responseWrapper);
+        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });
   });

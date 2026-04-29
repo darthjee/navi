@@ -1,4 +1,5 @@
 import { HtmlParser } from '../utils/HtmlParser.js';
+import { Application } from '../services/Application.js';
 
 /**
  * AssetRequestEnqueuer processes a single AssetRequest against a raw HTML body:
@@ -28,9 +29,11 @@ class AssetRequestEnqueuer {
   /**
    * Parses the HTML body for URLs matching the asset request rule, resolves each URL
    * to absolute form, and enqueues one AssetDownloadJob per URL.
+   * Does nothing if the application is not in 'running' status.
    * @returns {void}
    */
   enqueue() {
+    if (Application.status() !== 'running') return;
     const urls = HtmlParser.parse(this.#rawHtml, this.#assetRequest.selector, this.#assetRequest.attribute);
     for (const url of urls) {
       this.#jobRegistry.enqueue('AssetDownload', {

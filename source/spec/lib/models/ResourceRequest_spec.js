@@ -2,6 +2,7 @@ import { AssetRequest } from '../../../lib/models/AssetRequest.js';
 import { ResourceRequest } from '../../../lib/models/ResourceRequest.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { Application } from '../../../lib/services/Application.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
@@ -247,6 +248,17 @@ describe('ResourceRequest', () => {
       expect(jobRegistry.enqueue).toHaveBeenCalledWith('HtmlParse',
         jasmine.objectContaining({ assetRequests: [assetRequest] })
       );
+    });
+
+    describe('when the application is not running', () => {
+      beforeEach(() => {
+        spyOn(Application, 'status').and.returnValue('paused');
+      });
+
+      it('does not enqueue any job', () => {
+        request.enqueueAssets('<html></html>', jobRegistry, clientRegistry);
+        expect(jobRegistry.enqueue).not.toHaveBeenCalled();
+      });
     });
   });
 

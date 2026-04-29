@@ -30,13 +30,14 @@ describe('Application', () => {
     JobFactory.reset();
     WorkersRegistry.reset();
     ResourceRegistry.reset();
+    Application.reset();
   });
 
   describe('#loadConfig', () => {
     beforeEach(() => {
       configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
 
-      app = new Application();
+      app = Application.build();
     });
 
     describe('when config file is valid', () => {
@@ -82,7 +83,7 @@ describe('Application', () => {
       it('initializes workers registry', () => {
         const workers = new IdentifyableCollection();
 
-        app = new Application({ workers });
+        app = Application.build({ workers });
 
         app.loadConfig(configFilePath);
 
@@ -134,7 +135,7 @@ describe('Application', () => {
       jobFactory = new DummyJobFactory();
       workerFactory = new DummyWorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
 
-      app = new Application();
+      app = Application.build();
       app.loadConfig(configFilePath);
       WorkersRegistry.reset();
       WorkersRegistry.build({ quantity: 1, factory: workerFactory });
@@ -165,7 +166,7 @@ describe('Application', () => {
 
         configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_web.yml');
 
-        app = new Application();
+        app = Application.build();
         app.loadConfig(configFilePath);
         WorkersRegistry.reset();
         WorkersRegistry.build({ quantity: 1, factory: workerFactory });
@@ -211,7 +212,7 @@ describe('Application', () => {
     describe('when config has no web key', () => {
       beforeEach(() => {
         configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
-        app = new Application();
+        app = Application.build();
         app.loadConfig(configFilePath);
       });
 
@@ -223,7 +224,7 @@ describe('Application', () => {
     describe('when config has a web key', () => {
       beforeEach(() => {
         configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_web.yml');
-        app = new Application();
+        app = Application.build();
         app.loadConfig(configFilePath);
       });
 
