@@ -29,12 +29,34 @@ describe('JobRegistry', () => {
         JobRegistry.clearQueues();
         expect(ctx.processing.size()).toBe(1);
       });
+    });
 
-      it('does not affect finished jobs', () => {
+    describe('when there are finished jobs', () => {
+      beforeEach(() => {
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
         const job = JobRegistry.pick();
         JobRegistry.finish(job);
+      });
+
+      it('clears finished jobs', () => {
+        expect(JobRegistry.stats().finished).toBe(1);
         JobRegistry.clearQueues();
-        expect(ctx.finished.size()).toBe(1);
+        expect(JobRegistry.stats().finished).toBe(0);
+      });
+    });
+
+    describe('when there are dead jobs', () => {
+      beforeEach(() => {
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
+        const job = JobRegistry.pick();
+        job.exhausted = () => true;
+        JobRegistry.fail(job);
+      });
+
+      it('clears dead jobs', () => {
+        expect(JobRegistry.stats().dead).toBe(1);
+        JobRegistry.clearQueues();
+        expect(JobRegistry.stats().dead).toBe(0);
       });
     });
   });

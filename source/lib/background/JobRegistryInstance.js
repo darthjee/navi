@@ -118,14 +118,16 @@ class JobRegistryInstance {
   }
 
   /**
-   * Clears all pending queues (enqueued, retryQueue, and failed), leaving
-   * processing, finished, and dead collections intact.
+   * Clears all queues (enqueued, retryQueue, failed, finished, and dead), leaving
+   * only the processing collection intact.
    * @returns {void}
    */
   clearQueues() {
     this.#enqueued = new Queue();
     this.#retryQueue = new Queue();
     this.#failed = new SortedCollection([], { sortBy: FAILED_SORT_BY });
+    this.#finished = new IdentifyableCollection();
+    this.#dead = new IdentifyableCollection();
   }
 
   /**
