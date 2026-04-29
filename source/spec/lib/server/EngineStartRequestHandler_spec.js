@@ -1,5 +1,6 @@
 import { EngineStartRequestHandler } from '../../../lib/server/EngineStartRequestHandler.js';
 import { Application } from '../../../lib/services/Application.js';
+import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 
 describe('EngineStartRequestHandler', () => {
   let handler;
@@ -43,15 +44,13 @@ describe('EngineStartRequestHandler', () => {
       });
 
       it('does not call Application.start()', async () => {
-        await handler.handle({}, res);
+        await expectAsync(handler.handle({}, res)).toBeRejectedWith(jasmine.any(ConflictError));
 
         expect(Application.start).not.toHaveBeenCalled();
       });
 
-      it('responds with 409 Conflict', async () => {
-        await handler.handle({}, res);
-
-        expect(res.status).toHaveBeenCalledWith(409);
+      it('throws a ConflictError', async () => {
+        await expectAsync(handler.handle({}, res)).toBeRejectedWith(jasmine.any(ConflictError));
       });
     });
   });

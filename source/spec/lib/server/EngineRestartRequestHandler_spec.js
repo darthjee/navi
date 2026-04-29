@@ -1,5 +1,6 @@
 import { EngineRestartRequestHandler } from '../../../lib/server/EngineRestartRequestHandler.js';
 import { Application } from '../../../lib/services/Application.js';
+import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
 
 describe('EngineRestartRequestHandler', () => {
   let handler;
@@ -43,15 +44,13 @@ describe('EngineRestartRequestHandler', () => {
       });
 
       it('does not call Application.restart()', async () => {
-        await handler.handle({}, res);
+        await expectAsync(handler.handle({}, res)).toBeRejectedWith(jasmine.any(ConflictError));
 
         expect(Application.restart).not.toHaveBeenCalled();
       });
 
-      it('responds with 409 Conflict', async () => {
-        await handler.handle({}, res);
-
-        expect(res.status).toHaveBeenCalledWith(409);
+      it('throws a ConflictError', async () => {
+        await expectAsync(handler.handle({}, res)).toBeRejectedWith(jasmine.any(ConflictError));
       });
     });
   });

@@ -1,3 +1,4 @@
+import { ConflictError } from '../exceptions/ConflictError.js';
 import { ForbiddenError } from '../exceptions/ForbiddenError.js';
 import { NotFoundError } from '../exceptions/NotFoundError.js';
 
@@ -58,7 +59,9 @@ class RouteRegister {
    * @returns {void}
    */
   #handleError(e, res) {
-    if (e instanceof ForbiddenError) {
+    if (e instanceof ConflictError) {
+      res.status(409).json({ error: 'Conflict' });
+    } else if (e instanceof ForbiddenError) {
       res.status(403).json({ error: 'Forbidden' });
     } else if (e instanceof NotFoundError) {
       res.status(404).json({ error: e.message });

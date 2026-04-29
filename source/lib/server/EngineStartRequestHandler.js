@@ -1,5 +1,6 @@
 import { RequestHandler } from './RequestHandler.js';
 import { Application } from '../services/Application.js';
+import { ConflictError } from '../exceptions/ConflictError.js';
 
 /**
  * Handles PATCH /engine/start requests.
@@ -22,8 +23,7 @@ class EngineStartRequestHandler extends RequestHandler {
    */
   async handle(_req, res) {
     if (!Application.isStopped()) {
-      res.status(409).json({ error: 'Conflict', status: Application.status() });
-      return;
+      throw new ConflictError();
     }
 
     await Application.start();
