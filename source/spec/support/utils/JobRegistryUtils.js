@@ -1,5 +1,5 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 

@@ -1,5 +1,5 @@
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
-import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 
 describe('WorkersRegistry', () => {

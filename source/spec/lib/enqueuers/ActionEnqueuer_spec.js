@@ -1,5 +1,5 @@
-import { ActionEnqueuer } from '../../../lib/models/ActionEnqueuer.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { ActionEnqueuer } from '../../../lib/enqueuers/ActionEnqueuer.js';
 import { Application } from '../../../lib/services/Application.js';
 import { ActionEnqueuerUtils } from '../../support/utils/ActionEnqueuerUtils.js';
 

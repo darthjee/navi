@@ -1,5 +1,5 @@
-import { AssetRequestEnqueuer } from './AssetRequestEnqueuer.js';
-import { Job } from './Job.js';
+import { Job } from '../background/Job.js';
+import { AssetRequestEnqueuer } from '../enqueuers/AssetRequestEnqueuer.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**

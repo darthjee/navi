@@ -1,6 +1,6 @@
 import { ParametersMapper } from './ParametersMapper.js';
+import { JobRegistry as DefaultJobRegistry } from '../background/JobRegistry.js';
 import { MissingActionResource } from '../exceptions/MissingActionResource.js';
-import { JobRegistry as DefaultJobRegistry } from '../registry/JobRegistry.js';
 import { ResourceRegistry as DefaultResourceRegistry } from '../registry/ResourceRegistry.js';
 import { Application } from '../services/Application.js';
 import { Logger } from '../utils/logging/Logger.js';

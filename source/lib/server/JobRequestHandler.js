@@ -1,6 +1,6 @@
 import { RequestHandler } from './RequestHandler.js';
+import { JobRegistry } from '../background/JobRegistry.js';
 import { NotFoundError } from '../exceptions/NotFoundError.js';
-import { JobRegistry } from '../registry/JobRegistry.js';
 import { JobSerializer } from '../serializers/JobSerializer.js';
 
 /**

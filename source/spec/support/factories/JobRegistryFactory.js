@@ -1,6 +1,6 @@
 import { ClientRegistryFactory } from './ClientRegistryFactory.js';
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 
 /**
  * Factory for creating JobRegistry instances in tests.

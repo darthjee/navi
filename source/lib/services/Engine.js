@@ -1,6 +1,6 @@
 import { WorkersAllocator } from './WorkersAllocator.js';
-import { JobRegistry } from '../registry/JobRegistry.js';
-import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { JobRegistry } from '../background/JobRegistry.js';
+import { WorkersRegistry } from '../background/WorkersRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**

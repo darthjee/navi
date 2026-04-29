@@ -1,4 +1,4 @@
-import { Job } from '../../../lib/models/Job.js';
+import { Job } from '../../../lib/background/Job.js';
 
 describe('Job', () => {
   let job;

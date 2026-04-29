@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {

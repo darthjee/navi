@@ -60,20 +60,53 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `parameters`). Uses `ParametersMapper` to evaluate path expressions against a `ResponseWrapper`, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
 | `ResponseWrapper` | Wraps an HTTP response, exposing `parsedBody` (lazily-parsed JSON body) and `headers`. Provides `toItemWrappers()` to split an array response into per-item wrappers sharing the same headers. |
-| `ActionsEnqueuer` | Receives a list of per-item `ResponseWrapper` instances and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null items list. Delegates per-action enqueueing to `ActionEnqueuer`. |
-| `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
-| `ActionsExecutor` | (Legacy — kept for reference.) Receives per-item wrappers and dispatches each `ResourceRequestAction` per item synchronously. No longer called by `ResourceRequestJob`; removal is a follow-up. |
 | `ParametersMapper` | Applies a `parameters` map to a response wrapper, delegating each path expression (e.g. `parsedBody.id`, `headers['page']`) to a `PathResolver` to extract values. When no map is provided, the item passes through unchanged. |
 | `PathResolver` | Resolves a single dot/bracket-notation path expression against an object. Created via `PathResolver.fromExpression(pathExpr)`. Delegates segment-by-segment traversal to `PathSegmentTraverser`. |
 | `PathSegmentTraverser` | Traverses an object one path segment at a time. Provides semantic methods (`traverse`, `value`) and throws `MissingMappingVariable` when a segment cannot be resolved (non-object value or missing key). |
-| `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
+| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1), the retry cooldown in milliseconds (`retryCooldown`, default 2000), and the engine sleep interval in milliseconds (`sleep`, default 500). |
+| `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
+
+### `background/`
+
+Background job infrastructure: the abstract job and worker base classes, job/worker factories, and the singleton registries that manage them.
+
+| Class | Responsibility |
+|-------|---------------|
 | `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
+| `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
+| `JobFactory` | Static facade. `JobFactory.build(name, options)` registers a named factory; `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears all entries (test teardown). |
+| `WorkerFactory` | Extends `Factory`. Creates `Worker` instances with unique IDs via `IdGenerator`. Used by `WorkersRegistryInstance.initWorkers()`. |
+| `JobRegistry` | Static singleton facade for the job queues. Call `JobRegistry.build(options)` once during bootstrap; call `JobRegistry.reset()` in tests. Delegates all operations to a `JobRegistryInstance`. Key static methods: `enqueue(factoryKey, params)`, `fail(job)`, `finish(job)`, `pick()`, `hasJob()`, `hasReadyJob()`, `promoteReadyJobs()`, `stats()`, `jobsByStatus(status)`, `jobById(id)`, `clearQueues()`. |
+| `JobRegistryInstance` | Holds the actual queues: `enqueued` (FIFO), `processing` (`IdentifyableCollection`), `failed` (`SortedCollection` sorted by `readyBy` timestamp), `retryQueue` (FIFO), `finished`, and `dead`. `promoteReadyJobs()` moves cooled-down failed jobs to `retryQueue`. `jobsByStatus(status)` returns job data from the named collection. `jobById(id)` searches all collections and returns the job data or `null`. `clearQueues()` empties `enqueued`, `retryQueue`, and `failed` without destroying the instance. Not exported; accessed only via `JobRegistry`. |
+| `WorkersRegistry` | Static singleton facade for the worker pool. Call `WorkersRegistry.build(options)` once during bootstrap; call `WorkersRegistry.reset()` in tests. Delegates to a `WorkersRegistryInstance`. Key static methods: `initWorkers()`, `setBusy(id)`, `setIdle(id)`, `hasBusyWorker()`, `hasIdleWorker()`, `getIdleWorker()`, `stats()`. |
+| `WorkersRegistryInstance` | Holds the actual worker collections: `workers` (all), `idle`, `busy`. `getIdleWorker()` atomically moves a worker from idle to busy and returns it. Not exported; accessed only via `WorkersRegistry`. |
+
+### `factory/`
+
+| Class | Responsibility |
+|-------|---------------|
+| `Factory` | Base factory class. Generates instances via `build(params)`, merging static `attributes` with an `attributesGenerator` result and caller-supplied params. |
+
+### `enqueuers/`
+
+Classes responsible for enqueuing jobs into the job registry.
+
+| Class | Responsibility |
+|-------|---------------|
+| `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
+| `ActionsEnqueuer` | Receives a list of per-item `ResponseWrapper` instances and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null items list. Delegates per-action enqueueing to `ActionEnqueuer`. |
+| `AssetRequestEnqueuer` | Processes a single `AssetRequest` against a raw HTML body: parses the HTML, resolves asset URLs to absolute form, and enqueues one `AssetDownloadJob` per URL. |
+
+### `jobs/`
+
+Concrete job implementations that extend the `Job` base class from `background/`.
+
+| Class | Responsibility |
+|-------|---------------|
 | `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
 | `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)` where `item` is a per-item `ResponseWrapper`. Exhausted after the first failure — no retry rights. |
 | `HtmlParseJob` | Extends `Job`. Parses an HTML response body using `HtmlParser`, resolves asset URLs, and enqueues one `AssetDownloadJob` per discovered URL. Exhausted after the first failure — no retry rights. |
 | `AssetDownloadJob` | Extends `Job`. Fetches a single fully-resolved asset URL via `Client.performUrl()` and validates the expected HTTP status. Leaf node — no further chaining. Follows the standard retry/dead path. |
-| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1), the retry cooldown in milliseconds (`retryCooldown`, default 2000), and the engine sleep interval in milliseconds (`sleep`, default 500). |
-| `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
 
 ### `registry/`
 
@@ -82,10 +115,6 @@ Collection managers built on a shared base class.
 - **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
 - **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
 - **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
-- **`JobRegistry`** — Static singleton facade for the job queues. Call `JobRegistry.build(options)` once during bootstrap; call `JobRegistry.reset()` in tests. Delegates all operations to a `JobRegistryInstance`. Key static methods: `enqueue(factoryKey, params)`, `fail(job)`, `finish(job)`, `pick()`, `hasJob()`, `hasReadyJob()`, `promoteReadyJobs()`, `stats()`, `jobsByStatus(status)`, `jobById(id)`, `clearQueues()`.
-- **`JobRegistryInstance`** — Holds the actual queues: `enqueued` (FIFO), `processing` (`IdentifyableCollection`), `failed` (`SortedCollection` sorted by `readyBy` timestamp), `retryQueue` (FIFO), `finished`, and `dead`. `promoteReadyJobs()` moves cooled-down failed jobs to `retryQueue`. `jobsByStatus(status)` returns job data from the named collection. `jobById(id)` searches all collections and returns the job data or `null`. `clearQueues()` empties `enqueued`, `retryQueue`, and `failed` without destroying the instance. Not exported; accessed only via `JobRegistry`.
-- **`WorkersRegistry`** — Static singleton facade for the worker pool. Call `WorkersRegistry.build(options)` once during bootstrap; call `WorkersRegistry.reset()` in tests. Delegates to a `WorkersRegistryInstance`. Key static methods: `initWorkers()`, `setBusy(id)`, `setIdle(id)`, `hasBusyWorker()`, `hasIdleWorker()`, `getIdleWorker()`, `stats()`.
-- **`WorkersRegistryInstance`** — Holds the actual worker collections: `workers` (all), `idle`, `busy`. `getIdleWorker()` atomically moves a worker from idle to busy and returns it. Not exported; accessed only via `WorkersRegistry`.
 
 Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property.
 
@@ -154,7 +183,6 @@ Business logic and I/O layer.
 | `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. `performUrl(absoluteUrl, expectedStatus)` fetches a fully-resolved absolute URL directly (no `baseUrl` prepended). Supports per-client headers (including environment variable interpolation via `$VAR` / `${VAR}` syntax, resolved at parse time). |
 | `Engine` | Drives the main allocation loop. Each tick calls `JobRegistry.promoteReadyJobs()` then delegates to `WorkersAllocator.allocate()` while jobs or busy workers exist. Sleeps for `sleepMs` (default 500 ms) when all pending jobs are in cooldown. `stop()` sets a `#stopped` flag that causes the loop to exit after the current iteration completes. |
 | `WorkersAllocator` | Assigns ready jobs to idle workers. On each `allocate()` call, repeatedly pairs `WorkersRegistry.getIdleWorker()` with `JobRegistry.pick()` until either pool is exhausted. |
-| `JobFactory` | Static registry of named job factories. `JobFactory.build(name, options)` registers a factory; `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears all entries (test teardown). |
 
 ### `server/`
 
@@ -180,14 +208,6 @@ Express-based web server and request handlers.
 | `AssetsRequestHandler` | Extends `RequestHandler`. Responds to `GET /assets/*path` by serving the requested file from `source/static/assets/`. Uses `PathValidator` to ensure the resolved path stays within `source/static/assets/`; returns **403 Forbidden** on path traversal attempts. |
 | `PathValidator` | Encapsulates the path traversal security check. Given a base directory, `isValid(resolvedPath)` returns `true` only when `resolvedPath` is strictly inside that directory. |
 
-### `factories/`
-
-| Class | Responsibility |
-|-------|---------------|
-| `Factory` | Base factory class. Generates instances via `build(params)`, merging static `attributes` with an `attributesGenerator` result and caller-supplied params. |
-| `JobFactory` | Static facade (see `services/` above). |
-| `WorkerFactory` | Extends `Factory`. Creates `Worker` instances with unique IDs via `IdGenerator`. Used by `WorkersRegistryInstance.initWorkers()`. |
-
 ## Test Layout
 
 All specs live under `source/spec/`:
@@ -195,8 +215,11 @@ All specs live under `source/spec/`:
 ```
 source/spec/
   lib/                  ← mirrors source/lib/ exactly
+    background/
+    enqueuers/
     exceptions/
-    factories/
+    factory/
+    jobs/
     models/
     registry/
     server/
@@ -214,7 +237,7 @@ source/spec/
 
 The naming convention for spec files is `<ClassName>_spec.js`, placed in the subfolder that
 mirrors the source file's location under `source/lib/`. For example:
-- `source/lib/models/Job.js` → `source/spec/lib/models/Job_spec.js`
+- `source/lib/background/Job.js` → `source/spec/lib/background/Job_spec.js`
 - `source/lib/utils/logging/Logger.js` → `source/spec/lib/utils/logging/Logger_spec.js`
 
 Support files (factories, dummies, fixtures) live under `source/spec/support/` and are never

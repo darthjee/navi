@@ -1,5 +1,5 @@
-import { ActionProcessingJob } from '../../../lib/models/ActionProcessingJob.js';
-import { Job } from '../../../lib/models/Job.js';
+import { Job } from '../../../lib/background/Job.js';
+import { ActionProcessingJob } from '../../../lib/jobs/ActionProcessingJob.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('ActionProcessingJob', () => {

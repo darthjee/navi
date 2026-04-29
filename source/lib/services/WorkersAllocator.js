@@ -1,5 +1,5 @@
-import { JobRegistry } from '../registry/JobRegistry.js';
-import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { JobRegistry } from '../background/JobRegistry.js';
+import { WorkersRegistry } from '../background/WorkersRegistry.js';
 
 /**
  * WorkersAllocator is responsible for allocating jobs to idle workers.
