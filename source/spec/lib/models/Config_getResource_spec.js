@@ -1,9 +1,11 @@
 import { Config } from '../../../lib/models/Config.js';
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 
 describe('Config', () => {
   afterEach(() => {
+    ClientRegistry.reset();
     ResourceRegistry.reset();
   });
 

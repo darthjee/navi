@@ -2,8 +2,10 @@ import { NamedRegistry } from './NamedRegistry.js';
 import { ClientNotFound } from '../exceptions/ClientNotFound.js';
 
 /**
- * ClientRegistry is a helper class that manages client retrieval logic for Config.
- * It encapsulates the logic for fetching clients by name and determining the default client.
+ * ClientRegistry manages client retrieval logic and exposes a static singleton facade.
+ *
+ * Call `ClientRegistry.build(clients)` once during application bootstrap.
+ * Use `ClientRegistry.reset()` in tests to restore a clean state between examples.
  *
  * @example
  * const clientRegistry = new ClientRegistry({
@@ -37,6 +39,62 @@ class ClientRegistry extends NamedRegistry {
    * @see NamedRegistry#notFoundException
    */
   static notFoundException = ClientNotFound;
+
+  static #instance = null;
+
+  /**
+   * Creates and stores the singleton instance.
+   * @param {object} clients - An object mapping client names to Client instances.
+   * @returns {ClientRegistry} The created instance.
+   * @throws {Error} If `build()` has already been called without a preceding `reset()`.
+   */
+  static build(clients) {
+    if (ClientRegistry.#instance) {
+      throw new Error('ClientRegistry.build() has already been called. Call reset() first.');
+    }
+    ClientRegistry.#instance = new ClientRegistry(clients);
+    return ClientRegistry.#instance;
+  }
+
+  /**
+   * Destroys the singleton instance. Intended for test teardown.
+   * @returns {void}
+   */
+  static reset() {
+    ClientRegistry.#instance = null;
+  }
+
+  /**
+   * Retrieves a client by name from the singleton instance.
+   * @param {string} [name] - The name of the client to retrieve.
+   * @returns {Client} The requested client instance.
+   * @throws {ClientNotFound} If the client with the specified name does not exist.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static getClient(name) {
+    return ClientRegistry.#getInstance().getClient(name);
+  }
+
+  /**
+   * Returns all registered client instances from the singleton.
+   * @returns {Client[]} Array of all registered Client instances.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static all() {
+    return Object.values(ClientRegistry.#getInstance().items);
+  }
+
+  /**
+   * Returns the singleton instance, throwing if not yet built.
+   * @returns {ClientRegistry} The singleton instance.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static #getInstance() {
+    if (!ClientRegistry.#instance) {
+      throw new Error('ClientRegistry has not been built. Call ClientRegistry.build() first.');
+    }
+    return ClientRegistry.#instance;
+  }
 
   /**
    * Retrieves a client by name or the default client if no name is provided.
