@@ -51,6 +51,9 @@ workers:
 log:
   size: 100            # max number of log entries kept in memory (default: 100)
 
+failure:
+  threshold: 10.0      # optional: exit with failure if > 10% of jobs are dead
+
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
 
@@ -102,6 +105,7 @@ resources:
 | `workers.sleep` | Milliseconds the engine waits between allocation ticks. Defaults to `500`. |
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
+| `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. The web UI frontend is bundled directly with the Navi package and served from `source/static/`. |
 
 When the web server is enabled, the following screens are available:

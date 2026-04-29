@@ -1,4 +1,5 @@
 import { Config } from '../../../lib/models/Config.js';
+import { FailureConfig } from '../../../lib/models/FailureConfig.js';
 import { LogConfig } from '../../../lib/models/LogConfig.js';
 import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
@@ -73,6 +74,27 @@ describe('Config', () => {
         expect(() => Config.fromFile(configFilePath)).toThrowError(
           'Invalid config file: expected a top-level "resources" key.',
         );
+      });
+    });
+
+    describe('when the yaml file has a failure section', () => {
+      it('returns a Config with a FailureConfig instance', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_failure.yml');
+
+        const config = Config.fromFile(configFilePath);
+
+        expect(config.failureConfig instanceof FailureConfig).toBeTrue();
+        expect(config.failureConfig.threshold).toBe(10.0);
+      });
+    });
+
+    describe('when the yaml file has no failure section', () => {
+      it('returns a Config with null failureConfig', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
+
+        const config = Config.fromFile(configFilePath);
+
+        expect(config.failureConfig).toBeNull();
       });
     });
   });

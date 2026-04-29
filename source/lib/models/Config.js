@@ -16,13 +16,15 @@ class Config {
    * @param {WorkersConfig} params.workersConfig - The configuration for worker instances.
    * @param {WebConfig|null} [params.webConfig] - Optional web server configuration.
    * @param {LogConfig} [params.logConfig] - Optional log configuration.
+   * @param {FailureConfig|null} [params.failureConfig] - Optional failure threshold configuration.
    */
-  constructor({ resources, clients, workersConfig, webConfig, logConfig }) {
+  constructor({ resources, clients, workersConfig, webConfig, logConfig, failureConfig }) {
     this.resourceRegistry = ResourceRegistry.build(resources);
     this.clientRegistry = new ClientRegistry(clients);
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;
     this.logConfig = logConfig ?? new LogConfig();
+    this.failureConfig = failureConfig ?? null;
   }
 
   /**
