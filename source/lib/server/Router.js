@@ -2,6 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import { AssetsRequestHandler } from './AssetsRequestHandler.js';
+import { BaseUrlsRequestHandler } from './BaseUrlsRequestHandler.js';
 import { IndexRequestHandler } from './IndexRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
@@ -33,6 +34,11 @@ class Router {
     register.register({
       route:   '/stats.json',
       handler: new StatsRequestHandler(),
+    });
+
+    register.register({
+      route:   '/clients/base_urls.json',
+      handler: new BaseUrlsRequestHandler(),
     });
 
     register.register({

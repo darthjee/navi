@@ -2,6 +2,7 @@ import { Config } from '../../../lib/models/Config.js';
 import { FailureConfig } from '../../../lib/models/FailureConfig.js';
 import { LogConfig } from '../../../lib/models/LogConfig.js';
 import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
@@ -16,6 +17,7 @@ describe('Config', () => {
   let expectedWorkersConfig;
 
   afterEach(() => {
+    ClientRegistry.reset();
     ResourceRegistry.reset();
   });
 

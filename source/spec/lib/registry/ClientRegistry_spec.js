@@ -12,6 +12,10 @@ describe('ClientRegistry', () => {
     otherClient = new Client({ name: 'other', baseUrl: 'https://other.com' });
   });
 
+  afterEach(() => {
+    ClientRegistry.reset();
+  });
+
   describe('#getClient', () => {
     describe('when default and other clients exist', () => {
       let clientRegistry;
@@ -101,6 +105,68 @@ describe('ClientRegistry', () => {
           );
         });
       });
+    });
+  });
+
+  describe('.build', () => {
+    it('creates and returns a ClientRegistry instance', () => {
+      const instance = ClientRegistry.build({ default: defaultClient });
+      expect(instance).toBeInstanceOf(ClientRegistry);
+    });
+
+    it('throws if called twice without reset', () => {
+      ClientRegistry.build({ default: defaultClient });
+      expect(() => ClientRegistry.build({})).toThrowError(
+        'ClientRegistry.build() has already been called. Call reset() first.',
+      );
+    });
+
+    it('allows build after reset', () => {
+      ClientRegistry.build({ default: defaultClient });
+      ClientRegistry.reset();
+      expect(() => ClientRegistry.build({ default: defaultClient })).not.toThrow();
+    });
+  });
+
+  describe('.getClient', () => {
+    beforeEach(() => {
+      ClientRegistry.build({ default: defaultClient, other: otherClient });
+    });
+
+    it('returns the client by name from the singleton', () => {
+      expect(ClientRegistry.getClient('other')).toBe(otherClient);
+    });
+
+    it('returns the default client when no name is given', () => {
+      expect(ClientRegistry.getClient()).toBe(defaultClient);
+    });
+
+    it('throws when the registry has not been built', () => {
+      ClientRegistry.reset();
+      expect(() => ClientRegistry.getClient('other')).toThrowError(
+        'ClientRegistry has not been built. Call ClientRegistry.build() first.',
+      );
+    });
+  });
+
+  describe('.all', () => {
+    beforeEach(() => {
+      ClientRegistry.build({ default: defaultClient, other: otherClient });
+    });
+
+    it('returns all registered clients', () => {
+      expect(ClientRegistry.all()).toEqual(jasmine.arrayContaining([defaultClient, otherClient]));
+    });
+
+    it('returns the correct number of clients', () => {
+      expect(ClientRegistry.all().length).toBe(2);
+    });
+
+    it('throws when the registry has not been built', () => {
+      ClientRegistry.reset();
+      expect(() => ClientRegistry.all()).toThrowError(
+        'ClientRegistry has not been built. Call ClientRegistry.build() first.',
+      );
     });
   });
 });
