@@ -4,6 +4,7 @@ import {
   continueEngine,
   startEngine,
   restartEngine,
+  shutdownServer,
   getEngineStatus,
 } from '../clients/EngineClient.js';
 import noop from '../utils/noop.js';
@@ -104,6 +105,12 @@ class EngineControlsHelper {
             onClick={() => this.handleAction(startEngine)}
           >
             Start
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => this.handleAction(shutdownServer)}
+          >
+            Shut Down
           </button>
         </div>
       </div>
