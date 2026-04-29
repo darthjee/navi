@@ -10,6 +10,7 @@ class FailureChecker {
   #failureConfig;
   #dead;
   #total;
+  #cachedRatio;
 
   /**
    * Creates a new FailureChecker instance.
@@ -48,10 +49,12 @@ class FailureChecker {
 
   /**
    * Calculates the percentage of dead jobs relative to total jobs.
+   * The result is memoized after the first call.
    * @returns {number} The dead-job ratio as a percentage (0–100).
    */
   #ratio() {
-    return (this.#dead / this.#total) * 100;
+    this.#cachedRatio ??= (this.#dead / this.#total) * 100;
+    return this.#cachedRatio;
   }
 
   /**
