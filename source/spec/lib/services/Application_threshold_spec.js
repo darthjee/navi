@@ -1,8 +1,8 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
-import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { Application } from '../../../lib/services/Application.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';

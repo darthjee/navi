@@ -1,7 +1,7 @@
-import { ActionsEnqueuer } from './ActionsEnqueuer.js';
 import { AssetRequest } from './AssetRequest.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
-import { JobRegistry as DefaultJobRegistry } from '../registry/JobRegistry.js';
+import { JobRegistry as DefaultJobRegistry } from '../background/JobRegistry.js';
+import { ActionsEnqueuer } from '../enqueuers/ActionsEnqueuer.js';
 import { Application } from '../services/Application.js';
 
 /**

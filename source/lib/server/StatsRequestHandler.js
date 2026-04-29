@@ -1,6 +1,6 @@
 import { RequestHandler } from './RequestHandler.js';
-import { JobRegistry } from '../registry/JobRegistry.js';
-import { WorkersRegistry } from '../registry/WorkersRegistry.js';
+import { JobRegistry } from '../background/JobRegistry.js';
+import { WorkersRegistry } from '../background/WorkersRegistry.js';
 
 /**
  * Handles GET /stats.json requests.

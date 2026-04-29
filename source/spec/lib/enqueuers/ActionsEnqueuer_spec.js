@@ -1,6 +1,6 @@
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { ActionsEnqueuer } from '../../../lib/enqueuers/ActionsEnqueuer.js';
 import { NullResponse } from '../../../lib/exceptions/NullResponse.js';
-import { ActionsEnqueuer } from '../../../lib/models/ActionsEnqueuer.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { ActionEnqueuerUtils } from '../../support/utils/ActionEnqueuerUtils.js';
 
 describe('ActionsEnqueuer', () => {

@@ -1,7 +1,7 @@
-import { JobFactory } from '../../../lib/factories/JobFactory.js';
+import { JobFactory } from '../../../lib/background/JobFactory.js';
+import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { FailureConfig } from '../../../lib/models/FailureConfig.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
-import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { FailureChecker } from '../../../lib/services/FailureChecker.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';

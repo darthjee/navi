@@ -1,4 +1,4 @@
-import { AssetRequestEnqueuer } from '../../../lib/models/AssetRequestEnqueuer.js';
+import { AssetRequestEnqueuer } from '../../../lib/enqueuers/AssetRequestEnqueuer.js';
 import { Application } from '../../../lib/services/Application.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';

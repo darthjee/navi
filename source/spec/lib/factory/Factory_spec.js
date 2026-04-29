@@ -1,4 +1,4 @@
-import { Factory } from '../../../lib/factories/Factory.js';
+import { Factory } from '../../../lib/factory/Factory.js';
 import { MyClass } from '../../support/dummies/models/MyClass.js';
 
 describe('Factory', () => {

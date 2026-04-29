@@ -1,5 +1,5 @@
 import { RequestHandler } from './RequestHandler.js';
-import { JobRegistry } from '../registry/JobRegistry.js';
+import { JobRegistry } from '../background/JobRegistry.js';
 import { JobSerializer } from '../serializers/JobSerializer.js';
 
 /**
