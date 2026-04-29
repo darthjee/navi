@@ -29,6 +29,7 @@ Key architectural decisions established during planning:
 | [plan_backend.md](plan_backend.md) | Engine stop-flag, status transitions, enqueue gating |
 | [plan_api.md](plan_api.md) | New HTTP endpoints, request handlers, Router wiring |
 | [plan_frontend.md](plan_frontend.md) | Frontend control buttons with conditional availability |
+| [plan_docs.md](plan_docs.md) | Update `docs/agents/` documentation |
 
 ## Implementation Order
 
@@ -36,6 +37,7 @@ Key architectural decisions established during planning:
 2. `plan_backend.md` — Engine behavior + enqueue gating
 3. `plan_api.md` — web layer
 4. `plan_frontend.md` — UI
+5. `plan_docs.md` — documentation updates
 
 ## CI Checks
 
