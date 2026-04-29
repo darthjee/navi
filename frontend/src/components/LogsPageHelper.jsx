@@ -44,28 +44,40 @@ class LogsPageHelper {
         className="bg-dark text-light p-3 rounded"
         style={{ fontFamily: 'monospace', minHeight: '400px', overflowY: 'auto', maxHeight: '80vh' }}
       >
-        {this.#logs.map((log) => (
-          <div
-            key={log.id}
-            className={LEVEL_CLASS[log.level] ?? ''}
-          >
-            [{log.timestamp}] [{log.level}] {log.message}
-          </div>
-        ))}
+        {this.#logs.map((log) => this.#renderEntry(log))}
         <div ref={bottomRef} />
       </div>
     );
   }
 
+  #renderEntry(log) {
+    return (
+      <div
+        key={log.id}
+        className={LEVEL_CLASS[log.level] ?? ''}
+      >
+        [{log.timestamp}] [{log.level}] {log.message}
+      </div>
+    );
+  }
+
+  #hasEntries(entries) {
+    return entries.length !== 0;
+  }
+
+  #appendEntries(entries, lastIdRef, setLogs, cancelledRef) {
+    lastIdRef.current = entries[entries.length - 1].id;
+    setLogs((prev) => [...prev, ...entries]);
+    this.#poll(cancelledRef, lastIdRef, setLogs);
+  }
+
   #handleEntries(entries, cancelledRef, lastIdRef, setLogs) {
     if (cancelledRef.current) return;
 
-    if (entries.length === 0) {
-      setTimeout(() => this.#poll(cancelledRef, lastIdRef, setLogs), POLL_DELAY_MS);
+    if (this.#hasEntries(entries)) {
+      this.#appendEntries(entries, lastIdRef, setLogs, cancelledRef);
     } else {
-      lastIdRef.current = entries[entries.length - 1].id;
-      setLogs((prev) => [...prev, ...entries]);
-      this.#poll(cancelledRef, lastIdRef, setLogs);
+      setTimeout(() => this.#poll(cancelledRef, lastIdRef, setLogs), POLL_DELAY_MS);
     }
   }
 
