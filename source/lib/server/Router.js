@@ -13,6 +13,7 @@ import { EngineStopRequestHandler } from './EngineStopRequestHandler.js';
 import { IndexRequestHandler } from './IndexRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
+import { LogsRequestHandler } from './LogsRequestHandler.js';
 import { RouteRegister } from './RouteRegister.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
@@ -25,10 +26,16 @@ const staticDir = path.join(__dirname, '../../static');
  * @author darthjee
  */
 class Router {
+  #webConfig;
+
   /**
    * Creates a new Router instance.
+   * @param {object} [options={}]
+   * @param {object} [options.webConfig={}] - Web configuration, used by handlers that need it.
    */
-  constructor() {}
+  constructor({ webConfig = {} } = {}) {
+    this.#webConfig = webConfig;
+  }
 
   /**
    * Creates and returns an Express Router with all routes registered.
@@ -59,6 +66,11 @@ class Router {
 
     Object.entries(GET_ROUTES).forEach(([route, HandlerClass]) => {
       register.register({ route, handler: new HandlerClass() });
+    });
+
+    register.register({
+      route: '/logs.json',
+      handler: new LogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
     });
 
     Object.entries(PATCH_ROUTES).forEach(([route, HandlerClass]) => {

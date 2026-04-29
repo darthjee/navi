@@ -13,12 +13,12 @@ class WebServer {
 
   /**
    * @param {object} params - Options for initializing the WebServer.
-   * @param {number} params.port - Port to listen on.
+   * @param {object} params.webConfig - The web configuration object.
    */
-  constructor({ port }) {
-    this.#port = port;
+  constructor({ webConfig }) {
+    this.#port = webConfig.port;
     this.#app = express();
-    this.#app.use(new Router().build());
+    this.#app.use(new Router({ webConfig }).build());
   }
 
   /**
@@ -48,7 +48,7 @@ class WebServer {
    */
   static build({ webConfig }) {
     if (!webConfig) return null;
-    return new WebServer({ port: webConfig.port });
+    return new WebServer({ webConfig });
   }
 }
 
