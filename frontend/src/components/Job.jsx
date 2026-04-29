@@ -3,15 +3,19 @@ import { useParams, Link } from 'react-router-dom';
 import JobDetails from './JobDetails.jsx';
 import fetchJob from '../clients/JobClient.js';
 
-const buildJobEffect = (id, setJob, setError, setLoading) => () => {
-  fetchJob(id)
-    .then((data) => {
-      setJob(data);
-      setError(null);
-    })
-    .catch((err) => setError(err.message))
-    .finally(() => setLoading(false));
-};
+class JobHelper {
+  static buildEffect(id, setJob, setError, setLoading) {
+    return () => {
+      fetchJob(id)
+        .then((data) => {
+          setJob(data);
+          setError(null);
+        })
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
+    };
+  }
+}
 
 function Job() {
   const { id } = useParams();
@@ -20,7 +24,7 @@ function Job() {
   const [loading, setLoading] = useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(buildJobEffect(id, setJob, setError, setLoading), [id]);
+  useEffect(JobHelper.buildEffect(id, setJob, setError, setLoading), [id]);
 
   if (loading) {
     return (

@@ -1,19 +1,11 @@
 import { Link } from 'react-router-dom';
+import CollapsibleSection from './CollapsibleSection.jsx';
 import ReadyCountdown from './ReadyCountdown.jsx';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
 const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
 const STATUSES_WITH_READY_IN = new Set(['failed']);
 const STATUSES_WITH_ERROR = new Set(['failed', 'dead']);
-
-function CollapsibleSection({ label, children }) {
-  return (
-    <details>
-      <summary>{label}</summary>
-      {children}
-    </details>
-  );
-}
 
 function JobDetails({ job }) {
   const variant = VARIANT_BY_STATUS[job.status] ?? 'secondary';
