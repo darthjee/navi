@@ -1,17 +1,21 @@
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { JobRegistry } from '../../../lib/registry/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/registry/WorkersRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
+import { Client } from '../../../lib/services/Client.js';
 
 describe('Router', () => {
   let router;
 
   beforeEach(() => {
+    ClientRegistry.build({ default: new Client({ name: 'default', baseUrl: 'https://example.com' }) });
     JobRegistry.build({ cooldown: -1 });
     WorkersRegistry.build({ quantity: 0 });
     router = new Router();
   });
 
   afterEach(() => {
+    ClientRegistry.reset();
     JobRegistry.reset();
     WorkersRegistry.reset();
   });

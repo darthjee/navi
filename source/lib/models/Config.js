@@ -20,7 +20,7 @@ class Config {
    */
   constructor({ resources, clients, workersConfig, webConfig, logConfig, failureConfig }) {
     this.resourceRegistry = ResourceRegistry.build(resources);
-    this.clientRegistry = new ClientRegistry(clients);
+    this.clientRegistry = ClientRegistry.build(clients);
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;
     this.logConfig = logConfig ?? new LogConfig();

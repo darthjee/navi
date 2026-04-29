@@ -1,11 +1,13 @@
 import { ClientNotFound } from '../../../lib/exceptions/ClientNotFound.js';
 import { Config } from '../../../lib/models/Config.js';
+import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { Client } from '../../../lib/services/Client.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 
 describe('Config', () => {
   afterEach(() => {
+    ClientRegistry.reset();
     ResourceRegistry.reset();
   });
 
