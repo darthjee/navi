@@ -52,7 +52,7 @@ started, a new promise is attached via `PromiseAggregator`.
 | `PATCH` | `/engine/stop` | Sets status to `stopping`. Once all active workers finish, resolves the Engine promise via `PromiseAggregator`, clears all job queues, sets status to `stopped`. |
 | `PATCH` | `/engine/continue` | Only valid from `paused`. Attaches a new promise via `PromiseAggregator`, sets status to `running`. No queue changes. |
 | `PATCH` | `/engine/start` | Only valid from `stopped`. Attaches a new promise via `PromiseAggregator`, re-enqueues all `ResourceRequest`s that do not require parameters, sets status to `running`. |
-| `PATCH` | `/engine/restart` | Only valid when `running`. Equivalent to pause-until-workers-finish → clear queues → start. |
+| `PATCH` | `/engine/restart` | Only valid when `running`. Equivalent to stop (wait for workers → clear queues) followed by start (re-enqueue initial jobs). |
 | `GET` | `/engine/status` | Returns the current Engine status. |
 
 ### Frontend Controls
