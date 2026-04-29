@@ -6,6 +6,7 @@ import { BaseUrlsRequestHandler } from './BaseUrlsRequestHandler.js';
 import { EngineContinueRequestHandler } from './EngineContinueRequestHandler.js';
 import { EnginePauseRequestHandler } from './EnginePauseRequestHandler.js';
 import { EngineRestartRequestHandler } from './EngineRestartRequestHandler.js';
+import { EngineShutdownRequestHandler } from './EngineShutdownRequestHandler.js';
 import { EngineStartRequestHandler } from './EngineStartRequestHandler.js';
 import { EngineStatusRequestHandler } from './EngineStatusRequestHandler.js';
 import { EngineStopRequestHandler } from './EngineStopRequestHandler.js';
@@ -37,64 +38,31 @@ class Router {
     const router = ExpressRouter();
     const register = new RouteRegister(router);
 
-    register.register({
-      route:   '/stats.json',
-      handler: new StatsRequestHandler(),
+    const GET_ROUTES = {
+      '/stats.json':              StatsRequestHandler,
+      '/clients/base_urls.json':  BaseUrlsRequestHandler,
+      '/jobs/:status.json':       JobsRequestHandler,
+      '/job/:id.json':            JobRequestHandler,
+      '/engine/status':           EngineStatusRequestHandler,
+      '/':                        IndexRequestHandler,
+      '/assets/*path':            AssetsRequestHandler,
+    };
+
+    const PATCH_ROUTES = {
+      '/engine/pause':     EnginePauseRequestHandler,
+      '/engine/stop':      EngineStopRequestHandler,
+      '/engine/continue':  EngineContinueRequestHandler,
+      '/engine/start':     EngineStartRequestHandler,
+      '/engine/restart':   EngineRestartRequestHandler,
+      '/engine/shutdown':  EngineShutdownRequestHandler,
+    };
+
+    Object.entries(GET_ROUTES).forEach(([route, HandlerClass]) => {
+      register.register({ route, handler: new HandlerClass() });
     });
 
-    register.register({
-      route:   '/clients/base_urls.json',
-      handler: new BaseUrlsRequestHandler(),
-    });
-
-    register.register({
-      route:   '/jobs/:status.json',
-      handler: new JobsRequestHandler(),
-    });
-
-    register.register({
-      route:   '/job/:id.json',
-      handler: new JobRequestHandler(),
-    });
-
-    register.register({
-      route:   '/engine/status',
-      handler: new EngineStatusRequestHandler(),
-    });
-
-    register.registerPatch({
-      route:   '/engine/pause',
-      handler: new EnginePauseRequestHandler(),
-    });
-
-    register.registerPatch({
-      route:   '/engine/stop',
-      handler: new EngineStopRequestHandler(),
-    });
-
-    register.registerPatch({
-      route:   '/engine/continue',
-      handler: new EngineContinueRequestHandler(),
-    });
-
-    register.registerPatch({
-      route:   '/engine/start',
-      handler: new EngineStartRequestHandler(),
-    });
-
-    register.registerPatch({
-      route:   '/engine/restart',
-      handler: new EngineRestartRequestHandler(),
-    });
-
-    register.register({
-      route:   '/',
-      handler: new IndexRequestHandler(),
-    });
-
-    register.register({
-      route:   '/assets/*path',
-      handler: new AssetsRequestHandler(),
+    Object.entries(PATCH_ROUTES).forEach(([route, HandlerClass]) => {
+      register.registerPatch({ route, handler: new HandlerClass() });
     });
 
     router.use(express.static(staticDir));

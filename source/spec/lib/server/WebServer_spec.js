@@ -41,4 +41,20 @@ describe('WebServer', () => {
       httpServer.close(done);
     });
   });
+
+  describe('#shutdown', () => {
+    it('closes the HTTP server', (done) => {
+      const webConfig = new WebConfig({ port: 19998 });
+      const server = WebServer.build({ webConfig });
+      server.start();
+      server.shutdown();
+      done();
+    });
+
+    it('does not throw when called before start', () => {
+      const webConfig = new WebConfig({ port: 19997 });
+      const server = WebServer.build({ webConfig });
+      expect(() => server.shutdown()).not.toThrow();
+    });
+  });
 });

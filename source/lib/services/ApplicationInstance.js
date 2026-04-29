@@ -220,6 +220,17 @@ class ApplicationInstance {
   }
 
   /**
+   * Shuts down the web server and stops the engine.
+   * @returns {Promise<void>}
+   */
+  async shutdown() {
+    this.webServer?.shutdown();
+    if (this.#engineStatus === 'running') {
+      await this.stop();
+    }
+  }
+
+  /**
    * Polls until all workers are idle.
    * @returns {Promise<void>}
    */

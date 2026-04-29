@@ -9,6 +9,7 @@ import { Logger } from '../utils/logging/Logger.js';
 class WebServer {
   #port;
   #app;
+  #httpServer;
 
   /**
    * @param {object} params - Options for initializing the WebServer.
@@ -27,7 +28,16 @@ class WebServer {
    */
   start() {
     Logger.info(`Listening to port ${this.#port}`);
-    return this.#app.listen(this.#port);
+    this.#httpServer = this.#app.listen(this.#port);
+    return this.#httpServer;
+  }
+
+  /**
+   * Closes the HTTP server, stopping it from accepting new connections.
+   * @returns {void}
+   */
+  shutdown() {
+    this.#httpServer?.close();
   }
 
   /**
