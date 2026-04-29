@@ -49,6 +49,7 @@ describe('JobRegistry', () => {
           retryQueue: 0,
           finished: 0,
           dead: 0,
+          total: 0,
         });
       });
     });
@@ -66,6 +67,7 @@ describe('JobRegistry', () => {
           retryQueue: 0,
           finished: 0,
           dead: 0,
+          total: 0,
         });
       });
     });
@@ -84,6 +86,7 @@ describe('JobRegistry', () => {
           retryQueue: 0,
           finished: 0,
           dead: 0,
+          total: 0,
         });
       });
     });
@@ -103,6 +106,7 @@ describe('JobRegistry', () => {
           retryQueue: 0,
           finished: 1,
           dead: 0,
+          total: 1,
         });
       });
     });
@@ -122,6 +126,7 @@ describe('JobRegistry', () => {
           retryQueue: 0,
           finished: 0,
           dead: 0,
+          total: 0,
         });
       });
     });
@@ -144,6 +149,7 @@ describe('JobRegistry', () => {
           retryQueue: 0,
           finished: 0,
           dead: 1,
+          total: 1,
         });
       });
     });
@@ -164,6 +170,7 @@ describe('JobRegistry', () => {
           retryQueue: 1,
           finished:   0,
           dead:       0,
+          total:      0,
         });
       });
     });
