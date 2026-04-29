@@ -12,42 +12,76 @@ continue, start, and restart the Engine, along with corresponding frontend contr
 - There is no way to restart the Engine or re-enqueue initial jobs at runtime.
 - The frontend has no controls for Engine lifecycle management.
 
+## Engine Status
+
+`Application` becomes a static singleton (like `JobRegistry` / `WorkersRegistry`) and owns
+the `engine_status`. A static method `Application.status()` delegates to the internal
+instance and is the single source of truth for the current engine state.
+
+The full set of statuses:
+
+| Status | Meaning |
+|--------|---------|
+| `running` | Engine loop is active. |
+| `pausing` | Pause requested; waiting for active workers to finish their current job. |
+| `paused` | Engine loop stopped; jobs remain in queues. |
+| `stopping` | Stop requested; waiting for active workers to finish their current job. |
+| `stopped` | Engine loop stopped and all queues cleared. |
+
+During `pausing` and `stopping`, all control actions are unavailable (buttons disabled in
+the frontend). Only once workers finish does the status transition to `paused` or `stopped`.
+
+Any process that would enqueue new jobs (e.g. action chaining) must check
+`Application.status()` before enqueuing — if the engine is not `running`, the enqueue is
+skipped.
+
+## Promise Management
+
+`PromiseAggregator` (`source/lib/utils/PromiseAggregator.js`) is the existing class
+responsible for managing the Engine's promise. When the Engine is paused or stopped, its
+promise is resolved successfully via `PromiseAggregator`. When the Engine is continued or
+started, a new promise is attached via `PromiseAggregator`.
+
 ## Expected Behavior
 
 ### Backend Endpoints
 
 | Method | Path | Behaviour |
 |--------|------|-----------|
-| `PATCH` | `/engine/pause` | Stops the Engine loop (a new one can be created later). The Engine's promise resolves successfully, leaving the application waiting only on the web server promise. All jobs remain in their current state; workers go idle. |
-| `PATCH` | `/engine/stop` | Same as pause, but additionally clears all jobs from all queues. |
-| `PATCH` | `/engine/continue` | Resumes a paused Engine by attaching a new promise. No queue changes. Cannot be called if the Engine is already running. |
-| `PATCH` | `/engine/start` | Starts a fresh Engine run: attaches a new promise and re-enqueues all `ResourceRequest`s that do not require parameters. Cannot be called if the Engine is already running. |
-| `PATCH` | `/engine/restart` | Equivalent to stop followed by start. |
-| `GET` | `/engine/status` | Returns the current Engine status: `running`, `paused`, or `stopped` (no Engine exists after a stop). |
+| `PATCH` | `/engine/pause` | Sets status to `pausing`. Once all active workers finish, resolves the Engine promise via `PromiseAggregator`, sets status to `paused`. Jobs remain in queues. |
+| `PATCH` | `/engine/stop` | Sets status to `stopping`. Once all active workers finish, resolves the Engine promise via `PromiseAggregator`, clears all job queues, sets status to `stopped`. |
+| `PATCH` | `/engine/continue` | Only valid from `paused`. Attaches a new promise via `PromiseAggregator`, sets status to `running`. No queue changes. |
+| `PATCH` | `/engine/start` | Only valid from `stopped`. Attaches a new promise via `PromiseAggregator`, re-enqueues all `ResourceRequest`s that do not require parameters, sets status to `running`. |
+| `PATCH` | `/engine/restart` | Only valid when `running`. Equivalent to pause-until-workers-finish → clear queues → start. |
+| `GET` | `/engine/status` | Returns the current Engine status. |
 
-### Frontend
+### Frontend Controls
 
-New buttons in the UI for each action, conditionally enabled based on Engine status:
+Buttons shown in the UI, enabled only in the listed states:
 
-- **Pause** — only available when Engine is running.
-- **Stop** — only available when Engine is running.
-- **Restart** — only available when Engine is running.
-- **Continue** — only available when Engine is stopped/paused.
-- **Start** — only available when Engine is stopped/paused.
+| Action | Available when |
+|--------|---------------|
+| Pause | `running` |
+| Stop | `running` |
+| Restart | `running` |
+| Continue | `paused` |
+| Start | `stopped` |
+| *(all disabled)* | `pausing`, `stopping` |
 
 ## Solution
 
-- Add a promise-management layer to `Engine` or `Application` that allows attaching and
-  resolving promises externally.
+- Convert `Application` to a static singleton facade (same pattern as `JobRegistry`).
+- Add `engine_status` management to `Application` with transition logic.
 - Add request handlers for each endpoint following the existing `RequestHandler` pattern.
 - Register all new routes in `Router`.
-- Add frontend API calls and conditional control buttons in the header or a dedicated
-  controls section.
+- Update any enqueue call-sites to check `Application.status()` before enqueuing.
+- Add frontend API calls and conditional control buttons.
 
 ## Benefits
 
 - Operators can control the cache-warming process at runtime without restarting the process.
 - Enables pause/resume and full restart workflows from the web UI.
+- Clear transitional states (`pausing`/`stopping`) prevent race conditions.
 
 ---
 See issue for details: https://github.com/darthjee/navi/issues/417
