@@ -49,13 +49,14 @@ describe('LogsRequestHandler', () => {
         expect(result[1].message).toBe('second');
       });
 
-      it('returns plain objects with the expected fields', () => {
+      it('serializes logs using LogSerializer', () => {
         const handler = new LogsRequestHandler();
         handler.handle({ query: {} }, res);
         const result = res.json.calls.mostRecent().args[0];
         expect(typeof result[0].id).toBe('number');
         expect(typeof result[0].level).toBe('string');
         expect(typeof result[0].message).toBe('string');
+        expect(typeof result[0].attributes).toBe('object');
         expect(typeof result[0].timestamp).toBe('string');
       });
 

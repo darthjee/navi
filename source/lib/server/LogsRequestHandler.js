@@ -1,5 +1,6 @@
 import { RequestHandler } from './RequestHandler.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
+import { LogSerializer } from '../serializers/LogSerializer.js';
 
 /**
  * Handles GET /logs.json requests.
@@ -27,7 +28,7 @@ class LogsRequestHandler extends RequestHandler {
   handle(req, res) {
     const { last_id: lastId } = req.query;
     const logs = LogRegistry.getLogs({ lastId });
-    res.json(logs.slice(0, this.#pageSize).map(log => log.toJSON()));
+    res.json(LogSerializer.serialize(logs.slice(0, this.#pageSize)));
   }
 }
 
