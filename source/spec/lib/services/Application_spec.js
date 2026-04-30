@@ -6,6 +6,7 @@ import { ConfigurationFileNotProvided } from '../../../lib/exceptions/Configurat
 import { Config } from '../../../lib/models/Config.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
+import { Engine } from '../../../lib/services/Engine.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Application } from '../../../lib/services/Application.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
@@ -184,6 +185,8 @@ describe('Application', () => {
             webServerStartResolved = true;
           });
         });
+
+        spyOn(app, 'buildEngine').and.callFake(() => new Engine({ keepAlive: true, sleepMs: -1 }));
       });
 
       it('waits for web server promise before resolving', async () => {
@@ -200,6 +203,7 @@ describe('Application', () => {
         expect(runResolved).toBeFalse();
 
         resolveWebServerStart();
+        app.engine.stop();
         await runPromise;
 
         expect(webServerStartResolved).toBeTrue();

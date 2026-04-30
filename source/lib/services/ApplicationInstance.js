@@ -84,7 +84,10 @@ class ApplicationInstance {
    * @returns {Engine} The created Engine instance.
    */
   buildEngine() {
-    return new Engine({ sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep });
+    return new Engine({
+      sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
+      keepAlive: !!this.config.webConfig,
+    });
   }
 
   /**
@@ -159,51 +162,50 @@ class ApplicationInstance {
   }
 
   /**
-   * Pauses processing: stops the engine and waits for workers to become idle.
+   * Pauses processing: pauses the engine (without stopping it) and waits for workers to become idle.
    * @returns {Promise<void>}
    */
   async pause() {
     this.#engineStatus = 'pausing';
-    this.engine.stop();
+    this.engine.pause();
     await this.#waitForWorkersIdle();
     this.#engineStatus = 'paused';
   }
 
   /**
-   * Stops processing: stops the engine, waits for workers to idle, then clears job queues.
+   * Stops processing: pauses the engine, waits for workers to idle, then clears job queues.
+   * The engine instance is preserved and its loop continues running in the background.
    * @returns {Promise<void>}
    */
   async stop() {
     this.#engineStatus = 'stopping';
-    this.engine.stop();
+    this.engine.pause();
     await this.#waitForWorkersIdle();
     JobRegistry.clearQueues();
     this.#engineStatus = 'stopped';
   }
 
   /**
-   * Resumes processing after a pause by creating a new engine.
+   * Resumes processing after a pause by calling engine.resume().
+   * No new engine is created; the existing loop continues.
    * Only valid when status is 'paused'.
    * @returns {Promise<void>}
    */
   async continue() {
     if (this.#engineStatus !== 'paused') return;
-    this.engine = this.buildEngine();
-    this.#enginePromise = this.engine.start();
-    this.#aggregator.add(this.#enginePromise);
+    this.engine.resume();
     this.#engineStatus = 'running';
   }
 
   /**
-   * Starts processing from a stopped state by creating a new engine and re-enqueueing initial jobs.
+   * Starts processing from a stopped state by calling engine.resume() and re-enqueueing initial jobs.
+   * No new engine is created; the existing loop continues.
    * Only valid when status is 'stopped'.
    * @returns {Promise<void>}
    */
   async start() {
     if (this.#engineStatus !== 'stopped') return;
-    this.engine = this.buildEngine();
-    this.#enginePromise = this.engine.start();
-    this.#aggregator.add(this.#enginePromise);
+    this.engine.resume();
     this.enqueueFirstJobs();
     this.#engineStatus = 'running';
   }
@@ -220,7 +222,8 @@ class ApplicationInstance {
   }
 
   /**
-   * Shuts down the web server and stops the engine.
+   * Shuts down the web server and stops the engine loop.
+   * If running, pauses first and waits for workers to idle.
    * @returns {Promise<void>}
    */
   async shutdown() {
@@ -228,6 +231,7 @@ class ApplicationInstance {
     if (this.#engineStatus === 'running') {
       await this.stop();
     }
+    this.engine.stop();
   }
 
   /**
