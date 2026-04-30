@@ -4,6 +4,33 @@
 
 Update lifecycle methods so that in web mode the Engine instance is never recreated and its promise is never replaced. `buildEngine()` is called only once, in `run()`.
 
+## `run()` — single engine creation, single promise
+
+`run()` is where `buildEngine()` and `engine.start()` are called — and this happens **only once**. The promise returned by `engine.start()` is stored and added to the aggregator. In web mode this promise stays alive until `shutdown()` is called.
+
+```js
+async run() {
+  this.#aggregator = new PromiseAggregator();
+  this.#sleepMs = this.config.workersConfig.sleep;
+
+  this.engine = this.buildEngine();       // only call to buildEngine()
+  this.webServer = this.buildWebServer();
+  this.enqueueFirstJobs();
+
+  this.#engineStatus = 'running';
+  this.#aggregator.add(this.webServer?.start());
+  this.#enginePromise = this.engine.start(); // only call to engine.start()
+  this.#aggregator.add(this.#enginePromise);
+
+  await this.#aggregator.wait();
+  this.#engineStatus = 'stopped';
+
+  new FailureChecker({ failureConfig: this.config.failureConfig }).check();
+}
+```
+
+No changes to `run()` — documented here for clarity.
+
 ## `buildEngine()` — pass `keepAlive`
 
 ```js
