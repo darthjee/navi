@@ -26,6 +26,15 @@ describe('JobsClient', () => {
         const result = await fetchJobsByStatus('enqueued');
         expect(result).toEqual(jobs);
       });
+
+      describe('when a filter query is provided', () => {
+        it('appends the filter query to the URL', async () => {
+          await fetchJobsByStatus('enqueued', 'filters[class][]=ResourceRequestJob');
+          expect(globalThis.fetch).toHaveBeenCalledWith(
+            '/jobs/enqueued.json?filters[class][]=ResourceRequestJob'
+          );
+        });
+      });
     });
 
     describe('when the request fails', () => {
@@ -82,6 +91,18 @@ describe('JobsClient', () => {
           ...deadJobs,
         ]);
       });
+
+      describe('when a filter query is provided', () => {
+        it('appends the filter query to all status URLs', async () => {
+          await fetchJobs('filters[class][]=ResourceRequestJob');
+          expect(globalThis.fetch).toHaveBeenCalledWith(
+            '/jobs/enqueued.json?filters[class][]=ResourceRequestJob'
+          );
+          expect(globalThis.fetch).toHaveBeenCalledWith(
+            '/jobs/dead.json?filters[class][]=ResourceRequestJob'
+          );
+        });
+      });
     });
 
     describe('when one request fails', () => {
@@ -97,3 +118,4 @@ describe('JobsClient', () => {
     });
   });
 });
+

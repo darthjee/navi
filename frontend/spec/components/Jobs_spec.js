@@ -96,6 +96,16 @@ describe('Jobs', () => {
     it('shows the job class', () => {
       expect(container.textContent).toContain('ResourceRequestJob');
     });
+
+    it('renders the filter checkboxes', () => {
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      expect(checkboxes.length).toBeGreaterThan(0);
+    });
+
+    it('renders a status tab for each status', () => {
+      const tabs = container.querySelectorAll('.nav-tabs .nav-item');
+      expect(tabs.length).toBe(5);
+    });
   });
 
   describe('when no jobs exist', () => {
