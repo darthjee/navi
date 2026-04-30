@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import EngineControlsHelper from './EngineControlsHelper.jsx';
-import EngineControlsView from './EngineControlsView.jsx';
+import EngineControlsController from './controllers/EngineControlsController.jsx';
+import EngineControlsHelper from './helpers/EngineControlsHelper.jsx';
 
 function EngineControls() {
   const [status, setStatus] = useState(null);
@@ -8,12 +8,12 @@ function EngineControls() {
   const helper = useMemo(() => new EngineControlsHelper(), []);
 
   const refreshStatus = useCallback(
-    () => EngineControlsView.fetchStatus(setStatus),
+    () => EngineControlsController.fetchStatus(setStatus),
     []
   );
 
   const view = useMemo(
-    () => EngineControlsView.build(status, refreshStatus),
+    () => EngineControlsController.build(status, refreshStatus),
     [status, refreshStatus]
   );
 

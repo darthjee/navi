@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import CollapsibleSection from './CollapsibleSection.jsx';
-import ReadyCountdown from './ReadyCountdown.jsx';
-import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
+import { VARIANT_BY_STATUS } from '../../constants/jobStatus.js';
+import CollapsibleSection from '../CollapsibleSection.jsx';
+import ReadyCountdown from '../ReadyCountdown.jsx';
 
 const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
 const STATUSES_WITH_READY_IN = new Set(['failed']);

@@ -1,13 +1,13 @@
-import LogsPageView from '../../src/components/LogsPageView.jsx';
+import LogsPageController from '../../src/components/controllers/LogsPageController.jsx';
 import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => new Promise((r) => setTimeout(r, 0));
 
-describe('LogsPageView', () => {
+describe('LogsPageController', () => {
   describe('.build', () => {
-    it('returns a LogsPageView instance', () => {
-      const view = LogsPageView.build([]);
-      expect(view).toBeInstanceOf(LogsPageView);
+    it('returns a LogsPageController instance', () => {
+      const view = LogsPageController.build([]);
+      expect(view).toBeInstanceOf(LogsPageController);
     });
   });
 
@@ -36,7 +36,7 @@ describe('LogsPageView', () => {
         lastIdRef = { current: null };
         setLogs = jasmine.createSpy('setLogs');
 
-        const view = LogsPageView.build([]);
+        const view = LogsPageController.build([]);
         cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
         await flushAsync();
       });
@@ -67,7 +67,7 @@ describe('LogsPageView', () => {
         const cancelledRef = { current: false };
         const lastIdRef = { current: null };
         const setLogs = jasmine.createSpy('setLogs');
-        const view = LogsPageView.build([]);
+        const view = LogsPageController.build([]);
         cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
         await flushAsync();
       });
@@ -86,7 +86,7 @@ describe('LogsPageView', () => {
         const cancelledRef = { current: false };
         const lastIdRef = { current: null };
         const setLogs = jasmine.createSpy('setLogs');
-        const view = LogsPageView.build([]);
+        const view = LogsPageController.build([]);
         const cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
 
         cleanup();
@@ -99,7 +99,7 @@ describe('LogsPageView', () => {
     it('calls scrollIntoView on the bottomRef element when logs exist', () => {
       const scrollSpy = jasmine.createSpy('scrollIntoView');
       const bottomRef = { current: { scrollIntoView: scrollSpy } };
-      const view = LogsPageView.build([{ id: 1, level: 'info', message: 'x', timestamp: 't' }]);
+      const view = LogsPageController.build([{ id: 1, level: 'info', message: 'x', timestamp: 't' }]);
 
       view.buildScrollEffect(bottomRef)();
       expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
@@ -108,7 +108,7 @@ describe('LogsPageView', () => {
     it('does not call scrollIntoView when there are no logs', () => {
       const scrollSpy = jasmine.createSpy('scrollIntoView');
       const bottomRef = { current: { scrollIntoView: scrollSpy } };
-      const view = LogsPageView.build([]);
+      const view = LogsPageController.build([]);
 
       view.buildScrollEffect(bottomRef)();
       expect(scrollSpy).not.toHaveBeenCalled();
