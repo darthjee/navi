@@ -20,11 +20,15 @@ Currently, when a stop is triggered through the API, the Engine is killed and a 
 
 ## Solution
 
-- Change how application promises and the Engine loop work.
-- The Engine loop keeps running while its promise is active.
-- In CI mode: the promise completes when the queue is empty.
-- In web mode: the promise is only resolved by the shutdown API endpoint.
-- Remove the pattern of killing and recreating the Engine on stop/start in web mode.
+`Engine.start()` already returns a promise (it is an `async` method), stored as `#enginePromise` in `ApplicationInstance` and tracked by the `PromiseAggregator`. The existing promise infrastructure can be reused — no new promise mechanism is needed.
+
+The changes required are:
+
+- Add a `keepAlive` flag to `Engine`. When `true`, the loop condition becomes `while (!this.#stopped)` instead of `while (!this.#stopped && this.#continueAllocating())`, keeping the engine running even when the queue is empty.
+- `ApplicationInstance` passes `keepAlive: !!this.webServer` when building the engine.
+- In web mode, `stop()` only clears the queues and updates status — it does **not** call `engine.stop()`. The engine loop keeps running.
+- In web mode, `continue()` and `start()` do **not** create a new engine — they just re-enqueue jobs and update the status.
+- Only `shutdown()` calls `engine.stop()`, which sets `#stopped = true` and allows the loop (and its promise) to resolve.
 
 ## Benefits
 
