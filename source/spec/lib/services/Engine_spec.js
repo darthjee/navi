@@ -209,10 +209,9 @@ describe('Engine', () => {
         engine = new Engine({ keepAlive: true, sleepMs: -1 });
 
         let iterations = 0;
-        spyOn(JobRegistry, 'hasJob').and.callFake(() => {
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
           iterations++;
           if (iterations >= 3) engine.stop();
-          return false;
         });
 
         await engine.start();
@@ -226,9 +225,8 @@ describe('Engine', () => {
 
         spyOn(engine.allocator, 'allocate');
         spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
-        spyOn(JobRegistry, 'hasJob').and.callFake(() => {
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
           engine.stop();
-          return false;
         });
 
         await engine.start();
@@ -242,11 +240,10 @@ describe('Engine', () => {
         engine.resume();
 
         spyOn(engine.allocator, 'allocate');
-        spyOn(JobRegistry, 'hasReadyJob').and.callFake(() => {
+        spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
           engine.stop();
-          return true;
         });
-        spyOn(JobRegistry, 'hasJob').and.returnValue(false);
 
         await engine.start();
 
@@ -254,3 +251,4 @@ describe('Engine', () => {
       });
     });
   });
+});

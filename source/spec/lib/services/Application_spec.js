@@ -6,9 +6,9 @@ import { ConfigurationFileNotProvided } from '../../../lib/exceptions/Configurat
 import { Config } from '../../../lib/models/Config.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
-import { Engine } from '../../../lib/services/Engine.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Application } from '../../../lib/services/Application.js';
+import { Engine } from '../../../lib/services/Engine.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
@@ -186,7 +186,7 @@ describe('Application', () => {
           });
         });
 
-        spyOn(app, 'buildEngine').and.callFake(() => new Engine({ keepAlive: true, sleepMs: -1 }));
+        spyOn(app, 'buildEngine').and.callFake(() => new Engine({ keepAlive: true, sleepMs: 1 }));
       });
 
       it('waits for web server promise before resolving', async () => {
