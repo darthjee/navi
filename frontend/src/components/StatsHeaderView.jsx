@@ -1,22 +1,36 @@
 import fetchStats from '../clients/StatsClient.js';
 
 class StatsHeaderView {
-  static buildEffect(setStats, setError, setLoading) {
-    return () => {
-      const load = () => {
-        fetchStats()
-          .then((data) => {
-            setStats(data);
-            setError(null);
-          })
-          .catch((err) => setError(err.message))
-          .finally(() => setLoading(false));
-      };
+  #setStats;
+  #setError;
+  #setLoading;
 
-      load();
-      const interval = setInterval(load, 5000);
+  constructor(setStats, setError, setLoading) {
+    this.#setStats = setStats;
+    this.#setError = setError;
+    this.#setLoading = setLoading;
+  }
+
+  static build(setStats, setError, setLoading) {
+    return new StatsHeaderView(setStats, setError, setLoading);
+  }
+
+  buildEffect() {
+    return () => {
+      this.#load();
+      const interval = setInterval(() => this.#load(), 5000);
       return () => clearInterval(interval);
     };
+  }
+
+  #load() {
+    fetchStats()
+      .then((data) => {
+        this.#setStats(data);
+        this.#setError(null);
+      })
+      .catch((err) => this.#setError(err.message))
+      .finally(() => this.#setLoading(false));
   }
 }
 

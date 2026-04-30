@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import StatsHeaderHelper from './StatsHeaderHelper.jsx';
 import StatsHeaderView from './StatsHeaderView.jsx';
 
@@ -7,8 +7,13 @@ function StatsHeader() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const view = useMemo(
+    () => StatsHeaderView.build(setStats, setError, setLoading),
+    []
+  );
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(StatsHeaderView.buildEffect(setStats, setError, setLoading), []);
+  useEffect(view.buildEffect(), []);
 
   if (loading) return StatsHeaderHelper.renderLoading();
   if (error) return StatsHeaderHelper.renderError(error);
