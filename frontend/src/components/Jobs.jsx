@@ -16,7 +16,7 @@ function Jobs() {
   const { activeFilters, filterQuery, handleClassFilterChange } = view;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(JobsHelper.buildEffect(status, filterQuery, setJobs, setError, setLoading), [status, filterQuery]);
+  useEffect(view.buildEffect(setJobs, setError, setLoading), [status, filterQuery]);
 
   if (loading) return JobsHelper.renderLoading();
   if (error) return JobsHelper.renderError(error);

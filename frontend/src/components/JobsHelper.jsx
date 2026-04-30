@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { fetchJobs, fetchJobsByStatus, STATUSES } from '../clients/JobsClient.js';
+import { STATUSES } from '../clients/JobsClient.js';
 import { JOB_CLASSES } from '../constants/jobClasses.js';
 
 /**
@@ -8,53 +8,6 @@ import { JOB_CLASSES } from '../constants/jobClasses.js';
  * @author darthjee
  */
 class JobsHelper {
-  /**
-   * Builds the useEffect callback for loading jobs.
-   * @param {string|undefined} status - The active status route param.
-   * @param {string} filterQuery - The serialised filter query string.
-   * @param {Function} setJobs - State setter for the job list.
-   * @param {Function} setError - State setter for the error message.
-   * @param {Function} setLoading - State setter for the loading flag.
-   * @returns {Function} The effect callback.
-   */
-  static buildEffect(status, filterQuery, setJobs, setError, setLoading) {
-    return () => {
-      const state = { cancelled: false };
-      setLoading(true);
-      JobsHelper.buildLoad(status, filterQuery)
-        .then(JobsHelper.buildSuccessHandler(state, setJobs, setError))
-        .catch((err) => { if (!state.cancelled) setError(err.message); })
-        .finally(() => { if (!state.cancelled) setLoading(false); });
-      return () => { state.cancelled = true; };
-    };
-  }
-
-  /**
-   * Returns the fetch promise for the given status and filter query.
-   * @param {string|undefined} status - The active status route param.
-   * @param {string} filterQuery - The serialised filter query string.
-   * @returns {Promise<object[]>}
-   */
-  static buildLoad(status, filterQuery) {
-    return status ? fetchJobsByStatus(status, filterQuery) : fetchJobs(filterQuery);
-  }
-
-  /**
-   * Builds the `.then` success callback for the jobs fetch.
-   * @param {{ cancelled: boolean }} state - Cancellation state object.
-   * @param {Function} setJobs - State setter for the job list.
-   * @param {Function} setError - State setter for the error message.
-   * @returns {Function} The success handler.
-   */
-  static buildSuccessHandler(state, setJobs, setError) {
-    return (data) => {
-      if (!state.cancelled) {
-        setJobs(data);
-        setError(null);
-      }
-    };
-  }
-
   /**
    * Renders the status tab bar.
    * @param {string|undefined} status - The currently active status tab.

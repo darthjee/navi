@@ -27,58 +27,6 @@ describe('JobsHelper', () => {
     });
   };
 
-  describe('.buildLoad', () => {
-    describe('when status is provided', () => {
-      it('fetches from /jobs/:status.json', async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
-        );
-        await JobsHelper.buildLoad('failed', '');
-        expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/failed.json');
-      });
-    });
-
-    describe('when status is undefined', () => {
-      it('fetches all status endpoints', async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
-        );
-        await JobsHelper.buildLoad(undefined, '');
-        expect(globalThis.fetch.calls.count()).toBe(5);
-      });
-    });
-  });
-
-  describe('.buildSuccessHandler', () => {
-    describe('when not cancelled', () => {
-      it('calls setJobs and clears the error', () => {
-        const state = { cancelled: false };
-        const setJobs = jasmine.createSpy('setJobs');
-        const setError = jasmine.createSpy('setError');
-        const handler = JobsHelper.buildSuccessHandler(state, setJobs, setError);
-
-        handler([{ id: 'abc' }]);
-
-        expect(setJobs).toHaveBeenCalledWith([{ id: 'abc' }]);
-        expect(setError).toHaveBeenCalledWith(null);
-      });
-    });
-
-    describe('when cancelled', () => {
-      it('does not call setJobs or setError', () => {
-        const state = { cancelled: true };
-        const setJobs = jasmine.createSpy('setJobs');
-        const setError = jasmine.createSpy('setError');
-        const handler = JobsHelper.buildSuccessHandler(state, setJobs, setError);
-
-        handler([{ id: 'abc' }]);
-
-        expect(setJobs).not.toHaveBeenCalled();
-        expect(setError).not.toHaveBeenCalled();
-      });
-    });
-  });
-
   describe('.renderLoading', () => {
     beforeEach(async () => {
       await render(JobsHelper.renderLoading());

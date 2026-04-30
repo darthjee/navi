@@ -1,3 +1,4 @@
+import { fetchJobs, fetchJobsByStatus } from '../clients/JobsClient.js';
 import FilterParams from '../utils/FilterParams.js';
 
 /**
@@ -32,6 +33,51 @@ class JobsView {
     const updated = this.#updatedClasses(jobClass, checked);
     const newQuery = this.#newQuery(updated);
     this.#navigate(this.#destination(newQuery));
+  }
+
+  /**
+   * Builds the useEffect callback for loading jobs.
+   * @param {Function} setJobs - State setter for the job list.
+   * @param {Function} setError - State setter for the error message.
+   * @param {Function} setLoading - State setter for the loading flag.
+   * @returns {Function} The effect callback.
+   */
+  buildEffect(setJobs, setError, setLoading) {
+    return () => {
+      const state = { cancelled: false };
+      setLoading(true);
+      this.buildLoad()
+        .then(this.buildSuccessHandler(state, setJobs, setError))
+        .catch((err) => { if (!state.cancelled) setError(err.message); })
+        .finally(() => { if (!state.cancelled) setLoading(false); });
+      return () => { state.cancelled = true; };
+    };
+  }
+
+  /**
+   * Returns the fetch promise for the current status and filter query.
+   * @returns {Promise<object[]>}
+   */
+  buildLoad() {
+    return this.#status
+      ? fetchJobsByStatus(this.#status, this.filterQuery)
+      : fetchJobs(this.filterQuery);
+  }
+
+  /**
+   * Builds the `.then` success callback for the jobs fetch.
+   * @param {{ cancelled: boolean }} state - Cancellation state object.
+   * @param {Function} setJobs - State setter for the job list.
+   * @param {Function} setError - State setter for the error message.
+   * @returns {Function} The success handler.
+   */
+  buildSuccessHandler(state, setJobs, setError) {
+    return (data) => {
+      if (!state.cancelled) {
+        setJobs(data);
+        setError(null);
+      }
+    };
   }
 
   /**
