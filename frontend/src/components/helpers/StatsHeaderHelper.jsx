@@ -1,5 +1,5 @@
-import JobStatItem from './JobStatItem.jsx';
-import StatItem from './StatItem.jsx';
+import JobStatItem from '../JobStatItem.jsx';
+import StatItem from '../StatItem.jsx';
 
 class StatsHeaderHelper {
   static renderLoading() {

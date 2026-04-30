@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
-import JobsHelper from './JobsHelper.jsx';
-import JobsView from './JobsView.jsx';
+import JobsController from './controllers/JobsController.jsx';
+import JobsHelper from './helpers/JobsHelper.jsx';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
 function Jobs() {
@@ -12,7 +12,7 @@ function Jobs() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const view = new JobsView(status, location.search, navigate);
+  const view = new JobsController(status, location.search, navigate);
   const { activeFilters, filterQuery, handleClassFilterChange } = view;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import StatsHeaderHelper from './StatsHeaderHelper.jsx';
-import StatsHeaderView from './StatsHeaderView.jsx';
+import StatsHeaderController from './controllers/StatsHeaderController.jsx';
+import StatsHeaderHelper from './helpers/StatsHeaderHelper.jsx';
 
 function StatsHeader() {
   const [stats, setStats] = useState(null);
@@ -8,7 +8,7 @@ function StatsHeader() {
   const [loading, setLoading] = useState(true);
 
   const view = useMemo(
-    () => StatsHeaderView.build(setStats, setError, setLoading),
+    () => StatsHeaderController.build(setStats, setError, setLoading),
     []
   );
 

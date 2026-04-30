@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import LogsPageHelper from '../../src/components/LogsPageHelper.jsx';
+import LogsPageHelper from '../../src/components/helpers/LogsPageHelper.jsx';
 
 describe('LogsPageHelper', () => {
   describe('.build', () => {

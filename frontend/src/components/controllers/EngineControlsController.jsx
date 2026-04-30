@@ -6,13 +6,13 @@ import {
   restartEngine,
   shutdownServer,
   getEngineStatus,
-} from '../clients/EngineClient.js';
-import noop from '../utils/noop.js';
+} from '../../clients/EngineClient.js';
+import noop from '../../utils/noop.js';
 
 const POLL_INTERVAL_MS = 2000;
 const TRANSITIONAL_STATUSES = new Set(['pausing', 'stopping']);
 
-class EngineControlsView {
+class EngineControlsController {
   #status;
   #refreshStatus;
 
@@ -22,7 +22,7 @@ class EngineControlsView {
   }
 
   static build(status, refreshStatus) {
-    return new EngineControlsView(status, refreshStatus);
+    return new EngineControlsController(status, refreshStatus);
   }
 
   static fetchStatus(setStatus) {
@@ -67,4 +67,4 @@ class EngineControlsView {
   }
 }
 
-export default EngineControlsView;
+export default EngineControlsController;

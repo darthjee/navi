@@ -1,6 +1,6 @@
-import fetchStats from '../clients/StatsClient.js';
+import fetchStats from '../../clients/StatsClient.js';
 
-class StatsHeaderView {
+class StatsHeaderController {
   #setStats;
   #setError;
   #setLoading;
@@ -12,7 +12,7 @@ class StatsHeaderView {
   }
 
   static build(setStats, setError, setLoading) {
-    return new StatsHeaderView(setStats, setError, setLoading);
+    return new StatsHeaderController(setStats, setError, setLoading);
   }
 
   buildEffect() {
@@ -34,4 +34,4 @@ class StatsHeaderView {
   }
 }
 
-export default StatsHeaderView;
+export default StatsHeaderController;

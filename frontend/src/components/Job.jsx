@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import JobController from './controllers/JobController.jsx';
+import JobHelper from './helpers/JobHelper.jsx';
 import JobDetails from './JobDetails.jsx';
-import JobHelper from './JobHelper.jsx';
-import JobView from './JobView.jsx';
 
 function Job() {
   const { id } = useParams();
@@ -11,7 +11,7 @@ function Job() {
   const [loading, setLoading] = useState(true);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(JobView.buildEffect(id, setJob, setError, setLoading), [id]);
+  useEffect(JobController.buildEffect(id, setJob, setError, setLoading), [id]);
 
   if (loading) return JobHelper.renderLoading();
   if (error) return JobHelper.renderError(error);

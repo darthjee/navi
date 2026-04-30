@@ -1,4 +1,4 @@
-import JobDetailsHelper from './JobDetailsHelper.jsx';
+import JobDetailsHelper from './helpers/JobDetailsHelper.jsx';
 
 function JobDetails({ job }) {
   return JobDetailsHelper.render(job);
