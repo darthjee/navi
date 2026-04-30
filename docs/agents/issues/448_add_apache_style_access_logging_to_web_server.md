@@ -25,3 +25,6 @@ Every time the web server receives a request, a `debug` log should be recorded a
 
 - Operators can trace every request through the log stream visible in `/#/logs`
 - Consistent with the existing `Logger`/`LogRegistry` infrastructure already in place
+
+---
+See issue for details: https://github.com/darthjee/navi/issues/448
