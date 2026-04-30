@@ -25,7 +25,17 @@ class JobsFilter {
       return this._jobs;
     }
 
-    return this._jobs.filter((job) => classes.includes(job.constructor.name));
+    return this._jobs.filter((job) => this.#matchesClass(job, classes));
+  }
+
+  /**
+   * Returns true when the job's class is listed in the requested classes.
+   * @param {object} job - A job instance.
+   * @param {string[]} classes - The list of accepted class names.
+   * @returns {boolean}
+   */
+  #matchesClass(job, classes) {
+    return classes.includes(job.constructor.name);
   }
 
   /**
