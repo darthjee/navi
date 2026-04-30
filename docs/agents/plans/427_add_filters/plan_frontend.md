@@ -29,22 +29,37 @@ In the jobs view component:
 - On mount (and on route change), read `location.search` and parse the `filters[class][]` values.
 - Use the parsed values as the initial selection state for the dropdown.
 
-### Step 3 — Add the multi-select dropdown
+### Step 3 — Create the static job-class registry
+
+Create a constants file (e.g. `src/constants/jobClasses.js`) that exports the exhaustive list of known job classes:
+
+```js
+export const JOB_CLASSES = [
+  'ResourceRequestJob',
+  'ActionProcessingJob',
+  'HtmlParseJob',
+  'AssetDownloadJob',
+];
+```
+
+This list is the single source of truth for the dropdown options. **It must be updated whenever a new job class is added to the backend** (see `docs/agents/contributing.md`).
+
+### Step 4 — Add the multi-select dropdown
 
 Add a multi-select dropdown (or checkbox group) to the shared jobs view layout so it appears on every status tab:
 
-- Derive available options from the union of unique job classes present in the currently loaded job list.
+- Populate options from `JOB_CLASSES` — all known classes are always shown, regardless of queue state.
 - Pre-select the classes already active in the URL.
 - On change, update the URL query string (via the router's `navigate` / `history.replace` or equivalent) with the new filter selection — this triggers a re-fetch automatically via the route change.
 
-### Step 4 — Pass filter params to the API request
+### Step 5 — Pass filter params to the API request
 
 Update the API client call for `GET /jobs/:status.json` to:
 
 - Read the active filter from the current URL (or from component state already synced with the URL).
 - Append the serialised `filters[class][]` query string to the request URL.
 
-### Step 5 — Carry filters when navigating between status tabs
+### Step 6 — Carry filters when navigating between status tabs
 
 Update the status-tab navigation links so that when the user clicks another tab, the current filter query string is appended to the target URL.
 
@@ -52,14 +67,16 @@ Example: clicking "failed" while `?filters[class][]=ResourceRequestJob` is activ
 
 ## Files to Change
 
+- `frontend/src/constants/jobClasses.js` — new static job-class registry
 - `frontend/src/` — jobs view component (exact path TBD after code inspection)
 - `frontend/src/` — status-tab navigation component (exact path TBD)
 - `frontend/src/` — jobs API client function (exact path TBD)
 - `frontend/src/utils/filterParams.js` (or equivalent) — new parse/serialise utility
+- `docs/agents/contributing.md` — add checklist item: update `jobClasses.js` when adding a new job class
 
 ## Notes
 
 - Keeping filters in the URL means the filtered view is bookmarkable and shareable — no global state or local storage needed.
-- The dropdown options are derived from the loaded job list; if the list is empty after filtering, options from the last successful load should still be shown to allow deselecting the filter.
+- `JOB_CLASSES` is the single source of truth for dropdown options; all known classes are always shown, even when queues are empty.
 - If the frontend router is React Router, use `useSearchParams` (v6) or `useLocation` + `useHistory` (v5) to read and update the query string without a full navigation.
 - The serialisation of `filters[class][]` must match exactly what the backend's `qs` parser expects (`filters%5Bclass%5D%5B%5D=Foo`).

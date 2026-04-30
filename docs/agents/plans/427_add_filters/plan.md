@@ -14,7 +14,7 @@ Add job-class filtering to all job views. A multi-select dropdown lets users pic
 ## Sub-plans
 
 - [Backend](plan_backend.md) — `JobsFilter` class and `JobsRequestHandler` update
-- [Frontend](plan_frontend.md) — multi-select dropdown, URL-based filter persistence, and cross-view navigation
+- [Frontend](plan_frontend.md) — static job-class registry, multi-select dropdown, URL-based filter persistence, and cross-view navigation
 
 ## Files to Change
 
@@ -24,4 +24,5 @@ See each sub-plan for the detailed file list.
 
 - Filters are stored in the URL query string so they survive page refresh and are shareable/bookmarkable.
 - When navigating between job status tabs, the router carries the active `filters` query params to the new route.
+- The frontend maintains a static list of known job classes (`src/constants/jobClasses.js`). **Whenever a new job class is added to the backend, this file must also be updated** — documented in `docs/agents/contributing.md`.
 - Open question: should there be a "clear filters" button? Not in scope for now; deselecting all options in the dropdown naturally clears the filter.
