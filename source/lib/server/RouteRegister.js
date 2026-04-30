@@ -64,19 +64,21 @@ class RouteRegister {
    */
   #handleError(e, req, res) {
     let statusCode;
+    let message;
     if (e instanceof ConflictError) {
       statusCode = 409;
-      res.status(409).json({ error: 'Conflict' });
+      message = 'Conflict';
     } else if (e instanceof ForbiddenError) {
       statusCode = 403;
-      res.status(403).json({ error: 'Forbidden' });
+      message = 'Forbidden';
     } else if (e instanceof NotFoundError) {
       statusCode = 404;
-      res.status(404).json({ error: e.message });
+      message = e.message;
     } else {
       statusCode = 500;
-      res.status(500).json({ error: 'Internal Server Error' });
+      message = 'Internal Server Error';
     }
+    res.status(statusCode).json({ error: message });
     Logger.debug(`${req.method} ${req.path} ${statusCode}`);
   }
 }
