@@ -181,7 +181,7 @@ Defined in `constants/jobStatus.js` as Bootstrap variant names:
 
 The frontend uses **relative URLs** for all API calls, so no base-URL configuration is required.
 
-> **Note:** Whenever `frontend/` code changes, `yarn build` must be re-run and the resulting files in `source/static/` must be committed. Navi serves the built assets directly — there is no runtime compilation.
+> **Note:** `source/static/` is not committed to the repository. The frontend is built automatically by the CI/CD pipeline (`npm-publish` job in CircleCI) at release time. During local development, set `FRONTEND_DEV_MODE=true` so the dev proxy forwards asset requests to the Vite dev server instead of relying on built files in `source/static/`.
 
 ## Development server
 
