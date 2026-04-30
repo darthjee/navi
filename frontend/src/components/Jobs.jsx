@@ -17,17 +17,21 @@ function Jobs() {
   const filterQuery = serializeFilterParams(activeFilters);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     const load = status
       ? fetchJobsByStatus(status, filterQuery)
       : fetchJobs(filterQuery);
     load
       .then((data) => {
-        setJobs(data);
-        setError(null);
+        if (!cancelled) {
+          setJobs(data);
+          setError(null);
+        }
       })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [status, filterQuery]);
 
   const handleClassFilterChange = (jobClass, checked) => {

@@ -39,7 +39,7 @@ describe('JobsFilter', () => {
       });
     });
 
-    describe('when a single class filter is provided as a string (qs edge case)', () => {
+    describe('when a single class filter is provided as a string (query string edge case)', () => {
       it('returns only jobs matching that class', () => {
         const filter = new JobsFilter(allJobs, { class: 'ActionProcessingJob' });
 
