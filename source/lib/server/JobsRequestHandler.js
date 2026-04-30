@@ -1,3 +1,4 @@
+import { JobsFilter } from './JobsFilter.js';
 import { RequestHandler } from './RequestHandler.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { JobSerializer } from '../serializers/JobSerializer.js';
@@ -23,7 +24,9 @@ class JobsRequestHandler extends RequestHandler {
   handle(req, res) {
     const { status } = req.params;
     const jobs = JobRegistry.jobsByStatus(status);
-    res.json(JobSerializer.serialize(jobs, { status, view: 'index' }));
+    const filters = req.query.filters || {};
+    const filteredJobs = new JobsFilter(jobs, filters).filter();
+    res.json(JobSerializer.serialize(filteredJobs, { status, view: 'index' }));
   }
 }
 

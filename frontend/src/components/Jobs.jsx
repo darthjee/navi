@@ -1,45 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { fetchJobs, fetchJobsByStatus } from '../clients/JobsClient.js';
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
+import JobsHelper from './JobsHelper.jsx';
+import JobsView from './JobsView.jsx';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
 
 function Jobs() {
   const { status } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = status ? fetchJobsByStatus(status) : fetchJobs();
-    load
-      .then((data) => {
-        setJobs(data);
-        setError(null);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [status]);
+  const view = new JobsView(status, location.search, navigate);
+  const { activeFilters, filterQuery, handleClassFilterChange } = view;
 
-  if (loading) {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border" role="status" />
-        <p className="mt-2">Loading jobs…</p>
-      </div>
-    );
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(view.buildEffect(setJobs, setError, setLoading), [status, filterQuery]);
 
-  if (error) {
-    return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">Failed to load jobs: {error}</div>
-      </div>
-    );
-  }
+  if (loading) return JobsHelper.renderLoading();
+  if (error) return JobsHelper.renderError(error);
 
   return (
     <div className="container mt-4">
       <h1 className="mb-4">Jobs</h1>
+      {JobsHelper.renderStatusTabs(status, filterQuery)}
+      {JobsHelper.renderFilterPanel(activeFilters, handleClassFilterChange)}
       {jobs.length === 0
         ? <p className="text-muted">No jobs found.</p>
         : (
