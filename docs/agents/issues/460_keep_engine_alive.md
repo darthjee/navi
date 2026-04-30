@@ -26,9 +26,11 @@ The changes required are:
 
 - Add a `keepAlive` flag to `Engine`. When `true`, the loop condition becomes `while (!this.#stopped)` instead of `while (!this.#stopped && this.#continueAllocating())`, keeping the engine running even when the queue is empty.
 - `ApplicationInstance` passes `keepAlive: !!this.webServer` when building the engine.
-- In web mode, `stop()` only clears the queues and updates status — it does **not** call `engine.stop()`. The engine loop keeps running.
-- In web mode, `continue()` and `start()` do **not** create a new engine — they just re-enqueue jobs and update the status.
-- Only `shutdown()` calls `engine.stop()`, which sets `#stopped = true` and allows the loop (and its promise) to resolve.
+- The same `Engine` instance is reused across pause/continue/stop/start cycles — no new instance is ever created in web mode.
+- `pause()` calls `engine.stop()` (sets `#stopped = true`, loop exits, promise resolves), but keeps the engine instance alive.
+- `continue()` and `start()` call `engine.start()` on the existing instance (resetting `#stopped = false`), and add the new promise to the aggregator — but only if the engine is not already running.
+- `stop()` in web mode calls `engine.stop()`, clears the queues, and updates status. The engine instance is preserved.
+- Only `shutdown()` calls `engine.stop()` and does not restart it, allowing the aggregator to fully resolve.
 
 ## Benefits
 
