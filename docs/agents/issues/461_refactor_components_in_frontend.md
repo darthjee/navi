@@ -7,22 +7,35 @@ The components in `frontend/src/components/` currently mix three concerns in a s
 ## Problem
 
 - Components in `frontend/src/components/` mix component logic, data manipulation, and HTML rendering in a single file.
-- Only the `Job` component has been properly split into separate files so far.
+- Only the `Jobs` component has been properly split into all three files (`Jobs.jsx`, `JobsHelper.jsx`, `JobsView.jsx`).
 - `JobsView.jsx` still needs to be renamed to `JobView.jsx` to follow the established convention.
 
 ## Expected Behavior
 
-Each component should be split into three distinct files following the pattern established by `Job.jsx`:
+Each component should be split into three distinct files following the pattern established by `Jobs`:
 
-- `<Name>.jsx` — the component itself
+- `<Name>.jsx` — the component itself (state, effects, orchestration)
 - `<Name>Helper.jsx` — HTML rendering helpers
-- `<Name>View.jsx` — data manipulation logic
+- `<Name>View.jsx` — data manipulation logic (fetch, handlers, derived state)
+
+Components that are trivially simple (`CollapsibleSection`, `Layout`, `StatItem`, `JobStatItem`) do not need splitting.
+
+## Components to Refactor
+
+| Component | Current state | Missing |
+|---|---|---|
+| `Job` | `Job.jsx` + `JobHelper.jsx` (Helper mixes HTML and data logic) | `JobView.jsx` (extract data loading from Helper) |
+| `BaseUrlsMenu` | `BaseUrlsMenu.jsx` + `BaseUrlsMenuHelper.jsx` (component calls client directly) | `BaseUrlsMenuView.jsx` (extract data fetching) |
+| `EngineControls` | `EngineControls.jsx` + `EngineControlsHelper.jsx` (Helper mixes HTML and action logic) | `EngineControlsView.jsx` (extract data/action logic) |
+| `LogsPage` | `LogsPage.jsx` + `LogsPageHelper.jsx` (Helper mixes HTML and polling logic) | `LogsPageView.jsx` (extract polling logic) |
+| `StatsHeader` | All inline in `StatsHeader.jsx` (fetch + HTML mixed) | `StatsHeaderHelper.jsx` + `StatsHeaderView.jsx` |
+| `JobDetails` | All inline in `JobDetails.jsx` (logic + HTML mixed) | `JobDetailsHelper.jsx` |
+| `ReadyCountdown` | `ReadyCountdownTimer` class and component in the same file | `ReadyCountdownHelper.jsx` (extract timer class) |
 
 ## Solution
 
-- Rename `JobsView.jsx` to `JobView.jsx`.
-- Identify all other components in `frontend/src/components/` that still mix concerns.
-- Split each one into the three-file pattern: `<Name>.jsx`, `<Name>Helper.jsx`, and `<Name>View.jsx`.
+- Rename `JobsView.jsx` to `JobView.jsx` and update its import in `Jobs.jsx`.
+- For each component in the table above, extract the missing files according to the three-file pattern.
 
 ## Benefits
 
