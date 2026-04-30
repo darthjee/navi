@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { fetchJobs, fetchJobsByStatus, STATUSES } from '../clients/JobsClient.js';
 import { JOB_CLASSES } from '../constants/jobClasses.js';
-import FilterParams from '../utils/FilterParams.js';
 
 /**
  * Helper class for the Jobs component: encapsulates data-loading, event handling,
@@ -53,25 +52,6 @@ class JobsHelper {
         setJobs(data);
         setError(null);
       }
-    };
-  }
-
-  /**
-   * Builds the handler for job-class filter checkbox changes.
-   * @param {{ class: string[] }} activeFilters - The currently active filters.
-   * @param {string|undefined} status - The active status route param.
-   * @param {Function} navigate - React Router navigate function.
-   * @returns {Function} The change handler `(jobClass, checked) => void`.
-   */
-  static buildFilterChangeHandler(activeFilters, status, navigate) {
-    return (jobClass, checked) => {
-      const current = activeFilters.class || [];
-      const updated = checked
-        ? [...current, jobClass]
-        : current.filter((c) => c !== jobClass);
-      const newQuery = FilterParams.serialize({ class: updated });
-      const base = status ? `/jobs/${status}` : '/jobs';
-      navigate(newQuery ? `${base}?${newQuery}` : base);
     };
   }
 

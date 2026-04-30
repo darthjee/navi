@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import JobsHelper from './JobsHelper.jsx';
+import JobsView from './JobsView.jsx';
 import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
-import FilterParams from '../utils/FilterParams.js';
 
 function Jobs() {
   const { status } = useParams();
@@ -12,9 +12,8 @@ function Jobs() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const activeFilters = new FilterParams(location.search).parse();
-  const filterQuery = FilterParams.serialize(activeFilters);
-  const handleClassFilterChange = JobsHelper.buildFilterChangeHandler(activeFilters, status, navigate);
+  const view = new JobsView(status, location.search, navigate);
+  const { activeFilters, filterQuery, handleClassFilterChange } = view;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(JobsHelper.buildEffect(status, filterQuery, setJobs, setError, setLoading), [status, filterQuery]);
