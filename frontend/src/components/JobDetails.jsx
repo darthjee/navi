@@ -30,6 +30,13 @@ function JobDetails({ job }) {
             <dt className="col-sm-3">Class</dt>
             <dd className="col-sm-9">{job.jobClass}</dd>
 
+            {job.jobClass === 'ResourceRequestJob' && (
+              <>
+                <dt className="col-sm-3">URL</dt>
+                <dd className="col-sm-9 font-monospace">{job.arguments?.url}</dd>
+              </>
+            )}
+
             <dt className="col-sm-3">Arguments</dt>
             <dd className="col-sm-9">
               <CollapsibleSection label="Show arguments">

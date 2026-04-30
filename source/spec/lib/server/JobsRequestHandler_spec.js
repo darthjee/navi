@@ -16,7 +16,12 @@ describe('JobsRequestHandler', () => {
   });
 
   describe('#handle', () => {
-    const rawJob = { id: 'abc', _attempts: 0, constructor: { name: 'ResourceRequestJob' } };
+    const rawJob = {
+      id: 'abc',
+      _attempts: 0,
+      constructor: { name: 'ResourceRequestJob' },
+      arguments: { url: '/items.json' },
+    };
 
     beforeEach(() => {
       spyOn(JobRegistry, 'jobsByStatus').and.returnValue([rawJob]);
@@ -36,6 +41,7 @@ describe('JobsRequestHandler', () => {
         status: 'enqueued',
         attempts: 0,
         jobClass: 'ResourceRequestJob',
+        url: '/items.json',
       }]);
     });
 

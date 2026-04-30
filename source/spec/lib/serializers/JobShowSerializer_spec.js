@@ -7,7 +7,7 @@ describe('JobShowSerializer', () => {
         id: 'enq-1',
         _attempts: 0,
         constructor: { name: 'ResourceRequestJob' },
-        arguments: { url: '/items.json', parameters: {} },
+        arguments: { url: '/items.json' },
         maxRetries: 3,
         readyBy: 0,
         lastError: null,
@@ -20,7 +20,7 @@ describe('JobShowSerializer', () => {
           status: 'enqueued',
           attempts: 0,
           jobClass: 'ResourceRequestJob',
-          arguments: { url: '/items.json', parameters: {} },
+          arguments: { url: '/items.json' },
           remainingAttempts: 3,
         });
       });
@@ -46,7 +46,7 @@ describe('JobShowSerializer', () => {
         id: 'proc-1',
         _attempts: 1,
         constructor: { name: 'ResourceRequestJob' },
-        arguments: { url: '/items.json', parameters: {} },
+        arguments: { url: '/items.json' },
         maxRetries: 3,
         readyBy: 0,
         lastError: null,
@@ -59,7 +59,7 @@ describe('JobShowSerializer', () => {
           status: 'processing',
           attempts: 1,
           jobClass: 'ResourceRequestJob',
-          arguments: { url: '/items.json', parameters: {} },
+          arguments: { url: '/items.json' },
           remainingAttempts: 2,
         });
       });
@@ -168,7 +168,7 @@ describe('JobShowSerializer', () => {
         id: 'fin-1',
         _attempts: 2,
         constructor: { name: 'ResourceRequestJob' },
-        arguments: { url: '/done.json', parameters: {} },
+        arguments: { url: '/done.json' },
         maxRetries: 3,
         readyBy: 0,
         lastError: null,
@@ -181,7 +181,7 @@ describe('JobShowSerializer', () => {
           status: 'finished',
           attempts: 2,
           jobClass: 'ResourceRequestJob',
-          arguments: { url: '/done.json', parameters: {} },
+          arguments: { url: '/done.json' },
         });
       });
 
@@ -277,7 +277,7 @@ describe('JobShowSerializer', () => {
         id: 'over-1',
         _attempts: 5,
         constructor: { name: 'ResourceRequestJob' },
-        arguments: { url: '/test', parameters: {} },
+        arguments: { url: '/test' },
         maxRetries: 3,
         readyBy: 0,
         lastError: null,

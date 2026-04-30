@@ -30,10 +30,11 @@ class ResourceRequestJob extends Job {
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ url: string, parameters: object }} The job arguments.
+   * The URL is fully resolved with all parameter placeholders substituted.
+   * @returns {{ url: string }} The job arguments.
    */
   get arguments() {
-    return { url: this.#resourceRequest.url, parameters: this.#parameters };
+    return { url: this.#resourceRequest.resolveUrl(this.#parameters) };
   }
 
   /**
