@@ -10,6 +10,7 @@ class WebServer {
   #port;
   #app;
   #httpServer;
+  #startPromise;
 
   /**
    * @param {object} params - Options for initializing the WebServer.
@@ -23,21 +24,27 @@ class WebServer {
 
   /**
    * Starts the Express server on the configured port.
-   * The returned http.Server can be used to close the server (e.g. in tests).
-   * @returns {http.Server} The http.Server instance.
+   * Returns a Promise that resolves when the HTTP server fires its 'close' event,
+   * or rejects if the server fails to start.
+   * @returns {Promise<void>} A Promise that resolves when the server closes.
    */
   start() {
     Logger.info(`Listening to port ${this.#port}`);
-    this.#httpServer = this.#app.listen(this.#port);
-    return this.#httpServer;
+    this.#startPromise = new Promise((resolve, reject) => {
+      this.#httpServer = this.#app.listen(this.#port);
+      this.#httpServer.on('close', resolve);
+      this.#httpServer.on('error', reject);
+    });
+    return this.#startPromise;
   }
 
   /**
    * Closes the HTTP server, stopping it from accepting new connections.
-   * @returns {void}
+   * @returns {Promise<void>|undefined} The promise from start(), or undefined if not started.
    */
   shutdown() {
     this.#httpServer?.close();
+    return this.#startPromise;
   }
 
   /**
