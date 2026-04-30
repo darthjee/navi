@@ -29,13 +29,41 @@ class JobsView {
    * @param {boolean} checked - Whether the checkbox is now checked.
    */
   handleClassFilterChange(jobClass, checked) {
+    const updated = this.#updatedClasses(jobClass, checked);
+    const newQuery = this.#newQuery(updated);
+    this.#navigate(this.#destination(newQuery));
+  }
+
+  /**
+   * Returns the updated class list after toggling the given class.
+   * @param {string} jobClass - The class name being toggled.
+   * @param {boolean} checked - Whether the class is being added or removed.
+   * @returns {string[]}
+   */
+  #updatedClasses(jobClass, checked) {
     const current = this.activeFilters.class || [];
-    const updated = checked
+    return checked
       ? [...current, jobClass]
       : current.filter((c) => c !== jobClass);
-    const newQuery = FilterParams.serialize({ class: updated });
+  }
+
+  /**
+   * Serialises an updated class list into a query string.
+   * @param {string[]} classes - The updated class list.
+   * @returns {string}
+   */
+  #newQuery(classes) {
+    return FilterParams.serialize({ class: classes });
+  }
+
+  /**
+   * Returns the navigation destination URL for the given query string.
+   * @param {string} newQuery - The serialised filter query string.
+   * @returns {string}
+   */
+  #destination(newQuery) {
     const base = this.#status ? `/jobs/${this.#status}` : '/jobs';
-    this.#navigate(newQuery ? `${base}?${newQuery}` : base);
+    return newQuery ? `${base}?${newQuery}` : base;
   }
 }
 
