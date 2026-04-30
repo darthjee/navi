@@ -1,6 +1,7 @@
 import { ConflictError } from '../exceptions/ConflictError.js';
 import { ForbiddenError } from '../exceptions/ForbiddenError.js';
 import { NotFoundError } from '../exceptions/NotFoundError.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Registers a route on an Express router by binding the handler's handle method.
@@ -28,8 +29,9 @@ class RouteRegister {
     this.#router.get(route, (req, res) => {
       try {
         handler.handle(req, res);
+        Logger.debug(`${req.method} ${req.path} ${res.statusCode}`);
       } catch (e) {
-        this.#handleError(e, res);
+        this.#handleError(e, req, res);
       }
     });
   }
@@ -46,28 +48,38 @@ class RouteRegister {
     this.#router.patch(route, async (req, res) => {
       try {
         await handler.handle(req, res);
+        Logger.debug(`${req.method} ${req.path} ${res.statusCode}`);
       } catch (e) {
-        this.#handleError(e, res);
+        this.#handleError(e, req, res);
       }
     });
   }
 
   /**
-   * Maps a caught exception to an HTTP error response.
+   * Maps a caught exception to an HTTP error response and logs the access entry.
    * @param {Error} e - The caught exception.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
-  #handleError(e, res) {
+  #handleError(e, req, res) {
+    let statusCode;
+    let message;
     if (e instanceof ConflictError) {
-      res.status(409).json({ error: 'Conflict' });
+      statusCode = 409;
+      message = 'Conflict';
     } else if (e instanceof ForbiddenError) {
-      res.status(403).json({ error: 'Forbidden' });
+      statusCode = 403;
+      message = 'Forbidden';
     } else if (e instanceof NotFoundError) {
-      res.status(404).json({ error: e.message });
+      statusCode = 404;
+      message = e.message;
     } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      statusCode = 500;
+      message = 'Internal Server Error';
     }
+    res.status(statusCode).json({ error: message });
+    Logger.debug(`${req.method} ${req.path} ${statusCode}`);
   }
 }
 
