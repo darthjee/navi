@@ -48,8 +48,8 @@ class JobsView {
       setLoading(true);
       this.buildLoad()
         .then(this.buildSuccessHandler(state, setJobs, setError))
-        .catch((err) => { if (!state.cancelled) setError(err.message); })
-        .finally(() => { if (!state.cancelled) setLoading(false); });
+        .catch(this.#buildErrorHandler(state, setError))
+        .finally(this.#buildFinallyHandler(state, setLoading));
       return () => { state.cancelled = true; };
     };
   }
@@ -81,6 +81,26 @@ class JobsView {
   }
 
   /**
+   * Builds the `.catch` error callback for the jobs fetch.
+   * @param {{ cancelled: boolean }} state - Cancellation state object.
+   * @param {Function} setError - State setter for the error message.
+   * @returns {Function} The error handler.
+   */
+  #buildErrorHandler(state, setError) {
+    return (err) => { if (!state.cancelled) setError(err.message); };
+  }
+
+  /**
+   * Builds the `.finally` cleanup callback for the jobs fetch.
+   * @param {{ cancelled: boolean }} state - Cancellation state object.
+   * @param {Function} setLoading - State setter for the loading flag.
+   * @returns {Function} The finally handler.
+   */
+  #buildFinallyHandler(state, setLoading) {
+    return () => { if (!state.cancelled) setLoading(false); };
+  }
+
+  /**
    * Returns the updated class list after toggling the given class.
    * @param {string} jobClass - The class name being toggled.
    * @param {boolean} checked - Whether the class is being added or removed.
@@ -90,7 +110,17 @@ class JobsView {
     const current = this.activeFilters.class || [];
     return checked
       ? [...current, jobClass]
-      : current.filter((c) => c !== jobClass);
+      : this.#withoutClass(current, jobClass);
+  }
+
+  /**
+   * Returns the current class list with the given class removed.
+   * @param {string[]} current - The current class list.
+   * @param {string} jobClass - The class to remove.
+   * @returns {string[]}
+   */
+  #withoutClass(current, jobClass) {
+    return current.filter((c) => c !== jobClass);
   }
 
   /**
