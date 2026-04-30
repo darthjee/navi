@@ -55,7 +55,7 @@ In web mode, `engine.start()` is called **once** in `run()`. Its promise never r
 | `start()` | `buildEngine()` + `engine.start()` + enqueue | `engine.resume()` + enqueue |
 | `shutdown()` | `engine.stop()` (unchanged) | `engine.stop()` (unchanged) |
 
-Remove all `buildEngine()` calls from `continue()` and `start()`.
+Remove all `buildEngine()` calls from `continue()` and `start()`. `buildEngine()` is called **only once**, in `run()`, at application startup.
 
 ### Step 4 — Update server request handlers
 
