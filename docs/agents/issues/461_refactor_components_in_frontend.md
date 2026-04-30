@@ -8,7 +8,7 @@ The components in `frontend/src/components/` currently mix three concerns in a s
 
 - Components in `frontend/src/components/` mix component logic, data manipulation, and HTML rendering in a single file.
 - Only the `Jobs` component has been properly split into all three files (`Jobs.jsx`, `JobsHelper.jsx`, `JobsView.jsx`).
-- `JobsView.jsx` still needs to be renamed to `JobView.jsx` to follow the established convention.
+- Several components are missing their `Helper` or `View` counterparts.
 
 ## Expected Behavior
 
@@ -34,7 +34,6 @@ Components that are trivially simple (`CollapsibleSection`, `Layout`, `StatItem`
 
 ## Solution
 
-- Rename `JobsView.jsx` to `JobView.jsx` and update its import in `Jobs.jsx`.
 - For each component in the table above, extract the missing files according to the three-file pattern.
 
 ## Benefits
