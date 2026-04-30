@@ -1,7 +1,7 @@
+import { JobsFilter } from './JobsFilter.js';
 import { RequestHandler } from './RequestHandler.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { JobSerializer } from '../serializers/JobSerializer.js';
-import { JobsFilter } from './JobsFilter.js';
 
 /**
  * Handles GET /jobs/:status.json requests.
