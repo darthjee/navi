@@ -1,5 +1,13 @@
 # Contributing
 
+### Adding a New Job Class
+
+Whenever a new job class is added to the backend (`source/lib/jobs/`), the frontend constant file **must also be updated**:
+
+- `frontend/src/constants/jobClasses.js` — add the new class name to the `JOB_CLASSES` array.
+
+This file is the single source of truth for the job-class filter dropdown in the UI. Omitting this step will cause the new class to be invisible in the filter.
+
 ## Commit Guidelines
 
 - **Atomic and Unitary:** Each commit must represent a single logical change.  
