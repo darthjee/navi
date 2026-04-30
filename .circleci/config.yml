@@ -214,6 +214,15 @@ jobs:
           name: Install dependencies
           command: cd source; yarn install --frozen-lockfile
       - run:
+          name: Install frontend dependencies
+          command: cd frontend && yarn install
+      - run:
+          name: Build frontend
+          command: cd frontend && yarn build
+      - run:
+          name: Copy frontend build to source/static
+          command: cp -r frontend/dist/. source/static/
+      - run:
           name: Publish to npm
           command: |
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
