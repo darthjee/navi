@@ -29,14 +29,16 @@ Single-file components (`CollapsibleSection`, `Layout`, `StatItem`, `JobStatItem
 
 ## Expected Behavior
 
-- Related files for each component are grouped together, either by moving Helper and View files into sub-folders per component, or by organizing them into dedicated `helpers/` and `views/` sub-directories.
-- The view file naming may be revisited to better reflect its responsibility (data management rather than view rendering).
+- Helper and View files are moved into dedicated sub-directories by responsibility: `helpers/` and `controllers/`.
+- Component files (`<Name>.jsx`) remain in the `components/` root.
+- All `*View.jsx` files are renamed to `*Controller.jsx` to better reflect their responsibility (data management, event handling, derived state).
 
 ## Solution
 
-- Define and apply a folder structure that groups component-related files by responsibility or by component.
-- Rename view files if a more descriptive name is agreed upon.
+- Create `components/helpers/` and move all `*Helper.jsx` files there.
+- Create `components/controllers/` and move all `*View.jsx` files there, renaming them to `*Controller.jsx`.
 - Update all imports across the codebase to reflect the new paths.
+- Update `docs/agents/frontend.md` to document the new structure and naming convention.
 
 ## Benefits
 
