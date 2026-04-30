@@ -50,6 +50,7 @@ function Jobs() {
                 <th>Status</th>
                 <th>Attempts</th>
                 <th>Class</th>
+                <th>URL</th>
               </tr>
             </thead>
             <tbody>
@@ -65,6 +66,7 @@ function Jobs() {
                   </td>
                   <td>{job.attempts}</td>
                   <td>{job.jobClass}</td>
+                  <td>{job.url ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

@@ -5,14 +5,21 @@ describe('JobIndexSerializer', () => {
 
   describe('.serialize', () => {
     describe('when given a single job object', () => {
-      const job = { id: 'abc-1', _attempts: 2, constructor: { name: 'ResourceRequestJob' } };
+      const url = '/items.json';
+      const job = {
+        id: 'abc-1',
+        _attempts: 2,
+        constructor: { name: 'ResourceRequestJob' },
+        arguments: { url },
+      };
 
-      it('returns a plain serialized object with id, status, attempts, and jobClass', () => {
+      it('returns a plain serialized object with id, status, attempts, jobClass, and url', () => {
         expect(JobIndexSerializer.serialize(job, { status })).toEqual({
           id: 'abc-1',
           status: 'enqueued',
           attempts: 2,
           jobClass: 'ResourceRequestJob',
+          url,
         });
       });
     });
