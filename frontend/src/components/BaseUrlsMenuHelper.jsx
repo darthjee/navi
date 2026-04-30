@@ -21,14 +21,6 @@ class BaseUrlsMenuHelper {
       : {};
   }
 
-  buildOutsideClickHandler(containerRef, setOpen) {
-    return (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-  }
-
   renderSingleUrl() {
     const url = this.#baseUrls[0];
     return (
