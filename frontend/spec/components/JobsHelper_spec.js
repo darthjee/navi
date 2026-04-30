@@ -131,7 +131,7 @@ describe('JobsHelper', () => {
 
       it('includes the filter query in the link href', () => {
         const link = container.querySelector('a');
-        expect(link.getAttribute('href')).toContain('filters%5Bclass%5D%5B%5D=ResourceRequestJob');
+        expect(link.getAttribute('href')).toContain('filters[class][]=ResourceRequestJob');
       });
     });
   });
