@@ -31,12 +31,30 @@ frontend/
 │   └── components/
 │       ├── Layout.jsx            # Root layout: header + StatsHeader + EngineControls + Outlet
 │       ├── StatsHeader.jsx       # Live stats bar (auto-refreshes every 5 s)
+│       ├── StatsHeaderHelper.jsx # HTML rendering helpers for StatsHeader
+│       ├── StatsHeaderView.jsx   # Data fetching and polling for StatsHeader
 │       ├── EngineControls.jsx    # Engine lifecycle control buttons (auto-refreshes every 2 s)
+│       ├── EngineControlsHelper.jsx # HTML rendering helpers for EngineControls
+│       ├── EngineControlsView.jsx   # Data/action logic for EngineControls
 │       ├── StatItem.jsx          # Generic stat card (label + value, optional link)
 │       ├── JobStatItem.jsx       # Stat card that links to /jobs/:status
 │       ├── Jobs.jsx              # Job list page
+│       ├── JobsHelper.jsx        # HTML rendering helpers for Jobs
+│       ├── JobsView.jsx          # Data and filter logic for Jobs
 │       ├── Job.jsx               # Job detail page
+│       ├── JobHelper.jsx         # HTML rendering helpers for Job
+│       ├── JobView.jsx           # Data loading logic for Job
+│       ├── JobDetails.jsx        # Job details display component
+│       ├── JobDetailsHelper.jsx  # HTML rendering helpers for JobDetails
+│       ├── LogsPage.jsx          # Live log stream page
+│       ├── LogsPageHelper.jsx    # HTML rendering helpers for LogsPage
+│       ├── LogsPageView.jsx      # Polling and data logic for LogsPage
+│       ├── BaseUrlsMenu.jsx      # Base URL selector dropdown
+│       ├── BaseUrlsMenuHelper.jsx # HTML rendering helpers for BaseUrlsMenu
+│       ├── BaseUrlsMenuView.jsx  # Data fetching and event handling for BaseUrlsMenu
+│       ├── CollapsibleSection.jsx # Native details/summary wrapper
 │       └── ReadyCountdown.jsx    # Live countdown to retry eligibility
+│       └── ReadyCountdownHelper.jsx # Timer logic for ReadyCountdown
 ├── spec/                         # Jasmine tests
 │   └── support/
 │       ├── loader.js             # Custom loader for JSX/ESM
@@ -44,6 +62,26 @@ frontend/
 ├── vite.config.js
 └── eslint.config.mjs
 ```
+
+## Component conventions
+
+Non-trivial components follow a three-file structure:
+
+- `<Name>.jsx` — the component itself: `useState`, `useEffect`, `useMemo`, `useRef`, and delegation to Helper/View. No inline JSX beyond orchestration.
+- `<Name>Helper.jsx` — HTML rendering helpers. Pure functions or a class with static/instance render methods. No data fetching or side effects.
+- `<Name>View.jsx` — data manipulation logic: API calls, event handlers, derived state, effect builders. No JSX.
+
+### When to apply
+
+Apply the three-file split when a component has at least one of:
+- Data fetching or polling (→ extract to View)
+- Non-trivial HTML rendering (→ extract to Helper)
+
+Trivial components that only compose other components or render a few elements (`CollapsibleSection`, `Layout`, `StatItem`, `JobStatItem`) do not need splitting.
+
+### Reference implementation
+
+`Jobs` / `JobsHelper` / `JobsView` is the canonical example of this pattern in the codebase.
 
 ## Routing
 

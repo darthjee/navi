@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import BaseUrlsMenuHelper from './BaseUrlsMenuHelper.jsx';
-import BaseUrlsClient from '../clients/BaseUrlsClient.js';
-import noop from '../utils/noop.js';
+import BaseUrlsMenuView from './BaseUrlsMenuView.jsx';
 
 function BaseUrlsMenu() {
   const [baseUrls, setBaseUrls] = useState([]);
@@ -9,19 +8,16 @@ function BaseUrlsMenu() {
   const containerRef = useRef(null);
   const menu = useMemo(() => new BaseUrlsMenuHelper(baseUrls), [baseUrls]);
 
-  useEffect(() => {
-    BaseUrlsClient.fetchBaseUrls()
-      .then(setBaseUrls)
-      .catch(noop);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(BaseUrlsMenuView.buildEffect(setBaseUrls), []);
 
   useEffect(() => {
     if (!open) return;
 
-    const handler = menu.buildOutsideClickHandler(containerRef, setOpen);
+    const handler = BaseUrlsMenuView.buildOutsideClickHandler(containerRef, setOpen);
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open, menu]);
+  }, [open]);
 
   if (!menu.hasAny()) return null;
 
