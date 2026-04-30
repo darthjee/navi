@@ -1,6 +1,6 @@
-import fetchJob from '../clients/JobClient.js';
+import fetchJob from '../../clients/JobClient.js';
 
-class JobView {
+class JobController {
   static buildEffect(id, setJob, setError, setLoading) {
     return () => {
       fetchJob(id)
@@ -14,4 +14,4 @@ class JobView {
   }
 }
 
-export default JobView;
+export default JobController;

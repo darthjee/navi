@@ -1,8 +1,8 @@
-import fetchLogs from '../clients/LogsClient.js';
+import fetchLogs from '../../clients/LogsClient.js';
 
 const POLL_DELAY_MS = 1000;
 
-class LogsPageView {
+class LogsPageController {
   #logs;
 
   constructor(logs) {
@@ -10,7 +10,7 @@ class LogsPageView {
   }
 
   static build(logs) {
-    return new LogsPageView(logs);
+    return new LogsPageController(logs);
   }
 
   buildPollingEffect(cancelledRef, lastIdRef, setLogs) {
@@ -62,4 +62,4 @@ class LogsPageView {
   }
 }
 
-export default LogsPageView;
+export default LogsPageController;

@@ -1,5 +1,5 @@
-import { fetchJobs, fetchJobsByStatus } from '../clients/JobsClient.js';
-import FilterParams from '../utils/FilterParams.js';
+import { fetchJobs, fetchJobsByStatus } from '../../clients/JobsClient.js';
+import FilterParams from '../../utils/FilterParams.js';
 
 /**
  * Encapsulates the view-level derived state for the Jobs component:
@@ -7,7 +7,7 @@ import FilterParams from '../utils/FilterParams.js';
  * change handler that updates the URL.
  * @author darthjee
  */
-class JobsView {
+class JobsController {
   #status;
   #navigate;
 
@@ -143,4 +143,4 @@ class JobsView {
   }
 }
 
-export default JobsView;
+export default JobsController;

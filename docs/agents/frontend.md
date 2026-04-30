@@ -31,30 +31,32 @@ frontend/
 │   └── components/
 │       ├── Layout.jsx            # Root layout: header + StatsHeader + EngineControls + Outlet
 │       ├── StatsHeader.jsx       # Live stats bar (auto-refreshes every 5 s)
-│       ├── StatsHeaderHelper.jsx # HTML rendering helpers for StatsHeader
-│       ├── StatsHeaderView.jsx   # Data fetching and polling for StatsHeader
 │       ├── EngineControls.jsx    # Engine lifecycle control buttons (auto-refreshes every 2 s)
-│       ├── EngineControlsHelper.jsx # HTML rendering helpers for EngineControls
-│       ├── EngineControlsView.jsx   # Data/action logic for EngineControls
 │       ├── StatItem.jsx          # Generic stat card (label + value, optional link)
 │       ├── JobStatItem.jsx       # Stat card that links to /jobs/:status
 │       ├── Jobs.jsx              # Job list page
-│       ├── JobsHelper.jsx        # HTML rendering helpers for Jobs
-│       ├── JobsView.jsx          # Data and filter logic for Jobs
 │       ├── Job.jsx               # Job detail page
-│       ├── JobHelper.jsx         # HTML rendering helpers for Job
-│       ├── JobView.jsx           # Data loading logic for Job
 │       ├── JobDetails.jsx        # Job details display component
-│       ├── JobDetailsHelper.jsx  # HTML rendering helpers for JobDetails
 │       ├── LogsPage.jsx          # Live log stream page
-│       ├── LogsPageHelper.jsx    # HTML rendering helpers for LogsPage
-│       ├── LogsPageView.jsx      # Polling and data logic for LogsPage
 │       ├── BaseUrlsMenu.jsx      # Base URL selector dropdown
-│       ├── BaseUrlsMenuHelper.jsx # HTML rendering helpers for BaseUrlsMenu
-│       ├── BaseUrlsMenuView.jsx  # Data fetching and event handling for BaseUrlsMenu
 │       ├── CollapsibleSection.jsx # Native details/summary wrapper
-│       └── ReadyCountdown.jsx    # Live countdown to retry eligibility
-│       └── ReadyCountdownHelper.jsx # Timer logic for ReadyCountdown
+│       ├── ReadyCountdown.jsx    # Live countdown to retry eligibility
+│       ├── helpers/              # HTML rendering helper classes
+│       │   ├── JobHelper.jsx             # Rendering helpers for Job
+│       │   ├── JobsHelper.jsx            # Rendering helpers for Jobs
+│       │   ├── JobDetailsHelper.jsx      # Rendering helpers for JobDetails
+│       │   ├── BaseUrlsMenuHelper.jsx    # Rendering helpers for BaseUrlsMenu
+│       │   ├── EngineControlsHelper.jsx  # Rendering helpers for EngineControls
+│       │   ├── LogsPageHelper.jsx        # Rendering helpers for LogsPage
+│       │   ├── ReadyCountdownHelper.jsx  # Timer logic for ReadyCountdown
+│       │   └── StatsHeaderHelper.jsx     # Rendering helpers for StatsHeader
+│       └── controllers/          # Data/logic controller classes (renamed from *View)
+│           ├── JobController.jsx             # Data loading logic for Job
+│           ├── JobsController.jsx            # Data and filter logic for Jobs
+│           ├── BaseUrlsMenuController.jsx    # Data fetching and event handling for BaseUrlsMenu
+│           ├── EngineControlsController.jsx  # Data/action logic for EngineControls
+│           ├── LogsPageController.jsx        # Polling and data logic for LogsPage
+│           └── StatsHeaderController.jsx     # Data fetching and polling for StatsHeader
 ├── spec/                         # Jasmine tests
 │   └── support/
 │       ├── loader.js             # Custom loader for JSX/ESM
@@ -67,21 +69,21 @@ frontend/
 
 Non-trivial components follow a three-file structure:
 
-- `<Name>.jsx` — the component itself: `useState`, `useEffect`, `useMemo`, `useRef`, and delegation to Helper/View. No inline JSX beyond orchestration.
-- `<Name>Helper.jsx` — HTML rendering helpers. Pure functions or a class with static/instance render methods. No data fetching or side effects.
-- `<Name>View.jsx` — data manipulation logic: API calls, event handlers, derived state, effect builders. No JSX.
+- `<Name>.jsx` — the component itself: `useState`, `useEffect`, `useMemo`, `useRef`, and delegation to Helper/Controller. No inline JSX beyond orchestration.
+- `helpers/<Name>Helper.jsx` — HTML rendering helpers. Pure functions or a class with static/instance render methods. No data fetching or side effects.
+- `controllers/<Name>Controller.jsx` — data management logic: API calls, event handlers, derived state, effect builders. No JSX.
 
 ### When to apply
 
 Apply the three-file split when a component has at least one of:
-- Data fetching or polling (→ extract to View)
+- Data fetching or polling (→ extract to Controller)
 - Non-trivial HTML rendering (→ extract to Helper)
 
 Trivial components that only compose other components or render a few elements (`CollapsibleSection`, `Layout`, `StatItem`, `JobStatItem`) do not need splitting.
 
 ### Reference implementation
 
-`Jobs` / `JobsHelper` / `JobsView` is the canonical example of this pattern in the codebase.
+`Jobs` / `helpers/JobsHelper` / `controllers/JobsController` is the canonical example of this pattern in the codebase.
 
 ## Routing
 

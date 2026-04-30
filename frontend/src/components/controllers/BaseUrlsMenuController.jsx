@@ -1,7 +1,7 @@
-import BaseUrlsClient from '../clients/BaseUrlsClient.js';
-import noop from '../utils/noop.js';
+import BaseUrlsClient from '../../clients/BaseUrlsClient.js';
+import noop from '../../utils/noop.js';
 
-class BaseUrlsMenuView {
+class BaseUrlsMenuController {
   static buildEffect(setBaseUrls) {
     return () => {
       BaseUrlsClient.fetchBaseUrls()
@@ -19,4 +19,4 @@ class BaseUrlsMenuView {
   }
 }
 
-export default BaseUrlsMenuView;
+export default BaseUrlsMenuController;
