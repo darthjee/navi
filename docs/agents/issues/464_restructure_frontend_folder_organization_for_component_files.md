@@ -10,6 +10,23 @@ Currently, all files related to a component (e.g. `Job.jsx`, `JobView.jsx`, `Job
 - As more Helper and View files are added (e.g. as part of issue #461), the directory becomes cluttered.
 - There is no clear visual grouping between the component, its rendering helpers, and its data logic.
 
+## Affected Components
+
+After issue #461 is complete, the following components will each have multiple companion files that need organizing:
+
+| Component | Files |
+|---|---|
+| `Job` | `Job.jsx`, `JobHelper.jsx`, `JobView.jsx` |
+| `Jobs` | `Jobs.jsx`, `JobsHelper.jsx`, `JobsView.jsx` |
+| `BaseUrlsMenu` | `BaseUrlsMenu.jsx`, `BaseUrlsMenuHelper.jsx`, `BaseUrlsMenuView.jsx` |
+| `EngineControls` | `EngineControls.jsx`, `EngineControlsHelper.jsx`, `EngineControlsView.jsx` |
+| `LogsPage` | `LogsPage.jsx`, `LogsPageHelper.jsx`, `LogsPageView.jsx` |
+| `StatsHeader` | `StatsHeader.jsx`, `StatsHeaderHelper.jsx`, `StatsHeaderView.jsx` |
+| `JobDetails` | `JobDetails.jsx`, `JobDetailsHelper.jsx` |
+| `ReadyCountdown` | `ReadyCountdown.jsx`, `ReadyCountdownHelper.jsx` |
+
+Single-file components (`CollapsibleSection`, `Layout`, `StatItem`, `JobStatItem`) are not affected.
+
 ## Expected Behavior
 
 - Related files for each component are grouped together, either by moving Helper and View files into sub-folders per component, or by organizing them into dedicated `helpers/` and `views/` sub-directories.
