@@ -25,24 +25,25 @@ Currently, when a stop is triggered through the API, the Engine is killed and a 
 The changes required are:
 
 - Add a `keepAlive` flag to `Engine`. When `true`, the loop condition becomes `while (!this.#stopped)` instead of `while (!this.#stopped && this.#continueAllocating())`, keeping the engine running even when the queue is empty.
+- Add a `#paused` flag to `Engine` with `pause()` and `resume()` methods. When paused, the loop skips allocation but keeps iterating.
 - `ApplicationInstance` passes `keepAlive: !!this.webServer` when building the engine.
-- The same `Engine` instance is reused across pause/continue/stop/start cycles — no new instance is ever created in web mode.
-- `pause()` calls `engine.stop()` (sets `#stopped = true`, loop exits, promise resolves), but keeps the engine instance alive.
-- `continue()` and `start()` call `engine.start()` on the existing instance (resetting `#stopped = false`), and add the new promise to the aggregator — but only if the engine is not already running.
-- `stop()` in web mode calls `engine.stop()`, clears the queues, and updates status. The engine instance is preserved.
-- Only `shutdown()` calls `engine.stop()` and does not restart it, allowing the aggregator to fully resolve.
+- In web mode, `engine.start()` is called **once** during the initial `run()`. Its promise is never recreated — it only resolves on `shutdown()`.
+- `pause()` in web mode calls `engine.pause()` (sets `#paused = true`), skipping allocation without exiting the loop.
+- `stop()` in web mode calls `engine.pause()` and clears the job queues. The loop keeps running.
+- `continue()` and `start()` in web mode call `engine.resume()` (clears `#paused`) and re-enqueue jobs. No new promise is created.
+- Only `shutdown()` calls `engine.stop()` (sets `#stopped = true`), which exits the loop and resolves the promise.
 
 ## Behavior Table
 
 | Event / Action | CI mode (no web UI) | Web mode |
 |---|---|---|
 | Queue empties naturally | Engine loop exits, promise resolves, process finishes | Engine loop keeps running (`keepAlive=true`) |
-| `stop()` | Engine loop exits, promise resolves | `engine.stop()` called, loop exits, queues cleared — engine instance preserved |
-| `pause()` | *(not applicable)* | `engine.stop()` called, loop exits — engine instance preserved, status = `paused` |
-| `continue()` | *(not applicable)* | `engine.start()` called on existing instance, new promise added to aggregator |
-| `start()` | *(not applicable)* | `engine.start()` called on existing instance (only if not already running), jobs re-enqueued |
-| `restart()` | *(not applicable)* | `stop()` then `start()` on the same engine instance |
-| `shutdown()` | *(not applicable)* | `engine.stop()` called and not restarted — promise resolves, aggregator completes |
+| `stop()` | *(not applicable — queue empties naturally)* | `engine.pause()` called, queues cleared — loop keeps running, promise stays alive |
+| `pause()` | *(not applicable)* | `engine.pause()` called — allocation skipped, loop keeps running, promise stays alive |
+| `continue()` | *(not applicable)* | `engine.resume()` called — allocation resumes, no new promise created |
+| `start()` | *(not applicable)* | `engine.resume()` called, jobs re-enqueued — no new promise created |
+| `restart()` | *(not applicable)* | `stop()` then `start()` — loop never stops, no new promise created |
+| `shutdown()` | *(not applicable)* | `engine.stop()` called — loop exits, promise resolves, aggregator completes |
 
 ## Benefits
 
