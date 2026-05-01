@@ -47,6 +47,13 @@ class EngineControlsController {
     return this.#status === 'stopped';
   }
 
+  showShutdown() { return true; }
+  showPause() { return this.isRunning(); }
+  showStop() { return this.isRunning() || this.isPaused(); }
+  showContinue() { return this.isPaused(); }
+  showStart() { return this.isStopped(); }
+  showRestart() { return this.isRunning() || this.isPaused(); }
+
   handleAction(action) {
     action().then(this.#refreshStatus).catch(noop);
   }
