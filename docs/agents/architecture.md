@@ -115,8 +115,10 @@ Collection managers built on a shared base class.
 - **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
 - **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
 - **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
+- **`LogRegistry`** — Static singleton façade for buffered log access. Does **not** extend `NamedRegistry`; follows the same façade pattern as `JobRegistry` and `WorkersRegistry`. `LogRegistry.build(options)` creates the singleton instance and wires the `BufferedLogger` into `Logger`. Exposes `getLogs({ lastId })`, `getLogById(id)`, `getLogsByLevel(level)`, `getLogsJSON()`. Call `reset()` in tests.
+- **`LogRegistryInstance`** — Holds the `BufferedLogger` instance and provides filtered log queries via `LogFilter`. Not exported directly; accessed only via `LogRegistry`.
 
-Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property.
+Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property. (`LogRegistry` is an exception — it is a standalone singleton, not a `NamedRegistry` subclass.)
 
 ### `utils/`
 

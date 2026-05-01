@@ -5,6 +5,7 @@ import { ConfigurationFileNotFound } from '../../../lib/exceptions/Configuration
 import { ConfigurationFileNotProvided } from '../../../lib/exceptions/ConfigurationFileNotProvided.js';
 import { Config } from '../../../lib/models/Config.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Application } from '../../../lib/services/Application.js';
@@ -29,6 +30,7 @@ describe('Application', () => {
     ClientRegistry.reset();
     JobRegistry.reset();
     JobFactory.reset();
+    LogRegistry.reset();
     WorkersRegistry.reset();
     ResourceRegistry.reset();
     Application.reset();
@@ -162,6 +164,7 @@ describe('Application', () => {
         ClientRegistry.reset();
         JobRegistry.reset();
         JobFactory.reset();
+        LogRegistry.reset();
         WorkersRegistry.reset();
         ResourceRegistry.reset();
 

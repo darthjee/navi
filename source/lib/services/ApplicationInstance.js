@@ -8,9 +8,8 @@ import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
 import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
 import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { Config } from '../models/Config.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 import { WebServer } from '../server/WebServer.js';
-import { BufferedLogger } from '../utils/logging/BufferedLogger.js';
-import { Logger } from '../utils/logging/Logger.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
@@ -50,8 +49,8 @@ class ApplicationInstance {
     }
 
     this.config = Config.fromFile(configPath);
-    this.#bufferedLogger = new BufferedLogger(undefined, this.config.logConfig.size);
-    Logger.addLogger(this.#bufferedLogger);
+    const logRegistry = LogRegistry.build({ retention: this.config.logConfig.size });
+    this.#bufferedLogger = logRegistry.bufferedLogger;
     this.#initRegistries();
   }
 
