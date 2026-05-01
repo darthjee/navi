@@ -1,5 +1,6 @@
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../lib/services/ApplicationInstance.js';
 
 describe('ApplicationInstance', () => {
@@ -22,6 +23,7 @@ describe('ApplicationInstance', () => {
 
   afterEach(() => {
     JobRegistry.reset();
+    LogRegistry.reset();
   });
 
   describe('#pause', () => {
