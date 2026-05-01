@@ -53,6 +53,16 @@ Remove the now-unused `BufferedLogger` import.
 - `source/lib/services/ApplicationInstance.js` — replace `BufferedLogger` creation with `LogRegistry.build()`; swap imports
 - `source/spec/lib/services/ApplicationInstance_spec.js` — add `LogRegistry.reset()` to teardown
 - `source/spec/lib/services/Application_spec.js` — add `LogRegistry.reset()` to teardown
+- `docs/agents/architecture.md` — document `LogRegistry` and `LogRegistryInstance` in the `registry/` section
+
+### Step 4 — Update `docs/agents/architecture.md`
+
+Add `LogRegistry` and `LogRegistryInstance` to the `registry/` section:
+
+- **`LogRegistry`** — Static singleton facade for buffered log access. `LogRegistry.build(options)` creates the instance and wires the `BufferedLogger` into `Logger`. Exposes `getLogs()`, `getLogById()`, `getLogsByLevel()`, `getLogsJSON()`. Call `reset()` in tests.
+- **`LogRegistryInstance`** — Holds the `BufferedLogger` instance. Provides filtered log queries via `LogFilter`. Not exported directly; accessed only via `LogRegistry`.
+
+Also note in the `registry/` section that `LogRegistry` does **not** extend `NamedRegistry` — it is a standalone singleton following the same façade pattern as `JobRegistry` and `WorkersRegistry`.
 
 ## Notes
 
