@@ -203,5 +203,52 @@ describe('Engine', () => {
         expect(engine.allocator.allocate).toHaveBeenCalled();
       });
     });
+
+    describe('when keepAlive is true', () => {
+      it('keeps running when queue is empty', async () => {
+        engine = new Engine({ keepAlive: true, sleepMs: -1 });
+
+        let iterations = 0;
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+          iterations++;
+          if (iterations >= 3) engine.stop();
+        });
+
+        await engine.start();
+
+        expect(iterations).toBeGreaterThanOrEqual(3);
+      });
+
+      it('skips allocation when paused', async () => {
+        engine = new Engine({ keepAlive: true, sleepMs: -1 });
+        engine.pause();
+
+        spyOn(engine.allocator, 'allocate');
+        spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+          engine.stop();
+        });
+
+        await engine.start();
+
+        expect(engine.allocator.allocate).not.toHaveBeenCalled();
+      });
+
+      it('resumes allocation after resume()', async () => {
+        engine = new Engine({ keepAlive: true, sleepMs: -1 });
+        engine.pause();
+        engine.resume();
+
+        spyOn(engine.allocator, 'allocate');
+        spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
+        spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+          engine.stop();
+        });
+
+        await engine.start();
+
+        expect(engine.allocator.allocate).toHaveBeenCalled();
+      });
+    });
   });
 });
