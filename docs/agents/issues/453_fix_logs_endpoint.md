@@ -17,9 +17,22 @@ The `/logs.json` endpoint in `source/` is currently broken. Requests to it retur
 - `GET /logs.json` returns the buffered log entries without error.
 - `LogRegistry` is initialised at application startup, before any requests are served.
 
+## Root Cause Detail
+
+`ApplicationInstance.loadConfig()` already creates a `BufferedLogger` manually and wires it into `Logger`:
+
+```js
+this.#bufferedLogger = new BufferedLogger(undefined, this.config.logConfig.size);
+Logger.addLogger(this.#bufferedLogger);
+```
+
+`LogRegistry.build()` does the same thing internally. Simply adding `LogRegistry.build()` to `#initRegistries()` without removing the manual creation would result in **two** `BufferedLogger`s registered in `Logger`, causing every log message to be stored twice.
+
 ## Solution
 
-- Call `LogRegistry.build()` during application initialisation (e.g. in `ApplicationInstance` alongside the other registry initialisations in `#initRegistries()`).
+- Replace the manual `BufferedLogger` creation in `ApplicationInstance.loadConfig()` with a call to `LogRegistry.build({ retention: this.config.logConfig.size })`.
+- Remove `this.#bufferedLogger` and the `Logger.addLogger()` call from `loadConfig()`.
+- Update `get bufferedLogger()` in `ApplicationInstance` to delegate to `LogRegistry`.
 
 ## Benefits
 
