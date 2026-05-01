@@ -105,6 +105,34 @@ class JobRegistryInstance {
   }
 
   /**
+   * Moves a job directly to the retry queue, removing it from the failed or dead collection.
+   * Returns the job if found and moved, or null if the job is not in a retryable state.
+   * @param {string} id - The ID of the job to retry.
+   * @returns {Job|null} The job instance, or null if not found in failed or dead.
+   */
+  retryJob(id) {
+    const allFailed = this.#failed.list();
+    const failedJob = allFailed.find(j => j.id === id);
+    if (failedJob) {
+      this.#failed = new SortedCollection(
+        allFailed.filter(j => j.id !== id),
+        { sortBy: FAILED_SORT_BY }
+      );
+      this.#retryQueue.push(failedJob);
+      return failedJob;
+    }
+
+    const deadJob = this.#dead.get(id);
+    if (deadJob) {
+      this.#dead.remove(id);
+      this.#retryQueue.push(deadJob);
+      return deadJob;
+    }
+
+    return null;
+  }
+
+  /**
    * Promotes jobs from the failed queue to the retryQueue once their cooldown has elapsed.
    * @returns {void}
    */

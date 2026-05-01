@@ -1,4 +1,5 @@
-import fetchJob from '../../clients/JobClient.js';
+import fetchJob, { retryJob } from '../../clients/JobClient.js';
+import noop from '../../utils/noop.js';
 
 class JobController {
   static buildEffect(id, setJob, setError, setLoading) {
@@ -11,6 +12,10 @@ class JobController {
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     };
+  }
+
+  static handleRetry(id, refresh) {
+    retryJob(id).then(refresh).catch(noop);
   }
 }
 

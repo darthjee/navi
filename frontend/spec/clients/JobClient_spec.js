@@ -1,4 +1,4 @@
-import fetchJob from '../../src/clients/JobClient.js';
+import fetchJob, { retryJob } from '../../src/clients/JobClient.js';
 
 describe('JobClient', () => {
   describe('fetchJob', () => {
@@ -44,6 +44,38 @@ describe('JobClient', () => {
 
       it('throws an error with the status code', async () => {
         await expectAsync(fetchJob('abc-123')).toBeRejectedWithError('HTTP 500');
+      });
+    });
+  });
+
+  describe('retryJob', () => {
+    describe('when the request succeeds', () => {
+      beforeEach(() => {
+        spyOn(globalThis, 'fetch').and.returnValue(
+          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'enqueued' }) })
+        );
+      });
+
+      it('sends a PATCH to /jobs/:id/retry', async () => {
+        await retryJob('abc-123');
+        expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/abc-123/retry', { method: 'PATCH' });
+      });
+
+      it('returns the response JSON', async () => {
+        const result = await retryJob('abc-123');
+        expect(result).toEqual({ status: 'enqueued' });
+      });
+    });
+
+    describe('when the request fails', () => {
+      beforeEach(() => {
+        spyOn(globalThis, 'fetch').and.returnValue(
+          Promise.resolve({ ok: false, status: 409 })
+        );
+      });
+
+      it('throws an error with the status code', async () => {
+        await expectAsync(retryJob('abc-123')).toBeRejectedWithError('HTTP 409');
       });
     });
   });

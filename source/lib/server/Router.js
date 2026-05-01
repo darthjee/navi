@@ -12,6 +12,7 @@ import { EngineStatusRequestHandler } from './EngineStatusRequestHandler.js';
 import { EngineStopRequestHandler } from './EngineStopRequestHandler.js';
 import { IndexRequestHandler } from './IndexRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
+import { JobRetryRequestHandler } from './JobRetryRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
 import { LogsRequestHandler } from './LogsRequestHandler.js';
 import { RouteRegister } from './RouteRegister.js';
@@ -57,6 +58,7 @@ class Router {
     };
 
     const PATCH_ROUTES = {
+      '/jobs/:id/retry':   new JobRetryRequestHandler(),
       '/engine/pause':     new EnginePauseRequestHandler(),
       '/engine/stop':      new EngineStopRequestHandler(),
       '/engine/continue':  new EngineContinueRequestHandler(),

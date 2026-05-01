@@ -1,7 +1,7 @@
 import JobDetailsHelper from './helpers/JobDetailsHelper.jsx';
 
-function JobDetails({ job }) {
-  return JobDetailsHelper.render(job);
+function JobDetails({ job, onRetry }) {
+  return JobDetailsHelper.render(job, onRetry);
 }
 
 export default JobDetails;

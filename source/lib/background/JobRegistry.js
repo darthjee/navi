@@ -86,6 +86,15 @@ class JobRegistry {
   }
 
   /**
+   * Moves a job directly to the retry queue, removing it from the failed or dead collection.
+   * @param {string} id - The ID of the job to retry.
+   * @returns {Job|null} The job if found and moved, or null if not in a retryable state.
+   */
+  static retryJob(id) {
+    return JobRegistry.#getInstance().retryJob(id);
+  }
+
+  /**
    * Promotes cooling-down failed jobs that are ready to retry.
    * @returns {void}
    */

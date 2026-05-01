@@ -6,9 +6,10 @@ import ReadyCountdown from '../ReadyCountdown.jsx';
 const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
 const STATUSES_WITH_READY_IN = new Set(['failed']);
 const STATUSES_WITH_ERROR = new Set(['failed', 'dead']);
+const RETRYABLE_STATUSES = new Set(['failed', 'dead']);
 
 class JobDetailsHelper {
-  static render(job) {
+  static render(job, onRetry) {
     const variant = VARIANT_BY_STATUS[job.status] ?? 'secondary';
 
     return (
@@ -51,8 +52,9 @@ class JobDetailsHelper {
             </dl>
           </div>
         </div>
-        <div className="mt-3">
+        <div className="mt-3 d-flex gap-2 align-items-center">
           <Link to="/jobs">← Back to Jobs</Link>
+          {JobDetailsHelper.#renderRetryButton(job, onRetry)}
         </div>
       </div>
     );
@@ -75,6 +77,15 @@ class JobDetailsHelper {
         <dt className="col-sm-3">Ready in</dt>
         <dd className="col-sm-9"><ReadyCountdown readyInMs={job.readyInMs} /></dd>
       </>
+    );
+  }
+
+  static #renderRetryButton(job, onRetry) {
+    if (!RETRYABLE_STATUSES.has(job.status)) return null;
+    return (
+      <button className="btn btn-warning btn-sm" onClick={onRetry}>
+        Retry
+      </button>
     );
   }
 
