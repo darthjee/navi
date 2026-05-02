@@ -7,4 +7,13 @@ const fetchJob = (id) => {
     });
 };
 
+const retryJob = (id) => {
+  return fetch(`/jobs/${id}/retry`, { method: 'PATCH' })
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    });
+};
+
+export { retryJob };
 export default fetchJob;
