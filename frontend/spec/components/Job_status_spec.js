@@ -62,6 +62,11 @@ describe('Job status rendering', () => {
     it('does not show Last error', () => {
       expect(container.textContent).not.toContain('Last error');
     });
+
+    it('does not show a Retry button', () => {
+      const buttons = Array.from(container.querySelectorAll('button'));
+      expect(buttons.find(b => b.textContent === 'Retry')).toBeUndefined();
+    });
   });
 
   describe('when the job has failed without a recorded error', () => {
@@ -93,6 +98,11 @@ describe('Job status rendering', () => {
 
     it('does not show Last error', () => {
       expect(container.textContent).not.toContain('Last error');
+    });
+
+    it('shows a Retry button', () => {
+      const buttons = Array.from(container.querySelectorAll('button'));
+      expect(buttons.find(b => b.textContent === 'Retry')).toBeDefined();
     });
   });
 
@@ -169,6 +179,11 @@ describe('Job status rendering', () => {
     it('does not show Last error', () => {
       expect(container.textContent).not.toContain('Last error');
     });
+
+    it('does not show a Retry button', () => {
+      const buttons = Array.from(container.querySelectorAll('button'));
+      expect(buttons.find(b => b.textContent === 'Retry')).toBeUndefined();
+    });
   });
 
   describe('when the job is dead without a recorded error', () => {
@@ -198,6 +213,11 @@ describe('Job status rendering', () => {
 
     it('does not show Last error', () => {
       expect(container.textContent).not.toContain('Last error');
+    });
+
+    it('shows a Retry button', () => {
+      const buttons = Array.from(container.querySelectorAll('button'));
+      expect(buttons.find(b => b.textContent === 'Retry')).toBeDefined();
     });
   });
 
