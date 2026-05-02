@@ -1,4 +1,5 @@
 import { LogRegistryInstance } from '../../../lib/registry/LogRegistryInstance.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 describe('LogRegistryInstance', () => {
@@ -9,6 +10,10 @@ describe('LogRegistryInstance', () => {
     instance = new LogRegistryInstance({ retention: 10 });
   });
 
+  afterEach(() => {
+    Logger.reset();
+  });
+
   describe('#bufferedLogger', () => {
     it('returns the underlying BufferedLogger', () => {
       expect(instance.bufferedLogger).toBeDefined();
@@ -17,8 +22,9 @@ describe('LogRegistryInstance', () => {
 
   describe('#debug', () => {
     it('stores the message in the buffer', () => {
-      instance.debug('dbg message');
-      const logs = instance.getLogsByLevel('debug');
+      const debugInstance = new LogRegistryInstance({ retention: 10, level: 'debug' });
+      debugInstance.debug('dbg message');
+      const logs = debugInstance.getLogsByLevel('debug');
       expect(logs.length).toBe(1);
       expect(logs[0].message).toBe('dbg message');
     });

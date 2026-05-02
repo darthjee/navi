@@ -1,16 +1,15 @@
 import { BufferedLogger } from '../utils/logging/BufferedLogger.js';
-import { ConsoleLogger } from '../utils/logging/ConsoleLogger.js';
 import { LogFilter } from '../utils/logging/LogFilter.js';
+import { Logger } from '../utils/logging/Logger.js';
 import { LoggerGroup } from '../utils/logging/LoggerGroup.js';
 
 /**
- * Holds a LoggerGroup (ConsoleLogger + BufferedLogger) for the LogRegistry singleton.
- * Exposes debug/info/warn/error methods that fan out to both outputs, and filtered log
- * queries via LogFilter. Not exported directly; accessed only via LogRegistry.
+ * Holds a LoggerGroup (Logger + BufferedLogger) for the LogRegistry singleton.
+ * Exposes debug/info/warn/error methods that fan out to both outputs, and filtered
+ * log queries via LogFilter. Not exported directly; accessed only via LogRegistry.
  * @author darthjee
  */
 class LogRegistryInstance {
-  #bufferedLogger;
   #loggerGroup;
 
   /**
@@ -20,8 +19,7 @@ class LogRegistryInstance {
    * @param {number} [options.retention=100] - Maximum number of logs to retain.
    */
   constructor({ level, retention } = {}) {
-    this.#bufferedLogger = new BufferedLogger(level, retention);
-    this.#loggerGroup = new LoggerGroup([new ConsoleLogger(level), this.#bufferedLogger]);
+    this.#loggerGroup = new LoggerGroup([Logger.default(), new BufferedLogger(level, retention)]);
   }
 
   /**
@@ -29,7 +27,7 @@ class LogRegistryInstance {
    * @returns {BufferedLogger}
    */
   get bufferedLogger() {
-    return this.#bufferedLogger;
+    return this.#loggerGroup.getLoggers()[1];
   }
 
   /**
@@ -58,7 +56,7 @@ class LogRegistryInstance {
    * @returns {import('../utils/logging/Log.js').Log|undefined}
    */
   getLogById(id) {
-    return this.#bufferedLogger.getLogById(id);
+    return this.bufferedLogger.getLogById(id);
   }
 
   /**
@@ -69,7 +67,7 @@ class LogRegistryInstance {
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
   getLogs({ lastId } = {}) {
-    return new LogFilter(this.#bufferedLogger.getLogs()).filter({ lastId });
+    return new LogFilter(this.bufferedLogger.getLogs()).filter({ lastId });
   }
 
   /**
@@ -78,7 +76,7 @@ class LogRegistryInstance {
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
   getLogsByLevel(level) {
-    return this.#bufferedLogger.getLogsByLevel(level);
+    return this.bufferedLogger.getLogsByLevel(level);
   }
 
   /**
@@ -86,7 +84,7 @@ class LogRegistryInstance {
    * @returns {Array<object>}
    */
   getLogsJSON() {
-    return this.#bufferedLogger.getLogsJSON();
+    return this.bufferedLogger.getLogsJSON();
   }
 
   /**
