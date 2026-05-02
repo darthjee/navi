@@ -10,6 +10,7 @@ import { LoggerGroup } from '../utils/logging/LoggerGroup.js';
  * @author darthjee
  */
 class LogRegistryInstance {
+  #bufferedLogger;
   #loggerGroup;
 
   /**
@@ -19,7 +20,8 @@ class LogRegistryInstance {
    * @param {number} [options.retention=100] - Maximum number of logs to retain.
    */
   constructor({ level, retention } = {}) {
-    this.#loggerGroup = new LoggerGroup([Logger.default(), new BufferedLogger(level, retention)]);
+    this.#bufferedLogger = new BufferedLogger(level, retention);
+    this.#loggerGroup = new LoggerGroup([Logger.default(), this.#bufferedLogger]);
   }
 
   /**
@@ -27,7 +29,7 @@ class LogRegistryInstance {
    * @returns {BufferedLogger}
    */
   get bufferedLogger() {
-    return this.#loggerGroup.getLoggers()[1];
+    return this.#bufferedLogger;
   }
 
   /**
@@ -56,7 +58,7 @@ class LogRegistryInstance {
    * @returns {import('../utils/logging/Log.js').Log|undefined}
    */
   getLogById(id) {
-    return this.bufferedLogger.getLogById(id);
+    return this.#bufferedLogger.getLogById(id);
   }
 
   /**
@@ -76,7 +78,7 @@ class LogRegistryInstance {
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
   getLogsByLevel(level) {
-    return this.bufferedLogger.getLogsByLevel(level);
+    return this.#bufferedLogger.getLogsByLevel(level);
   }
 
   /**
@@ -84,7 +86,7 @@ class LogRegistryInstance {
    * @returns {Array<object>}
    */
   getLogsJSON() {
-    return this.bufferedLogger.getLogsJSON();
+    return this.#bufferedLogger.getLogsJSON();
   }
 
   /**
