@@ -1,7 +1,7 @@
+import { RequestHandler } from './RequestHandler.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { ConflictError } from '../exceptions/ConflictError.js';
 import { NotFoundError } from '../exceptions/NotFoundError.js';
-import { RequestHandler } from './RequestHandler.js';
 
 const RETRYABLE_STATUSES = new Set(['failed', 'dead']);
 
