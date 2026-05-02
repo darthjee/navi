@@ -18,12 +18,10 @@ describe('LogRegistry', () => {
       expect(() => LogRegistry.build()).toThrowError(/already been called/);
     });
 
-    it('wires the BufferedLogger into Logger', () => {
+    it('does not wire the BufferedLogger into Logger', () => {
       LogRegistry.build();
-      Logger.info('test message');
-      const logs = LogRegistry.getLogs();
-      expect(logs.length).toBe(1);
-      expect(logs[0].message).toBe('test message');
+      Logger.info('console only');
+      expect(LogRegistry.getLogs()).toEqual([]);
     });
   });
 
@@ -32,6 +30,46 @@ describe('LogRegistry', () => {
       LogRegistry.build();
       LogRegistry.reset();
       expect(() => LogRegistry.build()).not.toThrow();
+    });
+  });
+
+  describe('.debug', () => {
+    it('adds a debug log to the buffer', () => {
+      LogRegistry.build();
+      LogRegistry.debug('dbg msg');
+      const logs = LogRegistry.getLogsByLevel('debug');
+      expect(logs.length).toBe(1);
+      expect(logs[0].message).toBe('dbg msg');
+    });
+  });
+
+  describe('.info', () => {
+    it('adds an info log to the buffer', () => {
+      LogRegistry.build();
+      LogRegistry.info('info msg');
+      const logs = LogRegistry.getLogs();
+      expect(logs.length).toBe(1);
+      expect(logs[0].message).toBe('info msg');
+    });
+  });
+
+  describe('.warn', () => {
+    it('adds a warn log to the buffer', () => {
+      LogRegistry.build();
+      LogRegistry.warn('warn msg');
+      const logs = LogRegistry.getLogsByLevel('warn');
+      expect(logs.length).toBe(1);
+      expect(logs[0].message).toBe('warn msg');
+    });
+  });
+
+  describe('.error', () => {
+    it('adds an error log to the buffer', () => {
+      LogRegistry.build();
+      LogRegistry.error('err msg');
+      const logs = LogRegistry.getLogsByLevel('error');
+      expect(logs.length).toBe(1);
+      expect(logs[0].message).toBe('err msg');
     });
   });
 
@@ -48,9 +86,9 @@ describe('LogRegistry', () => {
     describe('when lastId is provided', () => {
       beforeEach(() => {
         LogRegistry.build();
-        Logger.info('first');
-        Logger.warn('second');
-        Logger.info('third');
+        LogRegistry.info('first');
+        LogRegistry.warn('second');
+        LogRegistry.info('third');
       });
 
       it('returns only logs newer than lastId', () => {
@@ -75,7 +113,7 @@ describe('LogRegistry', () => {
   describe('.getLogById', () => {
     it('returns the log with the matching ID', () => {
       LogRegistry.build();
-      Logger.info('message');
+      LogRegistry.info('message');
       const log = LogRegistry.getLogs()[0];
       expect(LogRegistry.getLogById(log.id)).toBe(log);
     });
@@ -84,8 +122,8 @@ describe('LogRegistry', () => {
   describe('.getLogsByLevel', () => {
     it('returns logs filtered by level', () => {
       LogRegistry.build();
-      Logger.info('info msg');
-      Logger.warn('warn msg');
+      LogRegistry.info('info msg');
+      LogRegistry.warn('warn msg');
       const infoLogs = LogRegistry.getLogsByLevel('info');
       expect(infoLogs.length).toBe(1);
       expect(infoLogs[0].level).toBe('info');
@@ -95,7 +133,7 @@ describe('LogRegistry', () => {
   describe('.getLogsJSON', () => {
     it('returns logs as plain objects', () => {
       LogRegistry.build();
-      Logger.info('msg');
+      LogRegistry.info('msg');
       const json = LogRegistry.getLogsJSON();
       expect(Array.isArray(json)).toBeTrue();
       expect(typeof json[0].id).toBe('number');

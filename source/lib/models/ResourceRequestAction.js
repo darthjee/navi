@@ -1,9 +1,9 @@
 import { ParametersMapper } from './ParametersMapper.js';
 import { JobRegistry as DefaultJobRegistry } from '../background/JobRegistry.js';
 import { MissingActionResource } from '../exceptions/MissingActionResource.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 import { ResourceRegistry as DefaultResourceRegistry } from '../registry/ResourceRegistry.js';
 import { Application } from '../services/Application.js';
-import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Represents a single action to execute after a successful resource request response.
@@ -66,7 +66,7 @@ class ResourceRequestAction {
       try {
         return [new ResourceRequestAction(attrs)];
       } catch (error) {
-        Logger.error(`Skipping action: ${error}`);
+        LogRegistry.error(`Skipping action: ${error}`);
         return [];
       }
     });

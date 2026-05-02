@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../exceptions/RequestFailed.js';
-import { Logger } from '../utils/logging/Logger.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 
 /**
  * Client performs HTTP requests for resource paths using a configured base URL.
@@ -60,7 +60,7 @@ class Client {
    */
   async perform(resourceRequest, parameters = {}) {
     const requestUrl = this.#buildUrl(resourceRequest.resolveUrl(parameters));
-    Logger.info(`[Client:${this.name}] Requesting ${requestUrl}`);
+    LogRegistry.info(`[Client:${this.name}] Requesting ${requestUrl}`);
     try {
       return await this.#request(resourceRequest, requestUrl);
     } catch (error) {
@@ -77,7 +77,7 @@ class Client {
    * @throws {RequestFailed} If the response status does not match `expectedStatus`.
    */
   async performUrl(absoluteUrl, expectedStatus) {
-    Logger.info(`[Client:${this.name}] Requesting ${absoluteUrl}`);
+    LogRegistry.info(`[Client:${this.name}] Requesting ${absoluteUrl}`);
     try {
       return await this.#requestUrl(absoluteUrl, expectedStatus);
     } catch (error) {
@@ -113,14 +113,14 @@ class Client {
       validateStatus: () => true,
     });
 
-    Logger.info(`[Client:${this.name}] Response ${requestUrl} → ${response.status}`);
+    LogRegistry.info(`[Client:${this.name}] Response ${requestUrl} → ${response.status}`);
 
     if (response.status !== expectedStatus) {
-      Logger.info(`[Client:${this.name}] ${requestUrl} did not match (got ${response.status}, expected ${expectedStatus})`);
+      LogRegistry.info(`[Client:${this.name}] ${requestUrl} did not match (got ${response.status}, expected ${expectedStatus})`);
       throw new RequestFailed(response.status, requestUrl);
     }
 
-    Logger.info(`[Client:${this.name}] ${requestUrl} matched (expected ${expectedStatus})`);
+    LogRegistry.info(`[Client:${this.name}] ${requestUrl} matched (expected ${expectedStatus})`);
     return response;
   }
 
@@ -132,7 +132,7 @@ class Client {
    * @throws {Error} Re-throws the original error otherwise.
    */
   #handleError(error, requestUrl) {
-    Logger.error(`Request failed: ${error}`);
+    LogRegistry.error(`Request failed: ${error}`);
     if (error.response) {
       throw new RequestFailed(error.response.status, requestUrl);
     }

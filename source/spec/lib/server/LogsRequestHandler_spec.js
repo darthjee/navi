@@ -26,9 +26,9 @@ describe('LogsRequestHandler', () => {
 
     describe('when there are logs', () => {
       beforeEach(() => {
-        Logger.info('first');
-        Logger.warn('second');
-        Logger.info('third');
+        LogRegistry.info('first');
+        LogRegistry.warn('second');
+        LogRegistry.info('third');
       });
 
       it('responds with all logs serialized', () => {

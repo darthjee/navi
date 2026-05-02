@@ -5,9 +5,9 @@ import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { Worker } from '../../../lib/background/Worker.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
@@ -110,7 +110,7 @@ describe('Worker', () => {
         });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
-        expect(Logger.error).not.toHaveBeenCalled();
+        expect(LogRegistry.error).not.toHaveBeenCalled();
       });
 
       it('finishes the job', async () => {
@@ -149,7 +149,7 @@ describe('Worker', () => {
         });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
-        expect(Logger.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
+        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
 
       it ('fails the job', async () => {

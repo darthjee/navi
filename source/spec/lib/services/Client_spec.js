@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Client } from '../../../lib/services/Client.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
@@ -33,9 +33,9 @@ describe('Client', () => {
       maxRedirects: 0,
       validateStatus: jasmine.any(Function),
     });
-    expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
-    expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 200`));
-    expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} matched (expected 200)`));
+    expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
+    expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 200`));
+    expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} matched (expected 200)`));
   });
 
   describe('when request status is not a match', () => {
@@ -52,9 +52,9 @@ describe('Client', () => {
       AxiosUtils.stubGet(404);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
-      expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 404`));
-      expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
-      expect(Logger.error).toHaveBeenCalled();
+      expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 404`));
+      expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
+      expect(LogRegistry.error).toHaveBeenCalled();
     });
   });
 
@@ -84,7 +84,7 @@ describe('Client', () => {
       AxiosUtils.stubGetRejection({ response: { status: 500 } });
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
-      expect(Logger.error).toHaveBeenCalled();
+      expect(LogRegistry.error).toHaveBeenCalled();
     });
   });
 
@@ -147,7 +147,7 @@ describe('Client', () => {
         maxRedirects: 0,
         validateStatus: jasmine.any(Function),
       });
-      expect(Logger.info).toHaveBeenCalledWith(jasmine.stringContaining(resolvedFullUrl));
+      expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(resolvedFullUrl));
     });
   });
 
@@ -176,7 +176,7 @@ describe('Client', () => {
       AxiosUtils.stubGet(301);
 
       await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
-      expect(Logger.error).toHaveBeenCalled();
+      expect(LogRegistry.error).toHaveBeenCalled();
     });
   });
 

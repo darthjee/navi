@@ -1,12 +1,12 @@
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { HtmlElementParser } from '../../../lib/utils/HtmlElementParser.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('HtmlElementParser', () => {
   let element;
   const selector = 'link[rel="stylesheet"]';
 
   beforeEach(() => {
-    spyOn(Logger, 'warn').and.stub();
+    spyOn(LogRegistry, 'warn').and.stub();
     element = jasmine.createSpyObj('element', ['getAttribute']);
   });
 
@@ -24,7 +24,7 @@ describe('HtmlElementParser', () => {
       it('does not log a warning', () => {
         const parser = new HtmlElementParser(element, selector);
         parser.getAttribute('href');
-        expect(Logger.warn).not.toHaveBeenCalled();
+        expect(LogRegistry.warn).not.toHaveBeenCalled();
       });
     });
 
@@ -41,13 +41,13 @@ describe('HtmlElementParser', () => {
       it('logs a warning including the selector', () => {
         const parser = new HtmlElementParser(element, selector);
         parser.getAttribute('src');
-        expect(Logger.warn).toHaveBeenCalledWith(jasmine.stringContaining(selector));
+        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining(selector));
       });
 
       it('logs a warning including the attribute name', () => {
         const parser = new HtmlElementParser(element, selector);
         parser.getAttribute('src');
-        expect(Logger.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
+        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
       });
     });
 
@@ -64,7 +64,7 @@ describe('HtmlElementParser', () => {
       it('logs a warning', () => {
         const parser = new HtmlElementParser(element, selector);
         parser.getAttribute('src');
-        expect(Logger.warn).toHaveBeenCalled();
+        expect(LogRegistry.warn).toHaveBeenCalled();
       });
     });
   });

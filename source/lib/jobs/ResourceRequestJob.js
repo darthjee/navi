@@ -1,6 +1,7 @@
 import { Job } from '../background/Job.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { ResponseWrapper } from '../models/ResponseWrapper.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -48,7 +49,7 @@ class ResourceRequestJob extends Job {
       const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
       return this.#handleResponse(response);
     } catch (error) {
-      Logger.error(`Job #${this.id} failed: ${error}`);
+      LogRegistry.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
     }
   }

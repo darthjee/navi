@@ -115,8 +115,8 @@ Collection managers built on a shared base class.
 - **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
 - **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
 - **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
-- **`LogRegistry`** — Static singleton façade for buffered log access. Does **not** extend `NamedRegistry`; follows the same façade pattern as `JobRegistry` and `WorkersRegistry`. `LogRegistry.build(options)` creates the singleton instance and wires the `BufferedLogger` into `Logger`. Exposes `getLogs({ lastId })`, `getLogById(id)`, `getLogsByLevel(level)`, `getLogsJSON()`. Call `reset()` in tests.
-- **`LogRegistryInstance`** — Holds the `BufferedLogger` instance and provides filtered log queries via `LogFilter`. Not exported directly; accessed only via `LogRegistry`.
+- **`LogRegistry`** — Static singleton façade for publishing logs to both the console and the API buffer simultaneously. Does **not** extend `NamedRegistry`; follows the same façade pattern as `JobRegistry` and `WorkersRegistry`. `LogRegistry.build(options)` creates the singleton instance. Exposes `debug(msg)`, `info(msg)`, `warn(msg)`, `error(msg)` to publish a log to both outputs. Also exposes `getLogs({ lastId })`, `getLogById(id)`, `getLogsByLevel(level)`, `getLogsJSON()` for API queries. Call `reset()` in tests.
+- **`LogRegistryInstance`** — Holds a `LoggerGroup` composed of a `ConsoleLogger` and a `BufferedLogger`. Exposes `debug/info/warn/error` methods that fan out to both outputs, and filtered log queries via `LogFilter`. Not exported directly; accessed only via `LogRegistry`.
 
 Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property. (`LogRegistry` is an exception — it is a standalone singleton, not a `NamedRegistry` subclass.)
 
@@ -134,7 +134,7 @@ forwarded to `_output`.
 | `BaseLogger` | Abstract base; applies level filtering and suppression before calling `_output`. |
 | `ConsoleLogger` | Extends `BaseLogger`; writes to `console.warn` / `console.error`. |
 | `BufferedLogger` | Extends `BaseLogger`; stores log entries in a `LogBuffer` instead of printing. |
-| `Logger` | Singleton-style facade that delegates to a `ConsoleLogger` and an optional `LoggerGroup`. |
+| `Logger` | Singleton-style facade that delegates to a `ConsoleLogger` (console only). Use `LogRegistry` when a log also needs to appear in the API buffer. |
 | `LoggerGroup` | Manages a set of loggers and fans out log calls to all of them. |
 | `LogFactory` | Builds `Log` instances with auto-assigned incremental IDs. |
 | `Log` | Immutable log entry: `id`, `level`, `message`. |
