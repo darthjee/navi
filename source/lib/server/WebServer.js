@@ -39,11 +39,14 @@ class WebServer {
   }
 
   /**
-   * Closes the HTTP server, stopping it from accepting new connections.
+   * Closes the HTTP server. Stops accepting new connections and forcibly closes
+   * any remaining keep-alive connections on the next event-loop tick so that
+   * the start() promise can resolve.
    * @returns {Promise<void>|undefined} The promise from start(), or undefined if not started.
    */
   shutdown() {
     this.#httpServer?.close();
+    setImmediate(() => this.#httpServer?.closeAllConnections());
     return this.#startPromise;
   }
 
