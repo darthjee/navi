@@ -39,7 +39,7 @@ describe('LogRegistry', () => {
 
   describe('.debug', () => {
     it('adds a debug log to the buffer', () => {
-      LogRegistry.build();
+      LogRegistry.build({ level: 'debug' });
       LogRegistry.debug('dbg msg');
       const logs = LogRegistry.getLogsByLevel('debug');
       expect(logs.length).toBe(1);
