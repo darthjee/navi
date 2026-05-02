@@ -2,6 +2,10 @@ import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('LogRegistry', () => {
+  beforeEach(() => {
+    Logger.suppress();
+  });
+
   afterEach(() => {
     LogRegistry.reset();
     Logger.reset();

@@ -6,6 +6,7 @@ describe('LogsRequestHandler', () => {
   let res;
 
   beforeEach(() => {
+    Logger.suppress();
     LogRegistry.build({ retention: 100 });
     res = { json: jasmine.createSpy('json') };
   });

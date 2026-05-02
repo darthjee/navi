@@ -10,6 +10,7 @@ describe('Router', () => {
   let router;
 
   beforeEach(() => {
+    Logger.suppress();
     ClientRegistry.build({ default: new Client({ name: 'default', baseUrl: 'https://example.com' }) });
     JobRegistry.build({ cooldown: -1 });
     LogRegistry.build();

@@ -11,6 +11,7 @@ describe('RouteRegister', () => {
   let register;
 
   beforeEach(() => {
+    Logger.suppress();
     LogRegistry.build();
     LoggerUtils.stubLoggerMethods();
     router = { get: jasmine.createSpy('get'), patch: jasmine.createSpy('patch') };
