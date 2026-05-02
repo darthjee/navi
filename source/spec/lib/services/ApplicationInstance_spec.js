@@ -101,4 +101,44 @@ describe('ApplicationInstance', () => {
       expect(instance.status()).toBe('running');
     });
   });
+
+  describe('#shutdown', () => {
+    beforeEach(() => {
+      spyOn(instance.engine, 'stop');
+    });
+
+    describe('when a web server is present', () => {
+      beforeEach(() => {
+        instance.webServer = { shutdown: jasmine.createSpy('shutdown') };
+      });
+
+      it('shuts down the web server', async () => {
+        await instance.shutdown();
+
+        expect(instance.webServer.shutdown).toHaveBeenCalled();
+      });
+
+      it('stops the engine', async () => {
+        await instance.shutdown();
+
+        expect(instance.engine.stop).toHaveBeenCalled();
+      });
+    });
+
+    describe('when there is no web server', () => {
+      beforeEach(() => {
+        instance.webServer = null;
+      });
+
+      it('does not throw', async () => {
+        await expectAsync(instance.shutdown()).not.toBeRejected();
+      });
+
+      it('stops the engine', async () => {
+        await instance.shutdown();
+
+        expect(instance.engine.stop).toHaveBeenCalled();
+      });
+    });
+  });
 });

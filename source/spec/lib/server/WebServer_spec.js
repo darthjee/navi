@@ -1,3 +1,4 @@
+import http from 'http';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { WebConfig } from '../../../lib/models/WebConfig.js';
@@ -70,6 +71,24 @@ describe('WebServer', () => {
       const webConfig = new WebConfig({ port: 19997 });
       const server = WebServer.build({ webConfig });
       expect(() => server.shutdown()).not.toThrow();
+    });
+
+    it('resolves the start promise even with an open keep-alive connection', async () => {
+      const webConfig = new WebConfig({ port: 19996 });
+      const server = WebServer.build({ webConfig });
+      const serverPromise = server.start();
+
+      await new Promise((resolve, reject) => {
+        const req = http.get(
+          'http://localhost:19996/stats.json',
+          { headers: { connection: 'keep-alive' } },
+          (res) => { res.resume(); resolve(); }
+        );
+        req.on('error', reject);
+      });
+
+      server.shutdown();
+      await serverPromise;
     });
   });
 });
