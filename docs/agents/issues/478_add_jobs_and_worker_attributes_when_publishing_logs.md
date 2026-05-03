@@ -22,11 +22,47 @@ Logs sent to `LogRegistry` support structured attributes. When a log is produced
 - Update `Worker` (or the job execution path) to instantiate a `LogContext` and pass it down to objects that perform logging (`Client`, `ResourceRequestJob`, etc.).
 - Replace direct `LogRegistry.*` / `Logger.*` calls in those objects with calls through the injected `LogContext`.
 
+## Log call sites
+
+### Needs job/worker context
+
+These log calls happen during job processing and should carry `workerId` and `jobId`:
+
+| File | Call | Notes |
+|------|------|-------|
+| `background/Worker.js` | `LogRegistry.error` | Job failure |
+| `jobs/ResourceRequestJob.js` | `Logger.debug`, `LogRegistry.error` | Job start and failure |
+| `jobs/AssetDownloadJob.js` | `Logger.debug`, `LogRegistry.error` | Job start and failure |
+| `jobs/ActionProcessingJob.js` | `Logger.debug` | Job start |
+| `jobs/HtmlParseJob.js` | `Logger.debug` | Job start |
+| `models/ResourceRequestAction.js` | `LogRegistry.error` | Action skipped error |
+| `services/Client.js` | `LogRegistry.info`, `LogRegistry.error` | All HTTP request/response logs |
+| `utils/HtmlParser.js` | `LogRegistry.warn` | Called from `HtmlParseJob` |
+| `utils/HtmlElementParser.js` | `LogRegistry.warn` | Called from `HtmlParseJob` |
+
+### Does not need job/worker context
+
+These log calls happen outside of job processing and should remain as-is:
+
+| File | Call | Notes |
+|------|------|-------|
+| `services/Engine.js` | `Logger.debug` | Engine loop tick |
+| `services/ConfigLoader.js` | `Logger.error` | Config loading |
+| `services/FailureChecker.js` | `LogRegistry.error` | Post-run threshold check |
+| `utils/EnvResolver.js` | `Logger.warn` | Environment variable resolution |
+| `server/RouteRegister.js` | `Logger.debug` | HTTP route handling |
+| `server/WebServer.js` | `Logger.info` | Server startup |
+
+## Future API
+
+Storing `workerId` and `jobId` as attributes on log entries enables a future `/logs.json` endpoint (or parameters on the existing one) to filter log entries by worker or by job, making it straightforward to trace exactly what happened during a specific job's lifecycle.
+
 ## Benefits
 
 - Log entries become traceable back to the job and worker that produced them.
 - No repetition of attribute-passing at individual call sites.
 - Scales cleanly — new contextual attributes (e.g. `requestUrl`) can be added to `LogContext` in one place.
+- Foundation for future per-job and per-worker log filtering in the API.
 
 ---
 See issue for details: https://github.com/darthjee/navi/issues/478
