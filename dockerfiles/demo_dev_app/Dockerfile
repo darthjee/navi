@@ -6,9 +6,17 @@ RUN yarn install && yarn build
 
 ######################################
 
-FROM darthjee/node:0.2.1
+FROM darthjee/node:0.2.1 as builder
 
 COPY --chown=node:node dev/app/ /home/node/app/
+
+RUN rm -rf spec eslint.config.mjs
+
+######################################
+
+FROM darthjee/node:0.2.1 as builder
+
+COPY --chown=node:node --from=frontend /home/node/app/ /home/node/app/
 
 RUN yarn install --production
 
