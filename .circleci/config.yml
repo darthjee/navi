@@ -67,6 +67,20 @@ workflows:
               only: /\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
+      - build-and-release-demo:
+          requires: [build-and-release]
+          filters:
+            tags:
+              only: /\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
+      - build-and-release-demo-app:
+          requires: [build-and-release]
+          filters:
+            tags:
+              only: /\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
 
 jobs:
   jasmine:
@@ -244,3 +258,19 @@ jobs:
       - run:
           name: Update Docker Hub description
           command: sh scripts/update-description.sh
+
+  build-and-release-demo:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Trigger Deploy
+          command: RENDER_SERVICE_NAME=$DEMO_RENDER_SERVICE_NAME scripts/deploy.sh deploy
+
+  build-and-release-demo-app:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Trigger Deploy
+          command: RENDER_SERVICE_NAME=$DEMO_APP_RENDER_SERVICE_NAME scripts/deploy.sh deploy

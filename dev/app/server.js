@@ -6,4 +6,4 @@ const dataPath = process.argv[2] || './data.yml';
 const data = load(readFileSync(dataPath, 'utf8'));
 const app = buildApp(data);
 
-app.listen(80);
+app.listen(8080);

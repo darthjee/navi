@@ -38,4 +38,10 @@ sed -i '' \
   "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
   "$PACKAGE_JSON"
 
+DEMO_DOCKERFILE="$ROOT_DIR/dockerfiles/demo_navi_hey/Dockerfile"
+
+sed -i '' \
+  "s|FROM darthjee/navi-hey:.*|FROM darthjee/navi-hey:$VERSION|" \
+  "$DEMO_DOCKERFILE"
+
 echo "Bumped to $VERSION (next release: $NEXT_VERSION)"
