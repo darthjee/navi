@@ -1,6 +1,5 @@
 import { Job } from '../background/Job.js';
 import { AssetRequestEnqueuer } from '../enqueuers/AssetRequestEnqueuer.js';
-import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * HtmlParseJob is a Job that parses an HTML response body, extracts asset URLs using
@@ -53,14 +52,15 @@ class HtmlParseJob extends Job {
 
   /**
    * Parses the HTML body, resolves asset URLs, and enqueues one AssetDownloadJob per URL.
+   * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<void>}
    */
-  async perform() {
-    Logger.debug(`HtmlParseJob #${this.id} performing`);
+  async perform(logContext) {
+    logContext.debug(`HtmlParseJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       for (const assetRequest of this.#assetRequests) {
-        new AssetRequestEnqueuer(this.#rawHtml, assetRequest, this.#jobRegistry, this.#clientRegistry).enqueue();
+        new AssetRequestEnqueuer(this.#rawHtml, assetRequest, this.#jobRegistry, this.#clientRegistry).enqueue(logContext);
       }
     } catch (error) {
       this._fail(error);

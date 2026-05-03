@@ -1,7 +1,6 @@
 import { parse } from 'node-html-parser';
 import { HtmlElementParser } from './HtmlElementParser.js';
 import { InvalidHtmlResponseBody } from '../exceptions/InvalidHtmlResponseBody.js';
-import { LogRegistry } from '../registry/LogRegistry.js';
 
 /**
  * HtmlParser parses a raw HTML string and extracts attribute values using CSS selectors.
@@ -17,10 +16,11 @@ class HtmlParser {
    * @param {string} rawHtml The raw HTML string to parse.
    * @param {string} selector CSS selector to match elements.
    * @param {string} attribute Attribute name whose value is extracted from each matched element.
+   * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
    * @returns {Array<string>} Array of attribute values from matched elements.
    * @throws {InvalidHtmlResponseBody} If the HTML cannot be parsed.
    */
-  static parse(rawHtml, selector, attribute) {
+  static parse(rawHtml, selector, attribute, logContext) {
     let root;
 
     try {
@@ -32,13 +32,13 @@ class HtmlParser {
     const elements = root.querySelectorAll(selector);
 
     if (elements.length === 0) {
-      LogRegistry.warn(`HtmlParser: selector "${selector}" matched zero elements`);
+      logContext.warn(`HtmlParser: selector "${selector}" matched zero elements`);
       return [];
     }
 
     const values = [];
     for (const element of elements) {
-      const value = new HtmlElementParser(element, selector).getAttribute(attribute);
+      const value = new HtmlElementParser(element, selector, logContext).getAttribute(attribute);
       if (value !== null) values.push(value);
     }
 

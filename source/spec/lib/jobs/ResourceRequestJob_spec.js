@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
@@ -16,6 +14,7 @@ describe('ResourceRequestJob', () => {
   let client;
   let parameters;
   let job;
+  let logContext;
 
   const baseUrl = 'http://example.com';
   const url = '/categories.json';
@@ -27,6 +26,7 @@ describe('ResourceRequestJob', () => {
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     resourceRequest = ResourceRequestFactory.build({ url, status });
     client = ClientFactory.build({ baseUrl });
     clients = ClientRegistryFactory.build({ default: client });
@@ -73,7 +73,7 @@ describe('ResourceRequestJob', () => {
       });
 
       it('resolves with the response', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(axios.get).toHaveBeenCalledWith(fullUrl, {
           timeout: 5000,
           responseType: 'text',
@@ -84,27 +84,27 @@ describe('ResourceRequestJob', () => {
       });
 
       it('calls enqueueActions with a ResponseWrapper', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
         const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
         expect(wrapper).toBeInstanceOf(ResponseWrapper);
       });
 
       it('passes the job parameters to the ResponseWrapper', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
         expect(wrapper.parameters).toBe(parameters);
       });
 
       it('logs debug when performing', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        expect(Logger.debug).toHaveBeenCalled();
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        expect(logContext.debug).toHaveBeenCalled();
       });
 
       it('does not exhaust after several successful attempts', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        await expectAsync(job.perform()).toBeResolvedTo(response);
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
@@ -117,24 +117,24 @@ describe('ResourceRequestJob', () => {
       });
 
       it('does not call enqueueActions', async () => {
-        await job.perform().catch(() => {});
+        await job.perform(logContext).catch(() => {});
         expect(resourceRequest.enqueueActions).not.toHaveBeenCalled();
       });
 
       it('registers failure and increments attempts', async () => {
         expect(job.lastError).toBeUndefined();
-        await job.perform().catch(() => {});
-        await job.perform().catch(() => {});
+        await job.perform(logContext).catch(() => {});
+        await job.perform(logContext).catch(() => {});
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
-        await job.perform().catch(() => {});
+        await job.perform(logContext).catch(() => {});
         expect(job.exhausted()).toBeTrue();
         expect(job.lastError).toEqual(expectedError);
       });
 
       it('logs the error', async () => {
-        await job.perform().catch(() => {});
-        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
+        await job.perform(logContext).catch(() => {});
+        expect(logContext.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
     });
 
@@ -151,7 +151,7 @@ describe('ResourceRequestJob', () => {
       });
 
       it('resolves placeholders and requests the resolved URL', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, {
           timeout: 5000,
           responseType: 'text',
@@ -175,7 +175,7 @@ describe('ResourceRequestJob', () => {
       });
 
       it('leaves placeholders unchanged in the URL', async () => {
-        await expectAsync(job.perform()).toBeResolvedTo(response);
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(axios.get).toHaveBeenCalledWith(unresolvedFullUrl, {
           timeout: 5000,
           responseType: 'text',
@@ -200,7 +200,7 @@ describe('ResourceRequestJob', () => {
       });
 
       it('calls enqueueAssets with the raw response body', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledOnceWith(
           rawHtml,
           jasmine.anything(),
@@ -209,7 +209,7 @@ describe('ResourceRequestJob', () => {
       });
 
       it('does not call ResponseParser (enqueueActions still called but no-op without actions)', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
       });
     });
@@ -228,7 +228,7 @@ describe('ResourceRequestJob', () => {
       });
 
       it('calls both enqueueAssets and enqueueActions', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
       });

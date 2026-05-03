@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Client } from '../../../lib/services/Client.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
@@ -15,9 +14,11 @@ describe('Client', () => {
   let client;
   let expectedError;
   let resourceRequest;
+  let logContext;
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     client = ClientFactory.build({ baseUrl });
     resourceRequest = ResourceRequestFactory.build({ url, status });
   });
@@ -25,7 +26,7 @@ describe('Client', () => {
   it('returns true when status matches and requests using baseUrl + url', async () => {
     const response = AxiosUtils.stubGet(200);
 
-    await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+    await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
     expect(axios.get).toHaveBeenCalledWith(fullUrl, {
       timeout: 5000,
       responseType: 'text',
@@ -33,9 +34,9 @@ describe('Client', () => {
       maxRedirects: 0,
       validateStatus: jasmine.any(Function),
     });
-    expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
-    expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 200`));
-    expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} matched (expected 200)`));
+    expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
+    expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 200`));
+    expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} matched (expected 200)`));
   });
 
   describe('when request status is not a match', () => {
@@ -51,10 +52,10 @@ describe('Client', () => {
     it('throws RequestFailed when status does not match and logs the error', async () => {
       AxiosUtils.stubGet(404);
 
-      await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
-      expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 404`));
-      expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
-      expect(LogRegistry.error).toHaveBeenCalled();
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
+      expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 404`));
+      expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
+      expect(logContext.error).toHaveBeenCalled();
     });
   });
 
@@ -66,7 +67,7 @@ describe('Client', () => {
     it('throws RequestFailed when status does not match', async () => {
       const response = AxiosUtils.stubGet(404);
 
-      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
     });
   });
 
@@ -83,8 +84,8 @@ describe('Client', () => {
     it('throws RequestFailed with correct status and full url on error.response and logs the error', async () => {
       AxiosUtils.stubGetRejection({ response: { status: 500 } });
 
-      await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
-      expect(LogRegistry.error).toHaveBeenCalled();
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
+      expect(logContext.error).toHaveBeenCalled();
     });
   });
 
@@ -96,7 +97,7 @@ describe('Client', () => {
     it('passes the timeout to the axios request', async () => {
       const response = AxiosUtils.stubGet(200);
 
-      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(fullUrl, {
         timeout: 5000,
         responseType: 'text',
@@ -117,7 +118,7 @@ describe('Client', () => {
     it('passes the headers to the axios request', async () => {
       const response = AxiosUtils.stubGet(200);
 
-      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(fullUrl, {
         timeout: 5000,
         responseType: 'text',
@@ -139,7 +140,7 @@ describe('Client', () => {
     it('resolves placeholders and requests the resolved URL', async () => {
       const response = AxiosUtils.stubGet(200);
 
-      await expectAsync(client.perform(resourceRequest, { id: 42 })).toBeResolvedTo(response);
+      await expectAsync(client.perform(resourceRequest, { id: 42 }, logContext)).toBeResolvedTo(response);
       expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, {
         timeout: 5000,
         responseType: 'text',
@@ -147,7 +148,7 @@ describe('Client', () => {
         maxRedirects: 0,
         validateStatus: jasmine.any(Function),
       });
-      expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining(resolvedFullUrl));
+      expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(resolvedFullUrl));
     });
   });
 
@@ -159,7 +160,7 @@ describe('Client', () => {
     it('resolves with the redirect response without following it', async () => {
       const response = AxiosUtils.stubGet(301);
 
-      await expectAsync(client.perform(resourceRequest)).toBeResolvedTo(response);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
     });
   });
 
@@ -175,8 +176,8 @@ describe('Client', () => {
     it('throws RequestFailed with the redirect status and logs the error', async () => {
       AxiosUtils.stubGet(301);
 
-      await expectAsync(client.perform(resourceRequest)).toBeRejectedWith(expectedError);
-      expect(LogRegistry.error).toHaveBeenCalled();
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
+      expect(logContext.error).toHaveBeenCalled();
     });
   });
 

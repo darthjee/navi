@@ -1,12 +1,12 @@
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { HtmlElementParser } from '../../../lib/utils/HtmlElementParser.js';
 
 describe('HtmlElementParser', () => {
   let element;
+  let logContext;
   const selector = 'link[rel="stylesheet"]';
 
   beforeEach(() => {
-    spyOn(LogRegistry, 'warn').and.stub();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     element = jasmine.createSpyObj('element', ['getAttribute']);
   });
 
@@ -17,14 +17,14 @@ describe('HtmlElementParser', () => {
       });
 
       it('returns the attribute value', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         expect(parser.getAttribute('href')).toBe('/styles.css');
       });
 
       it('does not log a warning', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         parser.getAttribute('href');
-        expect(LogRegistry.warn).not.toHaveBeenCalled();
+        expect(logContext.warn).not.toHaveBeenCalled();
       });
     });
 
@@ -34,20 +34,20 @@ describe('HtmlElementParser', () => {
       });
 
       it('returns null', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         expect(parser.getAttribute('src')).toBeNull();
       });
 
       it('logs a warning including the selector', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         parser.getAttribute('src');
-        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining(selector));
+        expect(logContext.warn).toHaveBeenCalledWith(jasmine.stringContaining(selector));
       });
 
       it('logs a warning including the attribute name', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         parser.getAttribute('src');
-        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
+        expect(logContext.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
       });
     });
 
@@ -57,14 +57,14 @@ describe('HtmlElementParser', () => {
       });
 
       it('returns null', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         expect(parser.getAttribute('src')).toBeNull();
       });
 
       it('logs a warning', () => {
-        const parser = new HtmlElementParser(element, selector);
+        const parser = new HtmlElementParser(element, selector, logContext);
         parser.getAttribute('src');
-        expect(LogRegistry.warn).toHaveBeenCalled();
+        expect(logContext.warn).toHaveBeenCalled();
       });
     });
   });

@@ -1,8 +1,6 @@
 import { Job } from '../background/Job.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { ResponseWrapper } from '../models/ResponseWrapper.js';
-import { LogRegistry } from '../registry/LogRegistry.js';
-import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * ResourceRequestJob is a Job that performs an HTTP request for a ResourceRequest.
@@ -40,16 +38,17 @@ class ResourceRequestJob extends Job {
 
   /**
    * Performs the HTTP request for the resource request.
+   * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise} A promise that resolves with the HTTP response.
    */
-  async perform() {
-    Logger.debug(`ResourceRequestJob #${this.id} performing`);
+  async perform(logContext) {
+    logContext.debug(`ResourceRequestJob #${this.id} performing`);
     try {
       this.lastError = undefined;
-      const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters);
+      const response = await this.#getClient().perform(this.#resourceRequest, this.#parameters, logContext);
       return this.#handleResponse(response);
     } catch (error) {
-      LogRegistry.error(`Job #${this.id} failed: ${error}`);
+      logContext.error(`Job #${this.id} failed: ${error}`);
       this._fail(error);
     }
   }
@@ -92,4 +91,3 @@ class ResourceRequestJob extends Job {
 }
 
 export { ResourceRequestJob };
-

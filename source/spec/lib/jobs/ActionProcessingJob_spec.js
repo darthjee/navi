@@ -1,14 +1,14 @@
 import { Job } from '../../../lib/background/Job.js';
 import { ActionProcessingJob } from '../../../lib/jobs/ActionProcessingJob.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('ActionProcessingJob', () => {
   let action;
   let item;
   let job;
+  let logContext;
 
   beforeEach(() => {
-    Logger.suppress();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     action = jasmine.createSpyObj('action', ['execute']);
     item = { id: 1, name: 'Electronics' };
     job = new ActionProcessingJob({ id: 'test-id', action, item });
@@ -39,18 +39,18 @@ describe('ActionProcessingJob', () => {
   describe('#perform', () => {
     describe('when the action succeeds', () => {
       it('calls action.execute with the item', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(action.execute).toHaveBeenCalledOnceWith(item);
       });
 
       it('clears lastError before performing', async () => {
         job.lastError = new Error('previous error');
-        await job.perform();
+        await job.perform(logContext);
         expect(job.lastError).toBeUndefined();
       });
 
       it('does not exhaust after a successful attempt', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(job.exhausted()).toBeFalse();
       });
     });
@@ -63,16 +63,16 @@ describe('ActionProcessingJob', () => {
       });
 
       it('sets lastError to the thrown error', async () => {
-        await job.perform().catch(() => {});
+        await job.perform(logContext).catch(() => {});
         expect(job.lastError).toEqual(error);
       });
 
       it('rethrows the error', async () => {
-        await expectAsync(job.perform()).toBeRejectedWith(error);
+        await expectAsync(job.perform(logContext)).toBeRejectedWith(error);
       });
 
       it('is exhausted after one failure', async () => {
-        await job.perform().catch(() => {});
+        await job.perform(logContext).catch(() => {});
         expect(job.exhausted()).toBeTrue();
       });
     });
@@ -85,7 +85,7 @@ describe('ActionProcessingJob', () => {
 
     it('returns true after one failed attempt', async () => {
       action.execute.and.throwError(new Error('fail'));
-      await job.perform().catch(() => {});
+      await job.perform(logContext).catch(() => {});
       expect(job.exhausted()).toBeTrue();
     });
   });

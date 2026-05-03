@@ -1,5 +1,4 @@
 import { Job } from '../background/Job.js';
-import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * ActionProcessingJob is a Job that processes a single Action for a given item.
@@ -44,10 +43,11 @@ class ActionProcessingJob extends Job {
 
   /**
    * Performs the action for the given item.
+   * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<void>}
    */
-  async perform() {
-    Logger.debug(`ActionProcessingJob #${this.id} performing`);
+  async perform(logContext) {
+    logContext.debug(`ActionProcessingJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       await this.#action.execute(this.#item);

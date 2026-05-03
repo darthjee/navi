@@ -1,10 +1,11 @@
 import { InvalidHtmlResponseBody } from '../../../lib/exceptions/InvalidHtmlResponseBody.js';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 
 describe('HtmlParser', () => {
+  let logContext;
+
   beforeEach(() => {
-    spyOn(LogRegistry, 'warn').and.stub();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
   });
 
   describe('.parse', () => {
@@ -12,7 +13,7 @@ describe('HtmlParser', () => {
       it('returns the attribute value in an array', () => {
         const html = '<html><head><link rel="stylesheet" href="/styles.css"></head></html>';
 
-        const result = HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href');
+        const result = HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href', logContext);
 
         expect(result).toEqual(['/styles.css']);
       });
@@ -25,7 +26,7 @@ describe('HtmlParser', () => {
           '<link rel="stylesheet" href="/b.css">' +
           '</head></html>';
 
-        const result = HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href');
+        const result = HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href', logContext);
 
         expect(result).toEqual(['/a.css', '/b.css']);
       });
@@ -35,7 +36,7 @@ describe('HtmlParser', () => {
       it('returns an empty array', () => {
         const html = '<html><body></body></html>';
 
-        const result = HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href');
+        const result = HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href', logContext);
 
         expect(result).toEqual([]);
       });
@@ -43,9 +44,9 @@ describe('HtmlParser', () => {
       it('logs a warning', () => {
         const html = '<html><body></body></html>';
 
-        HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href');
+        HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href', logContext);
 
-        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining('link[rel="stylesheet"]'));
+        expect(logContext.warn).toHaveBeenCalledWith(jasmine.stringContaining('link[rel="stylesheet"]'));
       });
     });
 
@@ -57,7 +58,7 @@ describe('HtmlParser', () => {
           '<img src="/img2.png">' +
           '</body></html>';
 
-        const result = HtmlParser.parse(html, 'img', 'src');
+        const result = HtmlParser.parse(html, 'img', 'src', logContext);
 
         expect(result).toEqual(['/img1.png', '/img2.png']);
       });
@@ -65,15 +66,15 @@ describe('HtmlParser', () => {
       it('logs a warning for each skipped element', () => {
         const html = '<html><body><img alt="no-src"></body></html>';
 
-        HtmlParser.parse(html, 'img', 'src');
+        HtmlParser.parse(html, 'img', 'src', logContext);
 
-        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
+        expect(logContext.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
       });
     });
 
     describe('when the HTML cannot be parsed', () => {
       it('throws InvalidHtmlResponseBody when passed null', () => {
-        expect(() => HtmlParser.parse(null, 'img', 'src')).toThrowError(InvalidHtmlResponseBody);
+        expect(() => HtmlParser.parse(null, 'img', 'src', logContext)).toThrowError(InvalidHtmlResponseBody);
       });
     });
   });

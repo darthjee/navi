@@ -1,6 +1,4 @@
 import { Job } from '../background/Job.js';
-import { LogRegistry } from '../registry/LogRegistry.js';
-import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * AssetDownloadJob is a Job that fetches a single fully-resolved asset URL and validates
@@ -41,16 +39,17 @@ class AssetDownloadJob extends Job {
 
   /**
    * Fetches the asset URL using the named client and validates the HTTP status.
+   * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<object>} The HTTP response.
    */
-  async perform() {
-    Logger.debug(`AssetDownloadJob #${this.id} performing`);
+  async perform(logContext) {
+    logContext.debug(`AssetDownloadJob #${this.id} performing`);
     try {
       this.lastError = undefined;
       const client = this.#clientRegistry.getClient(this.#clientName);
-      return await client.performUrl(this.#url, this.#status);
+      return await client.performUrl(this.#url, this.#status, logContext);
     } catch (error) {
-      LogRegistry.error(`AssetDownloadJob #${this.id} failed: ${error}`);
+      logContext.error(`AssetDownloadJob #${this.id} failed: ${error}`);
       this._fail(error);
     }
   }

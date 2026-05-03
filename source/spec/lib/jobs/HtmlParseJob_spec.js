@@ -1,7 +1,6 @@
 import { Job } from '../../../lib/background/Job.js';
 import { HtmlParseJob } from '../../../lib/jobs/HtmlParseJob.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 
@@ -11,14 +10,12 @@ describe('HtmlParseJob', () => {
   let assetRequests;
   let jobRegistry;
   let clientRegistry;
+  let logContext;
 
   const baseUrl = 'https://example.com';
 
   beforeEach(() => {
-    spyOn(Logger, 'debug').and.stub();
-    spyOn(Logger, 'info').and.stub();
-    spyOn(Logger, 'warn').and.stub();
-    spyOn(Logger, 'error').and.stub();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
 
     rawHtml = '<html><head>' +
       '<link rel="stylesheet" href="/styles.css">' +
@@ -74,17 +71,18 @@ describe('HtmlParseJob', () => {
 
       it('calls HtmlParser.parse once for the AssetRequest', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue([]);
-        await job.perform();
+        await job.perform(logContext);
         expect(HtmlParser.parse).toHaveBeenCalledOnceWith(
           rawHtml,
           'link[rel="stylesheet"]',
-          'href'
+          'href',
+          logContext
         );
       });
 
       it('enqueues one AssetDownloadJob per discovered URL', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css']);
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('AssetDownload', jasmine.objectContaining({
           url: `${baseUrl}/styles.css`,
         }));
@@ -92,7 +90,7 @@ describe('HtmlParseJob', () => {
 
       it('enqueues multiple AssetDownloadJobs for multiple discovered URLs', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css', '/theme.css']);
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
       });
     });
@@ -105,7 +103,7 @@ describe('HtmlParseJob', () => {
 
       it('enqueues absolute https URLs as-is', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue(['https://cdn.example.com/app.css']);
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
           url: 'https://cdn.example.com/app.css',
         }));
@@ -113,7 +111,7 @@ describe('HtmlParseJob', () => {
 
       it('enqueues absolute http URLs as-is', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue(['http://cdn.example.com/app.css']);
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
           url: 'http://cdn.example.com/app.css',
         }));
@@ -121,7 +119,7 @@ describe('HtmlParseJob', () => {
 
       it('prepends https: for protocol-relative URLs', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue(['//cdn.example.com/app.css']);
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
           url: 'https://cdn.example.com/app.css',
         }));
@@ -129,7 +127,7 @@ describe('HtmlParseJob', () => {
 
       it('concatenates root-relative URLs with the client base URL', async () => {
         spyOn(HtmlParser, 'parse').and.returnValue(['/assets/app.css']);
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
           url: `${baseUrl}/assets/app.css`,
         }));
@@ -144,7 +142,7 @@ describe('HtmlParseJob', () => {
       });
 
       it('does not enqueue any AssetDownloadJob', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });
@@ -164,12 +162,12 @@ describe('HtmlParseJob', () => {
       });
 
       it('calls HtmlParser.parse once per AssetRequest', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(HtmlParser.parse).toHaveBeenCalledTimes(2);
       });
 
       it('enqueues one AssetDownloadJob per discovered URL across all rules', async () => {
-        await job.perform();
+        await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
       });
     });
@@ -189,7 +187,7 @@ describe('HtmlParseJob', () => {
       assetRequests = [AssetRequestFactory.build()];
       job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
       spyOn(HtmlParser, 'parse').and.throwError(new Error('parse failure'));
-      await job.perform().catch(() => {});
+      await job.perform(logContext).catch(() => {});
       expect(job.exhausted()).toBeTrue();
     });
   });
