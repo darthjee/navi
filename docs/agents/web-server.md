@@ -46,6 +46,7 @@ source/lib/server/
 
 | Method | Path | Handler | Description |
 |--------|------|---------|-------------|
+| `GET` | `/settings.json` | `SettingsRequestHandler` | Returns `{ "enable_shutdown": true }` when shutdown is enabled; 403 when disabled. |
 | `GET` | `/stats.json` | `StatsRequestHandler` | Aggregated worker and job-queue counts. |
 | `GET` | `/jobs/:status.json` | `JobsRequestHandler` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | `JobRequestHandler` | Full detail for a single job; 404 if not found. |
@@ -134,3 +135,11 @@ web:
 ```
 
 If the `web` key is absent, `WebServer.build()` returns `null` and no server is started.
+
+```yaml
+web:
+  port: 3000
+  enable_shutdown: true  # optional, defaults to true
+```
+
+When `enable_shutdown` is `false`, the `GET /settings.json` endpoint returns 403, and the frontend hides the shutdown button entirely.

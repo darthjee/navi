@@ -51,6 +51,7 @@ class EngineControlsHelper {
   }
 
   renderShutdownButton(view) {
+    if (!view.showShutdown()) return null;
     return (
       <button className="btn btn-sm btn-danger" onClick={() => view.handleShutdown()}>
         Shut Down

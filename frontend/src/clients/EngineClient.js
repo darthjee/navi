@@ -39,4 +39,9 @@ const shutdownServer = () => {
     .then(handleResponse);
 };
 
-export { getEngineStatus, pauseEngine, stopEngine, continueEngine, startEngine, restartEngine, shutdownServer };
+const getSettings = () => {
+  return fetch('/settings.json')
+    .then(handleResponse);
+};
+
+export { getEngineStatus, getSettings, pauseEngine, stopEngine, continueEngine, startEngine, restartEngine, shutdownServer };

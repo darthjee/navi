@@ -64,7 +64,7 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 | `PathResolver` | Resolves a single dot/bracket-notation path expression against an object. Created via `PathResolver.fromExpression(pathExpr)`. Delegates segment-by-segment traversal to `PathSegmentTraverser`. |
 | `PathSegmentTraverser` | Traverses an object one path segment at a time. Provides semantic methods (`traverse`, `value`) and throws `MissingMappingVariable` when a segment cannot be resolved (non-object value or missing key). |
 | `WorkersConfig` | Holds the worker pool size (`quantity`, default 1), the retry cooldown in milliseconds (`retryCooldown`, default 2000), and the engine sleep interval in milliseconds (`sleep`, default 500). |
-| `WebConfig` | Holds the web UI configuration (`port`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. |
+| `WebConfig` | Holds the web UI configuration (`port`, `logsPageSize`, `enableShutdown`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. `enableShutdown` defaults to `true`. |
 
 ### `background/`
 
@@ -206,6 +206,7 @@ Express-based web server and request handlers.
 | `EngineContinueRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/continue`. Returns `{ status: 'running' }` if engine is `paused`, otherwise 409. |
 | `EngineStartRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/start`. Returns `{ status: 'running' }` if engine is `stopped`, otherwise 409. |
 | `EngineRestartRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/restart`. Returns `{ status: 'stopping' }` if engine is `running`, otherwise 409. |
+| `SettingsRequestHandler` | Extends `RequestHandler`. Responds to `GET /settings.json` with `{ "enable_shutdown": true }` when shutdown is enabled; throws `ForbiddenError` (→ 403) when disabled. Receives `enableShutdown` at construction time. |
 | `IndexRequestHandler` | Extends `RequestHandler`. Responds to `GET /` and the SPA catch-all by serving `source/static/index.html`. |
 | `AssetsRequestHandler` | Extends `RequestHandler`. Responds to `GET /assets/*path` by serving the requested file from `source/static/assets/`. Uses `PathValidator` to ensure the resolved path stays within `source/static/assets/`; returns **403 Forbidden** on path traversal attempts. |
 | `PathValidator` | Encapsulates the path traversal security check. Given a base directory, `isValid(resolvedPath)` returns `true` only when `resolvedPath` is strictly inside that directory. |

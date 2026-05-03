@@ -16,5 +16,15 @@ describe('WebConfig', () => {
       const config = new WebConfig({ port: 3000, logs_page_size: 50 });
       expect(config.logsPageSize).toEqual(50);
     });
+
+    it('defaults enableShutdown to true', () => {
+      const config = new WebConfig({ port: 3000 });
+      expect(config.enableShutdown).toEqual(true);
+    });
+
+    it('stores enableShutdown as false', () => {
+      const config = new WebConfig({ port: 3000, enable_shutdown: false });
+      expect(config.enableShutdown).toEqual(false);
+    });
   });
 });
