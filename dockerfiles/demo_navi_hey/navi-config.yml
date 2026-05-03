@@ -3,6 +3,8 @@ web:
   enable_shutdown: false
 workers:
   quantity: 5
+  retry_cooldown: 1000
+  max-retries: 10
 clients:
   default:
     base_url: $BASE_URL
