@@ -24,8 +24,11 @@ describe('Application', () => {
   let jobFactory;
   let workerFactory;
 
-  afterEach(() => {
+  beforeEach(() => {
     Logger.suppress();
+  });
+
+  afterEach(() => {
     Logger.reset();
     ClientRegistry.reset();
     JobRegistry.reset();
