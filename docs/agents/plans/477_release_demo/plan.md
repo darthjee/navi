@@ -43,8 +43,10 @@ FROM darthjee/navi-hey:<version>
 COPY navi-config.yml /home/node/config/navi-config.yml
 ```
 
-The `<version>` tag is pinned to the current release so `bump_version.sh` can update it
-automatically (see Step 3).
+The `<version>` tag must match the version in `source/package.json` at the time the file is
+created, and is kept in sync by `bump_version.sh` on every release (see Step 4).
+The CI flow guarantees the image exists at that version before the demo deploy runs:
+`npm-publish` → `build-and-release` (publishes `darthjee/navi-hey:<version>`) → `build-and-release-demo`.
 
 ### Step 3 — Create the demo navi config file
 
@@ -71,8 +73,10 @@ Key differences from the sample:
 
 ### Step 4 — Update `bump_version.sh` to patch the demo Dockerfile
 
-Add a `sed` call after the existing substitutions so the demo Dockerfile's `FROM` line stays
-in sync with the published image version:
+Add a `sed` call after the existing substitutions so the demo Dockerfile's `FROM` line is
+updated to the new version at the same time as `source/package.json`. This is critical because
+the subsequent CI `build-and-release` step will publish exactly that version of `darthjee/navi-hey`,
+and `build-and-release-demo` must reference the same version.
 
 ```bash
 DEMO_DOCKERFILE="$ROOT_DIR/dockerfiles/demo_navi_hey/Dockerfile"
@@ -156,6 +160,7 @@ variables in the CircleCI project settings (Render.com service names for the two
 
 - The CircleCI env vars `DEMO_RENDER_SERVICE_NAME` and `DEMO_APP_RENDER_SERVICE_NAME` must be
   configured manually in the CircleCI project settings — they are not committed to the repo.
-- The demo navi Dockerfile version pin starts at whatever the current release version is; after
-  the first `bump_version.sh` run it will be kept up to date automatically.
+- The demo navi Dockerfile version pin must be initialised to the current version in
+  `source/package.json` when the file is first created; from then on `bump_version.sh` keeps
+  it in sync automatically on every release.
 - No tests are expected for the Dockerfiles or CI config; no source code changes are needed.
