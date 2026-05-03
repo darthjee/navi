@@ -4,7 +4,8 @@ import { LogSerializer } from '../serializers/LogSerializer.js';
 
 /**
  * Handles GET /logs.json requests.
- * Returns a paginated list of log entries, optionally filtered to entries newer than last_id.
+ * Routes to per-job or per-worker buffers via optional `jobId` / `workerId` query params.
+ * Returns 400 when both params are present simultaneously.
  * @author darthjee
  */
 class LogsRequestHandler extends RequestHandler {
@@ -27,7 +28,25 @@ class LogsRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(req, res) {
-    const { last_id: lastId } = req.query;
+    const { last_id: lastId, jobId, workerId } = req.query;
+
+    if (jobId && workerId) {
+      res.status(400).json({ error: 'Cannot specify both jobId and workerId' });
+      return;
+    }
+
+    if (jobId) {
+      const logs = LogRegistry.getLogsByJobId(jobId);
+      res.json(LogSerializer.serialize(logs.slice(0, this.#pageSize)));
+      return;
+    }
+
+    if (workerId) {
+      const logs = LogRegistry.getLogsByWorkerId(workerId);
+      res.json(LogSerializer.serialize(logs.slice(0, this.#pageSize)));
+      return;
+    }
+
     const logs = LogRegistry.getLogs({ lastId });
     res.json(LogSerializer.serialize(logs.slice(0, this.#pageSize)));
   }

@@ -4,6 +4,7 @@ import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { WebConfig } from '../../../lib/models/WebConfig.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
+import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('WebServer', () => {
@@ -19,6 +20,7 @@ describe('WebServer', () => {
     LogRegistry.reset();
     Logger.reset();
     WorkersRegistry.reset();
+    EngineEvents.reset();
   });
 
   describe('.build', () => {

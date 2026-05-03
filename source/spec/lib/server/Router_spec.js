@@ -4,6 +4,7 @@ import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
 import { Client } from '../../../lib/services/Client.js';
+import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('Router', () => {
@@ -24,6 +25,7 @@ describe('Router', () => {
     LogRegistry.reset();
     Logger.reset();
     WorkersRegistry.reset();
+    EngineEvents.reset();
   });
 
   describe('#build', () => {

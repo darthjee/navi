@@ -130,6 +130,39 @@ describe('LogBuffer', () => {
     });
   });
 
+  describe('#push', () => {
+    it('adds an existing log instance to the buffer', () => {
+      const log = buffer.add('info', 'original');
+      const otherBuffer = new LogBuffer();
+      otherBuffer.push(log);
+      expect(otherBuffer.size).toBe(1);
+      expect(otherBuffer.getLogs()[0]).toBe(log);
+    });
+
+    it('respects the retention limit', () => {
+      const smallBuffer = new LogBuffer(2);
+      const log1 = buffer.add('info', 'first');
+      const log2 = buffer.add('info', 'second');
+      const log3 = buffer.add('info', 'third');
+      smallBuffer.push(log1);
+      smallBuffer.push(log2);
+      smallBuffer.push(log3);
+      expect(smallBuffer.size).toBe(2);
+    });
+  });
+
+  describe('#latestLog', () => {
+    it('returns undefined when the buffer is empty', () => {
+      expect(buffer.latestLog).toBeUndefined();
+    });
+
+    it('returns the most recently added log', () => {
+      buffer.add('info', 'first');
+      const second = buffer.add('warn', 'second');
+      expect(buffer.latestLog).toBe(second);
+    });
+  });
+
   describe('#clear', () => {
     it('removes all logs from the buffer', () => {
       buffer.add('info', 'first');

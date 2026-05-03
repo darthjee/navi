@@ -5,6 +5,7 @@ import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { Application } from '../../../lib/services/Application.js';
+import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../support/dummies/factories/DummyWorkerFactory.js';
@@ -32,6 +33,7 @@ describe('Application failure threshold', () => {
     WorkersRegistry.reset();
     ResourceRegistry.reset();
     Application.reset();
+    EngineEvents.reset();
   });
 
   describe('when failure threshold is configured and dead ratio exceeds it', () => {

@@ -73,6 +73,24 @@ class LogRegistry {
   }
 
   /**
+   * Gets logs stored in the per-job buffer for the given job ID.
+   * @param {string|number} jobId
+   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   */
+  static getLogsByJobId(jobId) {
+    return LogRegistry.#getInstance().getLogsByJobId(jobId);
+  }
+
+  /**
+   * Gets logs stored in the per-worker buffer for the given worker ID.
+   * @param {string|number} workerId
+   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   */
+  static getLogsByWorkerId(workerId) {
+    return LogRegistry.#getInstance().getLogsByWorkerId(workerId);
+  }
+
+  /**
    * Gets logs filtered by level.
    * @param {string} level
    * @returns {Array<import('../utils/logging/Log.js').Log>}

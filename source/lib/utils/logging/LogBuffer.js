@@ -67,6 +67,26 @@ class LogBuffer {
   }
 
   /**
+   * Appends an existing Log instance to the buffer, respecting the retention limit.
+   * @param {import('./Log.js').Log} log - The Log instance to append.
+   * @returns {void}
+   */
+  push(log) {
+    this.#logs.unshift(log);
+    if (this.#logs.length > this.#retention) {
+      this.#logs.pop();
+    }
+  }
+
+  /**
+   * Returns the most recently added log, or undefined if the buffer is empty.
+   * @returns {import('./Log.js').Log|undefined}
+   */
+  get latestLog() {
+    return this.#logs[0];
+  }
+
+  /**
    * Clears all logs from the buffer.
    * @returns {void}
    */

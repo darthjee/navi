@@ -1,5 +1,6 @@
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { LogsRequestHandler } from '../../../lib/server/LogsRequestHandler.js';
+import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('LogsRequestHandler', () => {
@@ -14,6 +15,7 @@ describe('LogsRequestHandler', () => {
   afterEach(() => {
     LogRegistry.reset();
     Logger.reset();
+    EngineEvents.reset();
   });
 
   describe('#handle', () => {
@@ -71,6 +73,53 @@ describe('LogsRequestHandler', () => {
           expect(result.length).toBe(1);
           expect(result[0].message).toBe('second');
         });
+      });
+    });
+
+    describe('when jobId is provided', () => {
+      beforeEach(() => {
+        LogRegistry.info('job log', { jobId: 'job-1' });
+        LogRegistry.info('other log');
+      });
+
+      it('returns only logs for that job', () => {
+        const handler = new LogsRequestHandler();
+        handler.handle({ query: { jobId: 'job-1' } }, res);
+        const result = res.json.calls.mostRecent().args[0];
+        expect(result.length).toBe(1);
+        expect(result[0].message).toBe('job log');
+      });
+
+      it('returns an empty array for an unknown job ID', () => {
+        const handler = new LogsRequestHandler();
+        handler.handle({ query: { jobId: 'unknown' } }, res);
+        const result = res.json.calls.mostRecent().args[0];
+        expect(result).toEqual([]);
+      });
+    });
+
+    describe('when workerId is provided', () => {
+      beforeEach(() => {
+        LogRegistry.info('worker log', { workerId: 'worker-1' });
+        LogRegistry.info('other log');
+      });
+
+      it('returns only logs for that worker', () => {
+        const handler = new LogsRequestHandler();
+        handler.handle({ query: { workerId: 'worker-1' } }, res);
+        const result = res.json.calls.mostRecent().args[0];
+        expect(result.length).toBe(1);
+        expect(result[0].message).toBe('worker log');
+      });
+    });
+
+    describe('when both jobId and workerId are provided', () => {
+      it('responds with a 400 error', () => {
+        res.status = jasmine.createSpy('status').and.returnValue(res);
+        const handler = new LogsRequestHandler();
+        handler.handle({ query: { jobId: 'job-1', workerId: 'worker-1' } }, res);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(jasmine.objectContaining({ error: jasmine.any(String) }));
       });
     });
   });

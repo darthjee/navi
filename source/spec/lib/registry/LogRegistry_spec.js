@@ -1,4 +1,5 @@
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
+import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('LogRegistry', () => {
@@ -9,6 +10,7 @@ describe('LogRegistry', () => {
   afterEach(() => {
     LogRegistry.reset();
     Logger.reset();
+    EngineEvents.reset();
   });
 
   describe('.build', () => {
@@ -131,6 +133,36 @@ describe('LogRegistry', () => {
       const infoLogs = LogRegistry.getLogsByLevel('info');
       expect(infoLogs.length).toBe(1);
       expect(infoLogs[0].level).toBe('info');
+    });
+  });
+
+  describe('.getLogsByJobId', () => {
+    it('returns an empty array for an unknown job ID', () => {
+      LogRegistry.build();
+      expect(LogRegistry.getLogsByJobId('unknown')).toEqual([]);
+    });
+
+    it('returns logs dispatched with that job ID', () => {
+      LogRegistry.build();
+      LogRegistry.info('job log', { jobId: 'job-1' });
+      const logs = LogRegistry.getLogsByJobId('job-1');
+      expect(logs.length).toBe(1);
+      expect(logs[0].message).toBe('job log');
+    });
+  });
+
+  describe('.getLogsByWorkerId', () => {
+    it('returns an empty array for an unknown worker ID', () => {
+      LogRegistry.build();
+      expect(LogRegistry.getLogsByWorkerId('unknown')).toEqual([]);
+    });
+
+    it('returns logs dispatched with that worker ID', () => {
+      LogRegistry.build();
+      LogRegistry.info('worker log', { workerId: 'worker-1' });
+      const logs = LogRegistry.getLogsByWorkerId('worker-1');
+      expect(logs.length).toBe(1);
+      expect(logs[0].message).toBe('worker log');
     });
   });
 
