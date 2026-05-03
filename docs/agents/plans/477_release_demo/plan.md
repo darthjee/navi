@@ -40,7 +40,7 @@ Add `dockerfiles/demo_navi_hey/Dockerfile` based on the already-released `darthj
 ```dockerfile
 FROM darthjee/navi-hey:<version>
 
-COPY navi-config.yml /home/node/config/navi-config.yml
+COPY navi-config.yml /home/node/app/config/navi-config.yml
 ```
 
 The `<version>` tag must match the version in `source/package.json` at the time the file is
@@ -89,7 +89,8 @@ sed -i '' \
 ### Step 5 — Create the demo dev app Dockerfile
 
 Add `dockerfiles/demo_dev_app/Dockerfile` based on `darthjee/node`, copying `dev/app/` and
-installing only production dependencies:
+installing only production dependencies. Mirrors the dev app image but skips dev dependencies
+and starts the server directly:
 
 ```dockerfile
 FROM darthjee/node:0.2.1
@@ -97,9 +98,9 @@ FROM darthjee/node:0.2.1
 COPY --chown=node:node dev/app/ /home/node/app/
 
 RUN cd /home/node/app && yarn install --production
-```
 
-This image serves as the backend for the demo environment.
+CMD ["node", "server.js"]
+```
 
 ### Step 6 — Add CI jobs
 
