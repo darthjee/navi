@@ -31,6 +31,14 @@ class BufferedLogger extends BaseLogger {
   }
 
   /**
+   * Returns the most recently added log, or undefined if the buffer is empty.
+   * @returns {import('./Log.js').Log|undefined}
+   */
+  get latestLog() {
+    return this.#buffer.latestLog;
+  }
+
+  /**
    * Gets all logs from the buffer.
    * @returns {Array<import('./Log.js').Log>} Array of log entries.
    */

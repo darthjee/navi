@@ -1,4 +1,5 @@
 import { Engine } from './Engine.js';
+import { EngineEvents } from './EngineEvents.js';
 import { FailureChecker } from './FailureChecker.js';
 import { JobFactory } from '../background/JobFactory.js';
 import { JobRegistry } from '../background/JobRegistry.js';
@@ -74,6 +75,7 @@ class ApplicationInstance {
 
     await this.#aggregator.wait();
     this.#engineStatus = 'stopped';
+    EngineEvents.emit('stop');
 
     new FailureChecker({ failureConfig: this.config.failureConfig }).check();
   }
@@ -182,6 +184,7 @@ class ApplicationInstance {
     await this.#waitForWorkersIdle();
     JobRegistry.clearQueues();
     this.#engineStatus = 'stopped';
+    EngineEvents.emit('stop');
   }
 
   /**
@@ -207,6 +210,7 @@ class ApplicationInstance {
     this.engine.resume();
     this.enqueueFirstJobs();
     this.#engineStatus = 'running';
+    EngineEvents.emit('start');
   }
 
   /**

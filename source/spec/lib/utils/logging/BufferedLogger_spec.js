@@ -7,6 +7,18 @@ describe('BufferedLogger', () => {
     logger = new BufferedLogger('debug');
   });
 
+  describe('#latestLog', () => {
+    it('returns undefined when the buffer is empty', () => {
+      expect(logger.latestLog).toBeUndefined();
+    });
+
+    it('returns the most recently added log', () => {
+      logger.info('first');
+      logger.warn('second');
+      expect(logger.latestLog.message).toBe('second');
+    });
+  });
+
   describe('constructor', () => {
     it('starts with an empty buffer', () => {
       expect(logger.bufferSize).toBe(0);

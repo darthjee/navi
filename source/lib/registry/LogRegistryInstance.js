@@ -1,4 +1,5 @@
 import { BufferedLogger } from '../utils/logging/BufferedLogger.js';
+import { LogBufferCollection } from '../utils/logging/LogBufferCollection.js';
 import { LogFilter } from '../utils/logging/LogFilter.js';
 import { Logger } from '../utils/logging/Logger.js';
 import { LoggerGroup } from '../utils/logging/LoggerGroup.js';
@@ -12,6 +13,8 @@ import { LoggerGroup } from '../utils/logging/LoggerGroup.js';
 class LogRegistryInstance {
   #bufferedLogger;
   #loggerGroup;
+  #jobLogs;
+  #workerLogs;
 
   /**
    * Creates a new LogRegistryInstance.
@@ -22,6 +25,8 @@ class LogRegistryInstance {
   constructor({ level, retention } = {}) {
     this.#bufferedLogger = new BufferedLogger(level, retention);
     this.#loggerGroup = new LoggerGroup([Logger.default(), this.#bufferedLogger]);
+    this.#jobLogs = new LogBufferCollection(retention);
+    this.#workerLogs = new LogBufferCollection(retention);
   }
 
   /**
@@ -39,7 +44,7 @@ class LogRegistryInstance {
    * @returns {void}
    */
   debug(message, attributes = {}) {
-    this.#loggerGroup.debug(message, attributes);
+    this.#dispatch('debug', message, attributes);
   }
 
   /**
@@ -49,7 +54,7 @@ class LogRegistryInstance {
    * @returns {void}
    */
   error(message, attributes = {}) {
-    this.#loggerGroup.error(message, attributes);
+    this.#dispatch('error', message, attributes);
   }
 
   /**
@@ -70,6 +75,24 @@ class LogRegistryInstance {
    */
   getLogs({ lastId } = {}) {
     return new LogFilter(this.bufferedLogger.getLogs()).filter({ lastId });
+  }
+
+  /**
+   * Gets logs stored in the per-job buffer for the given job ID.
+   * @param {string|number} jobId
+   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   */
+  getLogsByJobId(jobId) {
+    return this.#jobLogs.getLogs(jobId);
+  }
+
+  /**
+   * Gets logs stored in the per-worker buffer for the given worker ID.
+   * @param {string|number} workerId
+   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   */
+  getLogsByWorkerId(workerId) {
+    return this.#workerLogs.getLogs(workerId);
   }
 
   /**
@@ -96,7 +119,7 @@ class LogRegistryInstance {
    * @returns {void}
    */
   info(message, attributes = {}) {
-    this.#loggerGroup.info(message, attributes);
+    this.#dispatch('info', message, attributes);
   }
 
   /**
@@ -106,7 +129,24 @@ class LogRegistryInstance {
    * @returns {void}
    */
   warn(message, attributes = {}) {
-    this.#loggerGroup.warn(message, attributes);
+    this.#dispatch('warn', message, attributes);
+  }
+
+  /**
+   * Fans out the log call to the logger group and, if a new log was buffered,
+   * routes it to the per-job and per-worker collections based on attributes.
+   * @param {string} level
+   * @param {string} message
+   * @param {object} attributes
+   * @returns {void}
+   */
+  #dispatch(level, message, attributes) {
+    const before = this.#bufferedLogger.latestLog;
+    this.#loggerGroup[level](message, attributes);
+    const log = this.#bufferedLogger.latestLog;
+    if (log === before) return;
+    if (attributes.jobId !== undefined) this.#jobLogs.push(attributes.jobId, log);
+    if (attributes.workerId !== undefined) this.#workerLogs.push(attributes.workerId, log);
   }
 }
 

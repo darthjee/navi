@@ -10,6 +10,7 @@ import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Application } from '../../../lib/services/Application.js';
 import { Engine } from '../../../lib/services/Engine.js';
+import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
@@ -37,6 +38,7 @@ describe('Application', () => {
     WorkersRegistry.reset();
     ResourceRegistry.reset();
     Application.reset();
+    EngineEvents.reset();
   });
 
   describe('#loadConfig', () => {
