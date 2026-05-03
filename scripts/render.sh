@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RENDER_SERVICE_NAME="oak"
+RENDER_SERVICE_NAME="${RENDER_SERVICE_NAME:-oak}"
 
 function request() {
   METHOD=$1
