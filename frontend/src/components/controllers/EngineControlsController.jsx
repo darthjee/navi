@@ -1,11 +1,11 @@
 import {
-  pauseEngine,
-  stopEngine,
   continueEngine,
-  startEngine,
+  getEngineStatus,
+  pauseEngine,
   restartEngine,
   shutdownServer,
-  getEngineStatus,
+  startEngine,
+  stopEngine,
 } from '../../clients/EngineClient.js';
 import noop from '../../utils/noop.js';
 
@@ -15,14 +15,16 @@ const TRANSITIONAL_STATUSES = new Set(['pausing', 'stopping']);
 class EngineControlsController {
   #status;
   #refreshStatus;
+  #shutdownEnabled;
 
-  constructor(status, refreshStatus) {
+  constructor(status, refreshStatus, shutdownEnabled) {
     this.#status = status;
     this.#refreshStatus = refreshStatus;
+    this.#shutdownEnabled = shutdownEnabled;
   }
 
-  static build(status, refreshStatus) {
-    return new EngineControlsController(status, refreshStatus);
+  static build(status, refreshStatus, shutdownEnabled) {
+    return new EngineControlsController(status, refreshStatus, shutdownEnabled);
   }
 
   static fetchStatus(setStatus) {
@@ -47,7 +49,7 @@ class EngineControlsController {
     return this.#status === 'stopped';
   }
 
-  showShutdown() { return true; }
+  showShutdown() { return this.#shutdownEnabled === true; }
   showPause() { return this.isRunning(); }
   showStop() { return this.isRunning() || this.isPaused(); }
   showContinue() { return this.isPaused(); }
