@@ -1,10 +1,16 @@
-import { Router as ExpressRouter } from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import express, { Router as ExpressRouter } from 'express';
 import ContentHandler from './ContentHandler.js';
+import IndexRequestHandler from './IndexRequestHandler.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
 import RedirectHandler from './RedirectHandler.js';
 import RouteRegister from './RouteRegister.js';
 import { ROUTES } from './routes.config.js';
 import Serializer from './Serializer.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const staticDir = path.join(__dirname, '../static');
 
 /**
  * Builds and returns the configured Express router with all application routes
@@ -37,6 +43,12 @@ class Router {
 
     REDIRECT_ROUTES.forEach(({ route, target }) => {
       register.register(route, new RedirectHandler(target));
+    });
+
+    router.use(express.static(staticDir));
+
+    router.use((_req, res) => {
+      new IndexRequestHandler().handle(_req, res);
     });
 
     return router;
