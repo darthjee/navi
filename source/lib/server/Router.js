@@ -11,6 +11,7 @@ import { EngineStartRequestHandler } from './EngineStartRequestHandler.js';
 import { EngineStatusRequestHandler } from './EngineStatusRequestHandler.js';
 import { EngineStopRequestHandler } from './EngineStopRequestHandler.js';
 import { IndexRequestHandler } from './IndexRequestHandler.js';
+import { JobLogsRequestHandler } from './JobLogsRequestHandler.js';
 import { JobRequestHandler } from './JobRequestHandler.js';
 import { JobRetryRequestHandler } from './JobRetryRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
@@ -50,6 +51,7 @@ class Router {
       '/stats.json':              new StatsRequestHandler(),
       '/clients/base_urls.json':  new BaseUrlsRequestHandler(),
       '/jobs/:status.json':       new JobsRequestHandler(),
+      '/jobs/:job_id/logs.json':  new JobLogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
       '/job/:id.json':            new JobRequestHandler(),
       '/engine/status':           new EngineStatusRequestHandler(),
       '/logs.json':               new LogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
