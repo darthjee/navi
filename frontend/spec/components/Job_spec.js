@@ -5,6 +5,17 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Job from '../../src/components/Job.jsx';
 import noop from '../../src/utils/noop.js';
 
+const mockJobFetch = (job) => {
+  let callCount = 0;
+  spyOn(globalThis, 'fetch').and.callFake(() => {
+    callCount++;
+    if (callCount === 1) {
+      return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(job) });
+    }
+    return new Promise(noop);
+  });
+};
+
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const renderJob = async (root, id = 'abc-123') => {
@@ -60,9 +71,7 @@ describe('Job', () => {
     };
 
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(job) })
-      );
+      mockJobFetch(job);
       await renderJob(root, 'abc-123');
       await flushAsync();
     });
@@ -111,6 +120,10 @@ describe('Job', () => {
 
     it('does not show Ready in for processing status', () => {
       expect(container.textContent).not.toContain('Ready in');
+    });
+
+    it('renders the logs section', () => {
+      expect(container.querySelector('.bg-dark')).not.toBeNull();
     });
   });
 

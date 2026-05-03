@@ -1,4 +1,4 @@
-import fetchLogs from '../../src/clients/LogsClient.js';
+import fetchLogs, { fetchJobLogs } from '../../src/clients/LogsClient.js';
 
 describe('LogsClient', () => {
   describe('fetchLogs', () => {
@@ -87,6 +87,83 @@ describe('LogsClient', () => {
       it('fetches from /logs.json without a query parameter', async () => {
         await fetchLogs({ lastId: undefined });
         expect(globalThis.fetch).toHaveBeenCalledWith('/logs.json');
+      });
+    });
+  });
+
+  describe('fetchJobLogs', () => {
+    describe('without lastId', () => {
+      describe('when the request succeeds', () => {
+        const logs = [
+          { id: 1, level: 'info', message: 'Job started', timestamp: '2024-01-01T00:00:00Z' },
+        ];
+
+        beforeEach(() => {
+          spyOn(globalThis, 'fetch').and.returnValue(
+            Promise.resolve({ ok: true, json: () => Promise.resolve(logs) }),
+          );
+        });
+
+        it('fetches from /jobs/:jobId/logs.json', async () => {
+          await fetchJobLogs('job-1');
+          expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/job-1/logs.json');
+        });
+
+        it('returns the logs array', async () => {
+          const result = await fetchJobLogs('job-1');
+          expect(result).toEqual(logs);
+        });
+      });
+
+      describe('when the request fails', () => {
+        beforeEach(() => {
+          spyOn(globalThis, 'fetch').and.returnValue(
+            Promise.resolve({ ok: false, status: 500 }),
+          );
+        });
+
+        it('throws an error with the HTTP status code', async () => {
+          await expectAsync(fetchJobLogs('job-1')).toBeRejectedWithError('HTTP 500');
+        });
+      });
+    });
+
+    describe('with a numeric lastId', () => {
+      beforeEach(() => {
+        spyOn(globalThis, 'fetch').and.returnValue(
+          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
+        );
+      });
+
+      it('appends last_id to the query string', async () => {
+        await fetchJobLogs('job-1', { lastId: 42 });
+        expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/job-1/logs.json?last_id=42');
+      });
+    });
+
+    describe('with a jobId that contains special characters', () => {
+      beforeEach(() => {
+        spyOn(globalThis, 'fetch').and.returnValue(
+          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
+        );
+      });
+
+      it('URI-encodes the jobId', async () => {
+        await fetchJobLogs('job 1');
+        expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/job%201/logs.json');
+      });
+    });
+
+    describe('with lastId as null', () => {
+      beforeEach(() => {
+        spyOn(globalThis, 'fetch').and.returnValue(
+          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
+        );
+      });
+
+      it('fetches without a query parameter', async () => {
+        await fetchJobLogs('job-1', { lastId: null });
+        expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/job-1/logs.json');
       });
     });
   });
