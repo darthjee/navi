@@ -14,4 +14,6 @@ RUN cd /home/node/app && yarn install --production
 
 COPY --chown=node:node --from=frontend /home/node/app/dist /home/node/app/static
 
+USER node
+
 CMD ["node", "server.js"]
