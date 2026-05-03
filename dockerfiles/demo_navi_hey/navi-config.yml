@@ -1,5 +1,5 @@
 web:
-  port: 3000
+  port: 8080
   enable_shutdown: false
 workers:
   quantity: 5
