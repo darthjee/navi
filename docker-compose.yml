@@ -53,7 +53,7 @@ services:
       - ./dev/app/:/home/node/app/
       - ./docker_volumes/node_modules_dev:/home/node/app/node_modules
     ports:
-      - 0.0.0.0:3020:80
+      - 0.0.0.0:3020:8080
 
   navi_dev_frontend:
     image: navi_dev_frontend:dev
