@@ -1,0 +1,58 @@
+web:
+  port: 3000
+  enable_shutdown: false
+workers:
+  quantity: 5
+clients:
+  default:
+    base_url: $BASE_URL
+    timeout: 5000
+resources:
+  home:
+    - url: /
+      status: 200
+      assets:
+        - selector: script[src]
+          attribute: src
+        - selector: link[rel="stylesheet"]
+          attribute: href
+  categories:
+    - url: /categories.json
+      status: 200
+      actions:
+        - resource: category
+          parameters:
+            id: parsedBody.id
+        - resource: category_items
+          parameters:
+            id: parsedBody.id
+    - url: /categories
+      status: 302
+    - url: /#/categories
+      status: 200
+  category:
+    - url: /categories/{:id}.json
+      status: 200
+    - url: /categories/{:id}
+      status: 302
+    - url: /#/categories/{:id}
+      status: 200
+  category_items:
+    - url: /categories/{:id}/items.json
+      status: 200
+      actions:
+        - resource: category_item
+          parameters:
+            id: parsedBody.id
+            category_id: parameters.id
+    - url: /categories/{:id}/items
+      status: 302
+    - url: /#/categories/{:id}/items
+      status: 200
+  category_item:
+    - url: /categories/{:category_id}/items/{:id}.json
+      status: 200
+    - url: /categories/{:category_id}/items/{:id}
+      status: 302
+    - url: /#/categories/{:category_id}/items/{:id}
+      status: 200
