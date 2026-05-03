@@ -107,3 +107,22 @@ describe('unmatched routes', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('with failureRate = 1', () => {
+  const failingApp = buildApp(FixturesUtils.loadYamlFixture('data.yml'), 1);
+
+  it('returns 502 for a JSON route', async () => {
+    const res = await request(failingApp).get('/categories.json');
+    expect(res.status).toBe(502);
+  });
+
+  it('returns 502 for a redirect route', async () => {
+    const res = await request(failingApp).get('/categories').redirects(0);
+    expect(res.status).toBe(502);
+  });
+
+  it('returns 502 for an unknown route', async () => {
+    const res = await request(failingApp).get('/unknown');
+    expect(res.status).toBe(502);
+  });
+});
