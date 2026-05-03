@@ -1,22 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import LogsPageController from './controllers/LogsPageController.jsx';
-import LogsPageHelper from './helpers/LogsPageHelper.jsx';
-import './LogsPage.css';
+import Logs from './Logs.jsx';
+import fetchLogs from '../clients/LogsClient.js';
 
 function LogsPage() {
-  const [logs, setLogs] = useState([]);
-  const bottomRef = useRef(null);
-  const cancelledRef = useRef(false);
-  const lastIdRef = useRef(null);
-
-  const helper = useMemo(() => LogsPageHelper.build(logs), [logs]);
-  const view = useMemo(() => LogsPageController.build(logs), [logs]);
-
-  useEffect(view.buildPollingEffect(cancelledRef, lastIdRef, setLogs), []);
-
-  useEffect(view.buildScrollEffect(bottomRef), [view]);
-
-  return helper.render(bottomRef);
+  return <Logs fetchLogs={fetchLogs} />;
 }
 
 export default LogsPage;
