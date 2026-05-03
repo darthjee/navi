@@ -18,12 +18,12 @@ describe('Application failure threshold', () => {
   let workerFactory;
 
   beforeEach(() => {
+    Logger.suppress();
     jobFactory = new DummyJobFactory();
     workerFactory = new DummyWorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
   });
 
   afterEach(() => {
-    Logger.suppress();
     Logger.reset();
     ClientRegistry.reset();
     JobRegistry.reset();
