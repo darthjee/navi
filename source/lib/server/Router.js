@@ -17,6 +17,7 @@ import { JobRetryRequestHandler } from './JobRetryRequestHandler.js';
 import { JobsRequestHandler } from './JobsRequestHandler.js';
 import { LogsRequestHandler } from './LogsRequestHandler.js';
 import { RouteRegister } from './RouteRegister.js';
+import { SettingsRequestHandler } from './SettingsRequestHandler.js';
 import { StatsRequestHandler } from './StatsRequestHandler.js';
 
 const { Router: ExpressRouter } = express;
@@ -48,6 +49,7 @@ class Router {
     const register = new RouteRegister(router);
 
     const GET_ROUTES = {
+      '/settings.json':           new SettingsRequestHandler({ enableShutdown: this.#webConfig.enableShutdown }),
       '/stats.json':              new StatsRequestHandler(),
       '/clients/base_urls.json':  new BaseUrlsRequestHandler(),
       '/jobs/:status.json':       new JobsRequestHandler(),
