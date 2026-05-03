@@ -2,10 +2,10 @@ import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { FailureConfig } from '../../../lib/models/FailureConfig.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../lib/services/FailureChecker.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('FailureChecker', () => {
   let clients;
@@ -27,7 +27,7 @@ describe('FailureChecker', () => {
     });
 
     spyOn(process, 'exit').and.stub();
-    spyOn(Logger, 'error').and.stub();
+    spyOn(LogRegistry, 'error').and.stub();
   });
 
   afterEach(() => {
@@ -84,7 +84,7 @@ describe('FailureChecker', () => {
         it('logs an error message', () => {
           const checker = new FailureChecker({ failureConfig });
           checker.check();
-          expect(Logger.error).toHaveBeenCalledWith(
+          expect(LogRegistry.error).toHaveBeenCalledWith(
             jasmine.stringContaining('Failure threshold exceeded')
           );
         });

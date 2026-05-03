@@ -1,4 +1,4 @@
-import { Logger } from '../utils/logging/Logger.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 
 /**
  * Worker processes jobs pulled from a JobRegistry.
@@ -45,7 +45,7 @@ class Worker {
       await this.job.perform();
       this.#jobRegistry.finish(this.job);
     } catch (error) {
-      Logger.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
+      LogRegistry.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
       this.#jobRegistry.fail(this.job);
     } finally {
       this.job = undefined;

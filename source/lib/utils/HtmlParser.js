@@ -1,7 +1,7 @@
 import { parse } from 'node-html-parser';
 import { HtmlElementParser } from './HtmlElementParser.js';
 import { InvalidHtmlResponseBody } from '../exceptions/InvalidHtmlResponseBody.js';
-import { Logger } from './logging/Logger.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 
 /**
  * HtmlParser parses a raw HTML string and extracts attribute values using CSS selectors.
@@ -32,7 +32,7 @@ class HtmlParser {
     const elements = root.querySelectorAll(selector);
 
     if (elements.length === 0) {
-      Logger.warn(`HtmlParser: selector "${selector}" matched zero elements`);
+      LogRegistry.warn(`HtmlParser: selector "${selector}" matched zero elements`);
       return [];
     }
 

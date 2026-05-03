@@ -3,6 +3,7 @@ import { MissingActionResource } from '../../../lib/exceptions/MissingActionReso
 import { MissingMappingVariable } from '../../../lib/exceptions/MissingMappingVariable.js';
 import { ResourceNotFound } from '../../../lib/exceptions/ResourceNotFound.js';
 import { ResourceRequestAction } from '../../../lib/models/ResourceRequestAction.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { Application } from '../../../lib/services/Application.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
@@ -13,7 +14,7 @@ import { ResourceRequestFactory } from '../../support/factories/ResourceRequestF
 describe('ResourceRequestAction', () => {
   beforeEach(() => {
     spyOn(Logger, 'info').and.stub();
-    spyOn(Logger, 'error').and.stub();
+    spyOn(LogRegistry, 'error').and.stub();
   });
 
   describe('constructor', () => {
@@ -56,7 +57,7 @@ describe('ResourceRequestAction', () => {
           { resource: undefined },
         ]);
         expect(list.length).toBe(1);
-        expect(Logger.error).toHaveBeenCalled();
+        expect(LogRegistry.error).toHaveBeenCalled();
       });
     });
   });

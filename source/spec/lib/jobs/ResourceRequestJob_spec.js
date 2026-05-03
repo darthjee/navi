@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
@@ -133,7 +134,7 @@ describe('ResourceRequestJob', () => {
 
       it('logs the error', async () => {
         await job.perform().catch(() => {});
-        expect(Logger.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
+        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
     });
 

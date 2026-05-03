@@ -1,4 +1,5 @@
 import { Job } from '../background/Job.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -49,7 +50,7 @@ class AssetDownloadJob extends Job {
       const client = this.#clientRegistry.getClient(this.#clientName);
       return await client.performUrl(this.#url, this.#status);
     } catch (error) {
-      Logger.error(`AssetDownloadJob #${this.id} failed: ${error}`);
+      LogRegistry.error(`AssetDownloadJob #${this.id} failed: ${error}`);
       this._fail(error);
     }
   }

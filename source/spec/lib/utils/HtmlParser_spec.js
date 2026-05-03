@@ -1,10 +1,10 @@
 import { InvalidHtmlResponseBody } from '../../../lib/exceptions/InvalidHtmlResponseBody.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('HtmlParser', () => {
   beforeEach(() => {
-    spyOn(Logger, 'warn').and.stub();
+    spyOn(LogRegistry, 'warn').and.stub();
   });
 
   describe('.parse', () => {
@@ -45,7 +45,7 @@ describe('HtmlParser', () => {
 
         HtmlParser.parse(html, 'link[rel="stylesheet"]', 'href');
 
-        expect(Logger.warn).toHaveBeenCalledWith(jasmine.stringContaining('link[rel="stylesheet"]'));
+        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining('link[rel="stylesheet"]'));
       });
     });
 
@@ -67,7 +67,7 @@ describe('HtmlParser', () => {
 
         HtmlParser.parse(html, 'img', 'src');
 
-        expect(Logger.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
+        expect(LogRegistry.warn).toHaveBeenCalledWith(jasmine.stringContaining('src'));
       });
     });
 

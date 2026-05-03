@@ -6,6 +6,7 @@ describe('LogsRequestHandler', () => {
   let res;
 
   beforeEach(() => {
+    Logger.suppress();
     LogRegistry.build({ retention: 100 });
     res = { json: jasmine.createSpy('json') };
   });
@@ -26,9 +27,9 @@ describe('LogsRequestHandler', () => {
 
     describe('when there are logs', () => {
       beforeEach(() => {
-        Logger.info('first');
-        Logger.warn('second');
-        Logger.info('third');
+        LogRegistry.info('first');
+        LogRegistry.warn('second');
+        LogRegistry.info('third');
       });
 
       it('responds with all logs serialized', () => {

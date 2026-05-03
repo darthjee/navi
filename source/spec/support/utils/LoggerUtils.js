@@ -1,3 +1,4 @@
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 /**
@@ -16,13 +17,17 @@ class LoggerUtils {
   }
 
   /**
-   * Stubs Logger.debug, Logger.info and Logger.error as Jasmine spies.
+   * Stubs Logger and LogRegistry log methods as Jasmine spies.
    * Use in specs that need to suppress logger output and/or assert on log calls.
    */
   static stubLoggerMethods() {
     spyOn(Logger, 'debug').and.stub();
     spyOn(Logger, 'info').and.stub();
     spyOn(Logger, 'error').and.stub();
+    spyOn(LogRegistry, 'debug').and.stub();
+    spyOn(LogRegistry, 'info').and.stub();
+    spyOn(LogRegistry, 'warn').and.stub();
+    spyOn(LogRegistry, 'error').and.stub();
   }
 }
 

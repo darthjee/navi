@@ -1,4 +1,4 @@
-import { Logger } from './logging/Logger.js';
+import { LogRegistry } from '../registry/LogRegistry.js';
 
 /**
  * HtmlElementParser wraps a single parsed HTML element and extracts attribute values,
@@ -28,7 +28,7 @@ class HtmlElementParser {
     const value = this.#element.getAttribute(attribute);
 
     if (value === undefined || value === null) {
-      Logger.warn(`HtmlParser: element matched by "${this.#selector}" is missing attribute "${attribute}"`);
+      LogRegistry.warn(`HtmlParser: element matched by "${this.#selector}" is missing attribute "${attribute}"`);
       return null;
     }
 
