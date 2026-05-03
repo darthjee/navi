@@ -149,6 +149,19 @@ describe('LogRegistry', () => {
       expect(logs.length).toBe(1);
       expect(logs[0].message).toBe('job log');
     });
+
+    describe('when lastId is provided', () => {
+      it('returns only logs newer than lastId', () => {
+        LogRegistry.build();
+        LogRegistry.info('first', { jobId: 'job-1' });
+        LogRegistry.info('second', { jobId: 'job-1' });
+        LogRegistry.info('third', { jobId: 'job-1' });
+        const firstId = LogRegistry.getLogsByJobId('job-1')[0].id;
+        const logs = LogRegistry.getLogsByJobId('job-1', { lastId: firstId });
+        expect(logs.length).toBe(2);
+        expect(logs[0].message).toBe('second');
+      });
+    });
   });
 
   describe('.getLogsByWorkerId', () => {

@@ -73,12 +73,15 @@ class LogRegistry {
   }
 
   /**
-   * Gets logs stored in the per-job buffer for the given job ID.
+   * Gets logs stored in the per-job buffer for the given job ID,
+   * optionally filtered to entries newer than lastId.
    * @param {string|number} jobId
+   * @param {object} [options={}]
+   * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
    * @returns {Array<import('../utils/logging/Log.js').Log>}
    */
-  static getLogsByJobId(jobId) {
-    return LogRegistry.#getInstance().getLogsByJobId(jobId);
+  static getLogsByJobId(jobId, { lastId } = {}) {
+    return LogRegistry.#getInstance().getLogsByJobId(jobId, { lastId });
   }
 
   /**
