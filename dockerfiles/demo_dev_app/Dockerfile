@@ -14,7 +14,7 @@ RUN rm -rf spec eslint.config.mjs
 
 ######################################
 
-FROM darthjee/node:0.2.1 as builder
+FROM darthjee/node:0.2.1
 
 COPY --chown=node:node --from=frontend /home/node/app/ /home/node/app/
 
