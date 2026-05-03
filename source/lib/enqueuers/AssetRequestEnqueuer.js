@@ -30,11 +30,12 @@ class AssetRequestEnqueuer {
    * Parses the HTML body for URLs matching the asset request rule, resolves each URL
    * to absolute form, and enqueues one AssetDownloadJob per URL.
    * Does nothing if the application is in 'stopped' status.
+   * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
    * @returns {void}
    */
-  enqueue() {
+  enqueue(logContext) {
     if (Application.isStopped()) return;
-    const urls = HtmlParser.parse(this.#rawHtml, this.#assetRequest.selector, this.#assetRequest.attribute);
+    const urls = HtmlParser.parse(this.#rawHtml, this.#assetRequest.selector, this.#assetRequest.attribute, logContext);
     for (const url of urls) {
       this.#jobRegistry.enqueue('AssetDownload', {
         url: this.#resolveUrl(url),

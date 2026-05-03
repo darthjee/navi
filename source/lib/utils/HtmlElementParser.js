@@ -1,5 +1,3 @@
-import { LogRegistry } from '../registry/LogRegistry.js';
-
 /**
  * HtmlElementParser wraps a single parsed HTML element and extracts attribute values,
  * logging a warning when the requested attribute is absent.
@@ -8,14 +6,17 @@ import { LogRegistry } from '../registry/LogRegistry.js';
 class HtmlElementParser {
   #element;
   #selector;
+  #logContext;
 
   /**
    * @param {object} element A parsed HTML element with a `getAttribute` method.
    * @param {string} selector The CSS selector that matched this element (used in warning messages).
+   * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
    */
-  constructor(element, selector) {
+  constructor(element, selector, logContext) {
     this.#element = element;
     this.#selector = selector;
+    this.#logContext = logContext;
   }
 
   /**
@@ -28,7 +29,7 @@ class HtmlElementParser {
     const value = this.#element.getAttribute(attribute);
 
     if (value === undefined || value === null) {
-      LogRegistry.warn(`HtmlParser: element matched by "${this.#selector}" is missing attribute "${attribute}"`);
+      this.#logContext.warn(`HtmlParser: element matched by "${this.#selector}" is missing attribute "${attribute}"`);
       return null;
     }
 

@@ -149,7 +149,7 @@ describe('Worker', () => {
         });
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
-        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
+        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id), jasmine.anything());
       });
 
       it ('fails the job', async () => {

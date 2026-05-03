@@ -1,4 +1,4 @@
-import { LogRegistry } from '../registry/LogRegistry.js';
+import { LogContext } from '../utils/logging/LogContext.js';
 
 /**
  * Worker processes jobs pulled from a JobRegistry.
@@ -41,11 +41,13 @@ class Worker {
       throw new Error('No job assigned to worker');
     }
 
+    const logContext = new LogContext({ workerId: this.id, jobId: this.job.id });
+
     try {
-      await this.job.perform();
+      await this.job.perform(logContext);
       this.#jobRegistry.finish(this.job);
     } catch (error) {
-      LogRegistry.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
+      logContext.error(`Error occurred while performing job: #${this.job.id} - ${error}`);
       this.#jobRegistry.fail(this.job);
     } finally {
       this.job = undefined;
