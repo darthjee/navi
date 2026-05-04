@@ -32,7 +32,7 @@ class JobsFilter {
    * Returns true when the job's class is listed in the requested classes.
    * @param {object} job - A job instance.
    * @param {string[]} classes - The list of accepted class names.
-   * @returns {boolean}
+   * @returns {boolean} True if the job's class is in the accepted list.
    */
   #matchesClass(job, classes) {
     return classes.includes(job.constructor.name);

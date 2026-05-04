@@ -14,7 +14,7 @@ class JobLogsRequestHandler extends RequestHandler {
 
   /**
    * Creates a new JobLogsRequestHandler.
-   * @param {object} [options={}]
+   * @param {object} [options={}] - Constructor options.
    * @param {number} [options.pageSize=20] - Maximum number of log entries to return.
    */
   constructor({ pageSize = 20 } = {}) {

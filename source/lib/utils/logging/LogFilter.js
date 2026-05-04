@@ -14,10 +14,10 @@ class LogFilter {
 
   /**
    * Returns the filtered log list.
-   * @param {object} [options={}]
+   * @param {object} [options={}] - Filter options.
    * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
    *   Returns an empty array if the ID is not found.
-   * @returns {Array<import('./Log.js').Log>}
+   * @returns {Array<import('./Log.js').Log>} Filtered array of log entries.
    */
   filter({ lastId } = {}) {
     if (lastId === undefined) return this.#logs;
