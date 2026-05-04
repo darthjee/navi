@@ -1,5 +1,5 @@
-import fetchJob, { retryJob } from '../../clients/JobClient.js';
-import noop from '../../utils/noop.js';
+import fetchJob, { retryJob } from '../../../clients/JobClient.js';
+import noop from '../../../utils/noop.js';
 
 class JobController {
   static buildEffect(id, setJob, setError, setLoading) {

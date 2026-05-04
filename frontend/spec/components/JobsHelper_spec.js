@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
-import JobsHelper from '../../src/components/helpers/JobsHelper.jsx';
+import JobsHelper from '../../src/components/pages/helpers/JobsHelper.jsx';
 
 describe('JobsHelper', () => {
   let container;

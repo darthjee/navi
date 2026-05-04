@@ -2,10 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Job from './components/Job.jsx';
-import Jobs from './components/Jobs.jsx';
-import Layout from './components/Layout.jsx';
-import LogsPage from './components/LogsPage.jsx';
+import Job from './components/pages/Job.jsx';
+import Jobs from './components/pages/Jobs.jsx';
+import Layout from './components/pages/Layout.jsx';
+import LogsPage from './components/pages/LogsPage.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

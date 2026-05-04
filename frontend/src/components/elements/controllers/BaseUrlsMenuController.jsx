@@ -1,5 +1,5 @@
-import BaseUrlsClient from '../../clients/BaseUrlsClient.js';
-import noop from '../../utils/noop.js';
+import BaseUrlsClient from '../../../clients/BaseUrlsClient.js';
+import noop from '../../../utils/noop.js';
 
 class BaseUrlsMenuController {
   static buildEffect(setBaseUrls) {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import LogsController from './controllers/LogsController.jsx';
 import LogsHelper from './helpers/LogsHelper.jsx';
-import './LogsPage.css';
+import '../pages/LogsPage.css';
 
 function Logs({ fetchLogs }) {
   const [logs, setLogs] = useState([]);

@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import JobStatItem from '../../src/components/JobStatItem.jsx';
+import JobStatItem from '../../src/components/elements/JobStatItem.jsx';
 
 const render = (props) => renderToStaticMarkup(
   createElement(MemoryRouter, null, createElement(JobStatItem, props))

@@ -1,5 +1,5 @@
-import { fetchJobs, fetchJobsByStatus } from '../../clients/JobsClient.js';
-import FilterParams from '../../utils/FilterParams.js';
+import { fetchJobs, fetchJobsByStatus } from '../../../clients/JobsClient.js';
+import FilterParams from '../../../utils/FilterParams.js';
 
 /**
  * Encapsulates the view-level derived state for the Jobs component:

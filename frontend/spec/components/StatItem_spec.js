@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import StatItem from '../../src/components/StatItem.jsx';
+import StatItem from '../../src/components/elements/StatItem.jsx';
 
 const render = (props) => renderToStaticMarkup(
   createElement(MemoryRouter, null, createElement(StatItem, props))

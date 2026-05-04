@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import Logs from '../../src/components/Logs.jsx';
+import Logs from '../../src/components/elements/Logs.jsx';
 import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });

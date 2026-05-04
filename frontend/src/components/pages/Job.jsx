@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchJobLogs } from '../clients/LogsClient.js';
 import JobController from './controllers/JobController.jsx';
 import JobHelper from './helpers/JobHelper.jsx';
-import JobDetails from './JobDetails.jsx';
-import Logs from './Logs.jsx';
+import { fetchJobLogs } from '../../clients/LogsClient.js';
+import JobDetails from '../elements/JobDetails.jsx';
+import Logs from '../elements/Logs.jsx';
 
 function Job() {
   const { id } = useParams();
