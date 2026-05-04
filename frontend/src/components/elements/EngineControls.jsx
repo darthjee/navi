@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getSettings } from '../clients/EngineClient.js';
 import EngineControlsController from './controllers/EngineControlsController.jsx';
 import EngineControlsHelper from './helpers/EngineControlsHelper.jsx';
+import { getSettings } from '../../clients/EngineClient.js';
 
 function EngineControls() {
   const [status, setStatus] = useState(null);

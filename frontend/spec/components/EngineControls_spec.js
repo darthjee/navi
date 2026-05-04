@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import EngineControls from '../../src/components/EngineControls.jsx';
+import EngineControls from '../../src/components/elements/EngineControls.jsx';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 

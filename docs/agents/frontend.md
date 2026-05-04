@@ -29,34 +29,42 @@ frontend/
 │   ├── constants/
 │   │   └── jobStatus.js          # Status → Bootstrap color variant mapping
 │   └── components/
-│       ├── Layout.jsx            # Root layout: header + StatsHeader + EngineControls + Outlet
-│       ├── StatsHeader.jsx       # Live stats bar (auto-refreshes every 5 s)
-│       ├── EngineControls.jsx    # Engine lifecycle control buttons (auto-refreshes every 2 s)
-│       ├── StatItem.jsx          # Generic stat card (label + value, optional link)
-│       ├── JobStatItem.jsx       # Stat card that links to /jobs/:status
-│       ├── Jobs.jsx              # Job list page
-│       ├── Job.jsx               # Job detail page
-│       ├── JobDetails.jsx        # Job details display component
-│       ├── LogsPage.jsx          # Live log stream page
-│       ├── BaseUrlsMenu.jsx      # Base URL selector dropdown
-│       ├── CollapsibleSection.jsx # Native details/summary wrapper
-│       ├── ReadyCountdown.jsx    # Live countdown to retry eligibility
-│       ├── helpers/              # HTML rendering helper classes
-│       │   ├── JobHelper.jsx             # Rendering helpers for Job
-│       │   ├── JobsHelper.jsx            # Rendering helpers for Jobs
-│       │   ├── JobDetailsHelper.jsx      # Rendering helpers for JobDetails
-│       │   ├── BaseUrlsMenuHelper.jsx    # Rendering helpers for BaseUrlsMenu
-│       │   ├── EngineControlsHelper.jsx  # Rendering helpers for EngineControls
-│       │   ├── LogsPageHelper.jsx        # Rendering helpers for LogsPage
-│       │   ├── ReadyCountdownHelper.jsx  # Timer logic for ReadyCountdown
-│       │   └── StatsHeaderHelper.jsx     # Rendering helpers for StatsHeader
-│       └── controllers/          # Data/logic controller classes (renamed from *View)
-│           ├── JobController.jsx             # Data loading logic for Job
-│           ├── JobsController.jsx            # Data and filter logic for Jobs
-│           ├── BaseUrlsMenuController.jsx    # Data fetching and event handling for BaseUrlsMenu
-│           ├── EngineControlsController.jsx  # Data/action logic for EngineControls
-│           ├── LogsPageController.jsx        # Polling and data logic for LogsPage
-│           └── StatsHeaderController.jsx     # Data fetching and polling for StatsHeader
+│       ├── pages/                # Full page/view-level components (registered as routes in main.jsx)
+│       │   ├── Layout.jsx            # Root layout: header + StatsHeader + EngineControls + Outlet
+│       │   ├── Jobs.jsx              # Job list page
+│       │   ├── Job.jsx               # Job detail page
+│       │   ├── LogsPage.jsx          # Live log stream page
+│       │   ├── LogsPage.css          # Styles for the log stream page
+│       │   ├── controllers/          # Data/logic controller classes for pages
+│       │   │   ├── JobController.jsx         # Data loading logic for Job
+│       │   │   ├── JobsController.jsx        # Data and filter logic for Jobs
+│       │   │   └── LogsPageController.jsx    # Polling and data logic for LogsPage
+│       │   └── helpers/              # HTML rendering helper classes for pages
+│       │       ├── JobHelper.jsx             # Rendering helpers for Job
+│       │       ├── JobsHelper.jsx            # Rendering helpers for Jobs
+│       │       └── LogsPageHelper.jsx        # Rendering helpers for LogsPage
+│       └── elements/             # Reusable UI components (not registered as routes)
+│           ├── BaseUrlsMenu.jsx      # Base URL selector dropdown
+│           ├── CollapsibleSection.jsx # Native details/summary wrapper
+│           ├── EngineControls.jsx    # Engine lifecycle control buttons (auto-refreshes every 2 s)
+│           ├── JobDetails.jsx        # Job details display component
+│           ├── JobStatItem.jsx       # Stat card that links to /jobs/:status
+│           ├── Logs.jsx              # Log stream display widget
+│           ├── ReadyCountdown.jsx    # Live countdown to retry eligibility
+│           ├── StatItem.jsx          # Generic stat card (label + value, optional link)
+│           ├── StatsHeader.jsx       # Live stats bar (auto-refreshes every 5 s)
+│           ├── controllers/          # Data/logic controller classes for elements
+│           │   ├── BaseUrlsMenuController.jsx    # Data fetching and event handling for BaseUrlsMenu
+│           │   ├── EngineControlsController.jsx  # Data/action logic for EngineControls
+│           │   ├── LogsController.jsx            # Data logic for Logs widget
+│           │   └── StatsHeaderController.jsx     # Data fetching and polling for StatsHeader
+│           └── helpers/              # HTML rendering helper classes for elements
+│               ├── BaseUrlsMenuHelper.jsx    # Rendering helpers for BaseUrlsMenu
+│               ├── EngineControlsHelper.jsx  # Rendering helpers for EngineControls
+│               ├── JobDetailsHelper.jsx      # Rendering helpers for JobDetails
+│               ├── LogsHelper.jsx            # Rendering helpers for Logs
+│               ├── ReadyCountdownHelper.jsx  # Timer logic for ReadyCountdown
+│               └── StatsHeaderHelper.jsx     # Rendering helpers for StatsHeader
 ├── spec/                         # Jasmine tests
 │   └── support/
 │       ├── loader.js             # Custom loader for JSX/ESM
@@ -73,6 +81,8 @@ Non-trivial components follow a three-file structure:
 - `helpers/<Name>Helper.jsx` — HTML rendering helpers. Pure functions or a class with static/instance render methods. No data fetching or side effects.
 - `controllers/<Name>Controller.jsx` — data management logic: API calls, event handlers, derived state, effect builders. No JSX.
 
+Each component lives in either `components/pages/` (full page views registered as routes) or `components/elements/` (reusable UI widgets), with its `controllers/` and `helpers/` sub-folders co-located inside the same sub-directory.
+
 ### When to apply
 
 Apply the three-file split when a component has at least one of:
@@ -83,7 +93,7 @@ Trivial components that only compose other components or render a few elements (
 
 ### Reference implementation
 
-`Jobs` / `helpers/JobsHelper` / `controllers/JobsController` is the canonical example of this pattern in the codebase.
+`Jobs` / `pages/helpers/JobsHelper` / `pages/controllers/JobsController` is the canonical example of this pattern in the codebase.
 
 ## Routing
 

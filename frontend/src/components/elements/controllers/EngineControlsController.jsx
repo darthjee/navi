@@ -6,8 +6,8 @@ import {
   shutdownServer,
   startEngine,
   stopEngine,
-} from '../../clients/EngineClient.js';
-import noop from '../../utils/noop.js';
+} from '../../../clients/EngineClient.js';
+import noop from '../../../utils/noop.js';
 
 const POLL_INTERVAL_MS = 2000;
 const TRANSITIONAL_STATUSES = new Set(['pausing', 'stopping']);

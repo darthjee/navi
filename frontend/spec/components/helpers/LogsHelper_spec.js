@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import LogsHelper from '../../../src/components/helpers/LogsHelper.jsx';
+import LogsHelper from '../../../src/components/elements/helpers/LogsHelper.jsx';
 
 describe('LogsHelper', () => {
   describe('.build', () => {

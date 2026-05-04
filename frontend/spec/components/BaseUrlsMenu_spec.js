@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import BaseUrlsMenu from '../../src/components/BaseUrlsMenu.jsx';
+import BaseUrlsMenu from '../../src/components/elements/BaseUrlsMenu.jsx';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 

@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Job from '../../src/components/Job.jsx';
+import Job from '../../src/components/pages/Job.jsx';
 import noop from '../../src/utils/noop.js';
 
 const mockJobFetch = (job) => {
