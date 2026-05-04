@@ -2,11 +2,11 @@
 
 ## Overview
 
-Restructure `frontend/src/components/` by introducing two sub-folders — `pages/` for full page/view-level components and `elements/` for reusable UI widgets — and update all imports and documentation accordingly.
+Restructure `frontend/src/components/` by introducing two sub-folders — `pages/` for full page/view-level components (with their controllers and helpers) and `elements/` for reusable UI widgets (with their controllers and helpers) — and update all imports and documentation accordingly.
 
 ## Context
 
-The current `frontend/src/components/` folder mixes full-page views with small reusable UI elements in a flat layout. For example, `LogsPage.jsx` (a route-level view) sits alongside `Logs.jsx` (a display widget used inside the page). Introducing a `pages/` vs `elements/` split creates a clear, scalable separation of concerns.
+The current `frontend/src/components/` folder mixes full-page views with small reusable UI elements in a flat layout, and `controllers/` and `helpers/` are shared top-level sub-folders. Moving each controller and helper alongside the component it belongs to keeps related files co-located and makes the structure easier to navigate.
 
 Route registration in `frontend/src/main.jsx` was used as the authoritative source to determine which components are pages.
 
@@ -22,6 +22,22 @@ Route registration in `frontend/src/main.jsx` was used as the authoritative sour
 | `Jobs.jsx` | `/jobs` and `/jobs/:status` |
 | `Job.jsx` | `/job/:id` |
 
+### `pages/controllers/`
+
+| File | Belongs to |
+|------|-----------|
+| `JobController.jsx` | `Job.jsx` |
+| `JobsController.jsx` | `Jobs.jsx` |
+| `LogsPageController.jsx` | `LogsPage.jsx` |
+
+### `pages/helpers/`
+
+| File | Belongs to |
+|------|-----------|
+| `JobHelper.jsx` | `Job.jsx` |
+| `JobsHelper.jsx` | `Jobs.jsx` |
+| `LogsPageHelper.jsx` | `LogsPage.jsx` |
+
 ### `elements/` — reusable UI components (not registered as routes)
 
 | File | Used by |
@@ -36,60 +52,83 @@ Route registration in `frontend/src/main.jsx` was used as the authoritative sour
 | `StatItem.jsx` | StatsHeader |
 | `StatsHeader.jsx` | Layout |
 
-### `controllers/` and `helpers/` — unchanged
+### `elements/controllers/`
 
-These sub-folders already exist and are kept as-is. They are referenced by their sibling components via relative imports that will be updated when the parent components move.
+| File | Belongs to |
+|------|-----------|
+| `BaseUrlsMenuController.jsx` | `BaseUrlsMenu.jsx` |
+| `EngineControlsController.jsx` | `EngineControls.jsx` |
+| `LogsController.jsx` | `Logs.jsx` |
+| `StatsHeaderController.jsx` | `StatsHeader.jsx` |
+
+### `elements/helpers/`
+
+| File | Belongs to |
+|------|-----------|
+| `BaseUrlsMenuHelper.jsx` | `BaseUrlsMenu.jsx` |
+| `EngineControlsHelper.jsx` | `EngineControls.jsx` |
+| `JobDetailsHelper.jsx` | `JobDetails.jsx` |
+| `LogsHelper.jsx` | `Logs.jsx` |
+| `ReadyCountdownHelper.jsx` | `ReadyCountdown.jsx` |
+| `StatsHeaderHelper.jsx` | `StatsHeader.jsx` |
 
 ## Implementation Steps
 
 ### Step 1 — Create sub-folders
 
-Create the two new directories:
+Create the new directories:
 - `frontend/src/components/pages/`
+- `frontend/src/components/pages/controllers/`
+- `frontend/src/components/pages/helpers/`
 - `frontend/src/components/elements/`
+- `frontend/src/components/elements/controllers/`
+- `frontend/src/components/elements/helpers/`
 
-### Step 2 — Move page components
+### Step 2 — Move page components and their controllers/helpers
 
 Move to `frontend/src/components/pages/`:
-- `Layout.jsx`
-- `LogsPage.jsx`
-- `LogsPage.css`
-- `Jobs.jsx`
-- `Job.jsx`
+- `Layout.jsx`, `LogsPage.jsx`, `LogsPage.css`, `Jobs.jsx`, `Job.jsx`
 
-### Step 3 — Move element components
+Move to `frontend/src/components/pages/controllers/`:
+- `JobController.jsx`, `JobsController.jsx`, `LogsPageController.jsx`
+
+Move to `frontend/src/components/pages/helpers/`:
+- `JobHelper.jsx`, `JobsHelper.jsx`, `LogsPageHelper.jsx`
+
+### Step 3 — Move element components and their controllers/helpers
 
 Move to `frontend/src/components/elements/`:
-- `BaseUrlsMenu.jsx`
-- `CollapsibleSection.jsx`
-- `EngineControls.jsx`
-- `JobDetails.jsx`
-- `JobStatItem.jsx`
-- `Logs.jsx`
-- `ReadyCountdown.jsx`
-- `StatItem.jsx`
-- `StatsHeader.jsx`
+- `BaseUrlsMenu.jsx`, `CollapsibleSection.jsx`, `EngineControls.jsx`, `JobDetails.jsx`, `JobStatItem.jsx`, `Logs.jsx`, `ReadyCountdown.jsx`, `StatItem.jsx`, `StatsHeader.jsx`
+
+Move to `frontend/src/components/elements/controllers/`:
+- `BaseUrlsMenuController.jsx`, `EngineControlsController.jsx`, `LogsController.jsx`, `StatsHeaderController.jsx`
+
+Move to `frontend/src/components/elements/helpers/`:
+- `BaseUrlsMenuHelper.jsx`, `EngineControlsHelper.jsx`, `JobDetailsHelper.jsx`, `LogsHelper.jsx`, `ReadyCountdownHelper.jsx`, `StatsHeaderHelper.jsx`
 
 ### Step 4 — Update imports
 
 Update import paths in:
 - `frontend/src/main.jsx` — imports `Layout`, `LogsPage`, `Jobs`, `Job`
-- Every moved component that imports another moved component or a `controllers/`/`helpers/` file — relative paths must be adjusted (e.g., `./helpers/` → `../helpers/`)
+- Every moved component that imports another component, controller, or helper — all relative paths must be adjusted to reflect the new directory depth
 
-### Step 5 — Update documentation
+### Step 5 — Remove empty old folders
 
-Update `docs/agents/frontend.md` to describe the new `components/pages/` and `components/elements/` structure.
+Delete the now-empty `frontend/src/components/controllers/` and `frontend/src/components/helpers/` folders.
+
+### Step 6 — Update documentation
+
+Update `docs/agents/frontend.md` to describe the new `components/pages/` and `components/elements/` structure, including the co-located `controllers/` and `helpers/` sub-folders.
 
 ## Files to Change
 
-- `frontend/src/components/pages/` — new folder; receives `Layout`, `LogsPage`, `LogsPage.css`, `Jobs`, `Job`
-- `frontend/src/components/elements/` — new folder; receives all other flat components
+- `frontend/src/components/pages/` — new folder tree (pages + controllers + helpers)
+- `frontend/src/components/elements/` — new folder tree (elements + controllers + helpers)
 - `frontend/src/main.jsx` — update import paths
-- `frontend/src/components/**/*.jsx` — update relative imports broken by the move
+- All moved `.jsx` files — update their internal relative imports
 - `docs/agents/frontend.md` — document new structure
 
 ## Notes
 
-- `controllers/` and `helpers/` stay at `frontend/src/components/controllers/` and `frontend/src/components/helpers/`; only their callers' relative import paths change.
 - No logic changes — this is a pure structural refactor.
 - After moving files, run `yarn lint` inside the container to catch any missed import updates.
