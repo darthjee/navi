@@ -1,4 +1,4 @@
-import JobsController from '../../src/components/controllers/JobsController.jsx';
+import JobsController from '../../src/components/pages/controllers/JobsController.jsx';
 
 describe('JobsController', () => {
   const navigate = jasmine.createSpy('navigate');

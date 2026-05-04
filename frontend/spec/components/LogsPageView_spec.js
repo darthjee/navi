@@ -1,4 +1,4 @@
-import LogsPageController from '../../src/components/controllers/LogsPageController.jsx';
+import LogsPageController from '../../src/components/pages/controllers/LogsPageController.jsx';
 import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => new Promise((r) => setTimeout(r, 0));
