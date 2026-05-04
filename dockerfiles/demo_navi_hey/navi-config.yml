@@ -4,11 +4,11 @@ web:
 workers:
   quantity: 5
   retry_cooldown: 5000
-  max-retries: 10
+  max-retries: 20
 clients:
   default:
     base_url: $BASE_URL
-    timeout: 10000
+    timeout: 15000
 resources:
   home:
     - url: /
