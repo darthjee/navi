@@ -54,8 +54,8 @@ class LogRegistry {
 
   /**
    * Gets a specific log by ID.
-   * @param {number} id
-   * @returns {import('../utils/logging/Log.js').Log|undefined}
+   * @param {number} id - The log entry ID to look up.
+   * @returns {import('../utils/logging/Log.js').Log|undefined} The matching log entry, or undefined if not found.
    */
   static getLogById(id) {
     return LogRegistry.#getInstance().getLogById(id);
@@ -63,10 +63,10 @@ class LogRegistry {
 
   /**
    * Gets logs in chronological order (oldest first), optionally filtered to entries newer than lastId.
-   * @param {object} [options={}]
+   * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
    *   Returns an empty array if the ID is not found.
-   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   * @returns {Array<import('../utils/logging/Log.js').Log>} Array of log entries.
    */
   static getLogs({ lastId } = {}) {
     return LogRegistry.#getInstance().getLogs({ lastId });
@@ -75,10 +75,10 @@ class LogRegistry {
   /**
    * Gets logs stored in the per-job buffer for the given job ID,
    * optionally filtered to entries newer than lastId.
-   * @param {string|number} jobId
-   * @param {object} [options={}]
+   * @param {string|number} jobId - The job ID to look up logs for.
+   * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
-   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   * @returns {Array<import('../utils/logging/Log.js').Log>} Array of log entries.
    */
   static getLogsByJobId(jobId, { lastId } = {}) {
     return LogRegistry.#getInstance().getLogsByJobId(jobId, { lastId });
@@ -86,8 +86,8 @@ class LogRegistry {
 
   /**
    * Gets logs stored in the per-worker buffer for the given worker ID.
-   * @param {string|number} workerId
-   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   * @param {string|number} workerId - The worker ID to look up logs for.
+   * @returns {Array<import('../utils/logging/Log.js').Log>} Array of log entries.
    */
   static getLogsByWorkerId(workerId) {
     return LogRegistry.#getInstance().getLogsByWorkerId(workerId);
@@ -95,8 +95,8 @@ class LogRegistry {
 
   /**
    * Gets logs filtered by level.
-   * @param {string} level
-   * @returns {Array<import('../utils/logging/Log.js').Log>}
+   * @param {string} level - The log level to filter by.
+   * @returns {Array<import('../utils/logging/Log.js').Log>} Array of log entries matching the level.
    */
   static getLogsByLevel(level) {
     return LogRegistry.#getInstance().getLogsByLevel(level);
@@ -104,7 +104,7 @@ class LogRegistry {
 
   /**
    * Returns all logs as plain JSON objects.
-   * @returns {Array<object>}
+   * @returns {Array<object>} Array of plain log objects.
    */
   static getLogsJSON() {
     return LogRegistry.#getInstance().getLogsJSON();
@@ -132,7 +132,7 @@ class LogRegistry {
 
   /**
    * Returns the singleton instance, throwing if not yet built.
-   * @returns {LogRegistryInstance}
+   * @returns {LogRegistryInstance} The singleton instance.
    * @throws {Error} If build() has not been called.
    */
   static #getInstance() {
