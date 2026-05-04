@@ -37,6 +37,8 @@ class StatsHeaderHelper {
           <JobStatItem label="Finished" value={jobs.finished} variant="success" status="finished" />
           <JobStatItem label="Dead" value={jobs.dead} variant="dark" status="dead" />
         </div>
+        <div className="vr mx-1" />
+        <StatItem label="Logs" variant="info" to="/logs" />
       </div>
     );
   }

@@ -104,6 +104,16 @@ describe('StatsHeader', () => {
       expect(hrefs).toContain('/jobs/finished');
       expect(hrefs).toContain('/jobs/dead');
     });
+
+    it('renders the Logs button', () => {
+      expect(container.textContent).toContain('Logs');
+    });
+
+    it('links the Logs button to /logs', () => {
+      const links = Array.from(container.querySelectorAll('a'));
+      const hrefs = links.map((a) => a.getAttribute('href'));
+      expect(hrefs).toContain('/logs');
+    });
   });
 
   describe('when the fetch fails', () => {
