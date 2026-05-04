@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
-import BaseUrlsMenu from './BaseUrlsMenu.jsx';
-import EngineControls from './EngineControls.jsx';
-import StatsHeader from './StatsHeader.jsx';
+import BaseUrlsMenu from '../elements/BaseUrlsMenu.jsx';
+import EngineControls from '../elements/EngineControls.jsx';
+import StatsHeader from '../elements/StatsHeader.jsx';
 
 function Layout() {
   return (

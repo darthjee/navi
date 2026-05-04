@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
 import JobsController from './controllers/JobsController.jsx';
 import JobsHelper from './helpers/JobsHelper.jsx';
-import { VARIANT_BY_STATUS } from '../constants/jobStatus.js';
+import { VARIANT_BY_STATUS } from '../../constants/jobStatus.js';
 
 function Jobs() {
   const { status } = useParams();

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { VARIANT_BY_STATUS } from '../../constants/jobStatus.js';
+import { VARIANT_BY_STATUS } from '../../../constants/jobStatus.js';
 import CollapsibleSection from '../CollapsibleSection.jsx';
 import ReadyCountdown from '../ReadyCountdown.jsx';
 

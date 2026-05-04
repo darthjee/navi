@@ -1,4 +1,4 @@
-import fetchLogs from '../../clients/LogsClient.js';
+import fetchLogs from '../../../clients/LogsClient.js';
 
 const POLL_DELAY_MS = 1000;
 

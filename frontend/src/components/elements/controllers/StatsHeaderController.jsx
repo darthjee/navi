@@ -1,4 +1,4 @@
-import fetchStats from '../../clients/StatsClient.js';
+import fetchStats from '../../../clients/StatsClient.js';
 
 class StatsHeaderController {
   #setStats;

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { STATUSES } from '../../clients/JobsClient.js';
-import { JOB_CLASSES } from '../../constants/jobClasses.js';
+import { STATUSES } from '../../../clients/JobsClient.js';
+import { JOB_CLASSES } from '../../../constants/jobClasses.js';
 
 /**
  * Helper class for the Jobs component: encapsulates data-loading, event handling,
