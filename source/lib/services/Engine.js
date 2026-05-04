@@ -84,7 +84,7 @@ class Engine {
    * Determines whether the engine loop should continue.
    * In keepAlive mode, always returns true. Otherwise, returns true only
    * while there are jobs or busy workers.
-   * @returns {boolean}
+   * @returns {boolean} True if the loop should continue.
    */
   #shouldContinue() {
     return this.#keepAlive || this.#continueAllocating();

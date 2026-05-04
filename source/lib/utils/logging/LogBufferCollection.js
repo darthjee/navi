@@ -37,7 +37,7 @@ class LogBufferCollection {
    * Returns all logs for the given key in chronological order (oldest first).
    * Returns an empty array if no buffer exists for that key.
    * @param {string|number} key - The key to look up.
-   * @returns {Array<import('./Log.js').Log>}
+   * @returns {Array<import('./Log.js').Log>} Array of log entries for the given key, oldest first.
    */
   getLogs(key) {
     if (!this.#buffers.has(key)) return [];

@@ -33,7 +33,7 @@ class Router {
 
   /**
    * Creates a new Router instance.
-   * @param {object} [options={}]
+   * @param {object} [options={}] - Constructor options.
    * @param {object} [options.webConfig={}] - Web configuration, used by handlers that need it.
    */
   constructor({ webConfig = {} } = {}) {

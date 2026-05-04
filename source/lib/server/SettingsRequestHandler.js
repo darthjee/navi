@@ -11,7 +11,8 @@ class SettingsRequestHandler extends RequestHandler {
   #enableShutdown;
 
   /**
-   * @param {object} [options={}]
+   * Creates a new SettingsRequestHandler.
+   * @param {object} [options={}] - Constructor options.
    * @param {boolean} [options.enableShutdown=true] - Whether shutdown is permitted.
    */
   constructor({ enableShutdown = true } = {}) {

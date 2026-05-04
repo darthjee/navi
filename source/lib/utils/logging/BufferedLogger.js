@@ -32,7 +32,7 @@ class BufferedLogger extends BaseLogger {
 
   /**
    * Returns the most recently added log, or undefined if the buffer is empty.
-   * @returns {import('./Log.js').Log|undefined}
+   * @returns {import('./Log.js').Log|undefined} The most recently added log entry, or undefined.
    */
   get latestLog() {
     return this.#buffer.latestLog;
