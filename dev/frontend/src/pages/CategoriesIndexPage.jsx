@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { fetchCategories } from '../clients/CategoriesClient.js';
+import Pagination from '../components/Pagination.jsx';
 
 function CategoriesIndexPage() {
   const [categories, setCategories] = useState(null);
+  const [pagination, setPagination] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { search } = useLocation();
 
   useEffect(() => {
-    fetchCategories()
-      .then((data) => {
+    const queryString = search ? search.slice(1) : '';
+
+    setLoading(true);
+    fetchCategories(queryString)
+      .then(({ data, pagination: pag }) => {
         setCategories(data);
+        setPagination(pag);
         setError(null);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [search]);
 
   if (loading) {
     return (
@@ -43,6 +50,13 @@ function CategoriesIndexPage() {
           </li>
         ))}
       </ul>
+      {pagination && pagination.pages > 1 && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.pages}
+          basePath="/#/categories"
+        />
+      )}
     </div>
   );
 }

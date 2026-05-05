@@ -1,9 +1,9 @@
-export const fetchItems = (categoryId) => {
-  return fetch(`/categories/${categoryId}/items.json`)
-    .then((res) => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    });
+import { handleResponse } from './responseHandler.js';
+
+export const fetchItems = (categoryId, queryString = '') => {
+  const url = `/categories/${categoryId}/items.json${queryString ? `?${queryString}` : ''}`;
+
+  return fetch(url).then(handleResponse);
 };
 
 export const fetchItem = (categoryId, id) => {
