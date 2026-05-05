@@ -18,7 +18,7 @@ navi/
 ## Source Code Layout
 
 All application source code lives under the `source/` directory.
-The main library is organized into four subdirectories under `source/lib/`:
+The main library is organized into subdirectories under `source/lib/`:
 
 ### `exceptions/`
 
@@ -34,187 +34,80 @@ AppError (base)
 │   ├── MissingClientsConfig
 │   └── MissingResourceConfig
 ├── RequestFailed
-├── LockedByOtherWorker
-├── InvalidResponseBody          ← raw JSON response body could not be parsed
-├── InvalidHtmlResponseBody      ← raw HTML response body could not be parsed
-├── NullResponse                 ← parsed response body is null
-├── MissingActionResource        ← action config entry has no "resource" field
-├── MissingMappingVariable       ← parameters path expression cannot be resolved against the response
-├── ConfigurationFileNotFound    ← YAML config file does not exist at the given path
-└── ConfigurationFileNotProvided ← no config file path was supplied to Application
+├── InvalidResponseBody
+├── InvalidHtmlResponseBody
+├── NullResponse
+├── MissingActionResource
+├── MissingMappingVariable
+├── ConfigurationFileNotFound
+└── ConfigurationFileNotProvided
 ```
 
 All custom exceptions must extend `AppError` (directly or via an intermediate class); never extend `Error` directly.
 
 ### `models/`
 
-Data containers that map YAML configuration to typed instances.
-Most models expose static factory methods (`fromObject()`, `fromListObject()`) for creation from parsed YAML.
+Data containers mapping YAML config to typed instances. Most expose `fromObject()` / `fromListObject()` static factory methods. Key classes:
 
-| Class | Responsibility |
-|-------|---------------|
-| `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
-| `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
-| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list + optional paginated actions list + optional assets list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(responseWrapper)` to enqueue action jobs after a successful HTTP request. Exposes `enqueuePaginatedActions(responseWrapper)` to enqueue paginated action jobs. Exposes `enqueueAssets(rawHtml, jobRegistry, clientRegistry)` to enqueue an `HtmlParseJob` when assets are configured. Exposes `hasAssets()` to check whether any asset extraction rules are configured. |
-| `AssetRequest` | Represents a single asset extraction rule (`selector`, `attribute`, optional `client`, optional `status`). Created via `AssetRequest.fromObject()` / `AssetRequest.fromListObject()`. |
-| `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `parameters`). Uses `ParametersMapper` to evaluate path expressions against a `ResponseWrapper`, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
-| `ResourceRequestPaginatedAction` | Represents a single paginated action entry from the config (`resource` + `pagination`). Uses `PaginationConfig` to evaluate the `pages` expression and `pageNumbers()` to generate the page range, then enqueues one `ResourceRequestJob` per page for the target resource, merging the page number under `page_key` into the existing parameters. |
-| `PaginationConfig` | Parses the `pagination` block from YAML. Exposes `resolvePages(responseWrapper)` to evaluate the `pages` path expression and `pageNumbers(count)` to generate the array of page numbers (respecting `zero_indexed`). Created via `PaginationConfig.fromList(list)`. |
-| `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
-| `ResponseWrapper` | Wraps an HTTP response, exposing `parsedBody` (lazily-parsed JSON body) and `headers`. Provides `toItemWrappers()` to split an array response into per-item wrappers sharing the same headers. |
-| `ParametersMapper` | Applies a `parameters` map to a response wrapper, delegating each path expression (e.g. `parsedBody.id`, `headers['page']`) to a `PathResolver` to extract values. When no map is provided, the item passes through unchanged. |
-| `PathResolver` | Resolves a single dot/bracket-notation path expression against an object. Created via `PathResolver.fromExpression(pathExpr)`. Delegates segment-by-segment traversal to `PathSegmentTraverser`. |
-| `PathSegmentTraverser` | Traverses an object one path segment at a time. Provides semantic methods (`traverse`, `value`) and throws `MissingMappingVariable` when a segment cannot be resolved (non-object value or missing key). |
-| `WorkersConfig` | Holds the worker pool size (`quantity`, default 1), the retry cooldown in milliseconds (`retryCooldown`, default 2000), and the engine sleep interval in milliseconds (`sleep`, default 500). |
-| `WebConfig` | Holds the web UI configuration (`port`, `logsPageSize`, `enableShutdown`). Parsed from the optional `web:` top-level key; `null` when the key is absent, which disables the web server. `enableShutdown` defaults to `true`. |
+- **`Config`** — top-level container (`ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, `WebConfig`); entry point via `Config.fromFile(filePath)`.
+- **`ResourceRequest`** — a single URL template + expected status + optional actions, paginated actions, and assets. Exposes `resolveUrl(parameters)`, `enqueueActions()`, `enqueuePaginatedActions()`, `enqueueAssets()`.
+- **`ResourceRequestAction`** / **`ResourceRequestPaginatedAction`** — response chaining: map response fields to parameters and enqueue follow-up `ResourceRequestJob`s.
+- **`ResponseWrapper`** / **`ParametersMapper`** / **`PathResolver`** — path expression evaluation (`parsedBody.field`, `headers['key']`) against HTTP responses.
+- Sub-models: `WorkersConfig`, `WebConfig`, `PaginationConfig`, `AssetRequest`.
 
 ### `background/`
 
-Background job infrastructure: the abstract job and worker base classes, job/worker factories, and the singleton registries that manage them.
+Job/worker infrastructure:
 
-| Class | Responsibility |
-|-------|---------------|
-| `Job` | Abstract base class for all units of work. Tracks a failure counter (accessible as `_attempts` by subclasses) and last exception. |
-| `Worker` | Represents a worker; holds its UUID, `jobRegistry`, and `workersRegistry` references. |
-| `JobFactory` | Static facade. `JobFactory.build(name, options)` registers a named factory; `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears all entries (test teardown). |
-| `WorkerFactory` | Extends `Factory`. Creates `Worker` instances with unique IDs via `IdGenerator`. Used by `WorkersRegistryInstance.initWorkers()`. |
-| `JobRegistry` | Static singleton facade for the job queues. Call `JobRegistry.build(options)` once during bootstrap; call `JobRegistry.reset()` in tests. Delegates all operations to a `JobRegistryInstance`. Key static methods: `enqueue(factoryKey, params)`, `fail(job)`, `finish(job)`, `pick()`, `hasJob()`, `hasReadyJob()`, `promoteReadyJobs()`, `stats()`, `jobsByStatus(status)`, `jobById(id)`, `clearQueues()`. |
-| `JobRegistryInstance` | Holds the actual queues: `enqueued` (FIFO), `processing` (`IdentifyableCollection`), `failed` (`SortedCollection` sorted by `readyBy` timestamp), `retryQueue` (FIFO), `finished`, and `dead`. `promoteReadyJobs()` moves cooled-down failed jobs to `retryQueue`. `jobsByStatus(status)` returns job data from the named collection. `jobById(id)` searches all collections and returns the job data or `null`. `clearQueues()` empties `enqueued`, `retryQueue`, and `failed` without destroying the instance. Not exported; accessed only via `JobRegistry`. |
-| `WorkersRegistry` | Static singleton facade for the worker pool. Call `WorkersRegistry.build(options)` once during bootstrap; call `WorkersRegistry.reset()` in tests. Delegates to a `WorkersRegistryInstance`. Key static methods: `initWorkers()`, `setBusy(id)`, `setIdle(id)`, `hasBusyWorker()`, `hasIdleWorker()`, `getIdleWorker()`, `stats()`. |
-| `WorkersRegistryInstance` | Holds the actual worker collections: `workers` (all), `idle`, `busy`. `getIdleWorker()` atomically moves a worker from idle to busy and returns it. Not exported; accessed only via `WorkersRegistry`. |
-
-### `factory/`
-
-| Class | Responsibility |
-|-------|---------------|
-| `Factory` | Base factory class. Generates instances via `build(params)`, merging static `attributes` with an `attributesGenerator` result and caller-supplied params. |
+- **`Job`** / **`Worker`** — abstract base classes; `Job` tracks failure count and last exception, `Worker` holds its UUID and registry references.
+- **`JobRegistry`** / **`WorkersRegistry`** — static singleton façades backed by `JobRegistryInstance` / `WorkersRegistryInstance`. `JobRegistry` manages six queues (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`); `WorkersRegistry` manages idle/busy worker pools.
+- **`JobFactory`** / **`WorkerFactory`** — instance creation; `WorkerFactory` assigns UUIDs via `IdGenerator`.
 
 ### `enqueuers/`
 
-Classes responsible for enqueuing jobs into the job registry.
+Push jobs into `JobRegistry`:
 
-| Class | Responsibility |
-|-------|---------------|
-| `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
-| `ActionsEnqueuer` | Receives a list of per-item `ResponseWrapper` instances and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null items list. Delegates per-action enqueueing to `ActionEnqueuer`. |
-| `PaginatedActionEnqueuer` | Enqueues one `PaginatedActionProcessingJob` for a single `ResourceRequestPaginatedAction`. Calls `JobRegistry.enqueue('PaginatedAction', { paginatedAction, parameters })`. |
-| `PaginatedActionsEnqueuer` | Receives a list of `ResourceRequestPaginatedAction` instances and the whole response wrapper, then enqueues one `PaginatedActionProcessingJob` per paginated action. Delegates to `PaginatedActionEnqueuer`. |
-| `AssetRequestEnqueuer` | Processes a single `AssetRequest` against a raw HTML body: parses the HTML, resolves asset URLs to absolute form, and enqueues one `AssetDownloadJob` per URL. |
+- **`ActionsEnqueuer`** — one `ActionProcessingJob` per `(item × action)` pair.
+- **`PaginatedActionsEnqueuer`** — one `PaginatedActionProcessingJob` per paginated action.
+- **`AssetRequestEnqueuer`** — one `AssetDownloadJob` per discovered asset URL.
+
+`ActionEnqueuer` and `PaginatedActionEnqueuer` are per-action delegates used internally.
 
 ### `jobs/`
 
-Concrete job implementations that extend the `Job` base class from `background/`.
+Concrete `Job` subclasses:
 
-| Class | Responsibility |
-|-------|---------------|
-| `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
-| `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)` where `item` is a per-item `ResponseWrapper`. Exhausted after the first failure — no retry rights. |
-| `PaginatedActionProcessingJob` | Extends `Job`. Processes a single paginated action by calling `paginatedAction.execute(responseWrapper)`, which evaluates the page count and enqueues one `ResourceRequestJob` per page. Exhausted after the first failure — no retry rights. |
-| `HtmlParseJob` | Extends `Job`. Parses an HTML response body using `HtmlParser`, resolves asset URLs, and enqueues one `AssetDownloadJob` per discovered URL. Exhausted after the first failure — no retry rights. |
-| `AssetDownloadJob` | Extends `Job`. Fetches a single fully-resolved asset URL via `Client.performUrl()` and validates the expected HTTP status. Leaf node — no further chaining. Follows the standard retry/dead path. |
+- **`ResourceRequestJob`** — performs the HTTP request; enqueues action and asset jobs from the response. Standard retry/dead path.
+- **`ActionProcessingJob`** — executes one `(action, item)` pair; no retry rights.
+- **`PaginatedActionProcessingJob`** — evaluates page count, enqueues per-page `ResourceRequestJob`s; no retry rights.
+- **`HtmlParseJob`** — parses HTML to extract asset URLs; no retry rights.
+- **`AssetDownloadJob`** — fetches one resolved asset URL; leaf node with standard retry/dead path.
 
 ### `registry/`
 
-Collection managers built on a shared base class.
-
-- **`NamedRegistry`** — Base class providing a generic `getItem(name)` lookup that throws the subclass-defined `notFoundException` when an item is missing.
-- **`ResourceRegistry`** — Extends `NamedRegistry`; throws `ResourceNotFound`.
-- **`ClientRegistry`** — Extends `NamedRegistry`; throws `ClientNotFound`. Adds smart default-client resolution via `getClient([name])`.
-- **`LogRegistry`** — Static singleton façade for publishing logs to both the console and the API buffer simultaneously. Does **not** extend `NamedRegistry`; follows the same façade pattern as `JobRegistry` and `WorkersRegistry`. `LogRegistry.build(options)` creates the singleton instance. Exposes `debug(msg)`, `info(msg)`, `warn(msg)`, `error(msg)` to publish a log to both outputs. Also exposes `getLogs({ lastId })`, `getLogById(id)`, `getLogsByLevel(level)`, `getLogsJSON()` for API queries. Call `reset()` in tests.
-- **`LogRegistryInstance`** — Holds a `LoggerGroup` composed of a `ConsoleLogger` and a `BufferedLogger`. Exposes `debug/info/warn/error` methods that fan out to both outputs, and filtered log queries via `LogFilter`. Not exported directly; accessed only via `LogRegistry`.
-
-Follow the Registry pattern: add new collection managers as subclasses of `NamedRegistry`, overriding only the `notFoundException` static property. (`LogRegistry` is an exception — it is a standalone singleton, not a `NamedRegistry` subclass.)
+`NamedRegistry` base class for named-lookup collections; `ResourceRegistry` and `ClientRegistry` extend it (throwing `ResourceNotFound` / `ClientNotFound` on miss). `LogRegistry` is a standalone singleton façade that fans out log calls to a `ConsoleLogger` and a `BufferedLogger`, and exposes filtered log query methods.
 
 ### `utils/`
 
-Shared low-level utilities with no domain knowledge. Organized into three subfolders:
+Shared low-level utilities with no domain knowledge:
 
-#### `utils/logging/`
-
-The logging subsystem. All loggers extend `BaseLogger`, which controls which log levels are
-forwarded to `_output`.
-
-| Class | Responsibility |
-|-------|---------------|
-| `BaseLogger` | Abstract base; applies level filtering and suppression before calling `_output`. |
-| `ConsoleLogger` | Extends `BaseLogger`; writes to `console.warn` / `console.error`. |
-| `BufferedLogger` | Extends `BaseLogger`; stores log entries in a `LogBuffer` instead of printing. |
-| `Logger` | Singleton-style facade that delegates to a `ConsoleLogger` (console only). Use `LogRegistry` when a log also needs to appear in the API buffer. |
-| `LoggerGroup` | Manages a set of loggers and fans out log calls to all of them. |
-| `LogFactory` | Builds `Log` instances with auto-assigned incremental IDs. |
-| `Log` | Immutable log entry: `id`, `level`, `message`. |
-| `LogBuffer` | Fixed-capacity ring buffer of `Log` entries; used by `BufferedLogger`. |
-
-#### `utils/collections/`
-
-Generic data-structure building blocks used by registries and the engine.
-
-| Class | Responsibility |
-|-------|---------------|
-| `Collection` | Base array wrapper with `push`, `size`, `hasAny`, `hasItem`. |
-| `IdentifyableCollection` | Extends `Collection`; supports `get(id)`, `remove(id)`, `byIndex(n)` keyed by `item.id`. |
-| `Queue` | FIFO queue built on `Collection`; adds `pick()` to dequeue from the front. |
-| `SortedCollection` | Deferred-sort collection; merges new items with an already-sorted array on `list()`. Exposes range filters: `select`, `after`, `from`, `before`, `upTo`. |
-| `SortedArrayMerger` | Merges two sorted arrays in O(n+m). Used by `SortedCollection`. |
-| `SortedArraySearcher` | Binary-search helpers on a sorted array. Used by `SortedCollection`. |
-
-#### `utils/generators/`
-
-ID generation utilities.
-
-| Class | Responsibility |
-|-------|---------------|
-| `IdGenerator` | Abstract base; delegates to `UUidGenerator` by default. |
-| `UUidGenerator` | Generates RFC-4122 UUIDs via Node's `crypto.randomUUID()`. |
-| `IncrementalIdGenerator` | Generates sequential integer IDs starting from 1. Used by `LogFactory`. |
-
-#### `utils/` (flat)
-
-| Class | Responsibility |
-|-------|---------------|
-| `EnvResolver` | Resolves environment variable references (`$VAR` / `${VAR}`) in string values. Used by `Client.fromObject()` to interpolate header values at parse time. |
-| `HtmlParser` | Parses a raw HTML string using `node-html-parser` and extracts attribute values from elements matched by a CSS selector. Logs warnings for unmatched selectors or elements missing the target attribute. Throws `InvalidHtmlResponseBody` when parsing fails. |
-| `ResourceRequestCollector` | Iterates a `ResourceRegistry` and enqueues one job per resource+parameter combination. |
+- **`utils/logging/`** — `BaseLogger`, `ConsoleLogger`, `BufferedLogger`, `Logger`, `LoggerGroup`, `LogFactory`, `Log`, `LogBuffer`.
+- **`utils/collections/`** — `Collection`, `IdentifyableCollection`, `Queue`, `SortedCollection`, plus `SortedArrayMerger` and `SortedArraySearcher`.
+- **`utils/generators/`** — `IdGenerator`, `UUidGenerator`, `IncrementalIdGenerator`.
+- **`utils/`** (flat) — `EnvResolver` (env var interpolation in headers), `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing).
 
 ### `services/`
 
-Business logic and I/O layer.
+Business logic and I/O layer:
 
-| Class | Responsibility |
-|-------|---------------|
-| `Application` | Static singleton facade (same pattern as `JobRegistry`). `Application.build(params)` creates and stores an `ApplicationInstance`. `Application.reset()` clears the singleton (for tests). `Application.status()` returns the current engine status (`running`, `pausing`, `paused`, `stopping`, `stopped`). Static delegates for `loadConfig`, `run`, `buildEngine`, `buildWebServer`, `enqueueFirstJobs`, `pause()`, `stop()`, `continue()`, `start()`, `restart()`. Returns `'running'` when no instance exists (backward compatibility for enqueue gating). |
-| `ApplicationInstance` | Holds all instance-level state: `#engineStatus`, `#aggregator` (persistent `PromiseAggregator`), `#enginePromise`, `#sleepMs`. `run()` initialises the aggregator, sets status to `'running'`, starts both engine and web server, and sets status to `'stopped'` when complete. Lifecycle methods `pause()`, `stop()`, `continue()`, `start()`, `restart()` manage the `#engineStatus` and `Engine` instance across restarts. Not exported directly; accessed via `Application`. |
-| `ArgumentsParser` | Parses CLI arguments using Node's `parseArgs`. Supports `--config <path>` / `-c <path>`; defaults to `config/navi_config.yml`. Returns `{ config }`. |
-| `ConfigLoader` | File I/O — reads YAML from disk using `fs.readFileSync` and the `yaml` library. |
-| `ConfigParser` | Converts the parsed YAML object into model instances (validates required keys, builds registries). |
-| `Client` | HTTP executor using Axios. `perform(resourceRequest, params)` fetches a URL with `responseType: 'text'` and throws `RequestFailed` if the status does not match. `performUrl(absoluteUrl, expectedStatus)` fetches a fully-resolved absolute URL directly (no `baseUrl` prepended). Supports per-client headers (including environment variable interpolation via `$VAR` / `${VAR}` syntax, resolved at parse time). |
-| `Engine` | Drives the main allocation loop. Each tick calls `JobRegistry.promoteReadyJobs()` then delegates to `WorkersAllocator.allocate()` while jobs or busy workers exist. Sleeps for `sleepMs` (default 500 ms) when all pending jobs are in cooldown. `stop()` sets a `#stopped` flag that causes the loop to exit after the current iteration completes. |
-| `WorkersAllocator` | Assigns ready jobs to idle workers. On each `allocate()` call, repeatedly pairs `WorkersRegistry.getIdleWorker()` with `JobRegistry.pick()` until either pool is exhausted. |
+- **`Application`** — static singleton façade; `loadConfig()` bootstraps registries and factories; `run()` starts engine and web server concurrently. Lifecycle methods (`pause`, `stop`, `continue`, `start`, `restart`) delegate to `ApplicationInstance`.
+- **`Engine`** — allocation loop: each tick promotes cooled-down failed jobs then delegates to `WorkersAllocator`.
+- **`Client`** — Axios-based HTTP executor; `perform()` for URL-template requests, `performUrl()` for absolute URLs; supports per-client headers with env var interpolation.
+- **`ConfigLoader`** / **`ConfigParser`** / **`ArgumentsParser`** — config file I/O and CLI argument parsing.
 
 ### `server/`
 
-Express-based web server and request handlers.
-
-| Class | Responsibility |
-|-------|---------------|
-| `WebServer` | Optional Express.js server. `WebServer.build({ webConfig })` returns `null` when `webConfig` is absent; otherwise creates an instance listening on `webConfig.port`. Serves the React SPA from `source/static/`. |
-| `Router` | Builds the Express `Router`: registers `GET /stats.json`, `GET /jobs/:status.json`, `GET /job/:id.json`, engine lifecycle routes (`GET /engine/status`, `PATCH /engine/{pause,stop,continue,start,restart}`), `GET /` and `GET /assets/*path` via `RouteRegister`, serves static files from `source/static/`, and falls back to `index.html` for SPA navigation. |
-| `RouteRegister` | Helper that wires a route path to a `RequestHandler` instance on an Express router. Supports `register()` for GET routes and `registerPatch()` for PATCH routes; both wrap handler errors into appropriate HTTP responses. |
-| `RequestHandler` | Abstract base class for route handlers. Subclasses implement `handle(req, res)`. |
-| `StatsRequestHandler` | Extends `RequestHandler`. Responds to `GET /stats.json` with `{ jobs: JobRegistry.stats(), workers: WorkersRegistry.stats() }`. |
-| `JobsRequestHandler` | Extends `RequestHandler`. Responds to `GET /jobs/:status.json` with the array of jobs in the given status queue (from `JobRegistry.jobsByStatus(status)`). |
-| `JobRequestHandler` | Extends `RequestHandler`. Responds to `GET /job/:id.json` with job details from `JobRegistry.jobById(id)`, or 404 if not found. |
-| `BaseUrlsRequestHandler` | Extends `RequestHandler`. Responds to `GET /clients/base_urls.json` with the list of unique client base URLs. |
-| `EngineStatusRequestHandler` | Extends `RequestHandler`. Responds to `GET /engine/status` with `{ status: Application.status() }`. |
-| `EnginePauseRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/pause`. Returns `{ status: 'pausing' }` if engine is `running`, otherwise 409. |
-| `EngineStopRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/stop`. Returns `{ status: 'stopping' }` if engine is `running`, otherwise 409. |
-| `EngineContinueRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/continue`. Returns `{ status: 'running' }` if engine is `paused`, otherwise 409. |
-| `EngineStartRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/start`. Returns `{ status: 'running' }` if engine is `stopped`, otherwise 409. |
-| `EngineRestartRequestHandler` | Extends `RequestHandler`. Handles `PATCH /engine/restart`. Returns `{ status: 'stopping' }` if engine is `running`, otherwise 409. |
-| `SettingsRequestHandler` | Extends `RequestHandler`. Responds to `GET /settings.json` with `{ "enable_shutdown": true }` when shutdown is enabled; throws `ForbiddenError` (→ 403) when disabled. Receives `enableShutdown` at construction time. |
-| `IndexRequestHandler` | Extends `RequestHandler`. Responds to `GET /` and the SPA catch-all by serving `source/static/index.html`. |
-| `AssetsRequestHandler` | Extends `RequestHandler`. Responds to `GET /assets/*path` by serving the requested file from `source/static/assets/`. Uses `PathValidator` to ensure the resolved path stays within `source/static/assets/`; returns **403 Forbidden** on path traversal attempts. |
-| `PathValidator` | Encapsulates the path traversal security check. Given a base directory, `isValid(resolvedPath)` returns `true` only when `resolvedPath` is strictly inside that directory. |
+Express-based web server. `Router` wires all request handlers and serves the React SPA from `source/static/`. Handlers extend `RequestHandler` and are registered via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
 
 ## Test Layout
 
@@ -233,9 +126,9 @@ source/spec/
     server/
     services/
     utils/
-      logging/          ← specs for utils/logging/
-      collections/      ← specs for utils/collections/
-      generators/       ← specs for utils/generators/
+      logging/
+      collections/
+      generators/
       ResourceRequestCollector_spec.js
   support/              ← shared test helpers (factories, dummies, fixtures)
     dummies/
@@ -243,13 +136,7 @@ source/spec/
     utils/
 ```
 
-The naming convention for spec files is `<ClassName>_spec.js`, placed in the subfolder that
-mirrors the source file's location under `source/lib/`. For example:
-- `source/lib/background/Job.js` → `source/spec/lib/background/Job_spec.js`
-- `source/lib/utils/logging/Logger.js` → `source/spec/lib/utils/logging/Logger_spec.js`
-
-Support files (factories, dummies, fixtures) live under `source/spec/support/` and are never
-discovered by the test runner as specs.
+The naming convention for spec files is `<ClassName>_spec.js`, mirroring the source file's location under `source/lib/`.
 
 ## Module System
 
@@ -279,13 +166,12 @@ Enforced via ESLint (`source/eslint.config.mjs`):
 
 ## Quality and Tooling
 
-- Unit tests must use **Jasmine** (`spec/lib/**/*_spec.js` naming convention).
-- Code coverage must use **c8** (`yarn test` runs `c8 jasmine spec/**/*.js`, which recursively covers `spec/lib/`).
-- Linting must use **ESLint** (`yarn lint`).
-- Copy/paste and duplication analysis must use **JSCPD** (`yarn report`).
-- API documentation must be generated with **JSDoc** (`yarn docs`; config: `source/jsdoc.json`).
-- CI test execution must run on **CircleCI**.
-- Code quality gates should integrate with tools such as **Codacy**.
+- Unit tests: **Jasmine** (`spec/lib/**/*_spec.js` naming convention).
+- Coverage: **c8** (`yarn test` runs `c8 jasmine spec/**/*.js`).
+- Linting: **ESLint** (`yarn lint`).
+- Duplication: **JSCPD** (`yarn report`).
+- API docs: **JSDoc** (`yarn docs`; config: `source/jsdoc.json`).
+- CI: **CircleCI**. Code quality: **Codacy**.
 
 ## Developer Workflow
 
@@ -305,14 +191,12 @@ Development workflow is Docker-based.
 
 - Application source code must live in a folder named `source`.
 - The `source` folder is mounted as a volume in `docker-compose.yml` for live development.
-- Dockerfiles are stored under `dockerfiles/`:
-  - Development image: `dockerfiles/dev_navi_hey/Dockerfile`
-  - Production image: `dockerfiles/production_navi_hey/Dockerfile`
+- Dockerfiles are stored under `dockerfiles/`.
 - `docker_volumes/` is used for development/runtime mounted data:
   - `docker_volumes/config/` — YAML configuration files (never inside `source/`).
   - `docker_volumes/node_modules/` — Node modules cache mounted into the container.
 
-## Implementation Guidelines for Copilot
+## Implementation Guidelines
 
 When generating or modifying code:
 
