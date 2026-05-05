@@ -1,7 +1,9 @@
 import { AssetRequest } from './AssetRequest.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
+import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction.js';
 import { JobRegistry as DefaultJobRegistry } from '../background/JobRegistry.js';
 import { ActionsEnqueuer } from '../enqueuers/ActionsEnqueuer.js';
+import { PaginatedActionsEnqueuer } from '../enqueuers/PaginatedActionsEnqueuer.js';
 import { Application } from '../services/Application.js';
 
 /**
@@ -18,13 +20,15 @@ class ResourceRequest {
    * @param {string} [attributes.clientName] The name of the client to use for this request.
    * @param {Array} [attributes.actions=[]] List of raw action config objects.
    * @param {Array} [attributes.assets=[]] List of raw asset extraction rule objects.
+   * @param {Array} [attributes.paginated_actions=[]] List of raw paginated action config objects.
    */
-  constructor({ url, status, clientName, actions = [], assets = [] }) {
+  constructor({ url, status, clientName, actions = [], assets = [], paginated_actions = [] }) {
     this.url = url;
     this.status = status;
     this.#clientName = clientName;
     this.actions = ResourceRequestAction.fromList(actions);
     this.assets = AssetRequest.fromListObject(assets);
+    this.paginatedActions = ResourceRequestPaginatedAction.fromList(paginated_actions);
   }
 
   /**
@@ -47,6 +51,18 @@ class ResourceRequest {
 
     const itemWrappers = responseWrapper.toItemWrappers();
     new ActionsEnqueuer(this.actions, itemWrappers).enqueue();
+  }
+
+  /**
+   * Enqueues one PaginatedActionProcessingJob per paginated action.
+   * Returns immediately if there are no paginated actions.
+   * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
+   * @returns {void}
+   */
+  enqueuePaginatedActions(responseWrapper) {
+    if (this.paginatedActions.length === 0) return;
+
+    new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper).enqueue();
   }
 
   /**

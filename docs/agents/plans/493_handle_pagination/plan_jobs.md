@@ -4,37 +4,38 @@
 
 **File:** `source/lib/jobs/PaginatedActionProcessingJob.js`
 
-Mirrors `ActionProcessingJob`. Processes a single `(paginatedAction, item)` pair. Exhausted after the first failure — no retry rights.
+Mirrors `ActionProcessingJob`. Processes a single `(paginatedAction, responseWrapper)` pair — the `responseWrapper` is the **original full response**, not a single item. `execute` evaluates the page count from the response and enqueues one `ResourceRequestJob` per page. Exhausted after the first failure — no retry rights.
 
 ```js
 import { Job } from '../background/Job.js';
 
 /**
- * Processes a single paginated action for a given response item.
+ * Processes a single paginated action against the original full response wrapper.
+ * Evaluates page count and enqueues one ResourceRequestJob per page.
  * Exhausted after the first failure — no retry rights.
  * @author darthjee
  */
 class PaginatedActionProcessingJob extends Job {
   #paginatedAction;
-  #item;
+  #responseWrapper;
 
   /**
    * @param {object} params
    * @param {string} params.id Unique job identifier.
    * @param {ResourceRequestPaginatedAction} params.paginatedAction The paginated action to execute.
-   * @param {ResponseWrapper} params.item The response item to process.
+   * @param {ResponseWrapper} params.responseWrapper The original full response wrapper.
    */
-  constructor({ id, paginatedAction, item }) {
+  constructor({ id, paginatedAction, responseWrapper }) {
     super({ id });
     this.#paginatedAction = paginatedAction;
-    this.#item = item;
+    this.#responseWrapper = responseWrapper;
   }
 
   /**
-   * @returns {{ item: ResponseWrapper }}
+   * @returns {{ responseWrapper: ResponseWrapper }}
    */
   get arguments() {
-    return { item: this.#item };
+    return { responseWrapper: this.#responseWrapper };
   }
 
   /**
@@ -54,7 +55,7 @@ class PaginatedActionProcessingJob extends Job {
     logContext.debug(`PaginatedActionProcessingJob #${this.id} performing`);
     try {
       this.lastError = undefined;
-      await this.#paginatedAction.execute(this.#item);
+      await this.#paginatedAction.execute(this.#responseWrapper);
     } catch (error) {
       this._fail(error);
     }
@@ -69,7 +70,7 @@ export { PaginatedActionProcessingJob };
 In the bootstrap/factory registration file, register the `'PaginatedAction'` key:
 
 ```js
-JobFactory.build('PaginatedAction', ({ id, paginatedAction, item }) =>
-  new PaginatedActionProcessingJob({ id, paginatedAction, item })
+JobFactory.build('PaginatedAction', ({ id, paginatedAction, responseWrapper }) =>
+  new PaginatedActionProcessingJob({ id, paginatedAction, responseWrapper })
 );
 ```
