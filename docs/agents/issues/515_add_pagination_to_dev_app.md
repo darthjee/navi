@@ -24,6 +24,10 @@ The dev app JSON endpoints currently return all entries without any pagination. 
 - When `page_size` is omitted or cannot be parsed, the default value from config is used
 - When `page` is omitted or cannot be parsed, the first page is returned
 - When `page` is out of range, an empty array `[]` is returned
+- Collection responses include the following headers:
+  - `PAGE` — the current page number
+  - `PAGE-SIZE` — the page size used (resolved value, after applying defaults)
+  - `PAGES` — total number of pages
 - When `page_size` is omitted, a default value is read from a new configuration file:
   ```yaml
   json:

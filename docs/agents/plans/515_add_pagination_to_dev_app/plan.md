@@ -41,6 +41,10 @@ Update only the **collection endpoint** handlers (those returning arrays) to:
 - Treat unparseable values for either param as `null` and fall back to defaults: `page` defaults to `1`, `page_size` defaults to `AppConfig.json.pageSize`
 - Slice the result set accordingly before responding
 - Return `[]` when `page` is out of range
+- Set the following response headers on every paginated response:
+  - `PAGE` — the current page number
+  - `PAGE-SIZE` — the resolved page size (after applying defaults)
+  - `PAGES` — total number of pages (computed from total record count and page size)
 
 ### Step 5 — Add tests
 
