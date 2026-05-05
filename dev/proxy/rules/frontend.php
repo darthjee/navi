@@ -1,56 +1,38 @@
 <?php
 
 use Tent\Configuration;
+use Tent\Models\Rule;
+use Tent\Handlers\ProxyRequestHandler;
+use Tent\Models\Server;
+use Tent\Models\RequestMatcher;
 
-// All /#/... hash routes are served by this rule because browsers strip
-// the hash fragment before sending the HTTP request, so every hash-based
-// navigation arrives at the server as GET /.
-Configuration::buildRule([
-  'handler' => [
-    'type' => 'static',
-    'location' => '/var/www/html/configuration/static'
-  ],
-  'matchers' => [
-    ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
-  ],
-  'middlewares' => [
-    [
-      'class' => 'Tent\Middlewares\FileCacheMiddleware',
-      'location' => './cache',
-      'matchers' => [
-        [
-          'class' => 'Tent\Matchers\StatusCodeMatcher',
-          'httpCodes' => ['2xx', '3xx']
-        ]
-      ]
+if (getenv('FRONTEND_DEV_MODE') === 'true') {
+  Configuration::buildRule([
+    'handler' => [
+      'type' => 'proxy',
+      'host' => 'http://frontend:8080'
     ],
-    [
-      'class' => 'Tent\Middlewares\SetPathMiddleware',
-      'path' => '/index.html'
-    ],
-    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
-  ]
-]);
+    'matchers' => [
+      ['method' => 'GET', 'uri' => '/',               'type' => 'exact'],
+      ['method' => 'GET', 'uri' => '/assets/js/',     'type' => 'begins_with'],
+      ['method' => 'GET', 'uri' => '/assets/css/',    'type' => 'begins_with'],
+      ['method' => 'GET', 'uri' => '/@vite/',         'type' => 'begins_with'],
+      ['method' => 'GET', 'uri' => '/node_modules/',  'type' => 'begins_with'],
+      ['method' => 'GET', 'uri' => '/@react-refresh', 'type' => 'exact']
+    ]
+  ]);
+}
 
 Configuration::buildRule([
   'handler' => [
-    'type' => 'static',
-    'location' => '/var/www/html/configuration/static'
+    'type'       => 'default_proxy',
+    'host'       => 'http://backend:80',
+    'cacheCodes' => ['2xx', '3xx']
   ],
   'matchers' => [
-    ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
+    ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with'],
   ],
   'middlewares' => [
-    [
-      'class' => 'Tent\Middlewares\FileCacheMiddleware',
-      'location' => './cache',
-      'matchers' => [
-        [
-          'class' => 'Tent\Matchers\StatusCodeMatcher',
-          'httpCodes' => ['2xx', '3xx']
-        ]
-      ]
-    ],
     ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
   ]
 ]);

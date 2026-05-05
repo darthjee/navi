@@ -36,6 +36,7 @@ services:
     depends_on: [navi_dev_app, navi_dev_frontend]
     links:
       - navi_dev_app:backend
+      - navi_dev_frontend:frontend
     volumes:
       - ./dev/proxy:/var/www/html/configuration/
       - ./docker_volumes/proxy_cache:/var/www/html/cache/
@@ -86,6 +87,5 @@ services:
     env_file: .env
     volumes:
       - ./dev/web_proxy:/var/www/html/configuration/
-      - ./dev/proxy/static:/var/www/html/static
     ports:
       - 0.0.0.0:3030:80
