@@ -33,8 +33,9 @@ class ContentHandler extends RequestHandler {
   }
 
   /**
-   * Navigates the data for the given route/params, serializes the result,
-   * and writes the JSON response. Responds 404 if navigation returns null.
+   * Navigates the data for the given route/params and delegates to
+   * {@link _respond} to write the response. Responds 404 if navigation
+   * returns null.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
@@ -43,11 +44,33 @@ class ContentHandler extends RequestHandler {
       const steps = this.#extractorFactory(this.#route, req.params).steps();
       const result = new DataNavigator(this.#data, steps).navigate();
       if (result === null) return notFound(res);
-      res.json(this.#serializer ? this.#serializer.serialize(result) : result);
+      this._respond(result, req, res);
     } catch (e) {
       console.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
       res.status(400).json({ error: e.message });
     }
+  }
+
+  /**
+   * Writes the navigation result as a JSON response. Applies serialization
+   * if a serializer was provided. Subclasses may override this method to
+   * add extra behaviour (e.g. pagination headers).
+   *
+   * @param {*} result - The raw navigation result.
+   * @param {import('express').Request} _req
+   * @param {import('express').Response} res
+   */
+  _respond(result, _req, res) {
+    res.json(this.#serializer ? this.#serializer.serialize(result) : result);
+  }
+
+  /**
+   * Returns the serializer configured on this handler, or `null`.
+   * Exposed for use by subclasses.
+   * @returns {import('./Serializer.js').default|null}
+   */
+  get _serializer() {
+    return this.#serializer;
   }
 }
 

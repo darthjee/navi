@@ -1,9 +1,17 @@
 import express from 'express';
+import CollectionHandler from '../../../lib/CollectionHandler.js';
 import ContentHandler from '../../../lib/ContentHandler.js';
 import { notFound } from '../../../lib/not_found.js';
 import Router from '../../../lib/Router.js';
 import RouteRegister from '../../../lib/RouteRegister.js';
 import Serializer from '../../../lib/Serializer.js';
+
+export const buildCollectionHandlerApp = (route, routerData, serializer = null) => {
+  const app = express();
+  const handler = new CollectionHandler(route, routerData, serializer);
+  app.get(route, (req, res) => handler.handle(req, res));
+  return app;
+};
 
 export const buildContentHandlerApp = (route, routerData, serializer = null, extractorFactory = null) => {
   const app = express();
