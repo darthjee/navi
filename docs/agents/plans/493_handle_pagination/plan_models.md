@@ -176,6 +176,7 @@ constructor({ url, status, clientName, actions = [], assets = [], paginated_acti
 ```js
 /**
  * Enqueues one PaginatedActionProcessingJob per paginated action.
+ * Passes the original full responseWrapper — not split into items.
  * Returns immediately if there are no paginated actions.
  * @param {ResponseWrapper} responseWrapper
  * @returns {void}
@@ -183,8 +184,7 @@ constructor({ url, status, clientName, actions = [], assets = [], paginated_acti
 enqueuePaginatedActions(responseWrapper) {
   if (this.paginatedActions.length === 0) return;
 
-  const itemWrappers = responseWrapper.toItemWrappers();
-  new PaginatedActionsEnqueuer(this.paginatedActions, itemWrappers).enqueue();
+  new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper).enqueue();
 }
 ```
 

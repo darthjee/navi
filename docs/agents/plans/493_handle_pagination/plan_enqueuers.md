@@ -4,42 +4,43 @@
 
 **File:** `source/lib/enqueuers/PaginatedActionEnqueuer.js`
 
-Mirrors `ActionEnqueuer`. Enqueues one `PaginatedActionProcessingJob` per item for a single `ResourceRequestPaginatedAction`.
+Mirrors `ActionEnqueuer`. Enqueues **one** `PaginatedActionProcessingJob` for the whole response wrapper — **not one per item**. The job will later evaluate the page count from the response and enqueue one `ResourceRequestJob` per page.
 
 ```js
 import { JobRegistry as DefaultJobRegistry } from '../background/JobRegistry.js';
 import { Application } from '../services/Application.js';
 
 /**
- * Enqueues one PaginatedActionProcessingJob per item for a single paginated action.
+ * Enqueues one PaginatedActionProcessingJob for a single paginated action.
  * @author darthjee
  */
 class PaginatedActionEnqueuer {
   #paginatedAction;
-  #items;
+  #responseWrapper;
   #jobRegistry;
 
   /**
    * @param {ResourceRequestPaginatedAction} paginatedAction
-   * @param {Array<ResponseWrapper>} items
+   * @param {ResponseWrapper} responseWrapper The original full response (not split into items).
    * @param {object} [jobRegistry=JobRegistry]
    */
-  constructor(paginatedAction, items, jobRegistry = DefaultJobRegistry) {
+  constructor(paginatedAction, responseWrapper, jobRegistry = DefaultJobRegistry) {
     this.#paginatedAction = paginatedAction;
-    this.#items = items;
+    this.#responseWrapper = responseWrapper;
     this.#jobRegistry = jobRegistry;
   }
 
   /**
-   * Enqueues one PaginatedActionProcessingJob per item.
+   * Enqueues one PaginatedActionProcessingJob for the response wrapper.
    * Does nothing if the application is stopped.
    * @returns {void}
    */
   enqueue() {
     if (Application.isStopped()) return;
-    for (const item of this.#items) {
-      this.#jobRegistry.enqueue('PaginatedAction', { paginatedAction: this.#paginatedAction, item });
-    }
+    this.#jobRegistry.enqueue('PaginatedAction', {
+      paginatedAction: this.#paginatedAction,
+      responseWrapper: this.#responseWrapper,
+    });
   }
 }
 
@@ -52,41 +53,41 @@ export { PaginatedActionEnqueuer };
 
 **File:** `source/lib/enqueuers/PaginatedActionsEnqueuer.js`
 
-Mirrors `ActionsEnqueuer`. Receives a list of `ResponseWrapper` items and enqueues one `PaginatedActionProcessingJob` per `(item × paginatedAction)` pair.
+Mirrors `ActionsEnqueuer`. Receives the original `ResponseWrapper` and enqueues one `PaginatedActionProcessingJob` per `paginatedAction` (not per response item).
 
 ```js
 import { PaginatedActionEnqueuer } from './PaginatedActionEnqueuer.js';
 import { NullResponse } from '../exceptions/NullResponse.js';
 
 /**
- * Enqueues one PaginatedActionProcessingJob per (item × paginatedAction) pair.
+ * Enqueues one PaginatedActionProcessingJob per paginatedAction for the response wrapper.
  * @author darthjee
  */
 class PaginatedActionsEnqueuer {
   #paginatedActions;
-  #items;
+  #responseWrapper;
   #jobRegistry;
 
   /**
    * @param {Array<ResourceRequestPaginatedAction>} paginatedActions
-   * @param {Array<ResponseWrapper>} items
+   * @param {ResponseWrapper} responseWrapper The original full response.
    * @param {object} [jobRegistry]
    */
-  constructor(paginatedActions, items, jobRegistry) {
+  constructor(paginatedActions, responseWrapper, jobRegistry) {
     this.#paginatedActions = paginatedActions;
-    this.#items = items;
+    this.#responseWrapper = responseWrapper;
     this.#jobRegistry = jobRegistry;
   }
 
   /**
    * @returns {void}
-   * @throws {NullResponse} If the items list is null.
+   * @throws {NullResponse} If the response wrapper is null.
    */
   enqueue() {
-    if (this.#items === null) throw new NullResponse();
+    if (this.#responseWrapper === null) throw new NullResponse();
 
     for (const paginatedAction of this.#paginatedActions) {
-      new PaginatedActionEnqueuer(paginatedAction, this.#items, this.#jobRegistry).enqueue();
+      new PaginatedActionEnqueuer(paginatedAction, this.#responseWrapper, this.#jobRegistry).enqueue();
     }
   }
 }
