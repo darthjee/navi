@@ -218,7 +218,6 @@ describe('ResourceRequest', () => {
     let request;
     let jobRegistry;
     let clientRegistry;
-
     beforeEach(() => {
       spyOn(Logger, 'info').and.stub();
       spyOn(Logger, 'error').and.stub();
@@ -262,4 +261,40 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#enqueuePaginatedActions', () => {
+    let paginatedAction;
+    let request;
+
+    beforeEach(() => {
+      spyOn(Logger, 'info').and.stub();
+      spyOn(Logger, 'error').and.stub();
+      paginatedAction = jasmine.createSpyObj('paginatedAction', ['execute']);
+      request = ResourceRequestFactory.build();
+      request.paginatedActions = [paginatedAction];
+      JobRegistry.build({ cooldown: -1 });
+      spyOn(JobRegistry, 'enqueue').and.stub();
+    });
+
+    afterEach(() => { JobRegistry.reset(); });
+
+    it('does not call enqueue when there are no paginated actions', () => {
+      request.paginatedActions = [];
+      request.enqueuePaginatedActions(new ResponseWrapper({ data: '[]', headers: {} }));
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+    });
+
+    it('calls enqueue once per paginated action regardless of response body structure', () => {
+      request.enqueuePaginatedActions(new ResponseWrapper({ data: '[{"id":1},{"id":2}]', headers: {} }));
+      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls enqueue once with the paginatedAction and response wrapper', () => {
+      const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
+      request.enqueuePaginatedActions(wrapper);
+      expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+        'PaginatedAction',
+        jasmine.objectContaining({ paginatedAction, parameters: wrapper })
+      );
+    });
+  });
 });

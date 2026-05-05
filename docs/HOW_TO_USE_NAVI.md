@@ -19,6 +19,7 @@ Two integration modes are covered:
 - [Option B — Node.js image with `navi-hey` installed](#option-b--nodejs-image-with-navi-hey-installed)
 - [Option C — CircleCI executor image](#option-c--circleci-executor-image)
 - [Warming HTML pages and their assets](#warming-html-pages-and-their-assets)
+- [Paginated Actions](#paginated-actions)
 - [Reference](#reference)
 
 ---
@@ -98,6 +99,12 @@ Key points:
 | `client` | Name of the client to use for this request. Defaults to `default`. |
 | `actions[].resource` | Resource to enqueue after a successful response (resource chaining). |
 | `actions[].parameters` | Path expressions that extract values from the response (e.g. `parsedBody.id`, `headers['x-next-page']`). |
+| `paginated_actions` | Optional. Like `actions`, but fans out one request per page instead of one per array item. |
+| `paginated_actions[].resource` | Resource to enqueue for each page. Required. |
+| `paginated_actions[].pagination` | List of pagination config entries. Required. |
+| `paginated_actions[].pagination[].pages` | Path expression resolving to the total page count (e.g. `parsedBody.pagination.pages`). |
+| `paginated_actions[].pagination[].page_key` | Parameter name injected as the page number into each downstream request URL. |
+| `paginated_actions[].pagination[].zero_indexed` | Boolean. Pages start at `0` when `true`, at `1` when `false` (default). |
 | `assets[].selector` | CSS selector used to find elements in an HTML response body. |
 | `assets[].attribute` | Attribute name on matched elements that holds the asset URL (e.g. `href`, `src`). |
 | `assets[].client` | Optional named client to use when fetching each discovered asset. Defaults to `default`. |
@@ -334,6 +341,44 @@ resources:
 A resource may declare both `assets` and `actions`. Both are processed independently after
 a successful response — `assets` for HTML asset extraction and `actions` for JSON response
 chaining. In practice, a resource would typically declare one or the other.
+
+---
+
+## Paginated Actions
+
+When a resource response indicates multiple pages, use `paginated_actions` to fan out one downstream request per page. Unlike `actions` (which iterate over JSON array items), `paginated_actions` operate on the whole response and use a `pages` expression to determine how many pages to enqueue.
+
+Each entry requires:
+
+- **`resource`** — the resource to request for each page.
+- **`pagination`** — a list of config entries:
+  - **`pages`** — path expression resolved against the response (e.g. `parsedBody.pagination.pages`) that returns the total page count.
+  - **`page_key`** — parameter name injected as the current page number (used as `{:page_key}` in the target URL template).
+  - **`zero_indexed`** *(optional, default `false`)* — when `true`, pages run from `0` to `pages-1`; when `false`, from `1` to `pages`.
+
+The page parameter is merged with any parameters inherited from the parent chain, so it can coexist with other `{:placeholder}` tokens in the target URL.
+
+### Example
+
+```yaml
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+      paginated_actions:
+        - resource: products_page
+          pagination:
+            - pages: parsedBody.pagination.pages
+            - page_key: page
+            - zero_indexed: false
+  products_page:
+    - url: /products/{:page}.json
+      status: 200
+```
+
+If `/categories.json` returns `{ "pagination": { "pages": 3 } }`, Navi enqueues requests for `/products/1.json`, `/products/2.json`, and `/products/3.json`.
+
+`paginated_actions` and `actions` may coexist on the same resource — both are processed independently after a successful response.
 
 ---
 

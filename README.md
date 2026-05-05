@@ -37,6 +37,7 @@ Key features:
 - Concurrent HTTP request execution via a worker pool.
 - URL templates with placeholder parameters (e.g. `{:id}`).
 - Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
+- Paginated resource support: `paginated_actions` fan out one request per page based on a page-count expression evaluated against the response.
 - Automatic retry of failed requests after the main queue is exhausted.
 
 ---
@@ -90,7 +91,12 @@ resources:
         - resource: products
           parameters:
             category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
-            page: headers['x-next-page']  # extract "x-next-page" from response headers → variable "page"
+      paginated_actions:
+        - resource: products_page
+          pagination:
+            - pages: parsedBody.pagination.pages  # total page count from response
+            - page_key: page                      # inject as {:page} in URL template
+            - zero_indexed: false                 # pages start at 1 (default)
     - url: /categories         # redirect — Navi validates the 302 status
       status: 302
     - url: /#/categories       # hash-based SPA route — same HTML template as home
@@ -131,7 +137,13 @@ resources:
 | `client` | Name of the client to use for this request. Defaults to `default`. |
 | `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
-| `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response wrapper (e.g. `parsed_body.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
+| `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response wrapper (e.g. `parsedBody.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
+| `paginated_actions` | Optional list of paginated actions to execute after a successful response. Each entry fans out one `ResourceRequestJob` per page. |
+| `paginated_actions[].resource` | Name of the resource to enqueue per page. Required. |
+| `paginated_actions[].pagination` | List of pagination config entries (see below). Required. |
+| `paginated_actions[].pagination[].pages` | Path expression evaluated against the response (e.g. `parsedBody.pagination.pages`) that resolves to the total number of pages. |
+| `paginated_actions[].pagination[].page_key` | The parameter name injected into each downstream request as the current page number. |
+| `paginated_actions[].pagination[].zero_indexed` | Boolean. When `true`, page numbers start at `0`; when `false` (default), they start at `1`. |
 | `assets` | Optional list of asset extraction rules. When present on an HTML resource, Navi parses the response body and enqueues a download job for each matched URL. |
 | `assets[].selector` | CSS selector used to find asset elements in the HTML response (e.g. `script[src]`, `link[rel="stylesheet"]`). |
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
@@ -278,14 +290,50 @@ After a successful HTTP response, Navi executes each configured `action` for eve
 
 For each action, the `parameters` map is applied to the response wrapper to produce a set of named variables:
 
-- **With `parameters`**: each value is a path expression (e.g. `parsed_body.id`, `headers['page']`) resolved against a wrapper exposing the parsed JSON body and response headers. Only the explicitly mapped fields are included.
+- **With `parameters`**: each value is a path expression (e.g. `parsedBody.id`, `headers['page']`) resolved against a wrapper exposing the parsed JSON body and response headers. Only the explicitly mapped fields are included.
 - **Without `parameters`**: the parsed body item is passed through unchanged.
 
-The mapped variables are then used to resolve `{:placeholder}` tokens in the target resource's URL templates. For example, if the response body contains `{ "id": 1 }` and the action has `parameters: { id: parsed_body.id }`, the target resource's URL `/categories/{:id}.json` resolves to `/categories/1.json`. Header values can also be extracted, e.g. `page: headers['page']`.
+The mapped variables are then used to resolve `{:placeholder}` tokens in the target resource's URL templates. For example, if the response body contains `{ "id": 1 }` and the action has `parameters: { id: parsedBody.id }`, the target resource's URL `/categories/{:id}.json` resolves to `/categories/1.json`. Header values can also be extracted, e.g. `page: headers['page']`.
 
 Each action is enqueued as an `ActionProcessingJob`, which looks up the target resource, creates a `ResourceRequestJob` for each URL entry in that resource with the resolved parameters, and enqueues them for processing by the worker pool. This enables multi-level resource chaining — a response can trigger further requests whose responses trigger even more requests.
 
 **Error handling:** an action whose `resource` field is missing is skipped and logged. An action whose path expression cannot be resolved against the response is also skipped and logged. Other actions continue normally. A response body that is not valid JSON raises an error for the whole request.
+
+---
+
+## Paginated Actions
+
+When a resource response indicates multiple pages, `paginated_actions` fan out one downstream `ResourceRequestJob` per page. This is configured alongside (or instead of) `actions` in a resource definition.
+
+Each `paginated_action` entry specifies a `resource` and a `pagination` block:
+
+- **`pages`** — a path expression evaluated against the response (e.g. `parsedBody.pagination.pages`) to determine the total page count.
+- **`page_key`** — the parameter name injected as the current page number into each downstream request.
+- **`zero_indexed`** — boolean; when `true` pages run from `0` to `pages-1`; when `false` (default) from `1` to `pages`.
+
+The page parameter is merged with any parameters inherited from the parent chain, so `{:page}` (or whatever `page_key` is set to) can be used as a `{:placeholder}` in the target resource's URL template alongside other variables (e.g. `{:category_id}`).
+
+Each paginated action is enqueued as a `PaginatedActionProcessingJob`. Unlike `ActionProcessingJob`, it operates on the whole response wrapper (not individual array items) and has no retry rights.
+
+### Example
+
+```yaml
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+      paginated_actions:
+        - resource: products_page
+          pagination:
+            - pages: parsedBody.pagination.pages
+            - page_key: page
+            - zero_indexed: false
+  products_page:
+    - url: /products/{:page}.json
+      status: 200
+```
+
+If the `/categories.json` response contains `{ "pagination": { "pages": 3 } }`, Navi enqueues three jobs for `/products/1.json`, `/products/2.json`, and `/products/3.json`.
 
 ---
 

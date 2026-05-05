@@ -20,6 +20,7 @@ Key features:
 - Concurrent HTTP request execution via a worker pool.
 - URL templates with placeholder parameters (e.g. `{:id}`).
 - Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
+- Paginated resource support: `paginated_actions` fan out one request per page based on a page-count expression evaluated against the response.
 - Automatic retry of failed requests after the main queue is exhausted.
 
 ---
@@ -81,8 +82,13 @@ resources:
         - resource: category_information  # passes all response fields as-is
         - resource: products
           parameters:
-            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
-            page: headers['x-next-page']  # extract "x-next-page" from response headers → variable "page"
+            category_id: parsedBody.id    # extract "id" from parsed body → variable "category_id"
+      paginated_actions:
+        - resource: products_page
+          pagination:
+            - pages: parsedBody.pagination.pages  # total page count from response
+            - page_key: page                      # inject as {:page} in URL template
+            - zero_indexed: false                 # pages start at 1 (default)
     - url: /categories         # redirect — Navi validates the 302 status
       status: 302
     - url: /#/categories       # hash-based SPA route — same HTML template as home
@@ -123,7 +129,13 @@ When the web server is enabled, the following screens are available:
 | `client` | Name of the client to use for this request. Defaults to `default`. |
 | `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
-| `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response (e.g. `parsed_body.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
+| `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response (e.g. `parsedBody.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
+| `paginated_actions` | Optional list of paginated actions. Each entry fans out one request per page. |
+| `paginated_actions[].resource` | Name of the resource to enqueue per page. Required. |
+| `paginated_actions[].pagination` | List of pagination config entries. Required. |
+| `paginated_actions[].pagination[].pages` | Path expression (e.g. `parsedBody.pagination.pages`) resolving to the total page count. |
+| `paginated_actions[].pagination[].page_key` | Parameter name injected as the current page number into each downstream request. |
+| `paginated_actions[].pagination[].zero_indexed` | Boolean. Pages start at `0` when `true`, at `1` when `false` (default). |
 | `assets` | Optional list of asset extraction rules. When present on an HTML resource, Navi parses the response body and enqueues a download job for each matched URL. |
 | `assets[].selector` | CSS selector used to find asset elements in the HTML response (e.g. `script[src]`, `link[rel="stylesheet"]`). |
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
@@ -136,7 +148,11 @@ When the web server is enabled, the following screens are available:
 
 Navi supports multi-level resource chaining. After a successful response, each configured action uses `parameters` path expressions to extract variables from the response body or headers and enqueues new jobs for the target resource. The extracted variables resolve `{:placeholder}` tokens in the target URL templates.
 
-For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and `parameters: { id: parsed_body.id }`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`. Header values can also be extracted, e.g. `page: headers['x-next-page']`.
+For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and `parameters: { id: parsedBody.id }`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`. Header values can also be extracted, e.g. `page: headers['x-next-page']`.
+
+## Paginated Actions
+
+`paginated_actions` complement `actions` when the response indicates multiple pages. Navi evaluates a `pages` expression against the whole response, then enqueues one `ResourceRequestJob` per page, injecting the page number under the configured `page_key`. This enables cache-warming of fully paginated APIs without manual configuration of every page.
 
 ---
 

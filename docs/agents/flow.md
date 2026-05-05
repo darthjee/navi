@@ -14,7 +14,7 @@ source/bin/navi.js
        │    ├─ WorkersConfig     (pool size + retry cooldown)
        │    ├─ WebConfig         (web server port — optional)
        │    └─ LogConfig         (log buffer size — optional)
-       ├─ JobFactory.build()     — registers 'ResourceRequestJob' and 'Action' factories
+       ├─ JobFactory.build()     — registers 'ResourceRequestJob', 'Action', 'PaginatedAction', 'HtmlParse', 'AssetDownload' factories
        ├─ JobRegistry.build()    — singleton: enqueued / processing / failed /
        │                                       retryQueue / finished / dead
        └─ WorkersRegistry.build() + initWorkers()
@@ -28,14 +28,24 @@ source/bin/navi.js
             └─ WorkersAllocator.allocate()
                  └─ Worker.perform(job)
                       ├─ [ResourceRequestJob]
-                      │    └─ Client.perform()              → raw response body
-                      │    └─ ResponseParser.parse()        → JS value
-                      │    └─ ActionsEnqueuer.enqueue()     — item × action cross-product
-                      │         └─ ActionEnqueuer.enqueue() (per action)
+                      │    └─ Client.perform()                    → raw response body
+                      │    └─ ResponseParser.parse()              → JS value
+                      │    └─ ActionsEnqueuer.enqueue()           — item × action cross-product
+                      │         └─ ActionEnqueuer.enqueue()       (per action)
                       │              └─ JobRegistry.enqueue('Action', { action, item })
-                      └─ [ActionProcessingJob]
-                           └─ action.execute(item)          ← TODO: enqueue ResourceRequestJob
-                                └─ ParametersMapper.map(item) → log vars (current behaviour)
+                      │    └─ PaginatedActionsEnqueuer.enqueue()  — one job per paginated action
+                      │         └─ PaginatedActionEnqueuer.enqueue() (per paginated action)
+                      │              └─ JobRegistry.enqueue('PaginatedAction', { paginatedAction, parameters })
+                      ├─ [ActionProcessingJob]
+                      │    └─ action.execute(item)
+                      │         └─ ParametersMapper.map(item) → parameters
+                      │         └─ JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters })
+                      └─ [PaginatedActionProcessingJob]
+                           └─ paginatedAction.execute(responseWrapper)
+                                └─ PaginationConfig.resolvePages(responseWrapper) → count
+                                └─ PaginationConfig.pageNumbers(count)            → [1..count] or [0..count-1]
+                                └─ for each page:
+                                     └─ JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: { ...existing, page } })
 ```
 
 ---
@@ -61,7 +71,7 @@ It instantiates `Application`, calls `loadConfig(configPath)`, and then calls `r
    - `WorkersConfig` — worker pool size (`workers.quantity`, default 1), retry cooldown (`workers.retry_cooldown`, default 2000 ms), engine sleep interval (`workers.sleep`, default 500 ms), and max retries (`workers.max-retries`, default 3).
    - `WebConfig` — web server port (`web.port`); `null` when the `web:` key is absent.
    - `LogConfig` — log buffer size (`log.size`, default 100); uses default when the `log:` key is absent.
-3. `JobFactory.build('ResourceRequestJob', ...)`, `JobFactory.build('Action', ...)`, `JobFactory.build('HtmlParse', ...)`, and `JobFactory.build('AssetDownload', ...)` register the four job factories.
+3. `JobFactory.build('ResourceRequestJob', ...)`, `JobFactory.build('Action', ...)`, `JobFactory.build('PaginatedAction', ...)`, `JobFactory.build('HtmlParse', ...)`, and `JobFactory.build('AssetDownload', ...)` register the five job factories.
 4. `JobRegistry.build({ cooldown })` creates the singleton with empty queues.
 5. `WorkersRegistry.build(workersConfig)` creates the singleton; `WorkersRegistry.initWorkers()` calls `WorkerFactory` to create the configured number of `Worker` instances (all start idle).
 
@@ -102,6 +112,12 @@ resources:
         - resource: products
           parameters:
             category_id: parsedBody.id   # extract "id" from parsed body → variable "category_id"
+      paginated_actions:
+        - resource: products_page
+          pagination:
+            - pages: parsedBody.pagination.pages  # total page count from response
+            - page_key: page                      # inject as {:page} in URL template
+            - zero_indexed: false                 # pages start at 1 (default)
   category_information:
     - url: /categories/{:id}.json
       status: 200
@@ -112,6 +128,9 @@ resources:
             id: parsedBody.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
     - url: /categories/{:category_id}/products.json
+      status: 200
+  products_page:
+    - url: /categories/{:category_id}/products/{:page}.json
       status: 200
   kind:
     - url: /kinds/{:id}.json
@@ -132,8 +151,9 @@ Each `ResourceRequest` entry may specify:
 - `url` — URL template, optionally containing `{:placeholder}` tokens.
 - `status` — expected HTTP response status code.
 - `client` — name of the client to use (falls back to `default`).
-- `actions` — optional list of actions to execute after a successful response (see section 6).
-- `assets` — optional list of asset extraction rules (see section 7). When declared, the response body is treated as HTML and the listed selector+attribute rules are used to discover asset URLs, each of which is fetched as an `AssetDownloadJob`.
+- `actions` — optional list of actions to execute after a successful response (see section 7).
+- `paginated_actions` — optional list of paginated actions to execute after a successful response (see section 8). Each entry fans out one `ResourceRequestJob` per page.
+- `assets` — optional list of asset extraction rules (see section 9). When declared, the response body is treated as HTML and the listed selector+attribute rules are used to discover asset URLs, each of which is fetched as an `AssetDownloadJob`.
 
 > **Path expression namespace: `parsedBody` is camelCase.**
 > In `actions.parameters` values, always write `parsedBody.field` — never `parsed_body.field`.
@@ -203,8 +223,9 @@ Each `Worker` processes one job at a time asynchronously:
 1. **Resolve client** — look up the client named in `ResourceRequest` (or `default`) from `ClientRegistry`.
 2. **Resolve URL** — expand `{:placeholder}` tokens in the URL template using the job's parameter map.
 3. **Perform request** — call `Client.perform(resourceRequest, params)`; throws `RequestFailed` if the response status does not match the expected status. The response body is returned as raw text (`responseType: 'text'`).
-4. **Enqueue asset jobs** — if `resourceRequest.hasAssets()`: call `resourceRequest.enqueueAssets(rawBody, jobRegistry, clientRegistry)` to enqueue a `HtmlParseJob` that will extract and fetch asset URLs (see section 8).
+4. **Enqueue asset jobs** — if `resourceRequest.hasAssets()`: call `resourceRequest.enqueueAssets(rawBody, jobRegistry, clientRegistry)` to enqueue a `HtmlParseJob` that will extract and fetch asset URLs (see section 9).
 5. **Enqueue action jobs** — call `resourceRequest.enqueueActions(responseWrapper)` to parse the response and enqueue one `ActionProcessingJob` per `(item × action)` pair (see section 7). This is a no-op if the resource has no actions configured.
+5a. **Enqueue paginated action jobs** — call `resourceRequest.enqueuePaginatedActions(responseWrapper)` to enqueue one `PaginatedActionProcessingJob` per paginated action (see section 8). This is a no-op if the resource has no paginated actions configured.
 6. **Finish** — mark the job as finished and store it in `JobRegistry`'s finished list; call `WorkersRegistry.setIdle(workerId)` so the worker re-enters the idle pool.
 
 ---
@@ -254,7 +275,46 @@ When each `ResourceRequestJob` performs, `Client.perform()` calls `resolveUrl(pa
 
 ---
 
-## 8. Asset Processing
+## 8. Paginated Actions
+
+When a `ResourceRequest` declares a `paginated_actions` list, `ResourceRequestJob` calls
+`resourceRequest.enqueuePaginatedActions(responseWrapper)` after a successful HTTP response.
+
+- `ResourceRequest.enqueuePaginatedActions` returns immediately if there are no configured paginated actions.
+- **`PaginatedActionsEnqueuer`** receives the list of `ResourceRequestPaginatedAction` instances and the response wrapper. For each paginated action it creates a **`PaginatedActionEnqueuer`** and calls `enqueue()`.
+- **`PaginatedActionEnqueuer.enqueue()`** calls `JobRegistry.enqueue('PaginatedAction', { paginatedAction, parameters })`, creating a `PaginatedActionProcessingJob`.
+- **`PaginatedActionProcessingJob.perform()`** calls `paginatedAction.execute(responseWrapper)`.
+- **`ResourceRequestPaginatedAction.execute(responseWrapper)`**:
+  1. Calls `PaginationConfig.resolvePages(responseWrapper)` to evaluate the `pages` path expression (e.g. `parsedBody.pagination.pages`) against the response and obtain the total page count.
+  2. Calls `PaginationConfig.pageNumbers(count)` to generate an array of page numbers (`[1..count]` or `[0..count-1]` depending on `zero_indexed`).
+  3. Looks up the target resource in `ResourceRegistry`.
+  4. For each page number, merges the page value under `page_key` with any existing parameters from the response wrapper, then enqueues one `ResourceRequestJob` per `ResourceRequest` in the target resource.
+- `PaginatedActionProcessingJob` has no retry rights — exhausted after the first failure.
+
+### Example
+
+Given a response body `{ "pagination": { "pages": 3 } }` and the following paginated actions config:
+
+```yaml
+paginated_actions:
+  - resource: products_page
+    pagination:
+      - pages: parsedBody.pagination.pages
+      - page_key: page
+      - zero_indexed: false
+```
+
+`ResourceRequestJob` enqueues **1** `PaginatedActionProcessingJob`. That job then executes, evaluates `pages` → `3`, and enqueues 3 `ResourceRequestJob` instances:
+
+```
+ResourceRequestJob for /products/{:page}.json with { page: 1 }
+ResourceRequestJob for /products/{:page}.json with { page: 2 }
+ResourceRequestJob for /products/{:page}.json with { page: 3 }
+```
+
+---
+
+## 9. Asset Processing
 
 When a `ResourceRequest` declares an `assets` list, the response body is treated as **HTML** rather than JSON.
 After a successful HTTP response in `ResourceRequestJob`:
@@ -282,7 +342,7 @@ After a successful HTTP response in `ResourceRequestJob`:
 
 ---
 
-## 9. Failure Handling
+## 10. Failure Handling
 
 When a job fails (e.g., `RequestFailed` is thrown):
 
@@ -303,7 +363,7 @@ managed inside `JobRegistryInstance`, accessed via the `JobRegistry` singleton f
 
 ---
 
-## 10. Failure Threshold Check
+## 11. Failure Threshold Check
 
 After `Application.run()` finishes (the Engine loop and the optional WebServer have both
 resolved), `Application` performs an optional post-run check:
@@ -329,7 +389,7 @@ regardless of how many jobs died.
 
 ---
 
-## 11. Web UI
+## 12. Web UI
 
 When the `web:` key is present in the configuration, `Application` starts a local
 **read-only monitoring web UI** built with React, served by an Express.js `WebServer`.
@@ -456,7 +516,7 @@ During `pausing` and `stopping`, all control endpoints return `409 Conflict`.
 
 ### Enqueue gating
 
-Any call-site that enqueues a side-effect job (`ActionEnqueuer`, `AssetRequestEnqueuer`, `ResourceRequestAction`, `ResourceRequest.enqueueAssets`) checks `Application.status() !== 'running'` before calling `JobRegistry.enqueue()`. If the engine is not `running`, the enqueue is silently skipped. `Application.enqueueFirstJobs()` does not check this — it is only called explicitly from `start()` / `restart()` when status is transitioning to `running`.
+Any call-site that enqueues a side-effect job (`ActionEnqueuer`, `PaginatedActionEnqueuer`, `AssetRequestEnqueuer`, `ResourceRequestAction`, `ResourceRequestPaginatedAction`, `ResourceRequest.enqueueAssets`) checks `Application.isStopped()` before calling `JobRegistry.enqueue()`. If the engine is stopped, the enqueue is silently skipped. `Application.enqueueFirstJobs()` does not check this — it is only called explicitly from `start()` / `restart()` when status is transitioning to `running`.
 
 ### PromiseAggregator persistence
 
