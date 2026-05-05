@@ -44,20 +44,5 @@ describe('JsonConfig', () => {
         expect(config.pageSize).toBe(5);
       });
     });
-
-    describe('when pageSize is an environment variable reference', () => {
-      beforeEach(() => {
-        process.env.JSON_PAGE_SIZE = '20';
-      });
-
-      afterEach(() => {
-        delete process.env.JSON_PAGE_SIZE;
-      });
-
-      it('resolves the env var and uses its value', () => {
-        const config = new JsonConfig({ pageSize: '$JSON_PAGE_SIZE' });
-        expect(config.pageSize).toBe(20);
-      });
-    });
   });
 });

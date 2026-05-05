@@ -16,6 +16,23 @@ describe('AppConfig', () => {
       });
     });
 
+    describe('when the config file contains environment variable references', () => {
+      const envConfigPath = FixturesUtils.getFixturePath('config_with_env.yml');
+
+      beforeEach(() => {
+        process.env.APP_CONFIG_TEST_PAGE_SIZE = '12';
+      });
+
+      afterEach(() => {
+        delete process.env.APP_CONFIG_TEST_PAGE_SIZE;
+      });
+
+      it('resolves env vars before parsing the YAML', () => {
+        AppConfig.load(envConfigPath);
+        expect(AppConfig.json.pageSize).toBe(12);
+      });
+    });
+
     describe('when the config file does not exist', () => {
       beforeEach(() => {
         spyOn(console, 'warn');

@@ -1,6 +1,44 @@
 import { EnvResolver } from '../../../lib/utils/EnvResolver.js';
 
 describe('EnvResolver', () => {
+  describe('.resolveString', () => {
+    describe('when the environment variable is defined', () => {
+      beforeEach(() => {
+        process.env.STR_ENV_VAR = 'yaml-value';
+      });
+
+      afterEach(() => {
+        delete process.env.STR_ENV_VAR;
+      });
+
+      it('replaces $VAR_NAME syntax in a raw string', () => {
+        expect(EnvResolver.resolveString('key: $STR_ENV_VAR')).toBe('key: yaml-value');
+      });
+
+      it('replaces ${VAR_NAME} syntax in a raw string', () => {
+        expect(EnvResolver.resolveString('key: ${STR_ENV_VAR}')).toBe('key: yaml-value');
+      });
+    });
+
+    describe('when the environment variable is not defined', () => {
+      beforeEach(() => {
+        delete process.env.MISSING_STR_VAR;
+        spyOn(console, 'warn');
+      });
+
+      it('replaces with an empty string', () => {
+        expect(EnvResolver.resolveString('key: $MISSING_STR_VAR')).toBe('key: ');
+      });
+
+      it('warns about the missing variable', () => {
+        EnvResolver.resolveString('$MISSING_STR_VAR');
+        expect(console.warn).toHaveBeenCalledWith(
+          jasmine.stringContaining('MISSING_STR_VAR')
+        );
+      });
+    });
+  });
+
   describe('.resolveValue', () => {
     describe('when the environment variable is defined', () => {
       beforeEach(() => {
