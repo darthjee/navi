@@ -34,10 +34,10 @@ describe('JobsRequestHandler', () => {
       spyOn(JobRegistry, 'jobsByStatus').and.returnValue([resourceJob, actionJob]);
     });
 
-    it('calls jobsByStatus with the status param and no class filter', () => {
+    it('calls jobsByStatus with the status param', () => {
       handler.handle({ params: { status: 'enqueued' }, query: {} }, res);
 
-      expect(JobRegistry.jobsByStatus).toHaveBeenCalledWith('enqueued', { jobClasses: [] });
+      expect(JobRegistry.jobsByStatus).toHaveBeenCalledWith('enqueued');
     });
 
     it('responds with the serialized job list as JSON including jobClass', () => {
@@ -61,18 +61,24 @@ describe('JobsRequestHandler', () => {
     });
 
     describe('when a single class filter is provided', () => {
-      it('passes the class filter to jobsByStatus', () => {
+      it('returns only jobs matching that class', () => {
         handler.handle(
           { params: { status: 'enqueued' }, query: { filters: { class: ['ResourceRequestJob'] } } },
           res,
         );
 
-        expect(JobRegistry.jobsByStatus).toHaveBeenCalledWith('enqueued', { jobClasses: ['ResourceRequestJob'] });
+        expect(res.json).toHaveBeenCalledWith([{
+          id: 'abc',
+          status: 'enqueued',
+          attempts: 0,
+          jobClass: 'ResourceRequestJob',
+          url: '/items.json',
+        }]);
       });
     });
 
     describe('when multiple class filters are provided', () => {
-      it('passes all class filters to jobsByStatus', () => {
+      it('returns jobs matching any of the classes', () => {
         handler.handle(
           {
             params: { status: 'enqueued' },
@@ -81,21 +87,32 @@ describe('JobsRequestHandler', () => {
           res,
         );
 
-        expect(JobRegistry.jobsByStatus).toHaveBeenCalledWith(
-          'enqueued',
-          { jobClasses: ['ResourceRequestJob', 'ActionProcessingJob'] },
-        );
+        expect(res.json).toHaveBeenCalledWith([
+          {
+            id: 'abc',
+            status: 'enqueued',
+            attempts: 0,
+            jobClass: 'ResourceRequestJob',
+            url: '/items.json',
+          },
+          {
+            id: 'def',
+            status: 'enqueued',
+            attempts: 1,
+            jobClass: 'ActionProcessingJob',
+          },
+        ]);
       });
     });
 
-    describe('when a single class filter is provided as a string (qs edge case)', () => {
-      it('normalises the value to a one-element array', () => {
+    describe('when an unknown class filter is provided', () => {
+      it('returns an empty list', () => {
         handler.handle(
-          { params: { status: 'enqueued' }, query: { filters: { class: 'ResourceRequestJob' } } },
+          { params: { status: 'enqueued' }, query: { filters: { class: ['UnknownJob'] } } },
           res,
         );
 
-        expect(JobRegistry.jobsByStatus).toHaveBeenCalledWith('enqueued', { jobClasses: ['ResourceRequestJob'] });
+        expect(res.json).toHaveBeenCalledWith([]);
       });
     });
 

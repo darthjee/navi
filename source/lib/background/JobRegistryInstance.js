@@ -176,18 +176,13 @@ class JobRegistryInstance {
 
   /**
    * Returns all jobs in the collection that corresponds to the given status.
-   * When `jobClasses` is provided, only jobs whose constructor name is in the list are returned.
    * @param {string} status - The status name ('enqueued', 'processing', 'failed', 'retryQueue', 'finished', 'dead').
-   * @param {object} [options={}] - Optional filter options.
-   * @param {string[]} [options.jobClasses=[]] - When non-empty, restricts results to jobs with a matching class name.
    * @returns {object[]} Array of raw job instances, or an empty array for unknown status.
    */
-  jobsByStatus(status, { jobClasses = [] } = {}) {
+  jobsByStatus(status) {
     const collection = this.#collectionByStatus(status);
     if (!collection) return [];
-    const jobs = collection.list();
-    if (jobClasses.length === 0) return jobs;
-    return jobs.filter(job => jobClasses.includes(job.constructor.name));
+    return collection.list();
   }
 
   /**

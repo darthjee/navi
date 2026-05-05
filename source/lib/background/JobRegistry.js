@@ -121,12 +121,10 @@ class JobRegistry {
   /**
    * Returns all jobs in the given status collection.
    * @param {string} status - The status name to filter by.
-   * @param {object} [options={}] - Optional filter options forwarded to `JobRegistryInstance`.
-   * @param {string[]} [options.jobClasses=[]] - When non-empty, restricts results to jobs with a matching class name.
    * @returns {object[]} Array of raw job instances, or an empty array for unknown status.
    */
-  static jobsByStatus(status, options = {}) {
-    return JobRegistry.#getInstance().jobsByStatus(status, options);
+  static jobsByStatus(status) {
+    return JobRegistry.#getInstance().jobsByStatus(status);
   }
 
   /**

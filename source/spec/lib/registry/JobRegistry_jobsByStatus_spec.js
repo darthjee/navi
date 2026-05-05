@@ -118,32 +118,6 @@ describe('JobRegistry', () => {
         expect(JobRegistry.jobsByStatus('dead')).toEqual([job]);
       });
     });
-
-    describe('when a jobClasses filter is provided', () => {
-      let job;
-
-      beforeEach(() => {
-        job = JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
-      });
-
-      describe('when the job class matches the filter', () => {
-        it('returns the matching job', () => {
-          expect(JobRegistry.jobsByStatus('enqueued', { jobClasses: ['ResourceRequestJob'] })).toEqual([job]);
-        });
-      });
-
-      describe('when the job class does not match the filter', () => {
-        it('returns an empty array', () => {
-          expect(JobRegistry.jobsByStatus('enqueued', { jobClasses: ['UnknownJob'] })).toEqual([]);
-        });
-      });
-
-      describe('when the jobClasses filter is empty', () => {
-        it('returns all jobs regardless of class', () => {
-          expect(JobRegistry.jobsByStatus('enqueued', { jobClasses: [] })).toEqual([job]);
-        });
-      });
-    });
   });
 
   describe('.jobById', () => {
