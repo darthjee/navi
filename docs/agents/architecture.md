@@ -34,7 +34,6 @@ AppError (base)
 │   ├── MissingClientsConfig
 │   └── MissingResourceConfig
 ├── RequestFailed
-├── LockedByOtherWorker
 ├── InvalidResponseBody
 ├── InvalidHtmlResponseBody
 ├── NullResponse
