@@ -1,53 +1,25 @@
 # Dev Proxy
 
-> **Note:** There are two separate Tent-powered proxies in this project — `navi_proxy` and `navi_web_proxy`. This document covers `navi_proxy`, which is dedicated to cache-warming tests. For the web proxy that routes browser traffic to Vite or Navi, see issue [#137](https://github.com/darthjee/navi/issues/137) and the `navi_web_proxy` service in `docker-compose.yml`.
+> **Note:** There are two proxies in this project — `navi_proxy` (this document) and `navi_web_proxy`. This covers `navi_proxy`, dedicated to cache-warming tests.
 
-The dev proxy (`navi_proxy`) is a [Tent](https://github.com/darthjee/tent)-powered reverse proxy that sits between Navi and the dev application during local development. It gives Navi a realistic target: an HTTP endpoint that caches responses to disk, so the full cache-warming cycle can be exercised in a controlled environment.
-
-This is precisely how Navi's cache warm-up is tested locally. Navi issues requests to the proxy, the proxy forwards them to the dev app on first contact and caches the responses, and subsequent requests are served from cache. After running Navi, you can inspect `docker_volumes/proxy_cache/` on the host to confirm which endpoints were warmed — each cache file corresponds to a URI that Navi successfully pre-fetched.
-
-For a full reference on how Tent works, see [docs/HOW_TO_USE_DARTHJEE-TENT.md](../HOW_TO_USE_DARTHJEE-TENT.md).
-
----
-
-## Role in the architecture
+The dev proxy is a [Tent](https://github.com/darthjee/tent)-powered reverse proxy that sits between Navi and the dev application during local development. It caches responses to disk so the full cache-warming cycle can be exercised in a controlled environment.
 
 ```
 navi_app ──► navi_proxy (tent, :3010) ──► navi_dev_app (:3020/:80)
 ```
 
-- `navi_app` connects to the proxy via the Docker link alias `remote_host`.
-- `navi_proxy` forwards requests to `navi_dev_app` via the Docker link alias `backend`.
-- Tent caches successful responses to disk so repeated Navi requests are served from cache rather than hitting the backend again.
+After running Navi, inspect `docker_volumes/proxy_cache/` to confirm which endpoints were warmed — each file corresponds to a URI that Navi successfully pre-fetched.
+
+For a full reference on how Tent works, see [docs/HOW_TO_USE_DARTHJEE-TENT.md](../HOW_TO_USE_DARTHJEE-TENT.md).
 
 ---
 
-## Docker Compose services
-
-From `docker-compose.yml`:
-
-```yaml
-navi_proxy:
-  image: darthjee/tent:0.5.0
-  depends_on: [navi_dev_app]
-  links:
-    - navi_dev_app:backend
-  volumes:
-    - ./dev/proxy:/var/www/html/configuration/
-    - ./docker_volumes/proxy_cache:/var/www/html/cache/
-  ports:
-    - 0.0.0.0:3010:80
-
-navi_app:
-  ...
-  links:
-    - navi_proxy:remote_host
-```
+## Docker Compose
 
 | Mount | Purpose |
 |-------|---------|
 | `./dev/proxy` → `/var/www/html/configuration/` | PHP rule files that define routing behaviour |
-| `./docker_volumes/proxy_cache` → `/var/www/html/cache/` | File cache written by `FileCacheMiddleware` |
+| `./docker_volumes/proxy_cache` → `/var/www/html/cache/` | File cache written by Tent |
 
 The proxy is reachable from the host at `http://localhost:3010` and from `navi_app` at `http://remote_host`.
 
@@ -55,211 +27,54 @@ The proxy is reachable from the host at `http://localhost:3010` and from `navi_a
 
 ## Configuration files
 
-### `dev/proxy/configure.php`
+`dev/proxy/configure.php` is the entry point, loading the middleware and rule files.
 
-Entry point loaded by Tent at boot. Its only job is to include the middleware and rule files:
+**`dev/proxy/rules/backend.php`** defines two rules:
 
-```php
-<?php
+- **`.json` (ends_with matcher)** — forwards JSON API requests to `navi_dev_app` via `default_proxy`; Tent caches successful responses. Also applies `RandomFailureMiddleware` and `DelayMiddleware`.
+- **`/categories` (begins_with matcher)** — forwards plain path requests for redirect handling; no caching.
 
-require_once __DIR__ . '/middlewares/RandomFailureMiddleware.php';
-require_once __DIR__ . '/middlewares/DelayMiddleware.php';
-require_once __DIR__ . '/rules/backend.php';
-require_once __DIR__ . '/rules/frontend.php';
-```
+**`dev/proxy/rules/frontend.php`** defines two rules for serving the React SPA from `dev/proxy/static/`:
 
-### `dev/proxy/rules/backend.php`
-
-Defines routing rules that forward requests to the backend. The `.json` rule comes first so JSON API requests are matched before the redirect-forwarding rule:
-
-```php
-// Forward and cache JSON API requests
-Configuration::buildRule([
-    'handler' => [
-        'type' => 'default_proxy',
-        'host' => 'http://backend:80'
-    ],
-    'matchers' => [
-        ['method' => 'GET', 'uri' => '.json', 'type' => 'ends_with']
-    ],
-    'middlewares' => [
-        ['class' => 'Dev\\Proxy\\Middlewares\\RandomFailureMiddleware'],
-        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
-    ]
-]);
-
-// Forward plain path requests to the backend for redirect handling
-Configuration::buildRule([
-    'handler' => [
-        'type' => 'default_proxy',
-        'host' => 'http://backend:80'
-    ],
-    'matchers' => [
-        ['method' => 'GET', 'uri' => '/categories', 'type' => 'begins_with']
-    ],
-    'middlewares' => [
-        ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
-    ]
-]);
-```
-
-- **`default_proxy` (`.json`)** — forwards all requests whose URI ends with `.json` to `http://backend:80`. This covers `/stats.json`, `/jobs/:status.json`, and `/job/:id.json`. Automatically handles the `Host` header and enables `FileCacheMiddleware` with the default cache directory. Only JSON API traffic is cached.
-- **`default_proxy` (`/categories`)** — forwards plain path requests (e.g. `/categories`, `/categories/1/items`) to the backend for redirect handling. No cache — redirect responses are not cached.
-
-### `dev/proxy/rules/frontend.php`
-
-Defines two rules for serving the React SPA from `dev/proxy/static/`. With hash-based routing,
-the hash fragment (`#/...`) is never sent to the server, so the proxy only needs to handle `GET /`
-(the SPA entry point) and static asset requests:
-
-```php
-// All /#/... hash routes are served by this rule because browsers strip
-// the hash fragment before sending the HTTP request, so every hash-based
-// navigation arrives at the server as GET /.
-Configuration::buildRule([
-  'handler' => [
-    'type' => 'static',
-    'location' => '/var/www/html/configuration/static'
-  ],
-  'matchers' => [
-    ['method' => 'GET', 'uri' => '/', 'type' => 'exact'],
-  ],
-  "middlewares" => [
-    [
-      'class' => 'Tent\Middlewares\SetPathMiddleware',
-      'path' => '/index.html'
-    ],
-    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
-  ]
-]);
-
-// Serve static assets (JS, CSS bundles, etc.)
-Configuration::buildRule([
-  'handler' => [
-    'type' => 'static',
-    'location' => '/var/www/html/configuration/static'
-  ],
-  'matchers' => [
-    ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
-  ],
-  'middlewares' => [
-    ['class' => 'Dev\\Proxy\\Middlewares\\DelayMiddleware']
-  ]
-]);
-```
-
-- **`static` with `SetPathMiddleware`** — rewrites the path to `/index.html` and serves it from `dev/proxy/static/`. This rule handles the SPA entry point for all hash-based navigation: browsers strip the hash fragment before sending the HTTP request, so every `/#/categories`, `/#/categories/:id`, etc. arrives at the proxy as `GET /` and is served `index.html`.
-- **`static` (begins_with)** — serves compiled JS/CSS bundles and any other static assets directly from `dev/proxy/static/`.
-
-No path-based frontend routes need to be handled by the server because all client-side navigation
-uses hash fragments, which are processed entirely by the browser.
-
-### `dev/proxy/static/`
-
-Output directory where the React build artifacts are placed. The `navi_dev_frontend` Docker service mounts this directory as its Vite build output (`dist/`), so the proxy always serves the latest build.
+- **`GET /` (exact)** — rewrites path to `/index.html` via `SetPathMiddleware` and serves it. Handles all hash-based navigation since browsers strip the `#/...` fragment before sending the request.
+- **`GET /` (begins_with)** — serves static assets (JS/CSS bundles) directly.
 
 ---
 
 ## Middlewares
 
-Custom middlewares live in `dev/proxy/middlewares/` and are loaded in `configure.php`.
-
-### `RandomFailureMiddleware`
-
-Randomly fails a configurable percentage of requests to simulate backend instability.
-
-| Env var | Default | Description |
-|---------|---------|-------------|
-| `FAILURE_RATE` | `0` | Percentage (0–100) of requests that return a 500 error |
-
-### `DelayMiddleware`
-
-Introduces a configurable delay before returning each response, allowing developers to simulate slow backends.
-
-| Env var | Default | Description |
-|---------|---------|-------------|
-| `MIN_RESPONSE_DELAY` | `0` | Minimum delay in milliseconds |
-| `MAX_RESPONSE_DELAY` | `0` | Maximum delay in milliseconds |
-
-Behaviour:
-- Neither set (or both `0`) → no delay
-- Only `MAX_RESPONSE_DELAY` set → random delay between 0 and MAX ms
-- Only `MIN_RESPONSE_DELAY` set → fixed delay of exactly MIN ms
-- Both set → random delay between MIN and MAX ms
+| Middleware | Env var | Default | Description |
+|-----------|---------|---------|-------------|
+| `RandomFailureMiddleware` | `FAILURE_RATE` | `0` | % of requests that return 500 |
+| `DelayMiddleware` | `MIN_RESPONSE_DELAY` / `MAX_RESPONSE_DELAY` | `0` / `0` | Random delay range in ms |
 
 ---
 
 ## Request flow
 
-1. Navi or a browser issues a `GET` request to `http://remote_host` (the proxy).
+1. Request arrives at `http://remote_host` (the proxy).
 2. Tent evaluates rules in order:
-   - If the URI ends with `.json` → **backend JSON rule**: check cache, forward to `navi_dev_app` on miss.
-   - If the URI begins with `/categories` → **backend redirect rule**: forward to `navi_dev_app`, which responds with a 302 to the hash-based SPA route.
-   - If the URI is exactly `/` → **frontend entry point rule**: serve `index.html` (the SPA entry point).
-   - Otherwise → **frontend asset rule**: serve the requested static file (JS/CSS bundle) from `dev/proxy/static/`.
-3. Hash fragments (`#/...`) are never sent to the server — the browser handles all client-side navigation locally after loading `index.html`.
-4. For backend JSON requests, on a cache miss, if the backend returns a `2xx` response, Tent writes it to `docker_volumes/proxy_cache/` for subsequent requests.
-5. The response is returned to the caller.
+   - URI ends with `.json` → backend JSON rule: check cache, forward to `navi_dev_app` on miss.
+   - URI begins with `/categories` → backend redirect rule: forward to `navi_dev_app` for 302.
+   - URI is exactly `/` → serve `index.html` (SPA entry point).
+   - Otherwise → serve static asset from `dev/proxy/static/`.
+3. Hash fragments (`#/...`) are never sent to the server — the browser handles client-side navigation locally.
+4. On a JSON cache miss, if the backend returns 2xx, Tent writes the response to `docker_volumes/proxy_cache/`.
 
 ---
 
 ## Cache
 
-Cache files are stored in `docker_volumes/proxy_cache/` on the host (mounted into the container at `./cache`). They are named from a hash of the request URI.
-
-There is no built-in expiry. To reset the cache between test runs, delete the files:
+Files are stored in `docker_volumes/proxy_cache/` named from a hash of the URI. No built-in expiry.
 
 ```bash
-rm -rf docker_volumes/proxy_cache/*
+rm -rf docker_volumes/proxy_cache/*   # reset cache between test runs
 ```
 
 ---
 
-## How to extend the proxy configuration
+## Extending the proxy
 
-### Add a rule for a new URI pattern
+To add a rule for a new URI pattern, add a `Configuration::buildRule()` call to `dev/proxy/rules/backend.php`. Rules are evaluated top-to-bottom; place more specific matchers before catch-all ones.
 
-Edit `dev/proxy/rules/backend.php` and add a new `Configuration::buildRule()` call. Rules are evaluated top-to-bottom; place more specific matchers before catch-all ones.
-
-Example — disable caching for a specific endpoint:
-
-```php
-// No cache for the items endpoint
-Configuration::buildRule([
-    'handler' => [
-        'type'  => 'default_proxy',
-        'host'  => 'http://backend:80',
-        'cache' => false
-    ],
-    'matchers' => [
-        ['method' => 'GET', 'uri' => '/categories/1/items.json', 'type' => 'exact']
-    ]
-]);
-
-// Cache everything else
-Configuration::buildRule([
-    'handler' => [
-        'type' => 'default_proxy',
-        'host' => 'http://backend:80'
-    ],
-    'matchers' => [
-        ['method' => 'GET', 'uri' => '/', 'type' => 'begins_with']
-    ]
-]);
-```
-
-### Add a new rule file
-
-1. Create `dev/proxy/rules/my_rules.php`.
-2. Add `require_once __DIR__ . '/rules/my_rules.php';` to `dev/proxy/configure.php`.
-
----
-
-## Docker Compose dependency chain
-
-```
-navi_app ──depends_on──► navi_proxy ──depends_on──► navi_dev_app
-                                     ──depends_on──► navi_dev_frontend
-```
-
-`navi_proxy` will not start until both `navi_dev_app` and `navi_dev_frontend` are up, and `navi_app` will not start until `navi_proxy` is up.
+To add a new rule file, create it and add a `require_once` to `dev/proxy/configure.php`.

@@ -1,12 +1,6 @@
 # Dev Application
 
-The dev application is a sample JSON API used as the target backend when developing and testing Navi (the cache-warmer). It provides a small, predictable dataset so that Navi's HTTP requests, proxy interactions, and caching behaviour can be verified in a controlled environment.
-
----
-
-## Overview
-
-Navi is configured to warm a cache by issuing HTTP requests to a backend through a reverse proxy (`navi_proxy`, powered by [tent](https://github.com/darthjee/tent)). The dev application is that backend. It exposes a simple categories-and-items REST API. Navi reads a YAML config that lists these endpoints as resources to warm, issues the requests, and the proxy caches the responses.
+The dev application is a sample JSON API used as the target backend when developing and testing Navi. It provides a small, predictable dataset so that Navi's HTTP requests and caching behaviour can be verified in a controlled environment.
 
 ```
 navi_app ──► navi_proxy (tent, :3010) ──► navi_dev_app (:3020/:80)
@@ -16,287 +10,69 @@ navi_app ──► navi_proxy (tent, :3010) ──► navi_dev_app (:3020/:80)
 
 ## `dev/app/` — Express/Node.js application
 
+**Stack:** Node.js (ES Modules), Express 4, js-yaml
+
+**Entrypoint:** `server.js` reads `data.yml`, builds the Express app, and starts listening on port 80. `app.js` exports `buildApp(data)` and is imported by both `server.js` and the test suite.
+
 ### Structure
 
 ```
 dev/app/
-├── server.js             # Entrypoint (script) — loads data.yml and calls app.listen(80)
-├── app.js                # App module — builds and exports the configured Express app
+├── server.js             # Entrypoint — loads data.yml and calls app.listen(80)
+├── app.js                # App module — exports buildApp(data)
 ├── data.yml              # Data source: categories and items
-├── package.json
-├── eslint.config.mjs
-├── yarn.lock
 ├── lib/
-│   ├── ContentHandler.js     # Handles data-fetching requests (extends RequestHandler)
-│   ├── DataNavigator.js      # Traverses the in-memory data structure
-│   ├── RedirectHandler.js    # Issues HTTP 302 redirects to hash-based frontend routes (extends RequestHandler)
-│   ├── RedirectLocation.js   # Builds the redirect location URL from a template and params
-│   ├── RequestHandler.js     # Abstract base class defining the handler API (handle(req, res))
+│   ├── Router.js             # Builds Express router with all routes registered
+│   ├── RouteRegister.js      # Registers any RequestHandler subclass on the router
+│   ├── RequestHandler.js     # Abstract base class defining handle(req, res)
+│   ├── ContentHandler.js     # Data-fetching handler (extends RequestHandler)
+│   ├── DataNavigator.js      # Traverses the in-memory data structure by steps
+│   ├── RedirectHandler.js    # Issues HTTP 302 to hash-based SPA routes
+│   ├── RedirectLocation.js   # Builds redirect location from template + params
 │   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
-│   ├── RouteRegister.js      # Unified registry: registers any RequestHandler subclass on the router
-│   ├── Router.js             # Builds the Express router with all routes via a single RouteRegister
 │   ├── Serializer.js         # Projects data objects to a set of allowed attributes
-│   ├── not_found.js          # Helper that sends a 404 JSON response
-│   ├── redirect_routes.config.js # Redirect route definitions (plain path → hash SPA)
-│   └── routes.config.js      # JSON API route definitions
+│   └── not_found.js          # Sends a 404 JSON response
 └── spec/
-    ├── app_spec.js
-    ├── lib/
-    │   ├── ContentHandler_spec.js
-    │   ├── DataNavigator_spec.js
-    │   ├── RedirectHandler_spec.js
-    │   ├── RedirectLocation_spec.js
-    │   ├── RequestHandler_spec.js
-    │   ├── RouteParamsExtractor_spec.js
-    │   ├── RouteRegister_spec.js
-    │   ├── Router_spec.js
-    │   └── Serializer_spec.js
-    └── support/
-        ├── fixtures/data.yml
-        └── utils/FixturesUtils.js
 ```
 
-### Backend
-
-**Stack:** Node.js (ES Modules), Express 4, js-yaml
-
-**Server launcher (entrypoint):** `server.js` — reads `data.yml` (or a path from `process.argv[2]`), parses it with js-yaml, builds the app, and calls `app.listen(80)`. This is the only file in `dev/app/` that acts as a script.
-
-**App module:** `app.js` — exports `buildApp(data)`, which constructs the Express application with all routes registered and a catch-all 404 handler. Imported by both `server.js` and the test suite.
-
-**Data loading:** `data.yml` is read once at startup with `readFileSync` and parsed with `js-yaml`. The result is kept in memory for the lifetime of the process.
-
-### Classes and modules
-
-#### `lib/Router`
-
-Builds and returns the configured Express router with all application routes registered.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(data)` | Receives the parsed YAML data. |
-| `build()` | Creates an Express router, instantiates a single `RouteRegister`, registers all JSON content routes (via `ContentHandler`), then all redirect routes (via `RedirectHandler`), and returns the router. |
-
-#### `lib/RouteRegister`
-
-Unified registry that registers GET routes on an Express router. Any `RequestHandler` subclass can be registered through this single registry, removing the need for separate registries per handler type.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(router)` | Receives the Express router. |
-| `register(route, handler)` | Registers a GET route wired to `handler.handle(req, res)`. `handler` can be any `RequestHandler` subclass (content handler, redirect handler, etc.). |
-| `routes()` | Returns a copy of the registered route patterns in registration order. |
-
-#### `lib/RequestHandler`
-
-Abstract base class for all request handlers. Defines the common API (`handle(req, res)`) that every handler type must implement. Subclasses must override `handle`; calling it on the base class throws an error.
-
-| Method | Description |
-|--------|-------------|
-| `handle(req, res)` | Abstract — throws `Error` if not overridden. Subclasses implement their own request-handling logic here. |
-
-#### `lib/ContentHandler`
-
-Extends `RequestHandler`. Handles data-fetching requests by navigating the in-memory data, optionally serializing the result, and writing the JSON response.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(route, data, serializer?)` | Receives the route pattern, root data, and an optional `Serializer`. |
-| `handle(req, res)` | Extracts navigation steps, navigates the data, and responds with JSON (or 404 if nothing was found). |
-
-#### `lib/RedirectHandler`
-
-Extends `RequestHandler`. Handles an incoming Express request by issuing an HTTP 302 redirect to the hash-based equivalent path, delegating URL construction to `RedirectLocation`.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(target)` | Receives the hash-based redirect target template (e.g. `'/#/categories/:id'`). |
-| `handle(req, res)` | Builds the redirect location via `RedirectLocation` and responds with 302. |
-
-#### `lib/RedirectLocation`
-
-Builds a redirect location URL by substituting route parameter values into a hash-based target template. Each parameter value is URI-encoded to prevent injection.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(target, params)` | Receives the target template and the params object (`req.params`). |
-| `build()` | Returns the resolved location string with all named segments replaced. |
-
-#### `lib/RouteParamsExtractor`
-
-Converts an Express route pattern and its resolved params into the ordered steps array expected by `DataNavigator`.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(route, params)` | Receives the route pattern and the `req.params` object. |
-| `steps()` | Returns `Array<string\|number>` — string segments become object-key steps; `:param` segments become numeric ID steps. |
-
-#### `lib/DataNavigator`
-
-Traverses a nested data structure by following a sequence of steps. Numeric steps perform an `Array#find` by `id`; string steps access an object key.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(data, steps)` | Receives the root data structure and the steps array. |
-| `navigate()` | Walks the data following `steps` and returns the reached value, or `null` if any step yields nothing. |
-
-#### `lib/Serializer`
-
-Projects a data object (or array of objects) to a defined set of attributes, stripping any fields not in the allowlist.
-
-| Method | Description |
-|--------|-------------|
-| `constructor(attributes)` | Receives the list of attribute names to keep. |
-| `serialize(data)` | Returns a projected object or array; arrays are mapped recursively. |
-
-#### `lib/not_found`
-
-Utility function: `notFound(res)` — sends a 404 response with `{ "error": "Not found" }`.
+`ContentHandler` navigates the in-memory data via `DataNavigator` (following steps from `RouteParamsExtractor`), optionally serializes the result with `Serializer`, and responds with JSON or 404. `RedirectHandler` delegates URL construction to `RedirectLocation`.
 
 ### Routes
 
-All routes are registered in `Router#build()` through a single `RouteRegister`. JSON content routes are registered first, then redirect routes:
-
-| Method | Path | Description | Response |
-|--------|------|-------------|----------|
-| GET | `/categories` | Redirect to hash SPA route | 302 → `/#/categories` |
-| GET | `/categories/:id` | Redirect to hash SPA route | 302 → `/#/categories/:id` |
-| GET | `/categories/:id/items` | Redirect to hash SPA route | 302 → `/#/categories/:id/items` |
-| GET | `/categories/:categoryId/items/:id` | Redirect to hash SPA route | 302 → `/#/categories/:categoryId/items/:id` |
-| GET | `/categories.json` | List all categories | `[{id, name}, …]` |
-| GET | `/categories/:id.json` | Single category by ID | `{id, name}` or 404 |
-| GET | `/categories/:id/items.json` | All items in a category | `[{id, name}, …]` or 404 |
-| GET | `/categories/:id/items/:item_id.json` | Single item | `{id, name}` or 404 |
-| `*` | `/*` | Catch-all | `{error: "Not found"}` 404 |
-
-All JSON responses return `{"error": "Not found"}` with status 404 when the resource is not found.
-
-### Request lifecycle
-
-1. Express matches the incoming path against the registered routes (top to bottom).
-2. `RouteParamsExtractor` converts the route pattern and `req.params` into a steps array.
-3. `DataNavigator` follows the steps through the in-memory data.
-4. If no matching record is found, `notFound(res)` responds with 404.
-5. Otherwise, the result is optionally projected by `Serializer` and returned as JSON.
-6. The catch-all `app.use` at the bottom handles any path that matched no route.
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/categories` | 302 → `/#/categories` |
+| GET | `/categories/:id` | 302 → `/#/categories/:id` |
+| GET | `/categories/:id/items` | 302 → `/#/categories/:id/items` |
+| GET | `/categories/:id/items/:item_id` | 302 → hash SPA route |
+| GET | `/categories.json` | List all categories `[{id, name}, …]` |
+| GET | `/categories/:id.json` | Single category or 404 |
+| GET | `/categories/:id/items.json` | Items in a category or 404 |
+| GET | `/categories/:id/items/:item_id.json` | Single item or 404 |
+| `*` | `/*` | 404 `{error: "Not found"}` |
 
 ### Data (`data.yml`)
 
-Three categories, each with three items:
-
-| Category | Items |
-|----------|-------|
-| Books (1) | The Hobbit, The Lord of the Rings, The Silmarillion |
-| Movies (2) | The Shawshank Redemption, The Godfather, The Dark Knight |
-| Music (3) | The Beatles, Nirvana, Queen |
-
-### How to add a new endpoint
-
-1. Add the data to `data.yml` under the appropriate key.
-2. Call `register.register(…)` in `Router#build()` before returning the router.
-3. Write a corresponding `describe` block in `spec/lib/Router_spec.js` and in `spec/app_spec.js` covering the happy path and the 404 case.
+Three categories (Books, Movies, Music), each with three items. Data is loaded once at startup and kept in memory.
 
 ---
 
 ## Testing
 
-**Framework:** Jasmine 5 + Supertest 7
-
-Tests live in `spec/`. They import the Express app (or individual classes) directly and use Supertest to issue HTTP requests in-process — no running server is required.
-
-### Test files
-
-| File | What it covers |
-|------|---------------|
-| `spec/app_spec.js` | End-to-end route tests through the full app |
-| `spec/lib/Router_spec.js` | All routes registered by `Router#build()` |
-| `spec/lib/RouteRegister_spec.js` | Unified registry: route registration and dispatch for all handler types |
-| `spec/lib/ContentHandler_spec.js` | Data navigation, serialization, and 404 handling |
-| `spec/lib/RedirectHandler_spec.js` | Redirect URL building and 302 response |
-| `spec/lib/RedirectLocation_spec.js` | Location URL construction from template and params |
-| `spec/lib/RequestHandler_spec.js` | Base class contract: abstract `handle` enforcement |
-| `spec/lib/RouteParamsExtractor_spec.js` | Steps extraction from route patterns and params |
-| `spec/lib/DataNavigator_spec.js` | Navigation through nested data structures |
-| `spec/lib/Serializer_spec.js` | Attribute projection for objects and arrays |
-
-### Running tests
-
-Inside the `dev/app/` directory:
+**Framework:** Jasmine 5 + Supertest 7. Tests import the Express app directly; no running server required.
 
 ```bash
-yarn test       # Run tests with c8 coverage (text + HTML)
-yarn coverage   # Run tests and produce coverage/lcov.info (for CI)
+yarn test       # Run tests with c8 coverage
+yarn coverage   # Run tests and produce lcov.info (for CI)
 yarn lint       # ESLint
 yarn report     # JSCPD duplication analysis
 ```
 
 ---
 
-## CI
+## `dev/frontend/` — React + Vite SPA
 
-| Job | Directory | What it does |
-|-----|-----------|-------------|
-| `jasmine` | `source/` | Runs Navi's own tests + uploads coverage to Codacy (partial) |
-| `checks` | `source/` | ESLint + JSCPD |
-| `jasmine-dev` | `dev/app/` | Runs dev-app tests + uploads coverage to Codacy (partial) |
-| `checks-dev` | `dev/app/` | ESLint + JSCPD |
-| `jasmine-dev-frontend` | `dev/frontend/` | Runs dev-frontend tests + uploads coverage to Codacy (partial) |
-| `checks-dev-frontend` | `dev/frontend/` | ESLint + JSCPD |
-| `coverage-final` | — | Sends the Codacy `final` signal after all partial uploads complete |
-
-`coverage-final` depends on `jasmine`, `jasmine-dev`, `jasmine-dev-frontend`, and `jasmine-frontend` so Codacy receives a combined coverage report from all four test suites (main application, dev backend, dev frontend, and main frontend).
-
-All jobs run on every push and every tag. There are no branch restrictions on the test jobs.
-
----
-
-## `dev/frontend/` — React + Vite frontend application
-
-### Overview
-
-`dev/frontend/` is a React single-page application (SPA) that provides a browser UI for browsing the categories and items served by `dev/app/`. It is built with Vite and served as static assets through `navi_proxy`.
-
-### Structure
-
-```
-dev/frontend/
-├── index.html
-├── package.json
-├── eslint.config.mjs
-├── vite.config.js
-├── yarn.lock
-├── src/
-│   ├── App.jsx                  # Root component with HashRouter + Routes
-│   ├── main.jsx                 # Entry point — mounts App into #root
-│   ├── clients/
-│   │   ├── CategoriesClient.js  # fetch wrappers for /categories*.json
-│   │   └── ItemsClient.js       # fetch wrappers for /categories/:id/items*.json
-│   ├── pages/
-│   │   ├── IndexPage.jsx
-│   │   ├── CategoriesIndexPage.jsx
-│   │   ├── CategoryPage.jsx
-│   │   ├── CategoryItemsIndexPage.jsx
-│   │   └── CategoryItemPage.jsx
-│   └── styles/
-│       └── main.css             # Imports Bootstrap CSS
-└── spec/
-    ├── clients/
-    │   ├── CategoriesClient_spec.js
-    │   └── ItemsClient_spec.js
-    ├── pages/
-    │   ├── IndexPage_spec.js
-    │   ├── CategoriesIndexPage_spec.js
-    │   ├── CategoryPage_spec.js
-    │   ├── CategoryItemsIndexPage_spec.js
-    │   └── CategoryItemPage_spec.js
-    └── support/
-        ├── jasmine.json         # Jasmine config — loads dom.js helper
-        ├── dom.js               # Sets up jsdom globals for Node.js
-        ├── loader.js            # Registers ESM transform hook
-        └── transform_hooks.js   # esbuild-powered JSX transform hook
-```
-
-### Routes
+A browser UI for browsing the categories and items served by `dev/app/`. Built with Vite; output lands in `dev/proxy/static/` for the proxy to serve.
 
 | Path | Component |
 |------|-----------|
@@ -306,41 +82,27 @@ dev/frontend/
 | `/#/categories/:id/items` | `CategoryItemsIndexPage` |
 | `/#/categories/:categoryId/items/:id` | `CategoryItemPage` |
 
-### Build and serving
-
-The frontend is built with `yarn build` (Vite) and the output lands in `dev/proxy/static/` (mounted into the proxy container). The proxy serves static files for non-`.json` requests and falls back to `index.html` for SPA routing.
-
-### Running tests
-
-Inside the `dev/frontend/` directory:
-
-```bash
-yarn test       # Run tests with c8 coverage (text + HTML)
-yarn coverage   # Run tests and produce coverage/lcov.info (for CI)
-yarn lint       # ESLint
-yarn report     # JSCPD duplication analysis
-```
-
 ---
 
 ## Docker Compose
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| `navi_dev_app` | `navi_app:dev` | `3020:80` | Runs the Express dev app from `dev/app/` |
-| `navi_dev_frontend` | `navi_dev_frontend:dev` | — | Builds the React SPA from `dev/frontend/` into `dev/proxy/static/` |
-| `navi_proxy` | `darthjee/tent:0.5.0` | `3010:80` | Reverse-proxy + caching layer in front of `navi_dev_app`; serves the built frontend static files |
-| `navi_app` | `navi:dev` | — | Navi application container; linked to `navi_proxy` as `remote_host` |
-| `navi_tests` | `navi:dev` | — | Test/lint container for `source/` |
+| Service | Port | Purpose |
+|---------|------|---------|
+| `navi_dev_app` | `3020:80` | Express dev API (`dev/app/`) |
+| `navi_dev_frontend` | — | Builds React SPA (`dev/frontend/`) into `dev/proxy/static/` |
+| `navi_proxy` | `3010:80` | Tent reverse proxy + caching |
+| `navi_app` | — | Navi cache-warmer |
+| `navi_tests` | — | Test/lint container for `source/` |
 
-### Dependency chain
+Startup order: `navi_dev_app` → `navi_dev_frontend` → `navi_proxy` → `navi_app`.
 
-```
-navi_app ──depends_on──► navi_proxy ──depends_on──► navi_dev_app
-                                     ──depends_on──► navi_dev_frontend
-navi_tests ──depends_on──► base_build
-```
+---
 
-### Environment variables
+## CI
 
-The services use an `.env` file (copied from `.env.sample` during `make setup`). No dev-app-specific environment variables are required beyond what the base image provides.
+| Job | Directory | What it does |
+|-----|-----------|-------------|
+| `jasmine` + `checks` | `source/` | Navi tests + lint |
+| `jasmine-dev` + `checks-dev` | `dev/app/` | Dev-app tests + lint |
+| `jasmine-dev-frontend` + `checks-dev-frontend` | `dev/frontend/` | Dev-frontend tests + lint |
+| `coverage-final` | — | Sends Codacy final signal after all partial uploads |

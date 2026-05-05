@@ -48,25 +48,6 @@ Any additional information that helps reviewers understand the changes:
 Omit this section if there is nothing relevant to add.
 ```
 
-**Example:**
-
-```markdown
-## Issue
-
-`RequestHandler` spec had an unnecessary nesting level under `#handle`,
-making the test structure harder to read and navigate. Fixes #302.
-
-## Solution
-
-Removed the redundant `describe('#handle')` wrapper, flattening the spec
-so all test cases sit directly under the top-level `describe('RequestHandler')`.
-
-## Details
-
-No logic was changed — this is a pure structural refactor of the spec file.
-All existing tests continue to pass without modification.
-```
-
 ## Definition of Done for PRs
 
 A PR is considered complete when:
