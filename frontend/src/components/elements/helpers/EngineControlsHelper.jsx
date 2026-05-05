@@ -1,62 +1,38 @@
+import ContinueButton from '../ContinueButton.jsx';
+import PauseButton from '../PauseButton.jsx';
+import RestartButton from '../RestartButton.jsx';
+import ShutdownButton from '../ShutdownButton.jsx';
+import StartButton from '../StartButton.jsx';
+import StopButton from '../StopButton.jsx';
+import TransitionSpinner from '../TransitionSpinner.jsx';
+
 class EngineControlsHelper {
   renderSpinner() {
-    return (
-      <span className="spinner-border spinner-border-sm text-secondary" role="status" aria-label="transitioning" />
-    );
+    return <TransitionSpinner />;
   }
 
   renderPauseButton(view) {
-    if (!view.showPause()) return null;
-    return (
-      <button className="btn btn-sm btn-outline-warning" onClick={() => view.handlePause()}>
-        Pause
-      </button>
-    );
+    return <PauseButton show={view.showPause()} onClick={() => view.handlePause()} />;
   }
 
   renderStopButton(view) {
-    if (!view.showStop()) return null;
-    return (
-      <button className="btn btn-sm btn-outline-danger" onClick={() => view.handleStop()}>
-        Stop
-      </button>
-    );
+    return <StopButton show={view.showStop()} onClick={() => view.handleStop()} />;
   }
 
   renderRestartButton(view) {
-    if (!view.showRestart()) return null;
-    return (
-      <button className="btn btn-sm btn-outline-primary" onClick={() => view.handleRestart()}>
-        Restart
-      </button>
-    );
+    return <RestartButton show={view.showRestart()} onClick={() => view.handleRestart()} />;
   }
 
   renderContinueButton(view) {
-    if (!view.showContinue()) return null;
-    return (
-      <button className="btn btn-sm btn-outline-success" onClick={() => view.handleContinue()}>
-        Continue
-      </button>
-    );
+    return <ContinueButton show={view.showContinue()} onClick={() => view.handleContinue()} />;
   }
 
   renderStartButton(view) {
-    if (!view.showStart()) return null;
-    return (
-      <button className="btn btn-sm btn-outline-success" onClick={() => view.handleStart()}>
-        Start
-      </button>
-    );
+    return <StartButton show={view.showStart()} onClick={() => view.handleStart()} />;
   }
 
   renderShutdownButton(view) {
-    if (!view.showShutdown()) return null;
-    return (
-      <button className="btn btn-sm btn-danger" onClick={() => view.handleShutdown()}>
-        Shut Down
-      </button>
-    );
+    return <ShutdownButton show={view.showShutdown()} onClick={() => view.handleShutdown()} />;
   }
 
   render(view) {
