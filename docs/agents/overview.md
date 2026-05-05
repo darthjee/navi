@@ -23,14 +23,22 @@ ResourceRequest (no params)           ← enqueued at startup
     → parse JSON → items[]
       → for each item × action:
           → map variables
-            → enqueue ResourceRequestJob (with params)   ← TODO: not yet implemented
+            → enqueue ResourceRequestJob (with params)
               → HTTP response → ...   (recursive)
+    → paginated_actions (whole response):
+        → evaluate pages expression
+          → for each page number:
+              → enqueue ResourceRequestJob (with page param merged)
 ```
 
 Actions define how response fields are mapped to parameters for the next request via
 `parameters`. Each value in the `parameters` map is a path expression (e.g. `parsedBody.id`,
 `headers['page']`) resolved against a response wrapper that exposes the parsed JSON body and
 HTTP headers. A resource with no actions is a leaf node and ends the chain.
+
+`paginated_actions` operate on the whole response (not per-item) and use a `pages` expression
+to determine the page count, then enqueue one `ResourceRequestJob` per page with the page
+number merged into the parameter set.
 
 ---
 
@@ -51,13 +59,15 @@ HTTP headers. A resource with no actions is a leaf node and ends the chain.
 - [x] Response parsing (`ResponseParser`) — raw JSON body → JS value
 - [x] `ActionsEnqueuer` + `ActionEnqueuer` — (item × action) cross-product → `ActionProcessingJob` queue
 - [x] `ActionProcessingJob` execution with `ParametersMapper`
+- [x] `PaginatedActionsEnqueuer` + `PaginatedActionEnqueuer` — per-action → `PaginatedActionProcessingJob` queue
+- [x] `PaginatedActionProcessingJob` execution: evaluates `pages`, iterates page numbers, enqueues `ResourceRequestJob` per page
 - [x] Retry with cooldown for failed `ResourceRequestJob`s
 - [x] Dead job tracking (jobs that exhaust retry allowance)
 
 ### Resource Chaining
 
-- [x] `ResourceRequestAction.execute()` should enqueue a new `ResourceRequestJob` with
-      mapped parameters instead of only logging them
+- [x] `ResourceRequestAction.execute()` enqueues a new `ResourceRequestJob` with mapped parameters
+- [x] `ResourceRequestPaginatedAction.execute()` evaluates `pages` and enqueues one `ResourceRequestJob` per page with the page number merged into existing parameters
 
 ### Asset Fetching
 

@@ -55,9 +55,11 @@ Most models expose static factory methods (`fromObject()`, `fromListObject()`) f
 |-------|---------------|
 | `Config` | Top-level container holding `ResourceRegistry`, `ClientRegistry`, `WorkersConfig`, and `WebConfig`. Entry point: `Config.fromFile(filePath)`. |
 | `Resource` | Named collection of `ResourceRequest` objects, representing a server resource. |
-| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list + optional assets list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(responseWrapper)` to enqueue action jobs after a successful HTTP request. Exposes `enqueueAssets(rawHtml, jobRegistry, clientRegistry)` to enqueue an `HtmlParseJob` when assets are configured. Exposes `hasAssets()` to check whether any asset extraction rules are configured. |
+| `ResourceRequest` | A single URL + expected HTTP status code + optional client name + optional actions list + optional paginated actions list + optional assets list. Exposes `resolveUrl(parameters)` to substitute `{:placeholder}` tokens with runtime values. Exposes `enqueueActions(responseWrapper)` to enqueue action jobs after a successful HTTP request. Exposes `enqueuePaginatedActions(responseWrapper)` to enqueue paginated action jobs. Exposes `enqueueAssets(rawHtml, jobRegistry, clientRegistry)` to enqueue an `HtmlParseJob` when assets are configured. Exposes `hasAssets()` to check whether any asset extraction rules are configured. |
 | `AssetRequest` | Represents a single asset extraction rule (`selector`, `attribute`, optional `client`, optional `status`). Created via `AssetRequest.fromObject()` / `AssetRequest.fromListObject()`. |
 | `ResourceRequestAction` | Represents a single action entry from the config (`resource` + optional `parameters`). Uses `ParametersMapper` to evaluate path expressions against a `ResponseWrapper`, looks up the target resource via `ResourceRegistry`, and enqueues one `ResourceRequestJob` per `ResourceRequest` in that resource with the mapped variables as job parameters. |
+| `ResourceRequestPaginatedAction` | Represents a single paginated action entry from the config (`resource` + `pagination`). Uses `PaginationConfig` to evaluate the `pages` expression and `pageNumbers()` to generate the page range, then enqueues one `ResourceRequestJob` per page for the target resource, merging the page number under `page_key` into the existing parameters. |
+| `PaginationConfig` | Parses the `pagination` block from YAML. Exposes `resolvePages(responseWrapper)` to evaluate the `pages` path expression and `pageNumbers(count)` to generate the array of page numbers (respecting `zero_indexed`). Created via `PaginationConfig.fromList(list)`. |
 | `ResponseParser` | Parses a raw JSON string into a JS value. Throws `InvalidResponseBody` if the string cannot be parsed. |
 | `ResponseWrapper` | Wraps an HTTP response, exposing `parsedBody` (lazily-parsed JSON body) and `headers`. Provides `toItemWrappers()` to split an array response into per-item wrappers sharing the same headers. |
 | `ParametersMapper` | Applies a `parameters` map to a response wrapper, delegating each path expression (e.g. `parsedBody.id`, `headers['page']`) to a `PathResolver` to extract values. When no map is provided, the item passes through unchanged. |
@@ -95,6 +97,8 @@ Classes responsible for enqueuing jobs into the job registry.
 |-------|---------------|
 | `ActionEnqueuer` | Enqueues one `ActionProcessingJob` per item for a single `ResourceRequestAction`. Calls `JobRegistry.enqueue('Action', { action, item })` for each item. |
 | `ActionsEnqueuer` | Receives a list of per-item `ResponseWrapper` instances and enqueues one `ActionProcessingJob` per `(item × action)` pair. Throws `NullResponse` for null items list. Delegates per-action enqueueing to `ActionEnqueuer`. |
+| `PaginatedActionEnqueuer` | Enqueues one `PaginatedActionProcessingJob` for a single `ResourceRequestPaginatedAction`. Calls `JobRegistry.enqueue('PaginatedAction', { paginatedAction, parameters })`. |
+| `PaginatedActionsEnqueuer` | Receives a list of `ResourceRequestPaginatedAction` instances and the whole response wrapper, then enqueues one `PaginatedActionProcessingJob` per paginated action. Delegates to `PaginatedActionEnqueuer`. |
 | `AssetRequestEnqueuer` | Processes a single `AssetRequest` against a raw HTML body: parses the HTML, resolves asset URLs to absolute form, and enqueues one `AssetDownloadJob` per URL. |
 
 ### `jobs/`
@@ -105,6 +109,7 @@ Concrete job implementations that extend the `Job` base class from `background/`
 |-------|---------------|
 | `ResourceRequestJob` | Extends `Job`. Performs an HTTP request for a `ResourceRequest`, wraps the response in a `ResponseWrapper`, then calls `resourceRequest.enqueueActions(wrapper)` to enqueue action jobs. Receives a `jobRegistry` at build time. |
 | `ActionProcessingJob` | Extends `Job`. Processes a single `(action, item)` pair by calling `action.execute(item)` where `item` is a per-item `ResponseWrapper`. Exhausted after the first failure — no retry rights. |
+| `PaginatedActionProcessingJob` | Extends `Job`. Processes a single paginated action by calling `paginatedAction.execute(responseWrapper)`, which evaluates the page count and enqueues one `ResourceRequestJob` per page. Exhausted after the first failure — no retry rights. |
 | `HtmlParseJob` | Extends `Job`. Parses an HTML response body using `HtmlParser`, resolves asset URLs, and enqueues one `AssetDownloadJob` per discovered URL. Exhausted after the first failure — no retry rights. |
 | `AssetDownloadJob` | Extends `Job`. Fetches a single fully-resolved asset URL via `Client.performUrl()` and validates the expected HTTP status. Leaf node — no further chaining. Follows the standard retry/dead path. |
 
