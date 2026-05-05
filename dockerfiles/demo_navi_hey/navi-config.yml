@@ -2,13 +2,13 @@ web:
   port: 8080
   enable_shutdown: false
 workers:
-  quantity: 5
-  retry_cooldown: 5000
-  max-retries: 20
+  quantity: $WORKERS
+  retry_cooldown: $RETRY_COOLDOWN
+  max-retries: $MAX_RETRIES
 clients:
   default:
     base_url: $BASE_URL
-    timeout: 15000
+    timeout: $TIMOUT
 resources:
   home:
     - url: /
