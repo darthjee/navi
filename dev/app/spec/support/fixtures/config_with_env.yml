@@ -1,0 +1,2 @@
+json:
+  pageSize: $APP_CONFIG_TEST_PAGE_SIZE

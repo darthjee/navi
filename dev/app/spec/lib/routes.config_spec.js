@@ -7,7 +7,7 @@ describe('ROUTES', () => {
 
   it('defines the categories list route with id and name attributes', () => {
     const entry = ROUTES.find(r => r.route === '/categories.json');
-    expect(entry).toEqual({ route: '/categories.json', attributes: ['id', 'name'] });
+    expect(entry).toEqual({ route: '/categories.json', attributes: ['id', 'name'], collection: true });
   });
 
   it('defines the single category route with id and name attributes', () => {
@@ -15,9 +15,9 @@ describe('ROUTES', () => {
     expect(entry).toEqual({ route: '/categories/:id.json', attributes: ['id', 'name'] });
   });
 
-  it('defines the category items list route without attributes', () => {
+  it('defines the category items list route as a collection', () => {
     const entry = ROUTES.find(r => r.route === '/categories/:id/items.json');
-    expect(entry).toEqual({ route: '/categories/:id/items.json' });
+    expect(entry).toEqual({ route: '/categories/:id/items.json', collection: true });
   });
 
   it('defines the single item route without attributes', () => {
