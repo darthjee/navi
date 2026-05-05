@@ -34,12 +34,13 @@ This mirrors the pattern used in `source/` where `Config` is the top-level conta
 
 Load the `AppConfig` instance during the dev app bootstrap (`dev/app/server.js` or equivalent entrypoint) so it is available to request handlers via `AppConfig.json`.
 
-### Step 4 — Add pagination logic to JSON endpoints
+### Step 4 — Add pagination logic to collection endpoints
 
-Update the JSON endpoint handlers to:
+Update only the **collection endpoint** handlers (those returning arrays) to:
 - Read `page` (1-based) and `page_size` query parameters from the request
-- Fall back to `JsonConfig.perPage` when `page_size` is not provided
+- Treat unparseable values for either param as `null` and fall back to defaults: `page` defaults to `1`, `page_size` defaults to `AppConfig.json.perPage`
 - Slice the result set accordingly before responding
+- Return `[]` when `page` is out of range
 
 ### Step 5 — Add tests
 
@@ -60,4 +61,6 @@ Write unit/integration tests for:
 
 - The exact file paths inside `dev/app/` depend on the existing folder structure; the plan will be refined after inspecting the codebase.
 - The env var interpolation copy must not create a shared dependency — both copies evolve independently.
-- Edge cases to consider: `page` out of range (return empty array or last page?), non-numeric params (validate/ignore).
+- Pagination applies only to collection endpoints (arrays); single-item endpoints are unaffected.
+- Param behaviour: unparseable `page` or `page_size` → treated as `null` → defaults apply (`page=1`, `page_size=AppConfig.json.perPage`).
+- Out-of-range `page` → return `[]`.

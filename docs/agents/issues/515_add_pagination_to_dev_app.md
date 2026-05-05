@@ -12,14 +12,18 @@ The dev app JSON endpoints currently return all entries without any pagination. 
 
 ## Expected Behavior
 
-- Endpoints accept a `page` query parameter to select a specific page:
+- Only **collection endpoints** (those returning arrays of records) are affected; single-item endpoints are unchanged
+- Collection endpoints accept a `page` query parameter to select a specific page:
   ```
   GET /categorie.json?page=1
   ```
-- Endpoints accept an optional `page_size` parameter:
+- Collection endpoints accept an optional `page_size` parameter:
   ```
   GET /categorie.json?page=2&page_size=10
   ```
+- When `page_size` is omitted or cannot be parsed, the default value from config is used
+- When `page` is omitted or cannot be parsed, the first page is returned
+- When `page` is out of range, an empty array `[]` is returned
 - When `page_size` is omitted, a default value is read from a new configuration file:
   ```yaml
   json:
