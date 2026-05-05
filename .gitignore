@@ -148,6 +148,7 @@ docker_volumes/node_modules*
 docker_volumes/static/*
 dev/proxy/static/assets/*
 dev/proxy/static/index.html
+dev/app/static
 !docker_volumes/static/.gitkeep
 
 source/public/*
