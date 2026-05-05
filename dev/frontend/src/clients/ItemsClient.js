@@ -1,18 +1,9 @@
+import { handleResponse } from './responseHandler.js';
+
 export const fetchItems = (categoryId, queryString = '') => {
   const url = `/categories/${categoryId}/items.json${queryString ? `?${queryString}` : ''}`;
 
-  return fetch(url)
-    .then((res) => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json().then((data) => ({
-        data,
-        pagination: {
-          page: Number(res.headers.get('PAGE')),
-          pageSize: Number(res.headers.get('PAGE-SIZE')),
-          pages: Number(res.headers.get('PAGES')),
-        },
-      }));
-    });
+  return fetch(url).then(handleResponse);
 };
 
 export const fetchItem = (categoryId, id) => {
