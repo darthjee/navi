@@ -10,10 +10,10 @@ The dev app JSON endpoints currently return all records in a single response. Th
 
 ```yaml
 json:
-  perPage: 5
+  pageSize: 5
 ```
 
-The dev app must also support environment variable interpolation in its config file (e.g. `perPage: $MY_ENV_VAR`), using the same mechanism as the main source app — copied, not shared, since they are separate applications.
+The dev app must also support environment variable interpolation in its config file (e.g. `pageSize: $MY_ENV_VAR`), using the same mechanism as the main source app — copied, not shared, since they are separate applications.
 
 ## Implementation Steps
 
@@ -25,7 +25,7 @@ Copy the environment variable interpolation utility from `source/` into `dev/app
 
 Create two configuration classes in `dev/app/`:
 
-- **`JsonConfig`** — holds the `json` section of the config. Exposes a `perPage` property (defaulting to a sensible fallback if the key is absent). Applies env var interpolation to its values.
+- **`JsonConfig`** — holds the `json` section of the config. Exposes a `pageSize` property (defaulting to a sensible fallback if the key is absent). Applies env var interpolation to its values.
 - **`AppConfig`** — top-level config class that reads the dev app config file and exposes sub-configs. Returns a `JsonConfig` instance via a `json` accessor (e.g. `AppConfig.json`).
 
 This mirrors the pattern used in `source/` where `Config` is the top-level container for sub-models like `WorkersConfig` and `WebConfig`.
@@ -38,7 +38,7 @@ Load the `AppConfig` instance during the dev app bootstrap (`dev/app/server.js` 
 
 Update only the **collection endpoint** handlers (those returning arrays) to:
 - Read `page` (1-based) and `page_size` query parameters from the request
-- Treat unparseable values for either param as `null` and fall back to defaults: `page` defaults to `1`, `page_size` defaults to `AppConfig.json.perPage`
+- Treat unparseable values for either param as `null` and fall back to defaults: `page` defaults to `1`, `page_size` defaults to `AppConfig.json.pageSize`
 - Slice the result set accordingly before responding
 - Return `[]` when `page` is out of range
 
@@ -51,7 +51,7 @@ Write unit/integration tests for:
 ## Files to Change
 
 - `dev/app/` — new `AppConfig` class (top-level config, exposes sub-configs)
-- `dev/app/` — new `JsonConfig` class (holds `json` section, exposes `perPage`)
+- `dev/app/` — new `JsonConfig` class (holds `json` section, exposes `pageSize`)
 - `dev/app/` — new env var interpolation utility (copied from source)
 - `dev/app/server.js` (or boot entrypoint) — instantiate and load `JsonConfig`
 - `dev/app/` — JSON endpoint route handlers (apply pagination)
@@ -62,5 +62,5 @@ Write unit/integration tests for:
 - The exact file paths inside `dev/app/` depend on the existing folder structure; the plan will be refined after inspecting the codebase.
 - The env var interpolation copy must not create a shared dependency — both copies evolve independently.
 - Pagination applies only to collection endpoints (arrays); single-item endpoints are unaffected.
-- Param behaviour: unparseable `page` or `page_size` → treated as `null` → defaults apply (`page=1`, `page_size=AppConfig.json.perPage`).
+- Param behaviour: unparseable `page` or `page_size` → treated as `null` → defaults apply (`page=1`, `page_size=AppConfig.json.pageSize`).
 - Out-of-range `page` → return `[]`.

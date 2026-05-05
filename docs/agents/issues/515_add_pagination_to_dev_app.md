@@ -27,9 +27,9 @@ The dev app JSON endpoints currently return all entries without any pagination. 
 - When `page_size` is omitted, a default value is read from a new configuration file:
   ```yaml
   json:
-    perPage: 5
+    pageSize: 5
   ```
-- The dev app configuration file must support environment variable interpolation, the same way the main Navi source app does (e.g. `perPage: $ENV_VAR`)
+- The dev app configuration file must support environment variable interpolation, the same way the main Navi source app does (e.g. `pageSize: $ENV_VAR`)
 
 ## Solution
 
