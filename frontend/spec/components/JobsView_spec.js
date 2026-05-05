@@ -107,6 +107,23 @@ describe('JobsController', () => {
         await view.buildLoad();
         expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/failed.json');
       });
+
+      describe('when a class filter is active', () => {
+        it('appends the filter query to the fetch URL', async () => {
+          spyOn(globalThis, 'fetch').and.returnValue(
+            Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+          );
+          const view = new JobsController(
+            'failed',
+            '?filters%5Bclass%5D%5B%5D=ResourceRequestJob',
+            navigate
+          );
+          await view.buildLoad();
+          expect(globalThis.fetch).toHaveBeenCalledWith(
+            '/jobs/failed.json?filters[class][]=ResourceRequestJob'
+          );
+        });
+      });
     });
 
     describe('when status is undefined', () => {
@@ -117,6 +134,22 @@ describe('JobsController', () => {
         const view = new JobsController(undefined, '', navigate);
         await view.buildLoad();
         expect(globalThis.fetch.calls.count()).toBe(5);
+      });
+
+      describe('when a class filter is active', () => {
+        it('appends the filter query to all status fetch URLs', async () => {
+          spyOn(globalThis, 'fetch').and.returnValue(
+            Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+          );
+          const view = new JobsController(
+            undefined,
+            '?filters%5Bclass%5D%5B%5D=ResourceRequestJob',
+            navigate
+          );
+          await view.buildLoad();
+          const urls = globalThis.fetch.calls.allArgs().map(([url]) => url);
+          expect(urls.every((url) => url.includes('filters[class][]=ResourceRequestJob'))).toBe(true);
+        });
       });
     });
   });
