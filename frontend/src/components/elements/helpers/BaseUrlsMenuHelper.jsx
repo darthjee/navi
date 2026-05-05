@@ -1,5 +1,4 @@
 import DropdownMenu from '../DropdownMenu.jsx';
-import DropdownMenuContent from '../DropdownMenuContent.jsx';
 import SingleUrlLink from '../SingleUrlLink.jsx';
 
 const MAX_VISIBLE = 10;
@@ -27,10 +26,6 @@ class BaseUrlsMenuHelper {
 
   renderSingleUrl() {
     return <SingleUrlLink url={this.#baseUrls[0]} />;
-  }
-
-  renderDropdownMenu() {
-    return <DropdownMenuContent baseUrls={this.#baseUrls} menuStyle={this.menuStyle()} />;
   }
 
   renderDropdown(containerRef, open, setOpen) {
