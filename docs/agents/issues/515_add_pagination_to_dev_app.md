@@ -25,10 +25,12 @@ The dev app JSON endpoints currently return all entries without any pagination. 
   json:
     perPage: 5
   ```
+- The dev app configuration file must support environment variable interpolation, the same way the main Navi source app does (e.g. `perPage: $ENV_VAR`)
 
 ## Solution
 
 - Create a new configuration class that loads the `json` section of the config at application boot (so it can be extended later)
+- Copy the environment variable interpolation mechanism from the main source config loader into the dev app config loader (they are separate applications and cannot share code)
 - Update JSON endpoint handlers to read `page` and `page_size` query params
 - Apply pagination logic when fetching and returning records
 
