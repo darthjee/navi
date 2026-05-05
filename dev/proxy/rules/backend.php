@@ -9,7 +9,7 @@ use Tent\Models\RequestMatcher;
 Configuration::buildRule([
     'handler' => [
         'type'       => 'default_proxy',
-        'host'       => 'http://backend:80',
+        'host'       => 'http://backend:8080',
         'cacheCodes' => ['2xx', '3xx']
     ],
     'matchers' => [
