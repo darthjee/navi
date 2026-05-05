@@ -20,8 +20,8 @@ describe('EnvResolver', () => {
       });
 
       it('replaces the variable within a larger string', () => {
-        expect(EnvResolver.resolveValue('prefix_$TEST_ENV_VAR_suffix'))
-          .toBe('prefix_hello_suffix');
+        expect(EnvResolver.resolveValue('prefix-$TEST_ENV_VAR-suffix'))
+          .toBe('prefix-hello-suffix');
       });
     });
 

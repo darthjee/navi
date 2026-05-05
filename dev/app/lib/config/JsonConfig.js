@@ -17,7 +17,7 @@ class JsonConfig {
   constructor(raw = {}) {
     const resolved = EnvResolver.resolveObject(raw);
     const parsed = parseInt(resolved.pageSize, 10);
-    this.#pageSize = Number.isNaN(parsed) ? DEFAULT_PAGE_SIZE : parsed;
+    this.#pageSize = (Number.isNaN(parsed) || parsed <= 0) ? DEFAULT_PAGE_SIZE : parsed;
   }
 
   /**

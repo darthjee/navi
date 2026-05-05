@@ -33,6 +33,18 @@ describe('JsonConfig', () => {
       });
     });
 
+    describe('when pageSize is zero or negative', () => {
+      it('returns the default value of 5 for zero', () => {
+        const config = new JsonConfig({ pageSize: 0 });
+        expect(config.pageSize).toBe(5);
+      });
+
+      it('returns the default value of 5 for negative', () => {
+        const config = new JsonConfig({ pageSize: -3 });
+        expect(config.pageSize).toBe(5);
+      });
+    });
+
     describe('when pageSize is an environment variable reference', () => {
       beforeEach(() => {
         process.env.JSON_PAGE_SIZE = '20';
