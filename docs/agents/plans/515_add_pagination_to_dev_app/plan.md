@@ -21,17 +21,18 @@ The dev app must also support environment variable interpolation in its config f
 
 Copy the environment variable interpolation utility from `source/` into `dev/app/`. Adapt it to the dev app's module structure without modifying the original. This utility will be used by the new config loader.
 
-### Step 2 — Create the dev app config class
+### Step 2 — Create the dev app config classes
 
-Create a new configuration class (e.g. `JsonConfig`) in `dev/app/` that:
-- Reads the dev app config file at application boot
-- Parses the `json` section
-- Applies environment variable interpolation to values
-- Exposes a `perPage` property (defaulting to a sensible fallback if the key is absent)
+Create two configuration classes in `dev/app/`:
+
+- **`JsonConfig`** — holds the `json` section of the config. Exposes a `perPage` property (defaulting to a sensible fallback if the key is absent). Applies env var interpolation to its values.
+- **`AppConfig`** — top-level config class that reads the dev app config file and exposes sub-configs. Returns a `JsonConfig` instance via a `json` accessor (e.g. `AppConfig.json`).
+
+This mirrors the pattern used in `source/` where `Config` is the top-level container for sub-models like `WorkersConfig` and `WebConfig`.
 
 ### Step 3 — Boot the config at application startup
 
-Load the `JsonConfig` instance during the dev app bootstrap (`dev/app/server.js` or equivalent entrypoint) so it is available to request handlers.
+Load the `AppConfig` instance during the dev app bootstrap (`dev/app/server.js` or equivalent entrypoint) so it is available to request handlers via `AppConfig.json`.
 
 ### Step 4 — Add pagination logic to JSON endpoints
 
@@ -48,11 +49,12 @@ Write unit/integration tests for:
 
 ## Files to Change
 
-- `dev/app/` — new config class file (e.g. `lib/models/JsonConfig.js`)
+- `dev/app/` — new `AppConfig` class (top-level config, exposes sub-configs)
+- `dev/app/` — new `JsonConfig` class (holds `json` section, exposes `perPage`)
 - `dev/app/` — new env var interpolation utility (copied from source)
 - `dev/app/server.js` (or boot entrypoint) — instantiate and load `JsonConfig`
 - `dev/app/` — JSON endpoint route handlers (apply pagination)
-- `dev/app/spec/` — new spec files for the above
+- `dev/app/spec/` — new spec files for `AppConfig`, `JsonConfig`, and updated endpoint handlers
 
 ## Notes
 
