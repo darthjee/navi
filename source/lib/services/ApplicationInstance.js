@@ -8,6 +8,7 @@ import { ConfigurationFileNotProvided } from '../exceptions/ConfigurationFileNot
 import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
 import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
 import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
+import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
 import { Config } from '../models/Config.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
 import { WebServer } from '../server/WebServer.js';
@@ -254,6 +255,7 @@ class ApplicationInstance {
   #initRegistries() {
     JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
+    JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
     JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.clientRegistry } });
     JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.clientRegistry } });
 

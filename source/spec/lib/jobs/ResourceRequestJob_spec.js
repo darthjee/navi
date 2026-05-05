@@ -65,6 +65,7 @@ describe('ResourceRequestJob', () => {
   describe('#perform', () => {
     beforeEach(() => {
       spyOn(resourceRequest, 'enqueueActions').and.stub();
+      spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
     });
 
     describe('when the client request is successful', () => {
@@ -87,6 +88,13 @@ describe('ResourceRequestJob', () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
         const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
+        expect(wrapper).toBeInstanceOf(ResponseWrapper);
+      });
+
+      it('calls enqueuePaginatedActions with a ResponseWrapper', async () => {
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        expect(resourceRequest.enqueuePaginatedActions).toHaveBeenCalledTimes(1);
+        const wrapper = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[0];
         expect(wrapper).toBeInstanceOf(ResponseWrapper);
       });
 
@@ -148,6 +156,7 @@ describe('ResourceRequestJob', () => {
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
         response = AxiosUtils.stubGet(200, '[]');
         spyOn(resourceRequest, 'enqueueActions').and.stub();
+        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
       });
 
       it('resolves placeholders and requests the resolved URL', async () => {
@@ -172,6 +181,7 @@ describe('ResourceRequestJob', () => {
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
         response = AxiosUtils.stubGet(200, '[]');
         spyOn(resourceRequest, 'enqueueActions').and.stub();
+        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
       });
 
       it('leaves placeholders unchanged in the URL', async () => {
@@ -194,6 +204,7 @@ describe('ResourceRequestJob', () => {
         spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
         spyOn(resourceRequest, 'enqueueAssets').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
+        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
         parameters = {};
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
         response = AxiosUtils.stubGet(200, rawHtml);
@@ -222,6 +233,7 @@ describe('ResourceRequestJob', () => {
         spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
         spyOn(resourceRequest, 'enqueueAssets').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
+        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
         parameters = {};
         job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
         response = AxiosUtils.stubGet(200, rawHtml);
