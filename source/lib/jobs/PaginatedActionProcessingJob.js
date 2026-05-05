@@ -1,34 +1,34 @@
 import { Job } from '../background/Job.js';
 
 /**
- * Processes a single paginated action for a given response item.
+ * Processes a single paginated action for a given response wrapper.
  * Exhausted after the first failure — no retry rights.
  * @author darthjee
  * @augments Job
  */
 class PaginatedActionProcessingJob extends Job {
   #paginatedAction;
-  #item;
+  #parameters;
 
   /**
    * Creates a new PaginatedActionProcessingJob instance.
    * @param {object} params The parameters for creating a PaginatedActionProcessingJob instance.
    * @param {string} params.id Unique job identifier.
    * @param {ResourceRequestPaginatedAction} params.paginatedAction The paginated action to execute.
-   * @param {ResponseWrapper} params.item The response item to process.
+   * @param {ResponseWrapper} params.parameters The response wrapper carrying response data and original request parameters.
    */
-  constructor({ id, paginatedAction, item }) {
+  constructor({ id, paginatedAction, parameters }) {
     super({ id });
     this.#paginatedAction = paginatedAction;
-    this.#item = item;
+    this.#parameters = parameters;
   }
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ item: ResponseWrapper }} The job arguments.
+   * @returns {{ parameters: ResponseWrapper }} The job arguments.
    */
   get arguments() {
-    return { item: this.#item };
+    return { parameters: this.#parameters };
   }
 
   /**
@@ -42,7 +42,7 @@ class PaginatedActionProcessingJob extends Job {
   }
 
   /**
-   * Performs the paginated action for the given item.
+   * Performs the paginated action for the given parameters.
    * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<void>}
    */
@@ -50,7 +50,7 @@ class PaginatedActionProcessingJob extends Job {
     logContext.debug(`PaginatedActionProcessingJob #${this.id} performing`);
     try {
       this.lastError = undefined;
-      await this.#paginatedAction.execute(this.#item);
+      await this.#paginatedAction.execute(this.#parameters);
     } catch (error) {
       this._fail(error);
     }

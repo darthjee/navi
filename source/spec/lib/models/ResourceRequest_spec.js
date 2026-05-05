@@ -283,18 +283,18 @@ describe('ResourceRequest', () => {
       expect(JobRegistry.enqueue).not.toHaveBeenCalled();
     });
 
-    it('calls enqueue once per item when response is a JSON array', () => {
+    it('calls enqueue once per paginated action regardless of response body structure', () => {
       request.enqueuePaginatedActions(new ResponseWrapper({ data: '[{"id":1},{"id":2}]', headers: {} }));
-      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(1);
     });
 
-    it('calls enqueue once with the item when response is a JSON object', () => {
-      request.enqueuePaginatedActions(new ResponseWrapper({ data: '{"id":1}', headers: {} }));
+    it('calls enqueue once with the paginatedAction and response wrapper', () => {
+      const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
+      request.enqueuePaginatedActions(wrapper);
       expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
         'PaginatedAction',
-        jasmine.objectContaining({ paginatedAction })
+        jasmine.objectContaining({ paginatedAction, parameters: wrapper })
       );
     });
   });
-
 });

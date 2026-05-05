@@ -3,15 +3,15 @@ import { PaginatedActionProcessingJob } from '../../../lib/jobs/PaginatedActionP
 
 describe('PaginatedActionProcessingJob', () => {
   let paginatedAction;
-  let item;
+  let parameters;
   let job;
   let logContext;
 
   beforeEach(() => {
     logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     paginatedAction = jasmine.createSpyObj('paginatedAction', ['execute']);
-    item = { parsedBody: { id: 1 }, headers: {} };
-    job = new PaginatedActionProcessingJob({ id: 'test-id', paginatedAction, item });
+    parameters = { parsedBody: { id: 1 }, headers: {}, parameters: {} };
+    job = new PaginatedActionProcessingJob({ id: 'test-id', paginatedAction, parameters });
   });
 
   describe('#constructor', () => {
@@ -31,16 +31,16 @@ describe('PaginatedActionProcessingJob', () => {
   });
 
   describe('#arguments', () => {
-    it('returns the item', () => {
-      expect(job.arguments).toEqual({ item });
+    it('returns the parameters', () => {
+      expect(job.arguments).toEqual({ parameters });
     });
   });
 
   describe('#perform', () => {
     describe('when the paginated action succeeds', () => {
-      it('calls paginatedAction.execute with the item', async () => {
+      it('calls paginatedAction.execute with the parameters', async () => {
         await job.perform(logContext);
-        expect(paginatedAction.execute).toHaveBeenCalledOnceWith(item);
+        expect(paginatedAction.execute).toHaveBeenCalledOnceWith(parameters);
       });
 
       it('clears lastError before performing', async () => {

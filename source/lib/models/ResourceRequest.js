@@ -62,8 +62,7 @@ class ResourceRequest {
   enqueuePaginatedActions(responseWrapper) {
     if (this.paginatedActions.length === 0) return;
 
-    const itemWrappers = responseWrapper.toItemWrappers();
-    new PaginatedActionsEnqueuer(this.paginatedActions, itemWrappers).enqueue();
+    new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper).enqueue();
   }
 
   /**

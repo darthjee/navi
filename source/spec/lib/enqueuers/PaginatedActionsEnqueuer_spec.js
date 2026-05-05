@@ -13,7 +13,7 @@ describe('PaginatedActionsEnqueuer', () => {
   });
 
   describe('#enqueue', () => {
-    describe('when the items list is null', () => {
+    describe('when the parameters are null', () => {
       it('throws NullResponse', () => {
         const enqueuer = new PaginatedActionsEnqueuer(paginatedActions, null);
         expect(() => enqueuer.enqueue()).toThrowMatching(
@@ -22,26 +22,12 @@ describe('PaginatedActionsEnqueuer', () => {
       });
     });
 
-    describe('when there is a single item wrapper', () => {
-      const item = { parsedBody: { id: 1, name: 'Electronics' }, headers: {} };
+    describe('when parameters are provided', () => {
+      const parameters = { parsedBody: { id: 1 }, headers: {}, parameters: {} };
 
-      it('calls enqueue once with the paginatedAction and item', () => {
-        new PaginatedActionsEnqueuer(paginatedActions, [item]).enqueue();
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, item });
-      });
-    });
-
-    describe('when there are multiple item wrappers', () => {
-      const items = [
-        { parsedBody: { id: 1 }, headers: {} },
-        { parsedBody: { id: 2 }, headers: {} },
-      ];
-
-      it('calls enqueue once per element', () => {
-        new PaginatedActionsEnqueuer(paginatedActions, items).enqueue();
-        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, item: items[0] });
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, item: items[1] });
+      it('calls enqueue once with the paginatedAction and parameters', () => {
+        new PaginatedActionsEnqueuer(paginatedActions, parameters).enqueue();
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, parameters });
       });
 
       describe('with multiple paginated actions', () => {
@@ -52,13 +38,11 @@ describe('PaginatedActionsEnqueuer', () => {
           paginatedActions = [ctx.paginatedAction, secondPaginatedAction];
         });
 
-        it('calls enqueue for each paginatedAction × item combination', () => {
-          new PaginatedActionsEnqueuer(paginatedActions, items).enqueue();
-          expect(JobRegistry.enqueue).toHaveBeenCalledTimes(4);
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, item: items[0] });
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, item: items[1] });
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: secondPaginatedAction, item: items[0] });
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: secondPaginatedAction, item: items[1] });
+        it('calls enqueue once per paginated action', () => {
+          new PaginatedActionsEnqueuer(paginatedActions, parameters).enqueue();
+          expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+          expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, parameters });
+          expect(JobRegistry.enqueue).toHaveBeenCalledWith('PaginatedAction', { paginatedAction: secondPaginatedAction, parameters });
         });
       });
     });

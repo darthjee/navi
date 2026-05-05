@@ -2,35 +2,38 @@ import { PaginatedActionEnqueuer } from './PaginatedActionEnqueuer.js';
 import { NullResponse } from '../exceptions/NullResponse.js';
 
 /**
- * Enqueues one PaginatedActionProcessingJob per (item × paginatedAction) pair.
+ * Enqueues one PaginatedActionProcessingJob per paginated action for the given parameters.
+ *
+ * Delegates execution to the job queue instead of running paginated actions inline.
+ * Each paginated action is handled by a dedicated PaginatedActionEnqueuer.
  * @author darthjee
  */
 class PaginatedActionsEnqueuer {
   #paginatedActions;
-  #items;
+  #parameters;
   #jobRegistry;
 
   /**
    * @param {Array<ResourceRequestPaginatedAction>} paginatedActions List of paginated action instances.
-   * @param {Array<ResponseWrapper>} items List of response wrapper items.
+   * @param {ResponseWrapper} parameters The response wrapper carrying response data and original request parameters.
    * @param {object} [jobRegistry] The job registry to enqueue jobs to. Defaults to global JobRegistry.
    */
-  constructor(paginatedActions, items, jobRegistry) {
+  constructor(paginatedActions, parameters, jobRegistry) {
     this.#paginatedActions = paginatedActions;
-    this.#items = items;
+    this.#parameters = parameters;
     this.#jobRegistry = jobRegistry;
   }
 
   /**
-   * Enqueues one PaginatedActionProcessingJob per (paginatedAction × item) pair.
+   * Enqueues one PaginatedActionProcessingJob per paginated action.
    * @returns {void}
-   * @throws {NullResponse} If the items list is null.
+   * @throws {NullResponse} If the parameters are null.
    */
   enqueue() {
-    if (this.#items === null) throw new NullResponse();
+    if (this.#parameters === null) throw new NullResponse();
 
     for (const paginatedAction of this.#paginatedActions) {
-      new PaginatedActionEnqueuer(paginatedAction, this.#items, this.#jobRegistry).enqueue();
+      new PaginatedActionEnqueuer(paginatedAction, this.#parameters, this.#jobRegistry).enqueue();
     }
   }
 }
