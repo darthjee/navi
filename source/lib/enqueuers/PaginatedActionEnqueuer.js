@@ -11,9 +11,9 @@ class PaginatedActionEnqueuer {
   #jobRegistry;
 
   /**
-   * @param {ResourceRequestPaginatedAction} paginatedAction
-   * @param {Array<ResponseWrapper>} items
-   * @param {object} [jobRegistry=JobRegistry]
+   * @param {ResourceRequestPaginatedAction} paginatedAction The paginated action to enqueue for each item.
+   * @param {Array<ResponseWrapper>} items List of response wrapper items.
+   * @param {object} [jobRegistry=JobRegistry] The job registry to enqueue jobs to.
    */
   constructor(paginatedAction, items, jobRegistry = DefaultJobRegistry) {
     this.#paginatedAction = paginatedAction;

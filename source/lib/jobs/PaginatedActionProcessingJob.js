@@ -11,7 +11,8 @@ class PaginatedActionProcessingJob extends Job {
   #item;
 
   /**
-   * @param {object} params
+   * Creates a new PaginatedActionProcessingJob instance.
+   * @param {object} params The parameters for creating a PaginatedActionProcessingJob instance.
    * @param {string} params.id Unique job identifier.
    * @param {ResourceRequestPaginatedAction} params.paginatedAction The paginated action to execute.
    * @param {ResponseWrapper} params.item The response item to process.
@@ -24,7 +25,7 @@ class PaginatedActionProcessingJob extends Job {
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ item: ResponseWrapper }}
+   * @returns {{ item: ResponseWrapper }} The job arguments.
    */
   get arguments() {
     return { item: this.#item };

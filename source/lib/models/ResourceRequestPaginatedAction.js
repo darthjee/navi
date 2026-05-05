@@ -22,8 +22,8 @@ class ResourceRequestPaginatedAction {
    * @param {object} attributes Action attributes.
    * @param {string} attributes.resource Name of the resource to act upon.
    * @param {Array<object>} attributes.pagination Pagination config list.
-   * @param {object} [attributes.jobRegistry=JobRegistry]
-   * @param {object} [attributes.resourceRegistry=ResourceRegistry]
+   * @param {object} [attributes.jobRegistry=JobRegistry] The job registry to enqueue jobs to.
+   * @param {object} [attributes.resourceRegistry=ResourceRegistry] The resource registry to look up resources.
    * @throws {MissingActionResource} If resource is absent or falsy.
    */
   constructor({
@@ -42,7 +42,7 @@ class ResourceRequestPaginatedAction {
   /**
    * Evaluates the page count from the response, then enqueues one
    * ResourceRequestJob per page for the target resource.
-   * @param {ResponseWrapper} responseWrapper
+   * @param {ResponseWrapper} responseWrapper A ResponseWrapper instance exposing parsedBody and headers.
    * @returns {void}
    */
   execute(responseWrapper) {
@@ -63,8 +63,8 @@ class ResourceRequestPaginatedAction {
 
   /**
    * Creates instances from a raw YAML list, skipping invalid entries.
-   * @param {Array<object>} [array=[]]
-   * @returns {Array<ResourceRequestPaginatedAction>}
+   * @param {Array<object>} [array=[]] Raw paginated action config entries.
+   * @returns {Array<ResourceRequestPaginatedAction>} Valid paginated action instances.
    */
   static fromList(array = []) {
     return array.flatMap((attrs) => {
