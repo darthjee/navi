@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express, { Router as ExpressRouter } from 'express';
+import CollectionHandler from './CollectionHandler.js';
 import ContentHandler from './ContentHandler.js';
 import IndexRequestHandler from './IndexRequestHandler.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
@@ -36,9 +37,10 @@ class Router {
     const router = ExpressRouter();
     const register = new RouteRegister(router);
 
-    ROUTES.forEach(({ route, attributes }) => {
+    ROUTES.forEach(({ route, attributes, collection }) => {
       const serializer = attributes ? new Serializer(attributes) : null;
-      register.register(route, new ContentHandler(route, this.#data, serializer));
+      const HandlerClass = collection ? CollectionHandler : ContentHandler;
+      register.register(route, new HandlerClass(route, this.#data, serializer));
     });
 
     REDIRECT_ROUTES.forEach(({ route, target }) => {
