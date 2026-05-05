@@ -90,7 +90,7 @@ resources:
         - resource: category_information  # passes all response fields as-is
         - resource: products
           parameters:
-            category_id: parsed_body.id   # extract "id" from parsed body → variable "category_id"
+            category_id: parsedBody.id   # extract "id" from parsed body → variable "category_id"
       paginated_actions:
         - resource: products_page
           pagination:
@@ -108,7 +108,7 @@ resources:
       actions:
         - resource: kind
           parameters:
-            id: parsed_body.kind_id       # extract "kind_id" from parsed body → variable "id"
+            id: parsedBody.kind_id       # extract "kind_id" from parsed body → variable "id"
   products:
     - url: /categories/{:category_id}/products/{:page}.json
       status: 200
