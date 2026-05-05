@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
 import { VARIANT_BY_STATUS } from '../../../constants/jobStatus.js';
 import CollapsibleSection from '../CollapsibleSection.jsx';
-import ReadyCountdown from '../ReadyCountdown.jsx';
-
-const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
-const STATUSES_WITH_READY_IN = new Set(['failed']);
-const STATUSES_WITH_ERROR = new Set(['failed', 'dead']);
-const RETRYABLE_STATUSES = new Set(['failed', 'dead']);
+import LastErrorSection from '../LastErrorSection.jsx';
+import ReadyInRow from '../ReadyInRow.jsx';
+import RemainingAttempts from '../RemainingAttempts.jsx';
+import RetryButton from '../RetryButton.jsx';
 
 class JobDetailsHelper {
   static render(job, onRetry) {
@@ -46,62 +44,17 @@ class JobDetailsHelper {
                 </CollapsibleSection>
               </dd>
 
-              {JobDetailsHelper.#renderRemainingAttempts(job)}
-              {JobDetailsHelper.#renderReadyIn(job)}
-              {JobDetailsHelper.#renderLastError(job)}
+              <RemainingAttempts job={job} />
+              <ReadyInRow job={job} />
+              <LastErrorSection job={job} />
             </dl>
           </div>
         </div>
         <div className="mt-3 d-flex gap-2 align-items-center">
           <Link to="/jobs">← Back to Jobs</Link>
-          {JobDetailsHelper.#renderRetryButton(job, onRetry)}
+          <RetryButton job={job} onRetry={onRetry} />
         </div>
       </div>
-    );
-  }
-
-  static #renderRemainingAttempts(job) {
-    if (!STATUSES_WITH_REMAINING_ATTEMPTS.has(job.status)) return null;
-    return (
-      <>
-        <dt className="col-sm-3">Remaining attempts</dt>
-        <dd className="col-sm-9">{job.remainingAttempts}</dd>
-      </>
-    );
-  }
-
-  static #renderReadyIn(job) {
-    if (!STATUSES_WITH_READY_IN.has(job.status)) return null;
-    return (
-      <>
-        <dt className="col-sm-3">Ready in</dt>
-        <dd className="col-sm-9"><ReadyCountdown readyInMs={job.readyInMs} /></dd>
-      </>
-    );
-  }
-
-  static #renderRetryButton(job, onRetry) {
-    if (!RETRYABLE_STATUSES.has(job.status)) return null;
-    return (
-      <button className="btn btn-warning btn-sm" onClick={onRetry}>
-        Retry
-      </button>
-    );
-  }
-
-  static #renderLastError(job) {
-    if (!STATUSES_WITH_ERROR.has(job.status)) return null;
-    if (job.lastError === null || job.lastError === undefined) return null;
-    return (
-      <>
-        <dt className="col-sm-3">Last error</dt>
-        <dd className="col-sm-9">
-          <CollapsibleSection label="Show error">
-            <p>{job.lastError}</p>
-            {job.backtrace && <pre>{job.backtrace}</pre>}
-          </CollapsibleSection>
-        </dd>
-      </>
     );
   }
 }

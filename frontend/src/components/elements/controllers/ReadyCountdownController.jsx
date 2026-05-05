@@ -1,10 +1,10 @@
-class ReadyCountdownHelper {
+class ReadyCountdownController {
   static decrementRemaining(prev) {
     return Math.max(0, prev - 1000);
   }
 
   static tick(interval, prev) {
-    const next = ReadyCountdownHelper.decrementRemaining(prev);
+    const next = ReadyCountdownController.decrementRemaining(prev);
     if (next <= 0) clearInterval(interval);
     return next;
   }
@@ -14,7 +14,7 @@ class ReadyCountdownHelper {
     if (readyInMs <= 0) return;
 
     const interval = setInterval(
-      () => setRemaining((prev) => ReadyCountdownHelper.tick(interval, prev)),
+      () => setRemaining((prev) => ReadyCountdownController.tick(interval, prev)),
       1000
     );
 
@@ -22,4 +22,4 @@ class ReadyCountdownHelper {
   }
 }
 
-export default ReadyCountdownHelper;
+export default ReadyCountdownController;

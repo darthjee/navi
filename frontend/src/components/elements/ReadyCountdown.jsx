@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import ReadyCountdownHelper from './helpers/ReadyCountdownHelper.jsx';
+import ReadyCountdownController from './controllers/ReadyCountdownController.jsx';
 
 function ReadyCountdown({ readyInMs }) {
   const [remaining, setRemaining] = useState(readyInMs);
 
   useEffect(
-    () => ReadyCountdownHelper.initialize(readyInMs, setRemaining),
+    () => ReadyCountdownController.initialize(readyInMs, setRemaining),
     [readyInMs]
   );
 

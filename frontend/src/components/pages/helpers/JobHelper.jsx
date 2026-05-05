@@ -1,20 +1,20 @@
 import { Link } from 'react-router-dom';
+import ErrorAlert from '../../elements/ErrorAlert.jsx';
+import LoadingSpinner from '../../elements/LoadingSpinner.jsx';
 
 class JobHelper {
   static renderLoading() {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border" role="status" />
-        <p className="mt-2">Loading job…</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading job…" className="container mt-5 text-center" />;
   }
 
   static renderError(error) {
     return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">Failed to load job: {error}</div>
-      </div>
+      <ErrorAlert
+        error={error}
+        prefix="Failed to load job"
+        containerClassName="container mt-5"
+        alertClassName="alert alert-danger"
+      />
     );
   }
 
