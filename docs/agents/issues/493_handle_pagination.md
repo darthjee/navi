@@ -14,7 +14,7 @@ Navi currently supports resource chaining through actions, but has no mechanism 
 
 - A new `paginated_actions` key can be added alongside (or instead of) `actions` in a resource definition.
 - Each `paginated_action` entry includes a `pagination` block with:
-  - `pages` — an expression (similar to how `parameters` is parsed) evaluated against `headers` or `parsed_body` to determine the total number of pages.
+  - `pages` — a dynamic expression evaluated the same way as `parameters`, with access to `headers` and `parsedBody` (e.g. `parsedBody.pagination.pages`). Determines the total number of pages.
   - `page_key` — the parameter name to inject as the current page number into downstream resource requests.
   - `zero_indexed` — boolean flag indicating whether page numbering starts at `0` (true) or `1` (false).
 - A new `PaginatedActionProcessingJob` is introduced. It reads the `pages` value and enqueues one `ActionProcessingJob` per page, each carrying the appropriate page parameter merged with any existing parameters from the originating resource request.
@@ -23,7 +23,7 @@ Navi currently supports resource chaining through actions, but has no mechanism 
 
 - Add `paginated_actions` parsing support in the resource/action configuration layer (similar to how `parameters` is parsed today).
 - Introduce `PaginatedActionProcessingJob` that:
-  1. Evaluates `pagination.pages` against `headers` / `parsed_body` of the response.
+  1. Evaluates `pagination.pages` against `headers` / `parsedBody` of the response, using the same dynamic expression engine as `parameters`.
   2. Iterates from `0` (or `1`) up to `pages`.
   3. Merges the page parameter (keyed by `page_key`) with the resource's existing parameters.
   4. Enqueues one `ActionProcessingJob` per page.
