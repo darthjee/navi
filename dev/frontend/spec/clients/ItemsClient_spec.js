@@ -4,10 +4,11 @@ describe('ItemsClient', () => {
   describe('fetchItems', () => {
     describe('when the request succeeds', () => {
       const data = [{ id: 1, name: 'Laptop' }];
+      const headers = new Headers({ PAGE: '2', 'PAGE-SIZE': '5', PAGES: '4' });
 
       beforeEach(() => {
         spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve(data) })
+          Promise.resolve({ ok: true, headers, json: () => Promise.resolve(data) })
         );
       });
 
@@ -16,9 +17,21 @@ describe('ItemsClient', () => {
         expect(globalThis.fetch).toHaveBeenCalledWith('/categories/1/items.json');
       });
 
-      it('returns the items array', async () => {
+      it('returns the items array inside data', async () => {
         const result = await fetchItems(1);
-        expect(result).toEqual(data);
+        expect(result.data).toEqual(data);
+      });
+
+      it('returns pagination metadata', async () => {
+        const result = await fetchItems(1);
+        expect(result.pagination).toEqual({ page: 2, pageSize: 5, pages: 4 });
+      });
+
+      describe('when a queryString is provided', () => {
+        it('appends it to the URL', async () => {
+          await fetchItems(1, 'page=3');
+          expect(globalThis.fetch).toHaveBeenCalledWith('/categories/1/items.json?page=3');
+        });
       });
     });
 

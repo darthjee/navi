@@ -6,6 +6,15 @@ import CategoriesIndexPage from '../../src/pages/CategoriesIndexPage.jsx';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
+const makeFetchResponse = (data, paginationHeaders = {}) => {
+  const headers = new Headers({
+    PAGE: String(paginationHeaders.page || 1),
+    'PAGE-SIZE': String(paginationHeaders.pageSize || 10),
+    PAGES: String(paginationHeaders.pages || 1),
+  });
+  return Promise.resolve({ ok: true, headers, json: () => Promise.resolve(data) });
+};
+
 describe('CategoriesIndexPage', () => {
   let container;
   let root;
@@ -20,10 +29,10 @@ describe('CategoriesIndexPage', () => {
     document.body.removeChild(container);
   });
 
-  const render = async () => {
+  const render = async (initialEntry = '/categories') => {
     await act(async () => {
       root = createRoot(container);
-      root.render(createElement(MemoryRouter, null, createElement(CategoriesIndexPage)));
+      root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(CategoriesIndexPage)));
     });
   };
 
@@ -45,9 +54,7 @@ describe('CategoriesIndexPage', () => {
     ];
 
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: true, json: () => Promise.resolve(categories) })
-      );
+      spyOn(globalThis, 'fetch').and.returnValue(makeFetchResponse(categories));
       await render();
       await flushAsync();
     });
@@ -67,6 +74,32 @@ describe('CategoriesIndexPage', () => {
       const hrefs = Array.from(links).map((a) => a.getAttribute('href'));
       expect(hrefs).toContain('/categories/1');
       expect(hrefs).toContain('/categories/2');
+    });
+
+    it('does not render pagination when there is only 1 page', () => {
+      expect(container.querySelector('.pagination')).toBeNull();
+    });
+  });
+
+  describe('when data loads with multiple pages', () => {
+    const categories = [{ id: 1, name: 'Electronics' }];
+
+    beforeEach(async () => {
+      spyOn(globalThis, 'fetch').and.returnValue(
+        makeFetchResponse(categories, { page: 2, pageSize: 1, pages: 5 })
+      );
+      await render('/categories?page=2');
+      await flushAsync();
+    });
+
+    it('renders pagination', () => {
+      expect(container.querySelector('.pagination')).not.toBeNull();
+    });
+
+    it('marks the current page as active', () => {
+      const activeItem = container.querySelector('.page-item.active');
+      expect(activeItem).not.toBeNull();
+      expect(activeItem.textContent).toContain('2');
     });
   });
 

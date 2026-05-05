@@ -1,22 +1,29 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { fetchItems } from '../clients/ItemsClient.js';
+import Pagination from '../components/Pagination.jsx';
 
 function CategoryItemsIndexPage() {
   const { id } = useParams();
   const [items, setItems] = useState(null);
+  const [pagination, setPagination] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { search } = useLocation();
 
   useEffect(() => {
-    fetchItems(id)
-      .then((data) => {
+    const queryString = search ? search.slice(1) : '';
+
+    setLoading(true);
+    fetchItems(id, queryString)
+      .then(({ data, pagination: pag }) => {
         setItems(data);
+        setPagination(pag);
         setError(null);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, search]);
 
   if (loading) {
     return (
@@ -44,6 +51,13 @@ function CategoryItemsIndexPage() {
           </li>
         ))}
       </ul>
+      {pagination && pagination.pages > 1 && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.pages}
+          basePath={`/#/categories/${id}/items`}
+        />
+      )}
     </div>
   );
 }
