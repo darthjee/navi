@@ -146,6 +146,8 @@ source/docs
 docker_volumes/proxy_cache
 docker_volumes/node_modules*
 docker_volumes/static/*
+dev/proxy/static/assets/*
+dev/proxy/static/index.html
 !docker_volumes/static/.gitkeep
 
 source/public/*
