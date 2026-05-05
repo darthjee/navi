@@ -34,17 +34,18 @@ This mirrors the pattern used in `source/` where `Config` is the top-level conta
 
 Load the `AppConfig` instance during the dev app bootstrap (`dev/app/server.js` or equivalent entrypoint) so it is available to request handlers via `AppConfig.json`.
 
-### Step 4 — Add pagination logic to collection endpoints
+### Step 4 — Split handlers and wire via routes config
 
-Update only the **collection endpoint** handlers (those returning arrays) to:
-- Read `page` (1-based) and `page_size` query parameters from the request
-- Treat unparseable values for either param as `null` and fall back to defaults: `page` defaults to `1`, `page_size` defaults to `AppConfig.json.pageSize`
-- Slice the result set accordingly before responding
-- Return `[]` when `page` is out of range
-- Set the following response headers on every paginated response:
-  - `PAGE` — the current page number
-  - `PAGE-SIZE` — the resolved page size (after applying defaults)
-  - `PAGES` — total number of pages (computed from total record count and page size)
+Introduce a handler class hierarchy:
+
+- **`ContentHandler`** — base class with logic common to all content responses (fetching records, rendering JSON, error handling)
+- **`CollectionHandler extends ContentHandler`** — overrides the response step to apply pagination and set `PAGE`, `PAGE-SIZE`, and `PAGES` headers:
+  - Reads `page` and `page_size` query params; treats unparseable values as `null`
+  - Defaults: `page → 1`, `page_size → AppConfig.json.pageSize`
+  - Slices the result set; returns `[]` when `page` is out of range
+- **`SingleHandler extends ContentHandler`** — handles single-object endpoints. If it ends up adding no behaviour beyond `ContentHandler`, skip this class and use `ContentHandler` directly for single-object routes
+
+Update `routes.config.js` to include a `handler_class` attribute on each route entry alongside existing attributes. The router reads `handler_class` and instantiates the appropriate class for each route.
 
 ### Step 5 — Add tests
 
