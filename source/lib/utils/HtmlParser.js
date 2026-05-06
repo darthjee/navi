@@ -1,6 +1,6 @@
 import { parse } from 'node-html-parser';
 import { HtmlElementParser } from './HtmlElementParser.js';
-import { InvalidHtmlResponseBody } from '../exceptions/InvalidHtmlResponseBody.js';
+import { InvalidHtmlResponseBody } from '../exceptions/request/InvalidHtmlResponseBody.js';
 
 /**
  * HtmlParser parses a raw HTML string and extracts attribute values using CSS selectors.

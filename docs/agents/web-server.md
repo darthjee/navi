@@ -9,19 +9,29 @@ source/lib/server/
 ├── WebServer.js
 ├── Router.js
 ├── RouteRegister.js              # Wraps handlers; maps exceptions to HTTP status codes
-├── handlers/
-│   ├── RequestHandler.js         # Abstract base class
-│   ├── StatsRequestHandler.js
-│   ├── JobsRequestHandler.js
-│   ├── JobRequestHandler.js
-│   ├── IndexRequestHandler.js
-│   └── AssetsRequestHandler.js
-├── serializers/
-│   ├── JobSerializer.js          # Dispatcher: index vs show view
-│   ├── JobIndexSerializer.js
-│   └── JobShowSerializer.js
-└── validators/
-    └── PathValidator.js          # Path-traversal protection
+├── PathValidator.js              # Path-traversal protection
+├── RequestHandler.js             # Abstract base class
+└── handlers/
+    ├── AssetsRequestHandler.js
+    ├── BaseUrlsRequestHandler.js
+    ├── IndexRequestHandler.js
+    ├── JobsFilter.js
+    ├── LogsRequestHandler.js
+    ├── SettingsRequestHandler.js
+    ├── StatsRequestHandler.js
+    ├── engine/
+    │   ├── EngineContinueRequestHandler.js
+    │   ├── EnginePauseRequestHandler.js
+    │   ├── EngineRestartRequestHandler.js
+    │   ├── EngineShutdownRequestHandler.js
+    │   ├── EngineStartRequestHandler.js
+    │   ├── EngineStatusRequestHandler.js
+    │   └── EngineStopRequestHandler.js
+    └── jobs/
+        ├── JobLogsRequestHandler.js
+        ├── JobRequestHandler.js
+        ├── JobRetryRequestHandler.js
+        └── JobsRequestHandler.js
 ```
 
 ## Routes

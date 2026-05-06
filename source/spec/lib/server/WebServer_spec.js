@@ -1,7 +1,7 @@
 import http from 'http';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
-import { WebConfig } from '../../../lib/models/WebConfig.js';
+import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';

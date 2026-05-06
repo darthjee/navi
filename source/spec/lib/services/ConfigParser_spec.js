@@ -1,9 +1,9 @@
-import { MissingClientsConfig } from '../../../lib/exceptions/MissingClientsConfig.js';
-import { MissingResourceConfig } from '../../../lib/exceptions/MissingResourceConfig.js';
-import { FailureConfig } from '../../../lib/models/FailureConfig.js';
-import { LogConfig } from '../../../lib/models/LogConfig.js';
-import { WebConfig } from '../../../lib/models/WebConfig.js';
-import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
+import { MissingClientsConfig } from '../../../lib/exceptions/config/MissingClientsConfig.js';
+import { MissingResourceConfig } from '../../../lib/exceptions/config/MissingResourceConfig.js';
+import { FailureConfig } from '../../../lib/models/configs/FailureConfig.js';
+import { LogConfig } from '../../../lib/models/configs/LogConfig.js';
+import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
+import { WorkersConfig } from '../../../lib/models/configs/WorkersConfig.js';
 import { ConfigParser } from '../../../lib/services/ConfigParser.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ResourceFactory } from '../../support/factories/ResourceFactory.js';

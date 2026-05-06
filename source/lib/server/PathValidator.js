@@ -1,5 +1,5 @@
 import path from 'path';
-import { ForbiddenError } from '../exceptions/ForbiddenError.js';
+import { ForbiddenError } from '../exceptions/http/ForbiddenError.js';
 
 /**
  * Validates that a resolved file path stays within an allowed base directory,

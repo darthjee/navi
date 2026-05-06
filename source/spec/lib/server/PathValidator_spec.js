@@ -1,5 +1,5 @@
 import path from 'path';
-import { ForbiddenError } from '../../../lib/exceptions/ForbiddenError.js';
+import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
 import { PathValidator } from '../../../lib/server/PathValidator.js';
 
 describe('PathValidator', () => {

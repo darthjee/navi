@@ -2,7 +2,7 @@
  * Unit tests for NamedRegistry (abstract base behavior).
  * Uses Jasmine.
  */
-import { ItemNotFound } from '../../../lib/exceptions/ItemNotFound.js';
+import { ItemNotFound } from '../../../lib/exceptions/registry/ItemNotFound.js';
 import { NamedRegistry } from '../../../lib/registry/NamedRegistry.js';
 
 describe('NamedRegistry', () => {

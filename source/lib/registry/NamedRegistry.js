@@ -1,4 +1,4 @@
-import { ItemNotFound } from '../exceptions/ItemNotFound.js';
+import { ItemNotFound } from '../exceptions/registry/ItemNotFound.js';
 
 /**
  * NamedRegistry is a base class for registries that manage named items.
