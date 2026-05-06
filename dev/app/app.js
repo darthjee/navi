@@ -1,8 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
-import FailureSimulator from './lib/FailureSimulator.js';
-import { notFound } from './lib/not_found.js';
-import Router from './lib/Router.js';
+import { notFound } from './lib/handlers/not_found.js';
+import FailureSimulator from './lib/models/FailureSimulator.js';
+import Router from './lib/routing/Router.js';
 
 /**
  * Builds and returns a configured Express application.

@@ -1,14 +1,14 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express, { Router as ExpressRouter } from 'express';
-import CollectionHandler from './CollectionHandler.js';
-import ContentHandler from './ContentHandler.js';
-import IndexRequestHandler from './IndexRequestHandler.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
-import RedirectHandler from './RedirectHandler.js';
 import RouteRegister from './RouteRegister.js';
 import { ROUTES } from './routes.config.js';
-import Serializer from './Serializer.js';
+import CollectionHandler from '../handlers/CollectionHandler.js';
+import ContentHandler from '../handlers/ContentHandler.js';
+import IndexRequestHandler from '../handlers/IndexRequestHandler.js';
+import RedirectHandler from '../handlers/RedirectHandler.js';
+import Serializer from '../models/Serializer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const staticDir = path.join(__dirname, '../static');
