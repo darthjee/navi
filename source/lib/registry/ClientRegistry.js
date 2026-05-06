@@ -1,5 +1,5 @@
 import { NamedRegistry } from './NamedRegistry.js';
-import { ClientNotFound } from '../exceptions/ClientNotFound.js';
+import { ClientNotFound } from '../exceptions/registry/ClientNotFound.js';
 
 /**
  * ClientRegistry manages client retrieval logic and exposes a static singleton facade.

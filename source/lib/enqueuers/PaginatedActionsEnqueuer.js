@@ -1,5 +1,5 @@
 import { PaginatedActionEnqueuer } from './PaginatedActionEnqueuer.js';
-import { NullResponse } from '../exceptions/NullResponse.js';
+import { NullResponse } from '../exceptions/request/NullResponse.js';
 
 /**
  * Enqueues one PaginatedActionProcessingJob per paginated action for the given parameters.

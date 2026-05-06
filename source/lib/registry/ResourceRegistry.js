@@ -1,5 +1,5 @@
 import { NamedRegistry } from './NamedRegistry.js';
-import { ResourceNotFound } from '../exceptions/ResourceNotFound.js';
+import { ResourceNotFound } from '../exceptions/registry/ResourceNotFound.js';
 
 /**
  * Registry of named Resource instances.

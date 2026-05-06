@@ -1,4 +1,4 @@
-import { AssetRequest } from '../../../lib/models/AssetRequest.js';
+import { AssetRequest } from '../../../lib/models/request/AssetRequest.js';
 
 /**
  * Factory for creating AssetRequest instances in tests.

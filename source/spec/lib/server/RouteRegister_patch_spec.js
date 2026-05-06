@@ -1,6 +1,6 @@
-import { ConflictError } from '../../../lib/exceptions/ConflictError.js';
-import { ForbiddenError } from '../../../lib/exceptions/ForbiddenError.js';
-import { NotFoundError } from '../../../lib/exceptions/NotFoundError.js';
+import { ConflictError } from '../../../lib/exceptions/http/ConflictError.js';
+import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
+import { NotFoundError } from '../../../lib/exceptions/http/NotFoundError.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { RouteRegister } from '../../../lib/server/RouteRegister.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';

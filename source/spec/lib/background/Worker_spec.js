@@ -4,7 +4,7 @@ import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { Worker } from '../../../lib/background/Worker.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
-import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
+import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';

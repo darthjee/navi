@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { RequestFailed } from '../../../lib/exceptions/RequestFailed.js';
-import { ResponseWrapper } from '../../../lib/models/ResponseWrapper.js';
+import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
+import { ResponseWrapper } from '../../../lib/models/response/ResponseWrapper.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';

@@ -1,6 +1,6 @@
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { PaginatedActionsEnqueuer } from '../../../lib/enqueuers/PaginatedActionsEnqueuer.js';
-import { NullResponse } from '../../../lib/exceptions/NullResponse.js';
+import { NullResponse } from '../../../lib/exceptions/request/NullResponse.js';
 import { PaginatedActionEnqueuerUtils } from '../../support/utils/PaginatedActionEnqueuerUtils.js';
 
 describe('PaginatedActionsEnqueuer', () => {

@@ -1,9 +1,9 @@
 import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
-import { ConfigurationFileNotFound } from '../../../lib/exceptions/ConfigurationFileNotFound.js';
-import { ConfigurationFileNotProvided } from '../../../lib/exceptions/ConfigurationFileNotProvided.js';
-import { Config } from '../../../lib/models/Config.js';
+import { ConfigurationFileNotFound } from '../../../lib/exceptions/config/ConfigurationFileNotFound.js';
+import { ConfigurationFileNotProvided } from '../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
+import { Config } from '../../../lib/models/configs/Config.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
