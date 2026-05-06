@@ -150,6 +150,8 @@ Navi supports multi-level resource chaining. After a successful response, each c
 
 For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and `parameters: { id: parsedBody.id }`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`. Header values can also be extracted, e.g. `page: headers['x-next-page']`.
 
+> **Note:** HTTP response header names are always lowercase after Node.js normalization. Use lowercase keys in path expressions (e.g. `headers['x-total-pages']`), regardless of how the server set them.
+
 ## Paginated Actions
 
 `paginated_actions` complement `actions` when the response indicates multiple pages. Navi evaluates a `pages` expression against the whole response, then enqueues one `ResourceRequestJob` per page, injecting the page number under the configured `page_key`. This enables cache-warming of fully paginated APIs without manual configuration of every page.
