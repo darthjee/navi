@@ -16,23 +16,41 @@ MissingMappingVariable: Missing variable in response: headers['PAGE']
 
 The root cause appears to be that the `headers` key itself is not found in the `ResponseWrapper`, not merely the specific header value.
 
+## Root Cause
+
+The failure chain is:
+
+1. `CollectionHandler` (dev app) sets `res.set('PAGE', String(page))` — uppercase header name.
+2. `Client.js` performs the request via **axios**, which uses Node.js's `http` module under the hood. Node.js normalizes all incoming HTTP header names to **lowercase**, so the header arrives in `response.headers` as `page`, not `PAGE`.
+3. `ResourceRequestJob#handleResponse` wraps the response: `new ResponseWrapper(response, parameters)`. The `headers` getter returns `response.headers` — the lowercase-keyed object.
+4. The `ResponseWrapper` is enqueued to `PaginatedActionsEnqueuer` → `PaginatedActionEnqueuer` → `PaginatedActionProcessingJob` → `ResourceRequestPaginatedAction#execute`.
+5. Inside `execute`, `PaginationConfig#resolvePages` calls `PathResolver#resolve(responseWrapper)`, which traverses `headers['PAGE']` as two segments: `headers` then `PAGE`.
+6. **First traversal (`headers`)**: `'headers' in responseWrapper` → `true` — the getter is on `ResponseWrapper.prototype`, so this succeeds.
+7. **Second traversal (`PAGE`)**: `'PAGE' in response.headers` → **`false`** — the actual key in the headers object is lowercase `'page'`. `PathSegmentTraverser#ensureKey` throws `MissingMappingVariable`.
+
+The error message `Missing variable in response: headers['PAGE']` is the same regardless of which segment fails (the full path expression is used), which led to the misdiagnosis that `headers` itself was missing.
+
 ## Problem
 
-- `ResourceRequestPaginatedAction#execute` receives a `ResponseWrapper` that is missing the `headers` property (or it is not properly exposed/mapped).
-- The sample configuration using `pagination: pages: headers['PAGE']` fails at runtime.
-- The `PAGE` header is correctly set by `CollectionHandler` in the dev application, so the issue is in how the response wrapper is constructed or how its properties are accessed.
+- `PathSegmentTraverser#ensureKey` uses the `in` operator, which is case-sensitive.
+- HTTP response headers received through Node.js are always lowercased, regardless of how the server set them.
+- The sample YAML uses `headers['PAGE']` (uppercase) but the actual key in `response.headers` is `'page'` (lowercase).
 
 ## Expected Behavior
 
-- The `ResponseWrapper` passed to paginated actions should expose `headers`, `params`, and `parsedBody` correctly.
-- The sample paginated action configuration should resolve `headers['PAGE']` without error.
+- The `ResponseWrapper` passed to paginated actions correctly exposes `headers` (it does).
+- The path resolver should be able to resolve `headers['PAGE']` even when the underlying key is lowercase `'page'`, OR the system should document/enforce that header keys in YAML config must be lowercase.
 - Pagination driven by response headers should work end-to-end.
 
 ## Solution
 
-- Inspect how `ResourceRequestJob` builds the `ResponseWrapper` and verify that response headers are included.
-- Verify that `ResourceRequestPaginatedAction` correctly reads the `headers` property from the wrapper when resolving mapping variables.
-- Add or update tests covering the full paginated flow with header-based pagination.
+Options (pick one):
+
+1. **Fix the sample config** — change `headers['PAGE']` to `headers['page']` in `navi_config.yml.sample`. Simple but requires users to know headers are lowercase.
+2. **Case-insensitive header lookup in `ResponseWrapper`** — override the `headers` getter to return a Proxy that normalizes key access (case-insensitive), so `headers['PAGE']` and `headers['page']` both work.
+3. **Case-insensitive key check in `PathSegmentTraverser`** — make `#ensureKey` do a case-insensitive search, but only this is too broad and could hide bugs in non-header paths.
+
+Option 2 is the most robust user-facing fix; option 1 is the minimal correct fix.
 
 ## Benefits
 
