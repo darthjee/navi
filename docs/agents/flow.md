@@ -89,6 +89,9 @@ resources:
 
 > **Path expression namespace: `parsedBody` is camelCase.**
 > Always write `parsedBody.field` — never `parsed_body.field`. Valid namespaces: `parsedBody`, `headers`, `parameters`.
+>
+> **Header names are always lowercase.**
+> Node.js normalizes HTTP response header names to lowercase before they reach Navi. Always use lowercase when referencing headers (e.g. `headers['x-total-pages']`, not `headers['X-Total-Pages']`).
 
 ---
 

@@ -122,6 +122,8 @@ Key points:
 > | `parsedBody` | `parsedBody.id` | field `id` in the parsed JSON response body |
 > | `headers` | `headers['x-next-page']` | HTTP response header value |
 > | `parameters` | `parameters.category_id` | parameter inherited from the parent chain |
+>
+> **Note:** HTTP response header names are always lowercase after Node.js normalization. Use lowercase keys in path expressions (e.g. `headers['x-total-pages']`), regardless of how the server set them.
 
 ---
 

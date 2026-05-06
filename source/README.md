@@ -159,7 +159,9 @@ When the web server is enabled, the following screens are available:
 
 Navi supports multi-level resource chaining. After a successful response, each configured action uses `parameters` path expressions to extract variables from the response body or headers and enqueues new jobs for the target resource. The extracted variables resolve `{:placeholder}` tokens in the target URL templates.
 
-For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and `parameters: { id: parsedBody.id }`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`.
+For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2 }]`. With an action targeting `category_information` and `parameters: { id: parsedBody.id }`, Navi automatically enqueues requests for `/categories/1.json` and `/categories/2.json`. Header values can also be extracted, e.g. `page: headers['x-next-page']`.
+
+> **Note:** HTTP response header names are always lowercase after Node.js normalization. Use lowercase keys in path expressions (e.g. `headers['x-total-pages']`), regardless of how the server set them.
 
 ## Paginated Actions
 

@@ -295,6 +295,8 @@ For each action, the `parameters` map is applied to the response wrapper to prod
 
 The mapped variables are then used to resolve `{:placeholder}` tokens in the target resource's URL templates. For example, if the response body contains `{ "id": 1 }` and the action has `parameters: { id: parsedBody.id }`, the target resource's URL `/categories/{:id}.json` resolves to `/categories/1.json`. Header values can also be extracted, e.g. `page: headers['page']`.
 
+> **Note:** HTTP response header names are always lowercase after Node.js normalization. Use lowercase keys in path expressions (e.g. `headers['x-total-pages']`), regardless of how the server set them.
+
 Each action is enqueued as an `ActionProcessingJob`, which looks up the target resource, creates a `ResourceRequestJob` for each URL entry in that resource with the resolved parameters, and enqueues them for processing by the worker pool. This enables multi-level resource chaining — a response can trigger further requests whose responses trigger even more requests.
 
 **Error handling:** an action whose `resource` field is missing is skipped and logged. An action whose path expression cannot be resolved against the response is also skipped and logged. Other actions continue normally. A response body that is not valid JSON raises an error for the whole request.
