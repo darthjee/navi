@@ -1,8 +1,8 @@
 import request from 'supertest';
-import Serializer from '../../lib/Serializer.js';
-import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
-import { testData as data } from '../support/fixtures/testData.js';
-import { buildContentHandlerApp } from '../support/utils/AppFactory.js';
+import Serializer from '../../../lib/models/Serializer.js';
+import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
+import { testData as data } from '../../support/fixtures/testData.js';
+import { buildContentHandlerApp } from '../../support/utils/AppFactory.js';
 
 describe('ContentHandler', () => {
   const defaultSerializer = new Serializer(['id', 'name']);

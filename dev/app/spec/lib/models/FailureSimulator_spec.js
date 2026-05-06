@@ -1,4 +1,4 @@
-import FailureSimulator from '../../lib/FailureSimulator.js';
+import FailureSimulator from '../../../lib/models/FailureSimulator.js';
 
 describe('FailureSimulator', () => {
   let jsonSpy;

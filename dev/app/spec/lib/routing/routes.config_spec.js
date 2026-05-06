@@ -1,4 +1,4 @@
-import { ROUTES } from '../../lib/routes.config.js';
+import { ROUTES } from '../../../lib/routing/routes.config.js';
 
 describe('ROUTES', () => {
   it('contains exactly four route definitions', () => {

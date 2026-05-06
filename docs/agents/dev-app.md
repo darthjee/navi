@@ -22,16 +22,29 @@ dev/app/
 ├── app.js                # App module — exports buildApp(data)
 ├── data.yml              # Data source: categories and items
 ├── lib/
-│   ├── Router.js             # Builds Express router with all routes registered
-│   ├── RouteRegister.js      # Registers any RequestHandler subclass on the router
-│   ├── RequestHandler.js     # Abstract base class defining handle(req, res)
-│   ├── ContentHandler.js     # Data-fetching handler (extends RequestHandler)
-│   ├── DataNavigator.js      # Traverses the in-memory data structure by steps
-│   ├── RedirectHandler.js    # Issues HTTP 302 to hash-based SPA routes
-│   ├── RedirectLocation.js   # Builds redirect location from template + params
-│   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
-│   ├── Serializer.js         # Projects data objects to a set of allowed attributes
-│   └── not_found.js          # Sends a 404 JSON response
+│   ├── config/
+│   │   ├── AppConfig.js        # Loads and exposes app configuration
+│   │   └── JsonConfig.js       # Wraps raw JSON/YAML config data
+│   ├── handlers/
+│   │   ├── CollectionHandler.js    # Lists all items in a category
+│   │   ├── ContentHandler.js       # Data-fetching handler (extends RequestHandler)
+│   │   ├── IndexRequestHandler.js  # Serves the SPA index.html
+│   │   ├── RedirectHandler.js      # Issues HTTP 302 to hash-based SPA routes
+│   │   ├── RequestHandler.js       # Abstract base class defining handle(req, res)
+│   │   └── not_found.js            # Sends a 404 JSON response
+│   ├── models/
+│   │   ├── DataNavigator.js        # Traverses the in-memory data structure by steps
+│   │   ├── FailureSimulator.js     # Simulates configurable request failures
+│   │   ├── RedirectLocation.js     # Builds redirect location from template + params
+│   │   └── Serializer.js           # Projects data objects to a set of allowed attributes
+│   ├── routing/
+│   │   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
+│   │   ├── RouteRegister.js        # Registers any RequestHandler subclass on the router
+│   │   ├── Router.js               # Builds Express router with all routes registered
+│   │   ├── redirect_routes.config.js # Redirect route definitions
+│   │   └── routes.config.js        # JSON API route definitions
+│   └── utils/
+│       └── EnvResolver.js          # Resolves environment variable placeholders
 └── spec/
 ```
 

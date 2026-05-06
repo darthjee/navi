@@ -1,4 +1,4 @@
-import RedirectLocation from '../../lib/RedirectLocation.js';
+import RedirectLocation from '../../../lib/models/RedirectLocation.js';
 
 describe('RedirectLocation', () => {
   describe('#build — static target with no params', () => {

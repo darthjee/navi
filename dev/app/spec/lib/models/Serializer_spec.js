@@ -1,4 +1,4 @@
-import Serializer from '../../lib/Serializer.js';
+import Serializer from '../../../lib/models/Serializer.js';
 
 describe('Serializer', () => {
   const serializer = new Serializer(['id', 'name']);

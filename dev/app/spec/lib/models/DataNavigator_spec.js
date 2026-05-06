@@ -1,5 +1,5 @@
-import DataNavigator from '../../lib/DataNavigator.js';
-import { testData as data } from '../support/fixtures/testData.js';
+import DataNavigator from '../../../lib/models/DataNavigator.js';
+import { testData as data } from '../../support/fixtures/testData.js';
 
 describe('DataNavigator', () => {
   describe('#navigate', () => {
