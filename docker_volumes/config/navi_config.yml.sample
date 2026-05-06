@@ -2,6 +2,8 @@ web:
   port: 3000
 workers:
   quantity: 5
+  retry_cooldown: 1000
+  max-retries: 10
 clients:
   default:
     base_url: http://remote_host:80
@@ -18,6 +20,19 @@ resources:
   categories:
     - url: /categories.json
       status: 200
+      paginated_actions:
+        - resource: paginated_categories
+          pagination:
+            - pages: headers['PAGE']
+            - page_key: page
+            - zero_indexed: false
+    - url: /categories
+      status: 302
+    - url: /#/categories
+      status: 200
+  paginated_categories:
+    - url: /categories.json?page={:page}
+      status: 200
       actions:
         - resource: category
           parameters:
@@ -25,9 +40,9 @@ resources:
         - resource: category_items
           parameters:
             id: parsedBody.id
-    - url: /categories
+    - url: /categories?page={:page}
       status: 302
-    - url: /#/categories
+    - url: /#/categories?page={:page}
       status: 200
   category:
     - url: /categories/{:id}.json

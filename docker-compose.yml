@@ -36,6 +36,7 @@ services:
     depends_on: [navi_dev_app, navi_dev_frontend]
     links:
       - navi_dev_app:backend
+      - navi_dev_frontend:frontend
     volumes:
       - ./dev/proxy:/var/www/html/configuration/
       - ./docker_volumes/proxy_cache:/var/www/html/cache/
@@ -64,7 +65,7 @@ services:
     volumes:
       - ./dev/frontend/:/home/node/app/
       - ./docker_volumes/node_modules_dev_frontend:/home/node/app/node_modules
-      - ./dev/proxy/static:/home/node/app/dist
+      - ./dev/app/static:/home/node/app/dist
 
   navi_frontend:
     image: navi_frontend:dev
