@@ -1,5 +1,5 @@
-import { ConfigurationFileNotFound } from '../../../lib/exceptions/ConfigurationFileNotFound.js';
-import { WorkersConfig } from '../../../lib/models/WorkersConfig.js';
+import { ConfigurationFileNotFound } from '../../../lib/exceptions/config/ConfigurationFileNotFound.js';
+import { WorkersConfig } from '../../../lib/models/configs/WorkersConfig.js';
 import { ConfigLoader } from '../../../lib/services/ConfigLoader.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';

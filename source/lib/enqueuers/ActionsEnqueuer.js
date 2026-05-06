@@ -1,5 +1,5 @@
 import { ActionEnqueuer } from './ActionEnqueuer.js';
-import { NullResponse } from '../exceptions/NullResponse.js';
+import { NullResponse } from '../exceptions/request/NullResponse.js';
 
 /**
  * ActionsEnqueuer enqueues one ActionProcessingJob per (item × action) pair.

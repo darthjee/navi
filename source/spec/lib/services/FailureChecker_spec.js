@@ -1,6 +1,6 @@
 import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { FailureConfig } from '../../../lib/models/FailureConfig.js';
+import { FailureConfig } from '../../../lib/models/configs/FailureConfig.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../lib/services/FailureChecker.js';

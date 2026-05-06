@@ -26,22 +26,32 @@ Custom error classes following a strict inheritance hierarchy.
 All exceptions extend `AppError`, which automatically sets `error.name` from the subclass constructor name.
 
 ```
-AppError (base)
-├── ItemNotFound
-│   ├── ClientNotFound
-│   └── ResourceNotFound
-├── MissingTopLevelConfigKey
-│   ├── MissingClientsConfig
-│   └── MissingResourceConfig
-├── RequestFailed
-├── InvalidResponseBody
-├── InvalidHtmlResponseBody
-├── NullResponse
-├── MissingActionResource
-├── MissingMappingVariable
-├── ConfigurationFileNotFound
-└── ConfigurationFileNotProvided
+AppError (base — exceptions/)
+├── ItemNotFound (registry/)
+│   ├── ClientNotFound (registry/)
+│   └── ResourceNotFound (registry/)
+├── MissingTopLevelConfigKey (config/)
+│   ├── MissingClientsConfig (config/)
+│   └── MissingResourceConfig (config/)
+├── RequestFailed (request/)
+├── InvalidResponseBody (request/)
+├── InvalidHtmlResponseBody (request/)
+├── NullResponse (request/)
+├── MissingActionResource (registry/)
+├── MissingMappingVariable (registry/)
+├── ConfigurationFileNotFound (config/)
+├── ConfigurationFileNotProvided (config/)
+├── ConflictError (http/)
+├── ForbiddenError (http/)
+└── NotFoundError (http/)
 ```
+
+Subfolders:
+- `exceptions/` — `AppError` (shared base class, stays at root)
+- `exceptions/http/` — HTTP/server errors: `ConflictError`, `ForbiddenError`, `NotFoundError`
+- `exceptions/config/` — Config errors: `ConfigurationFileNotFound`, `ConfigurationFileNotProvided`, `MissingClientsConfig`, `MissingResourceConfig`, `MissingTopLevelConfgKey`
+- `exceptions/request/` — Network/response errors: `InvalidHtmlResponseBody`, `InvalidResponseBody`, `NullResponse`, `RequestFailed`
+- `exceptions/registry/` — Registry/lookup errors: `ClientNotFound`, `ItemNotFound`, `MissingActionResource`, `MissingMappingVariable`, `ResourceNotFound`
 
 All custom exceptions must extend `AppError` (directly or via an intermediate class); never extend `Error` directly.
 
@@ -54,6 +64,11 @@ Data containers mapping YAML config to typed instances. Most expose `fromObject(
 - **`ResourceRequestAction`** / **`ResourceRequestPaginatedAction`** — response chaining: map response fields to parameters and enqueue follow-up `ResourceRequestJob`s.
 - **`ResponseWrapper`** / **`ParametersMapper`** / **`PathResolver`** — path expression evaluation (`parsedBody.field`, `headers['key']`) against HTTP responses.
 - Sub-models: `WorkersConfig`, `WebConfig`, `PaginationConfig`, `AssetRequest`.
+
+Subfolders:
+- `models/configs/` — configuration models: `Config`, `FailureConfig`, `LogConfig`, `PaginationConfig`, `WebConfig`, `WorkersConfig`
+- `models/request/` — request models: `AssetRequest`, `Resource`, `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestPaginatedAction`
+- `models/response/` — response-parsing models: `ParametersMapper`, `PathResolver`, `PathSegmentTraverser`, `ResponseParser`, `ResponseWrapper`
 
 ### `background/`
 
@@ -109,6 +124,12 @@ Business logic and I/O layer:
 
 Express-based web server. `Router` wires all request handlers and serves the React SPA from `source/static/`. Handlers extend `RequestHandler` and are registered via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
 
+Subfolders:
+- `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `PathValidator`, `RequestHandler` (abstract base)
+- `server/handlers/` — general handlers: `AssetsRequestHandler`, `BaseUrlsRequestHandler`, `IndexRequestHandler`, `JobsFilter`, `LogsRequestHandler`, `SettingsRequestHandler`, `StatsRequestHandler`
+- `server/handlers/engine/` — engine lifecycle handlers: `EngineContinueRequestHandler`, `EnginePauseRequestHandler`, `EngineRestartRequestHandler`, `EngineShutdownRequestHandler`, `EngineStartRequestHandler`, `EngineStatusRequestHandler`, `EngineStopRequestHandler`
+- `server/handlers/jobs/` — job handlers: `JobLogsRequestHandler`, `JobRequestHandler`, `JobRetryRequestHandler`, `JobsRequestHandler`
+
 ## Test Layout
 
 All specs live under `source/spec/`:
@@ -119,11 +140,21 @@ source/spec/
     background/
     enqueuers/
     exceptions/
+      config/
+      http/
+      registry/
+      request/
     factory/
     jobs/
     models/
+      configs/
+      request/
+      response/
     registry/
     server/
+      handlers/
+        engine/
+        jobs/
     services/
     utils/
       logging/

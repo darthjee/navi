@@ -1,4 +1,4 @@
-import { InvalidHtmlResponseBody } from '../../../lib/exceptions/InvalidHtmlResponseBody.js';
+import { InvalidHtmlResponseBody } from '../../../lib/exceptions/request/InvalidHtmlResponseBody.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 
 describe('HtmlParser', () => {

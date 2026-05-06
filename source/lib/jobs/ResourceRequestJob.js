@@ -1,6 +1,6 @@
 import { Job } from '../background/Job.js';
 import { JobRegistry } from '../background/JobRegistry.js';
-import { ResponseWrapper } from '../models/ResponseWrapper.js';
+import { ResponseWrapper } from '../models/response/ResponseWrapper.js';
 
 /**
  * ResourceRequestJob is a Job that performs an HTTP request for a ResourceRequest.

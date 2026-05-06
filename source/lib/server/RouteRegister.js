@@ -1,6 +1,6 @@
-import { ConflictError } from '../exceptions/ConflictError.js';
-import { ForbiddenError } from '../exceptions/ForbiddenError.js';
-import { NotFoundError } from '../exceptions/NotFoundError.js';
+import { ConflictError } from '../exceptions/http/ConflictError.js';
+import { ForbiddenError } from '../exceptions/http/ForbiddenError.js';
+import { NotFoundError } from '../exceptions/http/NotFoundError.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
