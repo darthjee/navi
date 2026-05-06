@@ -1,4 +1,4 @@
-import RouteParamsExtractor from '../../lib/RouteParamsExtractor.js';
+import RouteParamsExtractor from '../../../lib/routing/RouteParamsExtractor.js';
 
 describe('RouteParamsExtractor', () => {
   describe('constructor', () => {

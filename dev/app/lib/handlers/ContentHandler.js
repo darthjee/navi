@@ -1,7 +1,7 @@
-import DataNavigator from './DataNavigator.js';
 import { notFound } from './not_found.js';
 import RequestHandler from './RequestHandler.js';
-import RouteParamsExtractor from './RouteParamsExtractor.js';
+import DataNavigator from '../models/DataNavigator.js';
+import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
 
 /**
  * Handles an incoming Express request by navigating the in-memory data,

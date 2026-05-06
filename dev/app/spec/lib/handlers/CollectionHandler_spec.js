@@ -1,8 +1,8 @@
 import request from 'supertest';
-import { AppConfig } from '../../lib/config/AppConfig.js';
-import Serializer from '../../lib/Serializer.js';
-import { testData as data } from '../support/fixtures/testData.js';
-import { buildCollectionHandlerApp } from '../support/utils/AppFactory.js';
+import { AppConfig } from '../../../lib/config/AppConfig.js';
+import Serializer from '../../../lib/models/Serializer.js';
+import { testData as data } from '../../support/fixtures/testData.js';
+import { buildCollectionHandlerApp } from '../../support/utils/AppFactory.js';
 
 describe('CollectionHandler', () => {
   const route = '/categories/:id/items.json';

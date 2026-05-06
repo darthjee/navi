@@ -1,5 +1,5 @@
 import path from 'path';
-import IndexRequestHandler from '../../lib/IndexRequestHandler.js';
+import IndexRequestHandler from '../../../lib/handlers/IndexRequestHandler.js';
 
 describe('IndexRequestHandler', () => {
   let handler;
