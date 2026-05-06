@@ -1,10 +1,10 @@
 import express from 'express';
-import CollectionHandler from '../../../lib/CollectionHandler.js';
-import ContentHandler from '../../../lib/ContentHandler.js';
-import { notFound } from '../../../lib/not_found.js';
-import Router from '../../../lib/Router.js';
-import RouteRegister from '../../../lib/RouteRegister.js';
-import Serializer from '../../../lib/Serializer.js';
+import CollectionHandler from '../../../lib/handlers/CollectionHandler.js';
+import ContentHandler from '../../../lib/handlers/ContentHandler.js';
+import { notFound } from '../../../lib/handlers/not_found.js';
+import Serializer from '../../../lib/models/Serializer.js';
+import Router from '../../../lib/routing/Router.js';
+import RouteRegister from '../../../lib/routing/RouteRegister.js';
 
 export const buildCollectionHandlerApp = (route, routerData, serializer = null) => {
   const app = express();

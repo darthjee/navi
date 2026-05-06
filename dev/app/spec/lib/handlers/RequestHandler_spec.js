@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import RequestHandler from '../../lib/RequestHandler.js';
+import RequestHandler from '../../../lib/handlers/RequestHandler.js';
 
 describe('RequestHandler', () => {
   describe('#handle — base class contract', () => {

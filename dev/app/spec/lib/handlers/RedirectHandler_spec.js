@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import RedirectHandler from '../../lib/RedirectHandler.js';
+import RedirectHandler from '../../../lib/handlers/RedirectHandler.js';
 
 const buildApp = (route, target) => {
   const app = express();

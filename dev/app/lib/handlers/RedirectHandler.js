@@ -1,5 +1,5 @@
-import RedirectLocation from './RedirectLocation.js';
 import RequestHandler from './RequestHandler.js';
+import RedirectLocation from '../models/RedirectLocation.js';
 
 /**
  * Handles an incoming Express request by issuing an HTTP 302 redirect to

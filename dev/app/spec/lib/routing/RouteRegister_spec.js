@@ -1,10 +1,10 @@
 import express from 'express';
 import request from 'supertest';
-import ContentHandler from '../../lib/ContentHandler.js';
-import RouteRegister from '../../lib/RouteRegister.js';
-import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../support/fixtures/expectedResponses.js';
-import { testData as data } from '../support/fixtures/testData.js';
-import { buildRouteRegisterApp } from '../support/utils/AppFactory.js';
+import ContentHandler from '../../../lib/handlers/ContentHandler.js';
+import RouteRegister from '../../../lib/routing/RouteRegister.js';
+import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
+import { testData as data } from '../../support/fixtures/testData.js';
+import { buildRouteRegisterApp } from '../../support/utils/AppFactory.js';
 
 describe('RouteRegister', () => {
   describe('#register', () => {

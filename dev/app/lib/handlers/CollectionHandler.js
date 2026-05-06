@@ -1,5 +1,5 @@
-import { AppConfig } from './config/AppConfig.js';
 import ContentHandler from './ContentHandler.js';
+import { AppConfig } from '../config/AppConfig.js';
 
 /**
  * Handles collection endpoints by applying pagination logic and setting
