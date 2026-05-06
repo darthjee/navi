@@ -16,7 +16,7 @@ class AssetsRequestHandler extends RequestHandler {
    */
   constructor() {
     super();
-    this.assetsDir = path.resolve(__dirname, '../../static/assets');
+    this.assetsDir = path.resolve(__dirname, '../../../static/assets');
     this.validator = new PathValidator(this.assetsDir);
   }
 

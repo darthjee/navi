@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { RequestHandler } from '../RequestHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir = path.resolve(__dirname, '../../static');
+const staticDir = path.resolve(__dirname, '../../../static');
 
 /**
  * Handles GET / and SPA catch-all requests by serving index.html.
