@@ -1,9 +1,9 @@
-import { PaginationConfig } from '../configs/PaginationConfig.js';
 import { JobRegistry as DefaultJobRegistry } from '../../background/JobRegistry.js';
 import { MissingActionResource } from '../../exceptions/registry/MissingActionResource.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { ResourceRegistry as DefaultResourceRegistry } from '../../registry/ResourceRegistry.js';
 import { Application } from '../../services/Application.js';
+import { PaginationConfig } from '../configs/PaginationConfig.js';
 
 /**
  * Represents a single paginated action to execute after a successful resource request response.

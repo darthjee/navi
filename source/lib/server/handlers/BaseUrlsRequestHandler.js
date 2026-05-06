@@ -1,6 +1,6 @@
-import { RequestHandler } from '../RequestHandler.js';
 import { ClientRegistry } from '../../registry/ClientRegistry.js';
 import { BaseUrlsSerializer } from '../../serializers/BaseUrlsSerializer.js';
+import { RequestHandler } from '../RequestHandler.js';
 
 /**
  * Handles GET /clients/base_urls.json requests.

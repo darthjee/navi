@@ -1,6 +1,6 @@
-import { RequestHandler } from '../../RequestHandler.js';
 import { ConflictError } from '../../../exceptions/http/ConflictError.js';
 import { Application } from '../../../services/Application.js';
+import { RequestHandler } from '../../RequestHandler.js';
 
 /**
  * Handles PATCH /engine/continue requests.

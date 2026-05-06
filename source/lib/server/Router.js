@@ -16,9 +16,9 @@ import { JobRequestHandler } from './handlers/jobs/JobRequestHandler.js';
 import { JobRetryRequestHandler } from './handlers/jobs/JobRetryRequestHandler.js';
 import { JobsRequestHandler } from './handlers/jobs/JobsRequestHandler.js';
 import { LogsRequestHandler } from './handlers/LogsRequestHandler.js';
-import { RouteRegister } from './RouteRegister.js';
 import { SettingsRequestHandler } from './handlers/SettingsRequestHandler.js';
 import { StatsRequestHandler } from './handlers/StatsRequestHandler.js';
+import { RouteRegister } from './RouteRegister.js';
 
 const { Router: ExpressRouter } = express;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

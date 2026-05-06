@@ -3,9 +3,9 @@ import { MissingClientsConfig } from '../exceptions/config/MissingClientsConfig.
 import { MissingResourceConfig } from '../exceptions/config/MissingResourceConfig.js';
 import { FailureConfig } from '../models/configs/FailureConfig.js';
 import { LogConfig } from '../models/configs/LogConfig.js';
-import { Resource } from '../models/request/Resource.js';
 import { WebConfig } from '../models/configs/WebConfig.js';
 import { WorkersConfig } from '../models/configs/WorkersConfig.js';
+import { Resource } from '../models/request/Resource.js';
 
 /**
  * ConfigParser receives a parsed YAML configuration object and maps it to

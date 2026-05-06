@@ -1,6 +1,6 @@
-import { RequestHandler } from '../RequestHandler.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { LogSerializer } from '../../serializers/LogSerializer.js';
+import { RequestHandler } from '../RequestHandler.js';
 
 /**
  * Handles GET /logs.json requests.

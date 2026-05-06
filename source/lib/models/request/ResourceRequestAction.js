@@ -1,9 +1,9 @@
-import { ParametersMapper } from '../response/ParametersMapper.js';
 import { JobRegistry as DefaultJobRegistry } from '../../background/JobRegistry.js';
 import { MissingActionResource } from '../../exceptions/registry/MissingActionResource.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { ResourceRegistry as DefaultResourceRegistry } from '../../registry/ResourceRegistry.js';
 import { Application } from '../../services/Application.js';
+import { ParametersMapper } from '../response/ParametersMapper.js';
 
 /**
  * Represents a single action to execute after a successful resource request response.
