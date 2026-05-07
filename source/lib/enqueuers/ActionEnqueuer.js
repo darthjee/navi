@@ -32,11 +32,22 @@ class ActionEnqueuer {
   enqueue() {
     if (Application.isStopped()) return;
     for (const item of this.#items) {
-      const params = { action: this.#action, item };
-      if (this.#originUrl !== null) params.originUrl = this.#originUrl;
-      this.#jobRegistry.enqueue('Action', params);
+      this.#jobRegistry.enqueue('Action', this.#buildParams(item));
     }
   }
+
+  /**
+   * Builds the job params object for a single item, including originUrl when present.
+   * @param {object} item The parsed response item.
+   * @returns {object} The params object for the job registry.
+   * @private
+   */
+  #buildParams(item) {
+    const params = { action: this.#action, item };
+    if (this.#originUrl !== null) params.originUrl = this.#originUrl;
+    return params;
+  }
+
 }
 
 export { ActionEnqueuer };

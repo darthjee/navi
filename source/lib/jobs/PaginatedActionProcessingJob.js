@@ -31,10 +31,7 @@ class PaginatedActionProcessingJob extends Job {
    * @returns {{ parameters: ResponseWrapper, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return {
-      parameters: this.#parameters,
-      ...(this.#originUrl !== null ? { originUrl: this.#originUrl } : {}),
-    };
+    return { parameters: this.#parameters, ...this.#originUrlField() };
   }
 
   /**
@@ -61,6 +58,17 @@ class PaginatedActionProcessingJob extends Job {
       this._fail(error);
     }
   }
+
+  /**
+   * Returns an object containing the originUrl field when an origin URL is set,
+   * or an empty object otherwise.
+   * @returns {{ originUrl: string }|{}} The origin URL field or empty object.
+   * @private
+   */
+  #originUrlField() {
+    return this.#originUrl !== null ? { originUrl: this.#originUrl } : {};
+  }
+
 }
 
 export { PaginatedActionProcessingJob };

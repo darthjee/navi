@@ -40,10 +40,7 @@ class HtmlParseJob extends Job {
    * @returns {{ assetCount: number, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return {
-      assetCount: this.#assetRequests.length,
-      ...(this.#originUrl !== null ? { originUrl: this.#originUrl } : {}),
-    };
+    return { assetCount: this.#assetRequests.length, ...this.#originUrlField() };
   }
 
   /**
@@ -55,7 +52,6 @@ class HtmlParseJob extends Job {
   get maxRetries() {
     return 1;
   }
-
   /**
    * Parses the HTML body, resolves asset URLs, and enqueues one AssetDownloadJob per URL.
    * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
@@ -72,6 +68,17 @@ class HtmlParseJob extends Job {
       this._fail(error);
     }
   }
+
+  /**
+   * Returns an object containing the originUrl field when an origin URL is set,
+   * or an empty object otherwise.
+   * @returns {{ originUrl: string }|{}} The origin URL field or empty object.
+   * @private
+   */
+  #originUrlField() {
+    return this.#originUrl !== null ? { originUrl: this.#originUrl } : {};
+  }
+
 }
 
 export { HtmlParseJob };

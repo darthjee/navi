@@ -37,12 +37,7 @@ class JobDetailsHelper {
                 </>
               )}
 
-              {job.arguments?.originUrl && (
-                <>
-                  <dt className="col-sm-3">Origin URL</dt>
-                  <dd className="col-sm-9 font-monospace">{job.arguments.originUrl}</dd>
-                </>
-              )}
+              {JobDetailsHelper.#renderOriginUrl(job)}
 
               <dt className="col-sm-3">Arguments</dt>
               <dd className="col-sm-9">
@@ -62,6 +57,16 @@ class JobDetailsHelper {
           <RetryButton job={job} onRetry={onRetry} />
         </div>
       </div>
+    );
+  }
+
+  static #renderOriginUrl(job) {
+    if (!job.arguments?.originUrl) return null;
+    return (
+      <>
+        <dt className="col-sm-3">Origin URL</dt>
+        <dd className="col-sm-9 font-monospace">{job.arguments.originUrl}</dd>
+      </>
     );
   }
 }

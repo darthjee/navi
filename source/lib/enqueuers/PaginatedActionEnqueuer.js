@@ -31,10 +31,20 @@ class PaginatedActionEnqueuer {
    */
   enqueue() {
     if (Application.isStopped()) return;
+    this.#jobRegistry.enqueue('PaginatedAction', this.#buildParams());
+  }
+
+  /**
+   * Builds the job params object, including originUrl when present.
+   * @returns {object} The params object for the job registry.
+   * @private
+   */
+  #buildParams() {
     const params = { paginatedAction: this.#paginatedAction, parameters: this.#parameters };
     if (this.#originUrl !== null) params.originUrl = this.#originUrl;
-    this.#jobRegistry.enqueue('PaginatedAction', params);
+    return params;
   }
+
 }
 
 export { PaginatedActionEnqueuer };

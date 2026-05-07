@@ -31,10 +31,7 @@ class ActionProcessingJob extends Job {
    * @returns {{ item: object, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return {
-      item: this.#item,
-      ...(this.#originUrl !== null ? { originUrl: this.#originUrl } : {}),
-    };
+    return { item: this.#item, ...this.#originUrlField() };
   }
 
   /**
@@ -61,6 +58,17 @@ class ActionProcessingJob extends Job {
       this._fail(error);
     }
   }
+
+  /**
+   * Returns an object containing the originUrl field when an origin URL is set,
+   * or an empty object otherwise.
+   * @returns {{ originUrl: string }|{}} The origin URL field or empty object.
+   * @private
+   */
+  #originUrlField() {
+    return this.#originUrl !== null ? { originUrl: this.#originUrl } : {};
+  }
+
 }
 
 export { ActionProcessingJob };
