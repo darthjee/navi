@@ -23,7 +23,7 @@ resources:
       paginated_actions:
         - resource: paginated_categories
           pagination:
-            - pages: headers['page']
+            - pages: headers['pages']
             - page_key: page
             - zero_indexed: false
     - url: /categories
