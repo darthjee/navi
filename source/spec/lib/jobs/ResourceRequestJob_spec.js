@@ -104,6 +104,18 @@ describe('ResourceRequestJob', () => {
         expect(wrapper.parameters).toBe(parameters);
       });
 
+      it('passes the resolved URL as originUrl to enqueueActions', async () => {
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        const originUrl = resourceRequest.enqueueActions.calls.argsFor(0)[1];
+        expect(originUrl).toBe(url);
+      });
+
+      it('passes the resolved URL as originUrl to enqueuePaginatedActions', async () => {
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        const originUrl = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[1];
+        expect(originUrl).toBe(url);
+      });
+
       it('logs debug when performing', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         expect(logContext.debug).toHaveBeenCalled();
@@ -215,8 +227,15 @@ describe('ResourceRequestJob', () => {
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledOnceWith(
           rawHtml,
           jasmine.anything(),
-          jasmine.anything()
+          jasmine.anything(),
+          url
         );
+      });
+
+      it('passes the resolved URL as originUrl to enqueueAssets', async () => {
+        await job.perform(logContext);
+        const originUrl = resourceRequest.enqueueAssets.calls.argsFor(0)[3];
+        expect(originUrl).toBe(url);
       });
 
       it('does not call ResponseParser (enqueueActions still called but no-op without actions)', async () => {

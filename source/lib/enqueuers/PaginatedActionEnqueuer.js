@@ -9,16 +9,19 @@ class PaginatedActionEnqueuer {
   #paginatedAction;
   #parameters;
   #jobRegistry;
+  #originUrl;
 
   /**
    * @param {ResourceRequestPaginatedAction} paginatedAction The paginated action to enqueue.
    * @param {ResponseWrapper} parameters The response wrapper carrying response data and original request parameters.
    * @param {object} [jobRegistry=JobRegistry] The job registry to enqueue jobs to.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    */
-  constructor(paginatedAction, parameters, jobRegistry = DefaultJobRegistry) {
+  constructor(paginatedAction, parameters, jobRegistry = DefaultJobRegistry, originUrl = null) {
     this.#paginatedAction = paginatedAction;
     this.#parameters = parameters;
     this.#jobRegistry = jobRegistry;
+    this.#originUrl = originUrl;
   }
 
   /**
@@ -28,8 +31,20 @@ class PaginatedActionEnqueuer {
    */
   enqueue() {
     if (Application.isStopped()) return;
-    this.#jobRegistry.enqueue('PaginatedAction', { paginatedAction: this.#paginatedAction, parameters: this.#parameters });
+    this.#jobRegistry.enqueue('PaginatedAction', this.#buildParams());
   }
+
+  /**
+   * Builds the job params object, including originUrl when present.
+   * @returns {object} The params object for the job registry.
+   * @private
+   */
+  #buildParams() {
+    const params = { paginatedAction: this.#paginatedAction, parameters: this.#parameters };
+    if (this.#originUrl !== null) params.originUrl = this.#originUrl;
+    return params;
+  }
+
 }
 
 export { PaginatedActionEnqueuer };

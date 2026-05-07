@@ -12,16 +12,19 @@ class ActionsEnqueuer {
   #actions;
   #items;
   #jobRegistry;
+  #originUrl;
 
   /**
    * @param {Array} actions List of ResourceRequestAction instances.
    * @param {Array} items List of ResponseWrapper instances (one per response item).
    * @param {object} [jobRegistry] The job registry to enqueue jobs to. Defaults to global JobRegistry.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    */
-  constructor(actions, items, jobRegistry) {
+  constructor(actions, items, jobRegistry, originUrl = null) {
     this.#actions = actions;
     this.#items = items;
     this.#jobRegistry = jobRegistry;
+    this.#originUrl = originUrl;
   }
 
   /**
@@ -34,7 +37,7 @@ class ActionsEnqueuer {
     if (this.#items === null) throw new NullResponse();
 
     for (const action of this.#actions) {
-      new ActionEnqueuer(action, this.#items, this.#jobRegistry).enqueue();
+      new ActionEnqueuer(action, this.#items, this.#jobRegistry, this.#originUrl).enqueue();
     }
   }
 }
