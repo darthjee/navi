@@ -7,12 +7,13 @@ describe('PaginatedActionEnqueuer', () => {
   const ctx = PaginatedActionEnqueuerUtils.setup();
 
   describe('#enqueue', () => {
-    describe('when parameters are provided', () => {
-      const parameters = { parsedBody: { id: 1 }, headers: {}, parameters: {} };
+    describe('when responseWrapper and parameters are provided', () => {
+      const responseWrapper = { parsedBody: { id: 1 }, headers: {} };
+      const parameters = { category_id: 5 };
 
-      it('calls enqueue once with the PaginatedAction factory key, paginatedAction and parameters', () => {
-        new PaginatedActionEnqueuer(ctx.paginatedAction, parameters).enqueue();
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, parameters });
+      it('calls enqueue once with the PaginatedAction factory key, paginatedAction, responseWrapper and parameters', () => {
+        new PaginatedActionEnqueuer(ctx.paginatedAction, responseWrapper, parameters).enqueue();
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('PaginatedAction', { paginatedAction: ctx.paginatedAction, responseWrapper, parameters });
       });
     });
 
@@ -22,7 +23,7 @@ describe('PaginatedActionEnqueuer', () => {
       });
 
       it('does not call enqueue', () => {
-        new PaginatedActionEnqueuer(ctx.paginatedAction, { parsedBody: {}, headers: {} }).enqueue();
+        new PaginatedActionEnqueuer(ctx.paginatedAction, { parsedBody: {}, headers: {} }, {}).enqueue();
         expect(JobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });

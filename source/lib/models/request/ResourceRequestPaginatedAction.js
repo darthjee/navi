@@ -43,20 +43,20 @@ class ResourceRequestPaginatedAction {
    * Evaluates the page count from the response, then enqueues one
    * ResourceRequestJob per page for the target resource.
    * @param {ResponseWrapper} responseWrapper A ResponseWrapper instance exposing parsedBody and headers.
+   * @param {object} [parameters={}] The original request parameters to merge with the page number.
    * @returns {void}
    */
-  execute(responseWrapper) {
+  execute(responseWrapper, parameters = {}) {
     if (Application.isStopped()) return;
 
     const count = this.#pagination.resolvePages(responseWrapper);
     const pages = this.#pagination.pageNumbers(count);
     const resource = this.#resourceRegistry.getItem(this.#resource);
-    const existingParams = responseWrapper.parameters ?? {};
 
     for (const page of pages) {
-      const parameters = { ...existingParams, [this.#pagination.pageKey]: page };
+      const pageParameters = { ...parameters, [this.#pagination.pageKey]: page };
       for (const resourceRequest of resource.resourceRequests) {
-        this.#jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters });
+        this.#jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: pageParameters });
       }
     }
   }

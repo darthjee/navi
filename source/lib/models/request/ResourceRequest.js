@@ -58,13 +58,14 @@ class ResourceRequest {
    * Enqueues one PaginatedActionProcessingJob per paginated action.
    * Returns immediately if there are no paginated actions.
    * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
+   * @param {object} [parameters={}] The original request parameters (key-value map for URL template resolution).
    * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    * @returns {void}
    */
-  enqueuePaginatedActions(responseWrapper, originUrl = null) {
+  enqueuePaginatedActions(responseWrapper, parameters = {}, originUrl = null) {
     if (this.paginatedActions.length === 0) return;
 
-    new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper, undefined, originUrl).enqueue();
+    new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper, parameters, undefined, originUrl).enqueue();
   }
 
   /**

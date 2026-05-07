@@ -64,7 +64,7 @@ class ResourceRequestJob extends Job {
     this.#enqueueAssets(response, originUrl);
     const wrapper = new ResponseWrapper(response, this.#parameters);
     this.#resourceRequest.enqueueActions(wrapper, originUrl);
-    this.#resourceRequest.enqueuePaginatedActions(wrapper, originUrl);
+    this.#resourceRequest.enqueuePaginatedActions(wrapper, this.#parameters, originUrl);
     return response;
   }
 
