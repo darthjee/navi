@@ -8,6 +8,7 @@ class JobIndexSerializer extends Serializer {
   /**
    * Serializes a single job instance into a `{ id, status, attempts, jobClass[, url] }` object.
    * For `ResourceRequestJob` instances, the resolved URL is included as `url`.
+   * For other job instances that carry an `originUrl` argument, that value is included as `url`.
    *
    * @param {object} job - A job instance.
    * @param {object} options - Serialization options.
@@ -24,6 +25,8 @@ class JobIndexSerializer extends Serializer {
 
     if (job.constructor.name === 'ResourceRequestJob') {
       result.url = job.arguments?.url;
+    } else if (job.arguments?.originUrl) {
+      result.url = job.arguments.originUrl;
     }
 
     return result;

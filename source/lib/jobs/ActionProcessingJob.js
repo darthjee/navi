@@ -9,6 +9,7 @@ import { Job } from '../background/Job.js';
 class ActionProcessingJob extends Job {
   #action;
   #item;
+  #originUrl;
 
   /**
    * Creates a new ActionProcessingJob instance.
@@ -16,19 +17,21 @@ class ActionProcessingJob extends Job {
    * @param {string} params.id - The unique identifier for this job.
    * @param {ResourceRequestAction} params.action - The action to execute.
    * @param {object} params.item - The parsed response item to pass to the action.
+   * @param {string|null} [params.originUrl=null] - The URL of the ResourceRequestJob that triggered this job.
    */
-  constructor({ id, action, item }) {
+  constructor({ id, action, item, originUrl = null }) {
     super({ id });
     this.#action = action;
     this.#item = item;
+    this.#originUrl = originUrl;
   }
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ item: object }} The job arguments.
+   * @returns {{ item: object, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return { item: this.#item };
+    return { item: this.#item, ...this.#originUrlField() };
   }
 
   /**
@@ -55,6 +58,17 @@ class ActionProcessingJob extends Job {
       this._fail(error);
     }
   }
+
+  /**
+   * Returns an object containing the originUrl field when an origin URL is set,
+   * or an empty object otherwise.
+   * @returns {{ originUrl: string }|{}} The origin URL field or empty object.
+   * @private
+   */
+  #originUrlField() {
+    return this.#originUrl !== null ? { originUrl: this.#originUrl } : {};
+  }
+
 }
 
 export { ActionProcessingJob };

@@ -60,6 +60,23 @@ describe('HtmlParseJob', () => {
       job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
       expect(job.arguments).toEqual({ assetCount: 0 });
     });
+
+    describe('when originUrl is provided', () => {
+      it('includes originUrl in the arguments', () => {
+        const originUrl = 'https://example.com/page.html';
+        assetRequests = [];
+        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry, originUrl });
+        expect(job.arguments).toEqual({ assetCount: 0, originUrl });
+      });
+    });
+
+    describe('when originUrl is not provided', () => {
+      it('does not include originUrl in the arguments', () => {
+        assetRequests = [];
+        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+        expect(job.arguments.originUrl).toBeUndefined();
+      });
+    });
   });
 
   describe('#perform', () => {

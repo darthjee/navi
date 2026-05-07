@@ -41,6 +41,40 @@ describe('JobIndexSerializer', () => {
         expect(JobIndexSerializer.serialize([], { status })).toEqual([]);
       });
     });
+
+    describe('when given a downstream job with originUrl', () => {
+      const originUrl = 'https://example.com/items.json';
+      const job = {
+        id: 'ap-1',
+        _attempts: 0,
+        constructor: { name: 'ActionProcessingJob' },
+        arguments: { item: { id: 1 }, originUrl },
+      };
+
+      it('includes url from originUrl', () => {
+        expect(JobIndexSerializer.serialize(job, { status })).toEqual({
+          id: 'ap-1',
+          status,
+          attempts: 0,
+          jobClass: 'ActionProcessingJob',
+          url: originUrl,
+        });
+      });
+    });
+
+    describe('when given a downstream job without originUrl', () => {
+      const job = {
+        id: 'hp-1',
+        _attempts: 0,
+        constructor: { name: 'HtmlParseJob' },
+        arguments: { assetCount: 3 },
+      };
+
+      it('does not include url', () => {
+        const result = JobIndexSerializer.serialize(job, { status });
+        expect(result.url).toBeUndefined();
+      });
+    });
   });
 
   describe('regression against error fields', () => {

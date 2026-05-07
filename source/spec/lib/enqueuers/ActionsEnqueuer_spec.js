@@ -62,5 +62,15 @@ describe('ActionsEnqueuer', () => {
         });
       });
     });
+
+    describe('when originUrl is provided', () => {
+      const item = { parsedBody: { id: 1 }, headers: {} };
+      const originUrl = 'https://example.com/items.json';
+
+      it('includes originUrl in each enqueued job', () => {
+        new ActionsEnqueuer(actions, [item], undefined, originUrl).enqueue();
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Action', { action: ctx.action, item, originUrl });
+      });
+    });
   });
 });

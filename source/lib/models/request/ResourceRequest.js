@@ -44,25 +44,27 @@ class ResourceRequest {
    * Enqueues one ActionProcessingJob per action associated with the resource request.
    * Returns immediately if there are no actions.
    * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    * @returns {void}
    */
-  enqueueActions(responseWrapper) {
+  enqueueActions(responseWrapper, originUrl = null) {
     if (this.actions.length === 0) return;
 
     const itemWrappers = responseWrapper.toItemWrappers();
-    new ActionsEnqueuer(this.actions, itemWrappers).enqueue();
+    new ActionsEnqueuer(this.actions, itemWrappers, undefined, originUrl).enqueue();
   }
 
   /**
    * Enqueues one PaginatedActionProcessingJob per paginated action.
    * Returns immediately if there are no paginated actions.
    * @param {ResponseWrapper} responseWrapper The ResponseWrapper for the HTTP response.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    * @returns {void}
    */
-  enqueuePaginatedActions(responseWrapper) {
+  enqueuePaginatedActions(responseWrapper, originUrl = null) {
     if (this.paginatedActions.length === 0) return;
 
-    new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper).enqueue();
+    new PaginatedActionsEnqueuer(this.paginatedActions, responseWrapper, undefined, originUrl).enqueue();
   }
 
   /**
@@ -71,11 +73,14 @@ class ResourceRequest {
    * @param {string} rawHtml The raw HTML response body string.
    * @param {object} [jobRegistry=JobRegistry] The job registry used to enqueue the HtmlParseJob.
    * @param {object} clientRegistry The client registry for URL resolution inside HtmlParseJob.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    * @returns {void}
    */
-  enqueueAssets(rawHtml, jobRegistry = DefaultJobRegistry, clientRegistry) {
+  enqueueAssets(rawHtml, jobRegistry = DefaultJobRegistry, clientRegistry, originUrl = null) {
     if (Application.isStopped()) return;
-    jobRegistry.enqueue('HtmlParse', { rawHtml, assetRequests: this.assets, clientRegistry });
+    const params = { rawHtml, assetRequests: this.assets, clientRegistry };
+    if (originUrl !== null) params.originUrl = originUrl;
+    jobRegistry.enqueue('HtmlParse', params);
   }
 
   /**
