@@ -8,6 +8,7 @@ import { Job } from '../background/Job.js';
  */
 class PaginatedActionProcessingJob extends Job {
   #paginatedAction;
+  #responseWrapper;
   #parameters;
   #originUrl;
 
@@ -16,22 +17,24 @@ class PaginatedActionProcessingJob extends Job {
    * @param {object} params The parameters for creating a PaginatedActionProcessingJob instance.
    * @param {string} params.id Unique job identifier.
    * @param {ResourceRequestPaginatedAction} params.paginatedAction The paginated action to execute.
-   * @param {ResponseWrapper} params.parameters The response wrapper carrying response data and original request parameters.
+   * @param {ResponseWrapper} params.responseWrapper The response wrapper carrying response data.
+   * @param {object} [params.parameters={}] The original request parameters (key-value map for URL template resolution).
    * @param {string|null} [params.originUrl=null] The URL of the ResourceRequestJob that triggered this job.
    */
-  constructor({ id, paginatedAction, parameters, originUrl = null }) {
+  constructor({ id, paginatedAction, responseWrapper, parameters = {}, originUrl = null }) {
     super({ id });
     this.#paginatedAction = paginatedAction;
+    this.#responseWrapper = responseWrapper;
     this.#parameters = parameters;
     this.#originUrl = originUrl;
   }
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ parameters: ResponseWrapper, originUrl?: string }} The job arguments.
+   * @returns {{ responseWrapper: ResponseWrapper, parameters: object, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return { parameters: this.#parameters, ...this.#originUrlField() };
+    return { responseWrapper: this.#responseWrapper, parameters: this.#parameters, ...this.#originUrlField() };
   }
 
   /**
@@ -45,7 +48,7 @@ class PaginatedActionProcessingJob extends Job {
   }
 
   /**
-   * Performs the paginated action for the given parameters.
+   * Performs the paginated action for the given response wrapper and parameters.
    * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<void>}
    */
@@ -53,7 +56,7 @@ class PaginatedActionProcessingJob extends Job {
     logContext.debug(`PaginatedActionProcessingJob #${this.id} performing`);
     try {
       this.lastError = undefined;
-      await this.#paginatedAction.execute(this.#parameters);
+      await this.#paginatedAction.execute(this.#responseWrapper, this.#parameters);
     } catch (error) {
       this._fail(error);
     }
