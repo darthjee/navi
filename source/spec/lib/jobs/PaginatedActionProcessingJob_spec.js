@@ -3,6 +3,7 @@ import { PaginatedActionProcessingJob } from '../../../lib/jobs/PaginatedActionP
 
 describe('PaginatedActionProcessingJob', () => {
   let paginatedAction;
+  let responseWrapper;
   let parameters;
   let job;
   let logContext;
@@ -10,8 +11,9 @@ describe('PaginatedActionProcessingJob', () => {
   beforeEach(() => {
     logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     paginatedAction = jasmine.createSpyObj('paginatedAction', ['execute']);
-    parameters = { parsedBody: { id: 1 }, headers: {}, parameters: {} };
-    job = new PaginatedActionProcessingJob({ id: 'test-id', paginatedAction, parameters });
+    responseWrapper = { parsedBody: { id: 1 }, headers: {} };
+    parameters = { category_id: 5 };
+    job = new PaginatedActionProcessingJob({ id: 'test-id', paginatedAction, responseWrapper, parameters });
   });
 
   describe('#constructor', () => {
@@ -31,15 +33,15 @@ describe('PaginatedActionProcessingJob', () => {
   });
 
   describe('#arguments', () => {
-    it('returns the parameters', () => {
-      expect(job.arguments).toEqual({ parameters });
+    it('returns the responseWrapper and parameters', () => {
+      expect(job.arguments).toEqual({ responseWrapper, parameters });
     });
 
     describe('when originUrl is provided', () => {
       it('includes originUrl in the arguments', () => {
         const originUrl = 'https://example.com/items.json';
-        const jobWithOrigin = new PaginatedActionProcessingJob({ id: 'test-id', paginatedAction, parameters, originUrl });
-        expect(jobWithOrigin.arguments).toEqual({ parameters, originUrl });
+        const jobWithOrigin = new PaginatedActionProcessingJob({ id: 'test-id', paginatedAction, responseWrapper, parameters, originUrl });
+        expect(jobWithOrigin.arguments).toEqual({ responseWrapper, parameters, originUrl });
       });
     });
 
@@ -52,9 +54,9 @@ describe('PaginatedActionProcessingJob', () => {
 
   describe('#perform', () => {
     describe('when the paginated action succeeds', () => {
-      it('calls paginatedAction.execute with the parameters', async () => {
+      it('calls paginatedAction.execute with the responseWrapper and parameters', async () => {
         await job.perform(logContext);
-        expect(paginatedAction.execute).toHaveBeenCalledOnceWith(parameters);
+        expect(paginatedAction.execute).toHaveBeenCalledOnceWith(responseWrapper, parameters);
       });
 
       it('clears lastError before performing', async () => {

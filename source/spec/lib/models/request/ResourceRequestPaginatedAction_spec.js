@@ -141,14 +141,15 @@ describe('ResourceRequestPaginatedAction', () => {
       });
     });
 
-    describe('with existing parameters on the wrapper', () => {
+    describe('with existing parameters', () => {
       let resourceRequest;
 
       const wrapperWithParams = {
         parsedBody: { total_pages: 2 },
         headers: {},
-        parameters: { category_id: 5 },
       };
+
+      const existingParams = { category_id: 5 };
 
       beforeEach(() => {
         resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
@@ -157,7 +158,7 @@ describe('ResourceRequestPaginatedAction', () => {
       });
 
       it('merges existing parameters with the page number', () => {
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(wrapperWithParams);
+        new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(wrapperWithParams, existingParams);
         expect(JobRegistry.enqueue).toHaveBeenCalledWith(
           'ResourceRequestJob',
           { resourceRequest, parameters: { category_id: 5, page: 1 } }

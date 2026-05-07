@@ -276,7 +276,6 @@ describe('ResourceRequest', () => {
     });
 
     afterEach(() => { JobRegistry.reset(); });
-
     it('does not call enqueue when there are no paginated actions', () => {
       request.paginatedActions = [];
       request.enqueuePaginatedActions(new ResponseWrapper({ data: '[]', headers: {} }));
@@ -288,12 +287,13 @@ describe('ResourceRequest', () => {
       expect(JobRegistry.enqueue).toHaveBeenCalledTimes(1);
     });
 
-    it('calls enqueue once with the paginatedAction and response wrapper', () => {
+    it('enqueues with paginatedAction, responseWrapper and parameters', () => {
       const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
-      request.enqueuePaginatedActions(wrapper);
+      const params = { category_id: 5 };
+      request.enqueuePaginatedActions(wrapper, params);
       expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
         'PaginatedAction',
-        jasmine.objectContaining({ paginatedAction, parameters: wrapper })
+        jasmine.objectContaining({ paginatedAction, responseWrapper: wrapper, parameters: params })
       );
     });
   });

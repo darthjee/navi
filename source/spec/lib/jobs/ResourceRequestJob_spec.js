@@ -112,8 +112,14 @@ describe('ResourceRequestJob', () => {
 
       it('passes the resolved URL as originUrl to enqueuePaginatedActions', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        const originUrl = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[1];
+        const originUrl = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[2];
         expect(originUrl).toBe(url);
+      });
+
+      it('passes the job parameters to enqueuePaginatedActions', async () => {
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        const passedParameters = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[1];
+        expect(passedParameters).toBe(parameters);
       });
 
       it('logs debug when performing', async () => {
