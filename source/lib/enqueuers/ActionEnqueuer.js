@@ -9,16 +9,19 @@ class ActionEnqueuer {
   #action;
   #items;
   #jobRegistry;
+  #originUrl;
 
   /**
    * @param {ResourceRequestAction} action The action to enqueue for each item.
    * @param {Array} items List of parsed response items.
    * @param {object} [jobRegistry=JobRegistry] The job registry to enqueue jobs to.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    */
-  constructor(action, items, jobRegistry = DefaultJobRegistry) {
+  constructor(action, items, jobRegistry = DefaultJobRegistry, originUrl = null) {
     this.#action = action;
     this.#items = items;
     this.#jobRegistry = jobRegistry;
+    this.#originUrl = originUrl;
   }
 
   /**
@@ -29,7 +32,9 @@ class ActionEnqueuer {
   enqueue() {
     if (Application.isStopped()) return;
     for (const item of this.#items) {
-      this.#jobRegistry.enqueue('Action', { action: this.#action, item });
+      const params = { action: this.#action, item };
+      if (this.#originUrl !== null) params.originUrl = this.#originUrl;
+      this.#jobRegistry.enqueue('Action', params);
     }
   }
 }

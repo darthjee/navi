@@ -9,6 +9,7 @@ import { Job } from '../background/Job.js';
 class PaginatedActionProcessingJob extends Job {
   #paginatedAction;
   #parameters;
+  #originUrl;
 
   /**
    * Creates a new PaginatedActionProcessingJob instance.
@@ -16,19 +17,24 @@ class PaginatedActionProcessingJob extends Job {
    * @param {string} params.id Unique job identifier.
    * @param {ResourceRequestPaginatedAction} params.paginatedAction The paginated action to execute.
    * @param {ResponseWrapper} params.parameters The response wrapper carrying response data and original request parameters.
+   * @param {string|null} [params.originUrl=null] The URL of the ResourceRequestJob that triggered this job.
    */
-  constructor({ id, paginatedAction, parameters }) {
+  constructor({ id, paginatedAction, parameters, originUrl = null }) {
     super({ id });
     this.#paginatedAction = paginatedAction;
     this.#parameters = parameters;
+    this.#originUrl = originUrl;
   }
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ parameters: ResponseWrapper }} The job arguments.
+   * @returns {{ parameters: ResponseWrapper, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return { parameters: this.#parameters };
+    return {
+      parameters: this.#parameters,
+      ...(this.#originUrl !== null ? { originUrl: this.#originUrl } : {}),
+    };
   }
 
   /**

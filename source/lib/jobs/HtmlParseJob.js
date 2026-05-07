@@ -14,6 +14,7 @@ class HtmlParseJob extends Job {
   #assetRequests;
   #jobRegistry;
   #clientRegistry;
+  #originUrl;
 
   /**
    * Creates a new HtmlParseJob instance.
@@ -23,21 +24,26 @@ class HtmlParseJob extends Job {
    * @param {Array} params.assetRequests - List of AssetRequest instances.
    * @param {object} params.jobRegistry - The job registry used to enqueue AssetDownloadJobs.
    * @param {object} params.clientRegistry - The client registry used for URL resolution.
+   * @param {string|null} [params.originUrl=null] - The URL of the ResourceRequestJob that triggered this job.
    */
-  constructor({ id, rawHtml, assetRequests, jobRegistry, clientRegistry }) {
+  constructor({ id, rawHtml, assetRequests, jobRegistry, clientRegistry, originUrl = null }) {
     super({ id });
     this.#rawHtml = rawHtml;
     this.#assetRequests = assetRequests;
     this.#jobRegistry = jobRegistry;
     this.#clientRegistry = clientRegistry;
+    this.#originUrl = originUrl;
   }
 
   /**
    * Returns the job-specific arguments for serialization.
-   * @returns {{ assetCount: number }} The job arguments.
+   * @returns {{ assetCount: number, originUrl?: string }} The job arguments.
    */
   get arguments() {
-    return { assetCount: this.#assetRequests.length };
+    return {
+      assetCount: this.#assetRequests.length,
+      ...(this.#originUrl !== null ? { originUrl: this.#originUrl } : {}),
+    };
   }
 
   /**

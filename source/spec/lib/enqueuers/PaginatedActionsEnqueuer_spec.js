@@ -46,5 +46,19 @@ describe('PaginatedActionsEnqueuer', () => {
         });
       });
     });
+
+    describe('when originUrl is provided', () => {
+      const parameters = { parsedBody: { id: 1 }, headers: {}, parameters: {} };
+      const originUrl = 'https://example.com/items.json';
+
+      it('includes originUrl in each enqueued job', () => {
+        new PaginatedActionsEnqueuer(paginatedActions, parameters, undefined, originUrl).enqueue();
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('PaginatedAction', {
+          paginatedAction: ctx.paginatedAction,
+          parameters,
+          originUrl,
+        });
+      });
+    });
   });
 });

@@ -37,6 +37,13 @@ class JobDetailsHelper {
                 </>
               )}
 
+              {job.arguments?.originUrl && (
+                <>
+                  <dt className="col-sm-3">Origin URL</dt>
+                  <dd className="col-sm-9 font-monospace">{job.arguments.originUrl}</dd>
+                </>
+              )}
+
               <dt className="col-sm-3">Arguments</dt>
               <dd className="col-sm-9">
                 <CollapsibleSection label="Show arguments">

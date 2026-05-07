@@ -34,6 +34,20 @@ describe('ActionProcessingJob', () => {
     it('returns the item', () => {
       expect(job.arguments).toEqual({ item });
     });
+
+    describe('when originUrl is provided', () => {
+      it('includes originUrl in the arguments', () => {
+        const originUrl = 'https://example.com/items.json';
+        const jobWithOrigin = new ActionProcessingJob({ id: 'test-id', action, item, originUrl });
+        expect(jobWithOrigin.arguments).toEqual({ item, originUrl });
+      });
+    });
+
+    describe('when originUrl is not provided', () => {
+      it('does not include originUrl in the arguments', () => {
+        expect(job.arguments.originUrl).toBeUndefined();
+      });
+    });
   });
 
   describe('#perform', () => {

@@ -12,16 +12,19 @@ class PaginatedActionsEnqueuer {
   #paginatedActions;
   #parameters;
   #jobRegistry;
+  #originUrl;
 
   /**
    * @param {Array<ResourceRequestPaginatedAction>} paginatedActions List of paginated action instances.
    * @param {ResponseWrapper} parameters The response wrapper carrying response data and original request parameters.
    * @param {object} [jobRegistry] The job registry to enqueue jobs to. Defaults to global JobRegistry.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    */
-  constructor(paginatedActions, parameters, jobRegistry) {
+  constructor(paginatedActions, parameters, jobRegistry, originUrl = null) {
     this.#paginatedActions = paginatedActions;
     this.#parameters = parameters;
     this.#jobRegistry = jobRegistry;
+    this.#originUrl = originUrl;
   }
 
   /**
@@ -33,7 +36,7 @@ class PaginatedActionsEnqueuer {
     if (this.#parameters === null) throw new NullResponse();
 
     for (const paginatedAction of this.#paginatedActions) {
-      new PaginatedActionEnqueuer(paginatedAction, this.#parameters, this.#jobRegistry).enqueue();
+      new PaginatedActionEnqueuer(paginatedAction, this.#parameters, this.#jobRegistry, this.#originUrl).enqueue();
     }
   }
 }

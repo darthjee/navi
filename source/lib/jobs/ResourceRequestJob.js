@@ -60,21 +60,23 @@ class ResourceRequestJob extends Job {
    * @private
    */
   #handleResponse(response) {
-    this.#enqueueAssets(response);
+    const originUrl = this.#resourceRequest.resolveUrl(this.#parameters);
+    this.#enqueueAssets(response, originUrl);
     const wrapper = new ResponseWrapper(response, this.#parameters);
-    this.#resourceRequest.enqueueActions(wrapper);
-    this.#resourceRequest.enqueuePaginatedActions(wrapper);
+    this.#resourceRequest.enqueueActions(wrapper, originUrl);
+    this.#resourceRequest.enqueuePaginatedActions(wrapper, originUrl);
     return response;
   }
 
   /**
    * Enqueues asset download jobs when the resource request declares asset rules.
    * @param {object} response The HTTP response object.
+   * @param {string} originUrl The resolved URL of this job, forwarded as origin to child jobs.
    * @private
    */
-  #enqueueAssets(response) {
+  #enqueueAssets(response, originUrl) {
     if (this.#resourceRequest.hasAssets()) {
-      this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients);
+      this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients, originUrl);
     }
   }
 
