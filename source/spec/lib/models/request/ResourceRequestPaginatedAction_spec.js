@@ -3,244 +3,161 @@ import { MissingActionResource } from '../../../../lib/exceptions/registry/Missi
 import { MissingMappingVariable } from '../../../../lib/exceptions/registry/MissingMappingVariable.js';
 import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
 import { ResourceRequestPaginatedAction } from '../../../../lib/models/request/ResourceRequestPaginatedAction.js';
-import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { ResourceRegistry } from '../../../../lib/registry/ResourceRegistry.js';
 import { Application } from '../../../../lib/services/Application.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
-import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
+import { ResourceActionUtils } from '../../../support/utils/ResourceActionUtils.js';
 
 const pagination = [{ pages: 'parsedBody.total_pages', page_key: 'page' }];
+const responseWrapper = {
+  parsedBody: { total_pages: 3 },
+  headers: {},
+  parameters: {},
+};
+
+const registerProductsResource = (...resourceRequests) => {
+  return ResourceActionUtils.registerResource('products', resourceRequests);
+};
 
 describe('ResourceRequestPaginatedAction', () => {
-  beforeEach(() => {
-    spyOn(Logger, 'info').and.stub();
-    spyOn(LogRegistry, 'error').and.stub();
-  });
+  ResourceActionUtils.setup();
 
   describe('constructor', () => {
-    describe('when resource is missing', () => {
-      it('throws MissingActionResource', () => {
-        expect(() => new ResourceRequestPaginatedAction({ resource: undefined, pagination }))
-          .toThrowMatching((error) => error instanceof MissingActionResource);
-      });
+    it('throws MissingActionResource when resource is missing', () => {
+      expect(() => new ResourceRequestPaginatedAction({ resource: undefined, pagination }))
+        .toThrowMatching((error) => error instanceof MissingActionResource);
     });
   });
 
   describe('.fromList', () => {
-    describe('when called with undefined', () => {
-      it('returns an empty array', () => {
-        expect(ResourceRequestPaginatedAction.fromList()).toEqual([]);
+    [undefined, []].forEach((value) => {
+      it(`returns an empty array when called with ${value === undefined ? 'undefined' : 'an empty array'}`, () => {
+        expect(ResourceRequestPaginatedAction.fromList(value)).toEqual([]);
       });
     });
 
-    describe('when called with an empty array', () => {
-      it('returns an empty array', () => {
-        expect(ResourceRequestPaginatedAction.fromList([])).toEqual([]);
-      });
+    it('returns one instance per valid entry', () => {
+      const list = ResourceRequestPaginatedAction.fromList([
+        { resource: 'products', pagination },
+        { resource: 'category_information', pagination },
+      ]);
+
+      expect(list.length).toBe(2);
+      expect(list.every((action) => action instanceof ResourceRequestPaginatedAction)).toBeTrue();
     });
 
-    describe('when all entries are valid', () => {
-      it('returns one instance per entry', () => {
-        const list = ResourceRequestPaginatedAction.fromList([
-          { resource: 'products', pagination },
-          { resource: 'category_information', pagination },
-        ]);
-        expect(list.length).toBe(2);
-        expect(list.every((a) => a instanceof ResourceRequestPaginatedAction)).toBeTrue();
-      });
-    });
+    it('logs the error and skips entries without resource', () => {
+      const list = ResourceRequestPaginatedAction.fromList([
+        { resource: 'products', pagination },
+        { resource: undefined, pagination },
+      ]);
 
-    describe('when one entry is missing resource', () => {
-      it('logs the error and skips that entry', () => {
-        const list = ResourceRequestPaginatedAction.fromList([
-          { resource: 'products', pagination },
-          { resource: undefined, pagination },
-        ]);
-        expect(list.length).toBe(1);
-        expect(LogRegistry.error).toHaveBeenCalled();
-      });
+      expect(list.length).toBe(1);
     });
   });
 
   describe('#execute', () => {
-    const responseWrapper = {
-      parsedBody: { total_pages: 3 },
-      headers: {},
-      parameters: {},
-    };
+    [
+      {
+        description: 'with basic 1-based pagination',
+        action: new ResourceRequestPaginatedAction({ resource: 'products', pagination }),
+        wrapper: responseWrapper,
+        parameters: undefined,
+        expectedCalls: [
+          { page: 1 },
+          { page: 2 },
+          { page: 3 },
+        ],
+      },
+      {
+        description: 'with zero-indexed pagination',
+        action: new ResourceRequestPaginatedAction({
+          resource: 'products',
+          pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }, { zero_indexed: true }],
+        }),
+        wrapper: responseWrapper,
+        parameters: undefined,
+        expectedCalls: [
+          { page: 0 },
+          { page: 1 },
+          { page: 2 },
+        ],
+      },
+      {
+        description: 'with existing parameters',
+        action: new ResourceRequestPaginatedAction({ resource: 'products', pagination }),
+        wrapper: { parsedBody: { total_pages: 2 }, headers: {} },
+        parameters: { category_id: 5 },
+        expectedCalls: [
+          { category_id: 5, page: 1 },
+          { category_id: 5, page: 2 },
+        ],
+      },
+    ].forEach(({ description, action, wrapper, parameters, expectedCalls }) => {
+      it(`enqueues the expected jobs ${description}`, () => {
+        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
 
-    beforeEach(() => {
-      JobRegistry.build({ cooldown: -1 });
-      spyOn(JobRegistry, 'enqueue').and.stub();
-    });
+        registerProductsResource(resourceRequest);
+        action.execute(wrapper, parameters);
 
-    afterEach(() => {
-      JobRegistry.reset();
-      ResourceRegistry.reset();
-    });
-
-    describe('basic 1-based pagination', () => {
-      let resourceRequest;
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        const resource = ResourceFactory.build({ name: 'products', resourceRequests: [resourceRequest] });
-        ResourceRegistry.build({ products: resource });
-      });
-
-      it('enqueues one ResourceRequestJob per page', () => {
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
-        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(3);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 1 } }
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 2 } }
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 3 } }
-        );
-      });
-    });
-
-    describe('zero-indexed pagination', () => {
-      let resourceRequest;
-
-      const zeroPagination = [
-        { pages: 'parsedBody.total_pages', page_key: 'page' },
-        { zero_indexed: true },
-      ];
-
-      const zeroResponseWrapper = {
-        parsedBody: { total_pages: 3 },
-        headers: {},
-        parameters: {},
-      };
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        const resource = ResourceFactory.build({ name: 'products', resourceRequests: [resourceRequest] });
-        ResourceRegistry.build({ products: resource });
-      });
-
-      it('enqueues jobs with 0-based page numbers', () => {
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination: zeroPagination }).execute(zeroResponseWrapper);
-        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(3);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 0 } }
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 2 } }
-        );
+        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(expectedCalls.length);
+        expectedCalls.forEach((expectedParameters) => {
+          expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+            'ResourceRequestJob',
+            { resourceRequest, parameters: expectedParameters },
+          );
+        });
       });
     });
 
-    describe('with existing parameters', () => {
-      let resourceRequest;
+    it('enqueues one job per ResourceRequest per page', () => {
+      const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
+      const parameterizedRequest = ResourceRequestFactory.build({ url: '/products/{:page}.json' });
 
-      const wrapperWithParams = {
-        parsedBody: { total_pages: 2 },
-        headers: {},
-      };
+      registerProductsResource(resourceRequest, parameterizedRequest);
 
-      const existingParams = { category_id: 5 };
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        const resource = ResourceFactory.build({ name: 'products', resourceRequests: [resourceRequest] });
-        ResourceRegistry.build({ products: resource });
-      });
-
-      it('merges existing parameters with the page number', () => {
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(wrapperWithParams, existingParams);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { category_id: 5, page: 1 } }
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { category_id: 5, page: 2 } }
-        );
-      });
-    });
-
-    describe('when the target resource has multiple ResourceRequests', () => {
-      let resourceRequest1;
-      let resourceRequest2;
-
-      const singlePageWrapper = {
+      new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute({
         parsedBody: { total_pages: 1 },
         headers: {},
         parameters: {},
-      };
-
-      beforeEach(() => {
-        resourceRequest1 = ResourceRequestFactory.build({ url: '/products.json' });
-        resourceRequest2 = ResourceRequestFactory.build({ url: '/products/{:page}.json' });
-        const resource = ResourceFactory.build({
-          name: 'products',
-          resourceRequests: [resourceRequest1, resourceRequest2],
-        });
-        ResourceRegistry.build({ products: resource });
       });
 
-      it('enqueues one job per resourceRequest per page', () => {
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(singlePageWrapper);
-        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest: resourceRequest1, parameters: { page: 1 } }
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest: resourceRequest2, parameters: { page: 1 } }
-        );
-      });
+      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+      expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+        'ResourceRequestJob',
+        { resourceRequest, parameters: { page: 1 } },
+      );
+      expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+        'ResourceRequestJob',
+        { resourceRequest: parameterizedRequest, parameters: { page: 1 } },
+      );
     });
 
-    describe('when the target resource is not found', () => {
-      beforeEach(() => {
-        ResourceRegistry.build({});
-      });
+    it('throws ResourceNotFound when the target resource is missing', () => {
+      ResourceActionUtils.registerResource('other', []);
+      const action = new ResourceRequestPaginatedAction({ resource: 'unknown', pagination });
 
-      it('throws ResourceNotFound', () => {
-        const action = new ResourceRequestPaginatedAction({ resource: 'unknown', pagination });
-        expect(() => action.execute(responseWrapper))
-          .toThrowMatching((error) => error instanceof ResourceNotFound);
-      });
+      expect(() => action.execute(responseWrapper))
+        .toThrowMatching((error) => error instanceof ResourceNotFound);
     });
 
-    describe('when the pages path expression is missing from the wrapper', () => {
-      beforeEach(() => {
-        const resource = ResourceFactory.build({ name: 'products' });
-        ResourceRegistry.build({ products: resource });
-      });
+    it('throws MissingMappingVariable when the pages path is missing', () => {
+      registerProductsResource(ResourceRequestFactory.build({ url: '/products.json' }));
 
-      it('throws MissingMappingVariable', () => {
-        const missingPagination = [{ pages: 'parsedBody.missing_field', page_key: 'page' }];
-        const action = new ResourceRequestPaginatedAction({ resource: 'products', pagination: missingPagination });
-        expect(() => action.execute(responseWrapper))
-          .toThrowMatching((error) => error instanceof MissingMappingVariable);
-      });
+      expect(() => {
+        new ResourceRequestPaginatedAction({
+          resource: 'products',
+          pagination: [{ pages: 'parsedBody.missing_field', page_key: 'page' }],
+        }).execute(responseWrapper);
+      }).toThrowMatching((error) => error instanceof MissingMappingVariable);
     });
 
-    describe('when the application is stopped', () => {
-      beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(true);
-        const resource = ResourceFactory.build({ name: 'products' });
-        ResourceRegistry.build({ products: resource });
-      });
+    it('does not enqueue any job when the application is stopped', () => {
+      spyOn(Application, 'isStopped').and.returnValue(true);
+      registerProductsResource(ResourceRequestFactory.build({ url: '/products.json' }));
 
-      it('does not enqueue any job', () => {
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
-        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
-      });
+      new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
     });
   });
 });
