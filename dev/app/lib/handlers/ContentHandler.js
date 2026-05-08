@@ -2,6 +2,7 @@ import { notFound } from './not_found.js';
 import RequestHandler from './RequestHandler.js';
 import DataNavigator from '../models/DataNavigator.js';
 import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
+import { Logger } from '../common/utils/logging/Logger.js';
 
 /**
  * Handles an incoming Express request by navigating the in-memory data,
@@ -46,7 +47,7 @@ class ContentHandler extends RequestHandler {
       if (result === null) return notFound(res);
       this._respond(result, req, res);
     } catch (e) {
-      console.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
+      Logger.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
       res.status(400).json({ error: e.message });
     }
   }

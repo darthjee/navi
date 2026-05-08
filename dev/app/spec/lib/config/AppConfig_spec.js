@@ -1,4 +1,5 @@
 import { AppConfig } from '../../../lib/config/AppConfig.js';
+import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
 
 const configFixturePath = FixturesUtils.getFixturePath('config.yml');
@@ -35,7 +36,7 @@ describe('AppConfig', () => {
 
     describe('when the config file does not exist', () => {
       beforeEach(() => {
-        spyOn(console, 'warn');
+        spyOn(Logger, 'warn');
       });
 
       it('falls back to defaults', () => {
@@ -45,7 +46,7 @@ describe('AppConfig', () => {
 
       it('logs a warning', () => {
         AppConfig.load('/nonexistent/config.yml');
-        expect(console.warn).toHaveBeenCalledWith(
+        expect(Logger.warn).toHaveBeenCalledWith(
           jasmine.stringContaining('/nonexistent/config.yml')
         );
       });

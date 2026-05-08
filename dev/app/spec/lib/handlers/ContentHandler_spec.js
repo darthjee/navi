@@ -1,5 +1,6 @@
 import request from 'supertest';
 import Serializer from '../../../lib/models/Serializer.js';
+import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
 import { testData as data } from '../../support/fixtures/testData.js';
 import { buildContentHandlerApp } from '../../support/utils/AppFactory.js';
@@ -26,7 +27,7 @@ describe('ContentHandler', () => {
     const app = buildContentHandlerApp('/categories/:id.json', data);
 
     beforeEach(() => {
-      spyOn(console, 'warn');
+      spyOn(Logger, 'warn');
     });
 
     it('returns 400 with an error message', async () => {
@@ -35,12 +36,12 @@ describe('ContentHandler', () => {
       expect(res.body.error).toContain('"id"');
     });
 
-    it('logs the route and URL to console.warn', async () => {
+    it('logs the route and URL to Logger.warn', async () => {
       await request(app).get('/categories/abc.json');
-      expect(console.warn).toHaveBeenCalledWith(
+      expect(Logger.warn).toHaveBeenCalledWith(
         jasmine.stringContaining('/categories/:id.json')
       );
-      expect(console.warn).toHaveBeenCalledWith(
+      expect(Logger.warn).toHaveBeenCalledWith(
         jasmine.stringContaining('/categories/abc.json')
       );
     });
