@@ -1,4 +1,5 @@
 import { fetchJobs, fetchJobsByStatus, STATUSES } from '../../src/clients/JobsClient.js';
+import { mockFetchFailure, mockFetchSuccess } from '../support/fetch.js';
 
 describe('JobsClient', () => {
   describe('STATUSES', () => {
@@ -8,14 +9,10 @@ describe('JobsClient', () => {
   });
 
   describe('fetchJobsByStatus', () => {
-    describe('when the request succeeds', () => {
-      const jobs = [{ id: 'abc', status: 'enqueued', attempts: 0 }];
+    const jobs = [{ id: 'abc', status: 'enqueued', attempts: 0 }];
 
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve(jobs) })
-        );
-      });
+    describe('when the request succeeds', () => {
+      mockFetchSuccess(jobs);
 
       it('fetches from /jobs/:status.json', async () => {
         await fetchJobsByStatus('enqueued');
@@ -27,22 +24,16 @@ describe('JobsClient', () => {
         expect(result).toEqual(jobs);
       });
 
-      describe('when a filter query is provided', () => {
-        it('appends the filter query to the URL', async () => {
-          await fetchJobsByStatus('enqueued', 'filters[class][]=ResourceRequestJob');
-          expect(globalThis.fetch).toHaveBeenCalledWith(
-            '/jobs/enqueued.json?filters[class][]=ResourceRequestJob'
-          );
-        });
+      it('appends the filter query to the URL when provided', async () => {
+        await fetchJobsByStatus('enqueued', 'filters[class][]=ResourceRequestJob');
+        expect(globalThis.fetch).toHaveBeenCalledWith(
+          '/jobs/enqueued.json?filters[class][]=ResourceRequestJob'
+        );
       });
     });
 
     describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 503 })
-        );
-      });
+      mockFetchFailure(503);
 
       it('throws an error with the status code', async () => {
         await expectAsync(fetchJobsByStatus('enqueued')).toBeRejectedWithError('HTTP 503');
@@ -92,25 +83,19 @@ describe('JobsClient', () => {
         ]);
       });
 
-      describe('when a filter query is provided', () => {
-        it('appends the filter query to all status URLs', async () => {
-          await fetchJobs('filters[class][]=ResourceRequestJob');
-          expect(globalThis.fetch).toHaveBeenCalledWith(
-            '/jobs/enqueued.json?filters[class][]=ResourceRequestJob'
-          );
-          expect(globalThis.fetch).toHaveBeenCalledWith(
-            '/jobs/dead.json?filters[class][]=ResourceRequestJob'
-          );
-        });
+      it('appends the filter query to all status URLs when provided', async () => {
+        await fetchJobs('filters[class][]=ResourceRequestJob');
+        expect(globalThis.fetch).toHaveBeenCalledWith(
+          '/jobs/enqueued.json?filters[class][]=ResourceRequestJob'
+        );
+        expect(globalThis.fetch).toHaveBeenCalledWith(
+          '/jobs/dead.json?filters[class][]=ResourceRequestJob'
+        );
       });
     });
 
     describe('when one request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 500 })
-        );
-      });
+      mockFetchFailure(500);
 
       it('rejects with the error', async () => {
         await expectAsync(fetchJobs()).toBeRejectedWithError('HTTP 500');
@@ -118,4 +103,3 @@ describe('JobsClient', () => {
     });
   });
 });
-

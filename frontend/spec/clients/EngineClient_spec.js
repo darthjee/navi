@@ -1,201 +1,88 @@
 import {
+  continueEngine,
   getEngineStatus,
   pauseEngine,
-  stopEngine,
-  continueEngine,
-  startEngine,
   restartEngine,
+  startEngine,
+  stopEngine,
 } from '../../src/clients/EngineClient.js';
+import { mockFetchFailure, mockFetchSuccess } from '../support/fetch.js';
+
+const engineActions = [
+  {
+    name: 'getEngineStatus',
+    fn: getEngineStatus,
+    endpoint: '/engine/status',
+    successData: { status: 'running' },
+    expectedResult: 'running',
+    failStatus: 500,
+  },
+  {
+    name: 'pauseEngine',
+    fn: pauseEngine,
+    endpoint: '/engine/pause',
+    method: 'PATCH',
+    successData: { status: 'pausing' },
+    failStatus: 409,
+  },
+  {
+    name: 'stopEngine',
+    fn: stopEngine,
+    endpoint: '/engine/stop',
+    method: 'PATCH',
+    successData: { status: 'stopping' },
+    failStatus: 409,
+  },
+  {
+    name: 'continueEngine',
+    fn: continueEngine,
+    endpoint: '/engine/continue',
+    method: 'PATCH',
+    successData: { status: 'running' },
+    failStatus: 409,
+  },
+  {
+    name: 'startEngine',
+    fn: startEngine,
+    endpoint: '/engine/start',
+    method: 'PATCH',
+    successData: { status: 'running' },
+    failStatus: 409,
+  },
+  {
+    name: 'restartEngine',
+    fn: restartEngine,
+    endpoint: '/engine/restart',
+    method: 'PATCH',
+    successData: { status: 'stopping' },
+    failStatus: 409,
+  },
+];
 
 describe('EngineClient', () => {
-  describe('getEngineStatus', () => {
-    describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'running' }) })
-        );
+  engineActions.forEach(({ name, fn, endpoint, method, successData, expectedResult, failStatus }) => {
+    describe(name, () => {
+      describe('when the request succeeds', () => {
+        mockFetchSuccess(successData);
+
+        it('calls the correct endpoint', async () => {
+          await fn();
+          const expectedArgs = method ? [endpoint, { method }] : [endpoint];
+          expect(globalThis.fetch).toHaveBeenCalledWith(...expectedArgs);
+        });
+
+        it('returns the expected result', async () => {
+          const result = await fn();
+          expect(result).toEqual(expectedResult ?? successData);
+        });
       });
 
-      it('fetches from /engine/status', async () => {
-        await getEngineStatus();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/engine/status');
-      });
+      describe('when the request fails', () => {
+        mockFetchFailure(failStatus);
 
-      it('returns the status string', async () => {
-        const result = await getEngineStatus();
-        expect(result).toBe('running');
-      });
-    });
-
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 500 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(getEngineStatus()).toBeRejectedWithError('HTTP 500');
-      });
-    });
-  });
-
-  describe('pauseEngine', () => {
-    describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'pausing' }) })
-        );
-      });
-
-      it('sends a PATCH request to /engine/pause', async () => {
-        await pauseEngine();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/engine/pause', { method: 'PATCH' });
-      });
-
-      it('returns the response data', async () => {
-        const result = await pauseEngine();
-        expect(result).toEqual({ status: 'pausing' });
-      });
-    });
-
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 409 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(pauseEngine()).toBeRejectedWithError('HTTP 409');
-      });
-    });
-  });
-
-  describe('stopEngine', () => {
-    describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'stopping' }) })
-        );
-      });
-
-      it('sends a PATCH request to /engine/stop', async () => {
-        await stopEngine();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/engine/stop', { method: 'PATCH' });
-      });
-
-      it('returns the response data', async () => {
-        const result = await stopEngine();
-        expect(result).toEqual({ status: 'stopping' });
-      });
-    });
-
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 409 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(stopEngine()).toBeRejectedWithError('HTTP 409');
-      });
-    });
-  });
-
-  describe('continueEngine', () => {
-    describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'running' }) })
-        );
-      });
-
-      it('sends a PATCH request to /engine/continue', async () => {
-        await continueEngine();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/engine/continue', { method: 'PATCH' });
-      });
-
-      it('returns the response data', async () => {
-        const result = await continueEngine();
-        expect(result).toEqual({ status: 'running' });
-      });
-    });
-
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 409 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(continueEngine()).toBeRejectedWithError('HTTP 409');
-      });
-    });
-  });
-
-  describe('startEngine', () => {
-    describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'running' }) })
-        );
-      });
-
-      it('sends a PATCH request to /engine/start', async () => {
-        await startEngine();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/engine/start', { method: 'PATCH' });
-      });
-
-      it('returns the response data', async () => {
-        const result = await startEngine();
-        expect(result).toEqual({ status: 'running' });
-      });
-    });
-
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 409 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(startEngine()).toBeRejectedWithError('HTTP 409');
-      });
-    });
-  });
-
-  describe('restartEngine', () => {
-    describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'stopping' }) })
-        );
-      });
-
-      it('sends a PATCH request to /engine/restart', async () => {
-        await restartEngine();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/engine/restart', { method: 'PATCH' });
-      });
-
-      it('returns the response data', async () => {
-        const result = await restartEngine();
-        expect(result).toEqual({ status: 'stopping' });
-      });
-    });
-
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 409 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(restartEngine()).toBeRejectedWithError('HTTP 409');
+        it('throws an error with the status code', async () => {
+          await expectAsync(fn()).toBeRejectedWithError(`HTTP ${failStatus}`);
+        });
       });
     });
   });
