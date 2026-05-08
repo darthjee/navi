@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
 import { ConfigParser } from './ConfigParser.js';
 import { ConfigurationFileNotFound } from '../exceptions/config/ConfigurationFileNotFound.js';
-import { EnvStringResolver } from '../utils/env_resolver/EnvStringResolver.js';
+import { EnvStringResolver } from '../common/utils/env_resolver/EnvStringResolver.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**

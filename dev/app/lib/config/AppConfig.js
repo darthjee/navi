@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { load } from 'js-yaml';
 import { JsonConfig } from './JsonConfig.js';
-import { EnvStringResolver } from '../utils/env_resolver/EnvStringResolver.js';
+import { EnvStringResolver } from '../common/utils/env_resolver/EnvStringResolver.js';
 
 /**
  * Top-level configuration class for the dev app.

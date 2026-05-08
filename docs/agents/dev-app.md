@@ -43,8 +43,10 @@ dev/app/
 │   │   ├── Router.js               # Builds Express router with all routes registered
 │   │   ├── redirect_routes.config.js # Redirect route definitions
 │   │   └── routes.config.js        # JSON API route definitions
-│   └── utils/
-│       └── EnvResolver.js          # Resolves environment variable placeholders
+│   └── common/                     # Mounted from source/lib/common
+│       └── utils/
+│           ├── EnvResolver.js
+│           └── env_resolver/EnvStringResolver.js
 └── spec/
 ```
 
@@ -116,6 +118,6 @@ Startup order: `navi_dev_app` → `navi_dev_frontend` → `navi_proxy` → `navi
 | Job | Directory | What it does |
 |-----|-----------|-------------|
 | `jasmine` + `checks` | `source/` | Navi tests + lint |
-| `jasmine-dev` + `checks-dev` | `dev/app/` | Dev-app tests + lint |
+| `jasmine-dev` + `checks-dev` | `dev/app/` | Dev-app tests + lint (copies `source/lib/common` and `source/spec/lib/common` into `dev/app`) |
 | `jasmine-dev-frontend` + `checks-dev-frontend` | `dev/frontend/` | Dev-frontend tests + lint |
 | `coverage-final` | — | Sends Codacy final signal after all partial uploads |

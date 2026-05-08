@@ -118,6 +118,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Copy common code from source
+          command: |
+            rm -rf dev/app/lib/common dev/app/spec/lib/common
+            cp -r source/lib/common dev/app/lib/common
+            cp -r source/spec/lib/common dev/app/spec/lib/common
+      - run:
           name: Install dependencies
           command: cd dev/app; yarn install
       - run:
@@ -132,6 +138,12 @@ jobs:
       - image: darthjee/circleci_node:0.2.1
     steps:
       - checkout
+      - run:
+          name: Copy common code from source
+          command: |
+            rm -rf dev/app/lib/common dev/app/spec/lib/common
+            cp -r source/lib/common dev/app/lib/common
+            cp -r source/spec/lib/common dev/app/spec/lib/common
       - run:
           name: Install dependencies
           command: cd dev/app; yarn install
