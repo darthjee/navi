@@ -1,11 +1,4 @@
-import { Logger } from './logging/Logger.js';
-
-/**
- * Pattern matching environment variable references in strings.
- * Supports `$VAR_NAME` and `${VAR_NAME}` syntax.
- * @type {RegExp}
- */
-const ENV_VAR_PATTERN = /\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g;
+import { EnvStringResolver } from './env_resolver/EnvStringResolver.js';
 
 /**
  * Resolves environment variable references in string values.
@@ -25,50 +18,8 @@ class EnvResolver {
    */
   static resolveObject(object) {
     return Object.fromEntries(
-      Object.entries(object).map(([key, value]) => [key, EnvResolver.resolveValue(value)])
+      Object.entries(object).map(([key, value]) => [key, EnvStringResolver.resolve(value)])
     );
-  }
-
-  /**
-   * Resolves environment variable references in a raw string (e.g. YAML file content).
-   *
-   * Replaces all `$VAR` and `${VAR}` occurrences with their environment values.
-   *
-   * @param {string} raw Raw string content.
-   * @returns {string} Resolved string with env var references replaced.
-   */
-  static resolveString(raw) {
-    return String(raw).replace(ENV_VAR_PATTERN, (_match, braced, bare) => {
-      const varName = braced || bare;
-      const resolved = process.env[varName];
-
-      if (resolved === undefined) {
-        Logger.warn(`Environment variable not defined: ${varName}`);
-        return '';
-      }
-
-      return resolved;
-    });
-  }
-
-  /**
-   * Resolves environment variable references in a single string value.
-   *
-   * @param {string} value Raw string value.
-   * @returns {string} Resolved value with env var references replaced.
-   */
-  static resolveValue(value) {
-    return String(value).replace(ENV_VAR_PATTERN, (_match, braced, bare) => {
-      const varName = braced || bare;
-      const resolved = process.env[varName];
-
-      if (resolved === undefined) {
-        Logger.warn(`Environment variable not defined: ${varName}`);
-        return '';
-      }
-
-      return resolved;
-    });
   }
 }
 
