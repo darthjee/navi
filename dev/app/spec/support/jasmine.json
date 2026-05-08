@@ -1,5 +1,6 @@
 {
   "spec_dir": "spec",
+  "helpers": ["support/jasmine_setup.js"],
   "spec_files": ["**/*[sS]pec.js"],
   "random": true
 }

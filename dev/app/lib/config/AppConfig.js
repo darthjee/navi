@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { load } from 'js-yaml';
 import { JsonConfig } from './JsonConfig.js';
 import { EnvStringResolver } from '../common/utils/env_resolver/EnvStringResolver.js';
+import { Logger } from '../common/utils/logging/Logger.js';
 
 /**
  * Top-level configuration class for the dev app.
@@ -24,7 +25,7 @@ class AppConfig {
       const raw = load(EnvStringResolver.resolve(readFileSync(configPath, 'utf8')));
       AppConfig.#instance = new AppConfig(raw || {});
     } catch (e) {
-      console.warn(`AppConfig: failed to load config file "${configPath}" — ${e.message}`);
+      Logger.warn(`AppConfig: failed to load config file "${configPath}" — ${e.message}`);
       AppConfig.#instance = new AppConfig({});
     }
   }
