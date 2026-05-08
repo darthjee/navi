@@ -18,7 +18,7 @@ describe('Engine asynchronous job handling', () => {
   let workerFactory;
 
   const enqueueJobs = (count) => {
-    for (let index = 0; index < count; index++) {
+    for (let jobIndex = 0; jobIndex < count; jobIndex++) {
       JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
     }
   };

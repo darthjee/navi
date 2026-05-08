@@ -38,8 +38,11 @@ describe('ResourceRequest', () => {
         { url: '/categories.json', status: 200 },
         { url: '/categories.html', status: 302 },
       ], { clientName: 'myClient' });
+      const allResourceRequestsUseClient = resourceRequests.every((resourceRequest) => {
+        return resourceRequest.clientName === 'myClient';
+      });
 
-      expect(resourceRequests.every((resourceRequest) => resourceRequest.clientName === 'myClient')).toBeTrue();
+      expect(allResourceRequestsUseClient).toBeTrue();
     });
 
     it('passes actions through to each ResourceRequest', () => {
