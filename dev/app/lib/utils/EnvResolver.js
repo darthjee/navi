@@ -21,7 +21,7 @@ class EnvResolver {
    */
   static resolveObject(object) {
     return Object.fromEntries(
-      Object.entries(object).map(([key, value]) => [key, EnvResolver.resolveValue(value)])
+      Object.entries(object).map(([key, value]) => [key, EnvResolver.resolveString(value)])
     );
   }
 
@@ -35,26 +35,6 @@ class EnvResolver {
    */
   static resolveString(raw) {
     return String(raw).replace(ENV_VAR_PATTERN, (_match, braced, bare) => {
-      const varName = braced || bare;
-      const resolved = process.env[varName];
-
-      if (resolved === undefined) {
-        console.warn(`Environment variable not defined: ${varName}`);
-        return '';
-      }
-
-      return resolved;
-    });
-  }
-
-  /**
-   * Resolves environment variable references in a single string value.
-   *
-   * @param {string} value Raw string value.
-   * @returns {string} Resolved value with env var references replaced.
-   */
-  static resolveValue(value) {
-    return String(value).replace(ENV_VAR_PATTERN, (_match, braced, bare) => {
       const varName = braced || bare;
       const resolved = process.env[varName];
 
