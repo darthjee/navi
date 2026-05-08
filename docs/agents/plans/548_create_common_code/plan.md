@@ -103,8 +103,12 @@ The `jasmine-dev` and `checks-dev` jobs run directly on a CI image (no Docker Co
 ```yaml
 - run:
     name: Copy common code from source
-    command: cp -r source/lib/common dev/app/lib/common
+    command: |
+      cp -r source/lib/common dev/app/lib/common
+      cp -r source/spec/lib/common dev/app/spec/lib/common
 ```
+
+Copying the specs ensures the dev/app coverage run also executes the common specs, preserving the coverage metric that was previously provided by the now-deleted `dev/app/spec` files.
 
 Insert this as the first step after `checkout` in both `jasmine-dev` and `checks-dev`.
 
