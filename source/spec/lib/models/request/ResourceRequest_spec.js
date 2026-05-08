@@ -38,18 +38,17 @@ describe('ResourceRequest', () => {
         { url: '/categories.json', status: 200 },
         { url: '/categories.html', status: 302 },
       ], { clientName: 'myClient' });
-      const allResourceRequestsUseClient = resourceRequests.every((resourceRequest) => {
-        return resourceRequest.clientName === 'myClient';
-      });
+      const usesClientName = ({ clientName }) => clientName === 'myClient';
 
-      expect(allResourceRequestsUseClient).toBeTrue();
+      expect(resourceRequests.every(usesClientName)).toBeTrue();
     });
 
     it('passes actions through to each ResourceRequest', () => {
-      const [resourceRequest] = ResourceRequest.fromList([
+      const resourceRequests = ResourceRequest.fromList([
         { url: '/categories.json', status: 200, actions: [{ resource: 'products' }] },
       ]);
-      expect(resourceRequest.actions.length).toBe(1);
+
+      expect(resourceRequests[0].actions.length).toBe(1);
     });
 
     describe('with assets', () => {

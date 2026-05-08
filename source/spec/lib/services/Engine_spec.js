@@ -18,7 +18,7 @@ describe('Engine', () => {
   let workerFactory;
 
   const enqueueJobs = (count) => {
-    for (let jobIndex = 0; jobIndex < count; jobIndex++) {
+    for (let i = 0; i < count; i++) {
       JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: {}, parameters: {} });
     }
   };
