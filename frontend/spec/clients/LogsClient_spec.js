@@ -1,49 +1,36 @@
 import fetchLogs, { fetchJobLogs } from '../../src/clients/LogsClient.js';
+import { mockFetchFailure, mockFetchSuccess } from '../support/fetch.js';
 
 describe('LogsClient', () => {
   describe('fetchLogs', () => {
-    describe('without lastId', () => {
-      describe('when the request succeeds', () => {
-        const logs = [
-          { id: 1, level: 'info', message: 'Server started', timestamp: '2024-01-01T00:00:00Z' },
-        ];
+    const logs = [
+      { id: 1, level: 'info', message: 'Server started', timestamp: '2024-01-01T00:00:00Z' },
+    ];
 
-        beforeEach(() => {
-          spyOn(globalThis, 'fetch').and.returnValue(
-            Promise.resolve({ ok: true, json: () => Promise.resolve(logs) }),
-          );
-        });
+    describe('without lastId — when the request succeeds', () => {
+      mockFetchSuccess(logs);
 
-        it('fetches from /logs.json', async () => {
-          await fetchLogs();
-          expect(globalThis.fetch).toHaveBeenCalledWith('/logs.json');
-        });
-
-        it('returns the logs array', async () => {
-          const result = await fetchLogs();
-          expect(result).toEqual(logs);
-        });
+      it('fetches from /logs.json', async () => {
+        await fetchLogs();
+        expect(globalThis.fetch).toHaveBeenCalledWith('/logs.json');
       });
 
-      describe('when the request fails', () => {
-        beforeEach(() => {
-          spyOn(globalThis, 'fetch').and.returnValue(
-            Promise.resolve({ ok: false, status: 500 }),
-          );
-        });
+      it('returns the logs array', async () => {
+        const result = await fetchLogs();
+        expect(result).toEqual(logs);
+      });
+    });
 
-        it('throws an error with the HTTP status code', async () => {
-          await expectAsync(fetchLogs()).toBeRejectedWithError('HTTP 500');
-        });
+    describe('without lastId — when the request fails', () => {
+      mockFetchFailure(500);
+
+      it('throws an error with the HTTP status code', async () => {
+        await expectAsync(fetchLogs()).toBeRejectedWithError('HTTP 500');
       });
     });
 
     describe('with a numeric lastId', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('appends last_id to the query string', async () => {
         await fetchLogs({ lastId: 42 });
@@ -52,11 +39,7 @@ describe('LogsClient', () => {
     });
 
     describe('with a lastId that contains special characters', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('URI-encodes the lastId value', async () => {
         await fetchLogs({ lastId: 'a b+c' });
@@ -65,11 +48,7 @@ describe('LogsClient', () => {
     });
 
     describe('with lastId as null', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('fetches from /logs.json without a query parameter', async () => {
         await fetchLogs({ lastId: null });
@@ -78,11 +57,7 @@ describe('LogsClient', () => {
     });
 
     describe('with lastId as undefined', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('fetches from /logs.json without a query parameter', async () => {
         await fetchLogs({ lastId: undefined });
@@ -92,48 +67,34 @@ describe('LogsClient', () => {
   });
 
   describe('fetchJobLogs', () => {
-    describe('without lastId', () => {
-      describe('when the request succeeds', () => {
-        const logs = [
-          { id: 1, level: 'info', message: 'Job started', timestamp: '2024-01-01T00:00:00Z' },
-        ];
+    const logs = [
+      { id: 1, level: 'info', message: 'Job started', timestamp: '2024-01-01T00:00:00Z' },
+    ];
 
-        beforeEach(() => {
-          spyOn(globalThis, 'fetch').and.returnValue(
-            Promise.resolve({ ok: true, json: () => Promise.resolve(logs) }),
-          );
-        });
+    describe('without lastId — when the request succeeds', () => {
+      mockFetchSuccess(logs);
 
-        it('fetches from /jobs/:jobId/logs.json', async () => {
-          await fetchJobLogs('job-1');
-          expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/job-1/logs.json');
-        });
-
-        it('returns the logs array', async () => {
-          const result = await fetchJobLogs('job-1');
-          expect(result).toEqual(logs);
-        });
+      it('fetches from /jobs/:jobId/logs.json', async () => {
+        await fetchJobLogs('job-1');
+        expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/job-1/logs.json');
       });
 
-      describe('when the request fails', () => {
-        beforeEach(() => {
-          spyOn(globalThis, 'fetch').and.returnValue(
-            Promise.resolve({ ok: false, status: 500 }),
-          );
-        });
+      it('returns the logs array', async () => {
+        const result = await fetchJobLogs('job-1');
+        expect(result).toEqual(logs);
+      });
+    });
 
-        it('throws an error with the HTTP status code', async () => {
-          await expectAsync(fetchJobLogs('job-1')).toBeRejectedWithError('HTTP 500');
-        });
+    describe('without lastId — when the request fails', () => {
+      mockFetchFailure(500);
+
+      it('throws an error with the HTTP status code', async () => {
+        await expectAsync(fetchJobLogs('job-1')).toBeRejectedWithError('HTTP 500');
       });
     });
 
     describe('with a numeric lastId', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('appends last_id to the query string', async () => {
         await fetchJobLogs('job-1', { lastId: 42 });
@@ -142,11 +103,7 @@ describe('LogsClient', () => {
     });
 
     describe('with a jobId that contains special characters', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('URI-encodes the jobId', async () => {
         await fetchJobLogs('job 1');
@@ -155,11 +112,7 @@ describe('LogsClient', () => {
     });
 
     describe('with lastId as null', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-      });
+      mockFetchSuccess([]);
 
       it('fetches without a query parameter', async () => {
         await fetchJobLogs('job-1', { lastId: null });

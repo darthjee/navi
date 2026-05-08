@@ -1,15 +1,12 @@
 import fetchJob, { retryJob } from '../../src/clients/JobClient.js';
+import { mockFetchFailure, mockFetchSuccess } from '../support/fetch.js';
 
 describe('JobClient', () => {
   describe('fetchJob', () => {
-    describe('when the job exists', () => {
-      const job = { id: 'abc-123', status: 'processing', attempts: 1 };
+    const job = { id: 'abc-123', status: 'processing', attempts: 1 };
 
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(job) })
-        );
-      });
+    describe('when the job exists', () => {
+      mockFetchSuccess(job);
 
       it('fetches from /job/:id.json', async () => {
         await fetchJob('abc-123');
@@ -36,11 +33,7 @@ describe('JobClient', () => {
     });
 
     describe('when the request fails with a server error', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 500 })
-        );
-      });
+      mockFetchFailure(500);
 
       it('throws an error with the status code', async () => {
         await expectAsync(fetchJob('abc-123')).toBeRejectedWithError('HTTP 500');
@@ -50,11 +43,7 @@ describe('JobClient', () => {
 
   describe('retryJob', () => {
     describe('when the request succeeds', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'enqueued' }) })
-        );
-      });
+      mockFetchSuccess({ status: 'enqueued' });
 
       it('sends a PATCH to /jobs/:id/retry', async () => {
         await retryJob('abc-123');
@@ -68,11 +57,7 @@ describe('JobClient', () => {
     });
 
     describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 409 })
-        );
-      });
+      mockFetchFailure(409);
 
       it('throws an error with the status code', async () => {
         await expectAsync(retryJob('abc-123')).toBeRejectedWithError('HTTP 409');
