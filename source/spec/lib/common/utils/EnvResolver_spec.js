@@ -1,4 +1,4 @@
-import { EnvResolver } from '../../../lib/utils/EnvResolver.js';
+import { EnvResolver } from '../../../../lib/common/utils/EnvResolver.js';
 
 describe('EnvResolver', () => {
   describe('.resolveObject', () => {
