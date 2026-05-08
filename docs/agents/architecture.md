@@ -47,6 +47,7 @@ AppError (base — exceptions/)
 ```
 
 Subfolders:
+
 - `exceptions/` — `AppError` (shared base class, stays at root)
 - `exceptions/http/` — HTTP/server errors: `ConflictError`, `ForbiddenError`, `NotFoundError`
 - `exceptions/config/` — Config errors: `ConfigurationFileNotFound`, `ConfigurationFileNotProvided`, `MissingClientsConfig`, `MissingResourceConfig`, `MissingTopLevelConfgKey`
@@ -66,6 +67,7 @@ Data containers mapping YAML config to typed instances. Most expose `fromObject(
 - Sub-models: `WorkersConfig`, `WebConfig`, `PaginationConfig`, `AssetRequest`.
 
 Subfolders:
+
 - `models/configs/` — configuration models: `Config`, `FailureConfig`, `LogConfig`, `PaginationConfig`, `WebConfig`, `WorkersConfig`
 - `models/request/` — request models: `AssetRequest`, `Resource`, `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestPaginatedAction`
 - `models/response/` — response-parsing models: `ParametersMapper`, `PathResolver`, `PathSegmentTraverser`, `ResponseParser`, `ResponseWrapper`
@@ -125,6 +127,7 @@ Business logic and I/O layer:
 Express-based web server. `Router` wires all request handlers and serves the React SPA from `source/static/`. Handlers extend `RequestHandler` and are registered via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
 
 Subfolders:
+
 - `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `PathValidator`, `RequestHandler` (abstract base)
 - `server/handlers/` — general handlers: `AssetsRequestHandler`, `BaseUrlsRequestHandler`, `IndexRequestHandler`, `JobsFilter`, `LogsRequestHandler`, `SettingsRequestHandler`, `StatsRequestHandler`
 - `server/handlers/engine/` — engine lifecycle handlers: `EngineContinueRequestHandler`, `EnginePauseRequestHandler`, `EngineRestartRequestHandler`, `EngineShutdownRequestHandler`, `EngineStartRequestHandler`, `EngineStatusRequestHandler`, `EngineStopRequestHandler`
