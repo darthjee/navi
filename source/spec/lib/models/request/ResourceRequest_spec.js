@@ -3,21 +3,28 @@ import { AssetRequest } from '../../../../lib/models/request/AssetRequest.js';
 import { ResourceRequest } from '../../../../lib/models/request/ResourceRequest.js';
 import { ResponseWrapper } from '../../../../lib/models/response/ResponseWrapper.js';
 import { Application } from '../../../../lib/services/Application.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
 import { AssetRequestFactory } from '../../../support/factories/AssetRequestFactory.js';
 import { ClientRegistryFactory } from '../../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestActionFactory } from '../../../support/factories/ResourceRequestActionFactory.js';
 import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
+import { LoggerUtils } from '../../../support/utils/LoggerUtils.js';
+import { RegistryCleanupUtils } from '../../../support/utils/RegistryCleanupUtils.js';
+
+const buildResponseWrapper = (data) => new ResponseWrapper({ data, headers: {} });
+
+const setupJobRegistrySpy = () => {
+  LoggerUtils.stubLoggerMethods();
+  JobRegistry.build({ cooldown: -1 });
+  spyOn(JobRegistry, 'enqueue').and.stub();
+};
 
 describe('ResourceRequest', () => {
   describe('.fromList', () => {
-    it('returns a list of ResourceRequest instances with mapped attributes', () => {
-      const resources = [
+    it('returns ResourceRequest instances with mapped attributes', () => {
+      const resourceRequests = ResourceRequest.fromList([
         { url: '/categories.json', status: 200 },
         { url: '/categories.html', status: 302 },
-      ];
-
-      const resourceRequests = ResourceRequest.fromList(resources);
+      ]);
 
       expect(resourceRequests).toEqual([
         ResourceRequestFactory.build(),
@@ -27,95 +34,114 @@ describe('ResourceRequest', () => {
     });
 
     it('assigns the given clientName to each ResourceRequest', () => {
-      const resources = [
+      const resourceRequests = ResourceRequest.fromList([
         { url: '/categories.json', status: 200 },
         { url: '/categories.html', status: 302 },
-      ];
+      ], { clientName: 'myClient' });
+      const usesClientName = ({ clientName }) => clientName === 'myClient';
 
-      const resourceRequests = ResourceRequest.fromList(resources, { clientName: 'myClient' });
-
-      expect(resourceRequests.every((rr) => rr.clientName === 'myClient')).toBeTrue();
+      expect(resourceRequests.every(usesClientName)).toBeTrue();
     });
 
     it('passes actions through to each ResourceRequest', () => {
-      const resources = [
+      const resourceRequests = ResourceRequest.fromList([
         { url: '/categories.json', status: 200, actions: [{ resource: 'products' }] },
-      ];
-
-      const resourceRequests = ResourceRequest.fromList(resources);
+      ]);
 
       expect(resourceRequests[0].actions.length).toBe(1);
+    });
+
+    describe('with assets', () => {
+      it('parses assets into AssetRequest instances', () => {
+        const [resourceRequest] = ResourceRequest.fromList([
+          { url: '/', status: 200, assets: [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }] },
+        ]);
+        expect(resourceRequest.assets.length).toBe(1);
+        expect(resourceRequest.assets[0]).toBeInstanceOf(AssetRequest);
+      });
+
+      it('sets an empty assets array when the key is absent', () => {
+        const [resourceRequest] = ResourceRequest.fromList([{ url: '/', status: 200 }]);
+        expect(resourceRequest.assets).toEqual([]);
+        expect(resourceRequest.hasAssets()).toBeFalse();
+      });
     });
   });
 
   describe('#clientName', () => {
     it('returns undefined when no clientName is set', () => {
-      const request = ResourceRequestFactory.build();
-      expect(request.clientName).toBeUndefined();
+      expect(ResourceRequestFactory.build().clientName).toBeUndefined();
     });
 
     it('returns the clientName when set', () => {
-      const request = ResourceRequestFactory.build({ clientName: 'myClient' });
-      expect(request.clientName).toBe('myClient');
+      expect(ResourceRequestFactory.build({ clientName: 'myClient' }).clientName).toBe('myClient');
     });
   });
 
   describe('#resolveUrl', () => {
-    it('returns the URL unchanged when there are no placeholders and no parameters', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories.json' });
-      expect(request.resolveUrl({})).toEqual('/categories.json');
-    });
-
-    it('replaces a single placeholder with the matching parameter', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
-      expect(request.resolveUrl({ id: 1 })).toEqual('/categories/1.json');
-    });
-
-    it('replaces multiple placeholders with matching parameters', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{:cat}/items/{:item}' });
-      expect(request.resolveUrl({ cat: 5, item: 3 })).toEqual('/categories/5/items/3');
-    });
-
-    it('leaves placeholders unchanged when no matching key exists', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
-      expect(request.resolveUrl({})).toEqual('/categories/{:id}.json');
-    });
-
-    it('returns the URL unchanged when there are no placeholders but extra parameters', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories.json' });
-      expect(request.resolveUrl({ id: 1 })).toEqual('/categories.json');
-    });
-
-    it('returns the URL unchanged when called with no arguments', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
-      expect(request.resolveUrl()).toEqual('/categories/{:id}.json');
+    [
+      {
+        description: 'when there are no placeholders and no parameters',
+        url: '/categories.json',
+        parameters: {},
+        expectedUrl: '/categories.json',
+      },
+      {
+        description: 'when there is a single placeholder',
+        url: '/categories/{:id}.json',
+        parameters: { id: 1 },
+        expectedUrl: '/categories/1.json',
+      },
+      {
+        description: 'when there are multiple placeholders',
+        url: '/categories/{:cat}/items/{:item}',
+        parameters: { cat: 5, item: 3 },
+        expectedUrl: '/categories/5/items/3',
+      },
+      {
+        description: 'when no matching key exists',
+        url: '/categories/{:id}.json',
+        parameters: {},
+        expectedUrl: '/categories/{:id}.json',
+      },
+      {
+        description: 'when extra parameters are given for a plain URL',
+        url: '/categories.json',
+        parameters: { id: 1 },
+        expectedUrl: '/categories.json',
+      },
+      {
+        description: 'when called without arguments',
+        url: '/categories/{:id}.json',
+        expectedUrl: '/categories/{:id}.json',
+      },
+    ].forEach(({ description, url, parameters, expectedUrl }) => {
+      it(`returns the expected URL ${description}`, () => {
+        const request = ResourceRequestFactory.build({ url });
+        expect(request.resolveUrl(parameters)).toEqual(expectedUrl);
+      });
     });
   });
 
   describe('#needsParams', () => {
-    it('returns false when the URL has no placeholders', () => {
-      const request = ResourceRequestFactory.build();
-      expect(request.needsParams()).toBeFalse();
-    });
-
-    it('returns true when the URL has one placeholder', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
-      expect(request.needsParams()).toBeTrue();
-    });
-
-    it('returns true when the URL has multiple placeholders', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{:id}/items/{:item_id}' });
-      expect(request.needsParams()).toBeTrue();
-    });
-
-    it('returns false for an empty URL', () => {
-      const request = ResourceRequestFactory.build({ url: '' });
-      expect(request.needsParams()).toBeFalse();
-    });
-
-    it('returns false for a malformed placeholder without the colon prefix', () => {
-      const request = ResourceRequestFactory.build({ url: '/categories/{id}.json' });
-      expect(request.needsParams()).toBeFalse();
+    [
+      { description: 'when the URL has no placeholders', url: '/categories.json', expected: false },
+      { description: 'when the URL has one placeholder', url: '/categories/{:id}.json', expected: true },
+      {
+        description: 'when the URL has multiple placeholders',
+        url: '/categories/{:id}/items/{:item_id}',
+        expected: true,
+      },
+      { description: 'for an empty URL', url: '', expected: false },
+      {
+        description: 'for a malformed placeholder without the colon prefix',
+        url: '/categories/{id}.json',
+        expected: false,
+      },
+    ].forEach(({ description, url, expected }) => {
+      it(`returns ${expected} ${description}`, () => {
+        expect(ResourceRequestFactory.build({ url }).needsParams()).toBe(expected);
+      });
     });
   });
 
@@ -124,93 +150,62 @@ describe('ResourceRequest', () => {
     let request;
 
     beforeEach(() => {
-      spyOn(Logger, 'info').and.stub();
-      spyOn(Logger, 'error').and.stub();
+      setupJobRegistrySpy();
       action = ResourceRequestActionFactory.build({ resource: 'products' });
-      JobRegistry.build({ cooldown: -1 });
-      spyOn(JobRegistry, 'enqueue').and.stub();
     });
 
     afterEach(() => {
-      JobRegistry.reset();
+      RegistryCleanupUtils.resetJobRegistry();
     });
 
-    describe('when there are no actions', () => {
-      it('returns immediately without errors', () => {
-        request = ResourceRequestFactory.build();
-        const wrapper = new ResponseWrapper({ data: 'not valid json', headers: {} });
-        expect(() => request.enqueueActions(wrapper)).not.toThrow();
-      });
-
-      it('does not call enqueue', () => {
-        request = ResourceRequestFactory.build();
-        const wrapper = new ResponseWrapper({ data: '[]', headers: {} });
-        request.enqueueActions(wrapper);
-        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
-      });
+    it('returns without errors when there are no actions', () => {
+      request = ResourceRequestFactory.build();
+      expect(() => request.enqueueActions(buildResponseWrapper('not valid json'))).not.toThrow();
     });
 
-    describe('when the response is a JSON array', () => {
-      beforeEach(() => {
-        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
-        request.actions = [action];
-      });
-
-      it('calls enqueue once per element', () => {
-        const wrapper = new ResponseWrapper({ data: '[{"id":1},{"id":2}]', headers: {} });
-        request.enqueueActions(wrapper);
-        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-      });
+    it('does not enqueue anything when there are no actions', () => {
+      request = ResourceRequestFactory.build();
+      request.enqueueActions(buildResponseWrapper('[]'));
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
     });
 
-    describe('when the response is a JSON object', () => {
-      beforeEach(() => {
-        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
-        request.actions = [action];
-      });
-
-      it('calls enqueue once with the item', () => {
-        const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
-        request.enqueueActions(wrapper);
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+    [
+      {
+        description: 'when the response is a JSON array',
+        body: '[{"id":1},{"id":2}]',
+        assertion: () => expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2),
+      },
+      {
+        description: 'when the response is a JSON object',
+        body: '{"id":1}',
+        assertion: () => expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
           'Action',
-          jasmine.objectContaining({ action })
-        );
+          jasmine.objectContaining({ action }),
+        ),
+      },
+    ].forEach(({ description, body, assertion }) => {
+      it(`enqueues the expected jobs ${description}`, () => {
+        request = ResourceRequestFactory.build({ actions: [{ resource: 'products' }] });
+        request.actions = [action];
+        request.enqueueActions(buildResponseWrapper(body));
+        assertion();
       });
     });
   });
 
   describe('#hasAssets', () => {
     it('returns false when the assets list is empty', () => {
-      const request = ResourceRequestFactory.build();
-      expect(request.hasAssets()).toBeFalse();
+      expect(ResourceRequestFactory.build().hasAssets()).toBeFalse();
     });
 
     it('returns true when the assets list is non-empty', () => {
-      const assetAttrs = [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }];
-      const request = new ResourceRequest({ url: '/', status: 200, assets: assetAttrs });
+      const request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        assets: [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }],
+      });
+
       expect(request.hasAssets()).toBeTrue();
-    });
-  });
-
-  describe('.fromList with assets', () => {
-    it('parses the assets list into AssetRequest instances', () => {
-      const resources = [
-        { url: '/', status: 200, assets: [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }] },
-      ];
-
-      const [request] = ResourceRequest.fromList(resources);
-
-      expect(request.assets.length).toBe(1);
-      expect(request.assets[0]).toBeInstanceOf(AssetRequest);
-    });
-
-    it('sets an empty assets array when the key is absent', () => {
-      const resources = [{ url: '/', status: 200 }];
-      const [request] = ResourceRequest.fromList(resources);
-
-      expect(request.assets).toEqual([]);
-      expect(request.hasAssets()).toBeFalse();
     });
   });
 
@@ -218,16 +213,19 @@ describe('ResourceRequest', () => {
     let request;
     let jobRegistry;
     let clientRegistry;
+
     beforeEach(() => {
-      spyOn(Logger, 'info').and.stub();
-      spyOn(Logger, 'error').and.stub();
+      LoggerUtils.stubLoggerMethods();
       jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
       clientRegistry = ClientRegistryFactory.build();
-      const assetAttrs = [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }];
-      request = new ResourceRequest({ url: '/', status: 200, assets: assetAttrs });
+      request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        assets: [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }],
+      });
     });
 
-    it('enqueues one HtmlParseJob with the correct rawHtml and assetRequests', () => {
+    it('enqueues one HtmlParseJob with the rawHtml and assetRequests', () => {
       const rawHtml = '<html><head><link rel="stylesheet" href="/a.css"></head></html>';
       request.enqueueAssets(rawHtml, jobRegistry, clientRegistry);
 
@@ -240,24 +238,19 @@ describe('ResourceRequest', () => {
 
     it('passes the assetRequests from the request', () => {
       const assetRequest = AssetRequestFactory.build();
-      request = new ResourceRequest({ url: '/', status: 200, assets: [] });
+
       request.assets = [assetRequest];
       request.enqueueAssets('<html></html>', jobRegistry, clientRegistry);
-
-      expect(jobRegistry.enqueue).toHaveBeenCalledWith('HtmlParse',
-        jasmine.objectContaining({ assetRequests: [assetRequest] })
+      expect(jobRegistry.enqueue).toHaveBeenCalledWith(
+        'HtmlParse',
+        jasmine.objectContaining({ assetRequests: [assetRequest] }),
       );
     });
 
-    describe('when the application is stopped', () => {
-      beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(true);
-      });
-
-      it('does not enqueue any job', () => {
-        request.enqueueAssets('<html></html>', jobRegistry, clientRegistry);
-        expect(jobRegistry.enqueue).not.toHaveBeenCalled();
-      });
+    it('does not enqueue jobs when the application is stopped', () => {
+      spyOn(Application, 'isStopped').and.returnValue(true);
+      request.enqueueAssets('<html></html>', jobRegistry, clientRegistry);
+      expect(jobRegistry.enqueue).not.toHaveBeenCalled();
     });
   });
 
@@ -266,34 +259,34 @@ describe('ResourceRequest', () => {
     let request;
 
     beforeEach(() => {
-      spyOn(Logger, 'info').and.stub();
-      spyOn(Logger, 'error').and.stub();
+      setupJobRegistrySpy();
       paginatedAction = jasmine.createSpyObj('paginatedAction', ['execute']);
       request = ResourceRequestFactory.build();
       request.paginatedActions = [paginatedAction];
-      JobRegistry.build({ cooldown: -1 });
-      spyOn(JobRegistry, 'enqueue').and.stub();
     });
 
-    afterEach(() => { JobRegistry.reset(); });
-    it('does not call enqueue when there are no paginated actions', () => {
+    afterEach(() => {
+      RegistryCleanupUtils.resetJobRegistry();
+    });
+
+    it('does not enqueue anything when there are no paginated actions', () => {
       request.paginatedActions = [];
-      request.enqueuePaginatedActions(new ResponseWrapper({ data: '[]', headers: {} }));
+      request.enqueuePaginatedActions(buildResponseWrapper('[]'));
       expect(JobRegistry.enqueue).not.toHaveBeenCalled();
     });
 
-    it('calls enqueue once per paginated action regardless of response body structure', () => {
-      request.enqueuePaginatedActions(new ResponseWrapper({ data: '[{"id":1},{"id":2}]', headers: {} }));
+    it('calls enqueue once per paginated action', () => {
+      request.enqueuePaginatedActions(buildResponseWrapper('[{"id":1},{"id":2}]'));
       expect(JobRegistry.enqueue).toHaveBeenCalledTimes(1);
     });
 
-    it('enqueues with paginatedAction, responseWrapper and parameters', () => {
-      const wrapper = new ResponseWrapper({ data: '{"id":1}', headers: {} });
-      const params = { category_id: 5 };
-      request.enqueuePaginatedActions(wrapper, params);
+    it('enqueues the paginated action with wrapper and parameters', () => {
+      const wrapper = buildResponseWrapper('{"id":1}');
+      const parameters = { category_id: 5 };
+      request.enqueuePaginatedActions(wrapper, parameters);
       expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
         'PaginatedAction',
-        jasmine.objectContaining({ paginatedAction, responseWrapper: wrapper, parameters: params })
+        jasmine.objectContaining({ paginatedAction, responseWrapper: wrapper, parameters }),
       );
     });
   });

@@ -8,6 +8,19 @@ import { ResourceRequestJobFactory } from '../../support/factories/ResourceReque
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
+const baseUrl = 'http://example.com';
+const url = '/categories.json';
+const fullUrl = 'http://example.com/categories.json';
+const status = 200;
+
+const expectedRequestOptions = {
+  timeout: 5000,
+  responseType: 'text',
+  headers: {},
+  maxRedirects: 0,
+  validateStatus: jasmine.any(Function),
+};
+
 describe('ResourceRequestJob', () => {
   let resourceRequest;
   let clients;
@@ -15,24 +28,26 @@ describe('ResourceRequestJob', () => {
   let parameters;
   let job;
   let logContext;
-
-  const baseUrl = 'http://example.com';
-  const url = '/categories.json';
-  const fullUrl = 'http://example.com/categories.json';
-  const status = 200;
-
   let response;
-  let expectedError;
+
+  const rebuildJob = ({ requestUrl = url, jobParameters = {} } = {}) => {
+    resourceRequest = ResourceRequestFactory.build({ url: requestUrl, status });
+    parameters = jobParameters;
+    job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+  };
+
+  const stubEnqueueMethods = () => {
+    spyOn(resourceRequest, 'enqueueActions').and.stub();
+    spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
+  };
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
     logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
-    resourceRequest = ResourceRequestFactory.build({ url, status });
     client = ClientFactory.build({ baseUrl });
     clients = ClientRegistryFactory.build({ default: client });
-    parameters = {};
 
-    job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+    rebuildJob();
   });
 
   describe('#constructor', () => {
@@ -42,30 +57,31 @@ describe('ResourceRequestJob', () => {
   });
 
   describe('#arguments', () => {
-    it('returns resolved url', () => {
-      expect(job.arguments).toEqual({ url });
-    });
+    [
+      {
+        description: 'for a plain URL',
+        requestUrl: url,
+        jobParameters: {},
+        expectedArguments: { url },
+      },
+      {
+        description: 'for a parameterized URL',
+        requestUrl: '/categories/{:id}.json',
+        jobParameters: { id: 7 },
+        expectedArguments: { url: '/categories/7.json' },
+      },
+    ].forEach(({ description, requestUrl, jobParameters, expectedArguments }) => {
+      it(`returns the resolved URL ${description}`, () => {
+        rebuildJob({ requestUrl, jobParameters });
 
-    describe('when job has a parameterized URL', () => {
-      const paramUrl = '/categories/{:id}.json';
-      const resolvedUrl = '/categories/7.json';
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
-        parameters = { id: 7 };
-        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
-      });
-
-      it('returns the resolved url with parameters substituted', () => {
-        expect(job.arguments).toEqual({ url: resolvedUrl });
+        expect(job.arguments).toEqual(expectedArguments);
       });
     });
   });
 
   describe('#perform', () => {
     beforeEach(() => {
-      spyOn(resourceRequest, 'enqueueActions').and.stub();
-      spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
+      stubEnqueueMethods();
     });
 
     describe('when the client request is successful', () => {
@@ -75,55 +91,45 @@ describe('ResourceRequestJob', () => {
 
       it('resolves with the response', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(fullUrl, {
-          timeout: 5000,
-          responseType: 'text',
-          headers: {},
-          maxRedirects: 0,
-          validateStatus: jasmine.any(Function),
-        });
+        expect(axios.get).toHaveBeenCalledWith(fullUrl, expectedRequestOptions);
       });
 
       it('calls enqueueActions with a ResponseWrapper', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
-        const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
-        expect(wrapper).toBeInstanceOf(ResponseWrapper);
+        expect(resourceRequest.enqueueActions.calls.argsFor(0)[0]).toBeInstanceOf(ResponseWrapper);
       });
 
       it('calls enqueuePaginatedActions with a ResponseWrapper', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+
         expect(resourceRequest.enqueuePaginatedActions).toHaveBeenCalledTimes(1);
-        const wrapper = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[0];
-        expect(wrapper).toBeInstanceOf(ResponseWrapper);
+        expect(resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[0]).toBeInstanceOf(ResponseWrapper);
       });
 
-      it('passes the job parameters to the ResponseWrapper', async () => {
+      it('passes the job parameters to enqueueActions', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        const wrapper = resourceRequest.enqueueActions.calls.argsFor(0)[0];
-        expect(wrapper.parameters).toBe(parameters);
+
+        expect(resourceRequest.enqueueActions.calls.argsFor(0)[0].parameters).toBe(parameters);
       });
 
-      it('passes the resolved URL as originUrl to enqueueActions', async () => {
+      it('passes the resolved URL as originUrl to both enqueue methods', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        const originUrl = resourceRequest.enqueueActions.calls.argsFor(0)[1];
-        expect(originUrl).toBe(url);
-      });
 
-      it('passes the resolved URL as originUrl to enqueuePaginatedActions', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        const originUrl = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[2];
-        expect(originUrl).toBe(url);
+        expect(resourceRequest.enqueueActions.calls.argsFor(0)[1]).toBe(url);
+        expect(resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[2]).toBe(url);
       });
 
       it('passes the job parameters to enqueuePaginatedActions', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        const passedParameters = resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[1];
-        expect(passedParameters).toBe(parameters);
+
+        expect(resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[1]).toBe(parameters);
       });
 
       it('logs debug when performing', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+
         expect(logContext.debug).toHaveBeenCalled();
       });
 
@@ -131,28 +137,33 @@ describe('ResourceRequestJob', () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
       });
     });
 
     describe('when the client request fails', () => {
+      const expectedError = new RequestFailed(502, fullUrl);
+
       beforeEach(() => {
         response = AxiosUtils.stubGet(502, '[]');
-        expectedError = new RequestFailed(502, fullUrl);
       });
 
       it('does not call enqueueActions', async () => {
         await job.perform(logContext).catch(() => {});
+
         expect(resourceRequest.enqueueActions).not.toHaveBeenCalled();
       });
 
       it('registers failure and increments attempts', async () => {
         expect(job.lastError).toBeUndefined();
+
         await job.perform(logContext).catch(() => {});
         await job.perform(logContext).catch(() => {});
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
+
         await job.perform(logContext).catch(() => {});
         expect(job.exhausted()).toBeTrue();
         expect(job.lastError).toEqual(expectedError);
@@ -160,112 +171,62 @@ describe('ResourceRequestJob', () => {
 
       it('logs the error', async () => {
         await job.perform(logContext).catch(() => {});
+
         expect(logContext.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
     });
 
-    describe('when the resource request has a parameterized URL', () => {
-      const paramUrl = '/categories/{:id}.json';
-      const resolvedFullUrl = 'http://example.com/categories/7.json';
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
-        parameters = { id: 7 };
-        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+    [
+      {
+        description: 'when the resource request has a parameterized URL',
+        requestUrl: '/categories/{:id}.json',
+        jobParameters: { id: 7 },
+        expectedUrl: 'http://example.com/categories/7.json',
+      },
+      {
+        description: 'when parameters are empty and the URL has placeholders',
+        requestUrl: '/categories/{:id}.json',
+        jobParameters: {},
+        expectedUrl: 'http://example.com/categories/{:id}.json',
+      },
+    ].forEach(({ description, requestUrl, jobParameters, expectedUrl }) => {
+      it(`requests the expected URL ${description}`, async () => {
+        rebuildJob({ requestUrl, jobParameters });
+        stubEnqueueMethods();
         response = AxiosUtils.stubGet(200, '[]');
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
-        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
-      });
 
-      it('resolves placeholders and requests the resolved URL', async () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, {
-          timeout: 5000,
-          responseType: 'text',
-          headers: {},
-          maxRedirects: 0,
-          validateStatus: jasmine.any(Function),
-        });
+
+        expect(axios.get).toHaveBeenCalledWith(expectedUrl, expectedRequestOptions);
       });
     });
 
-    describe('when parameters are empty and URL has placeholders', () => {
-      const paramUrl = '/categories/{:id}.json';
-      const unresolvedFullUrl = 'http://example.com/categories/{:id}.json';
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url: paramUrl, status });
-        parameters = {};
-        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
-        response = AxiosUtils.stubGet(200, '[]');
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
-        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
-      });
-
-      it('leaves placeholders unchanged in the URL', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        expect(axios.get).toHaveBeenCalledWith(unresolvedFullUrl, {
-          timeout: 5000,
-          responseType: 'text',
-          headers: {},
-          maxRedirects: 0,
-          validateStatus: jasmine.any(Function),
-        });
-      });
-    });
-
-    describe('when the resource request has assets (assets only)', () => {
+    describe('when the resource request has assets', () => {
       const rawHtml = '<html><head><link rel="stylesheet" href="/a.css"></head></html>';
 
       beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url, status });
+        rebuildJob();
         spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
         spyOn(resourceRequest, 'enqueueAssets').and.stub();
         spyOn(resourceRequest, 'enqueueActions').and.stub();
         spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
-        parameters = {};
-        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
         response = AxiosUtils.stubGet(200, rawHtml);
       });
 
-      it('calls enqueueAssets with the raw response body', async () => {
+      it('calls enqueueAssets with the raw response body and originUrl', async () => {
         await job.perform(logContext);
+
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledOnceWith(
           rawHtml,
           jasmine.anything(),
           jasmine.anything(),
-          url
+          url,
         );
       });
 
-      it('passes the resolved URL as originUrl to enqueueAssets', async () => {
+      it('still calls enqueueActions after enqueueing assets', async () => {
         await job.perform(logContext);
-        const originUrl = resourceRequest.enqueueAssets.calls.argsFor(0)[3];
-        expect(originUrl).toBe(url);
-      });
 
-      it('does not call ResponseParser (enqueueActions still called but no-op without actions)', async () => {
-        await job.perform(logContext);
-        expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('when the resource request has both assets and actions', () => {
-      const rawHtml = '<html><head><link rel="stylesheet" href="/a.css"></head></html>';
-
-      beforeEach(() => {
-        resourceRequest = ResourceRequestFactory.build({ url, status });
-        spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
-        spyOn(resourceRequest, 'enqueueAssets').and.stub();
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
-        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
-        parameters = {};
-        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
-        response = AxiosUtils.stubGet(200, rawHtml);
-      });
-
-      it('calls both enqueueAssets and enqueueActions', async () => {
-        await job.perform(logContext);
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
       });
