@@ -1,4 +1,9 @@
-ignore:
+excluded_paths:
   - docs/**
-  - dev/**
+  - dev/app/spec/
+  - dev/frontend/spec/
+  - source/spec/
+  - frontend/spec/
+  - dev/proxy/
+  - dev/web_proxy/
   - docker_volumes/**
