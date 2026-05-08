@@ -1,5 +1,6 @@
 import { notFound } from './not_found.js';
 import RequestHandler from './RequestHandler.js';
+import { Logger } from '../common/utils/logging/Logger.js';
 import DataNavigator from '../models/DataNavigator.js';
 import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
 
@@ -46,7 +47,7 @@ class ContentHandler extends RequestHandler {
       if (result === null) return notFound(res);
       this._respond(result, req, res);
     } catch (e) {
-      console.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
+      Logger.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
       res.status(400).json({ error: e.message });
     }
   }
