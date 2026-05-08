@@ -10,7 +10,7 @@ class EnvStringResolver {
    * @param {String} string Raw string content.
    */
   constructor(string) {
-    this.string = string;
+    this.string = String(string);
   }
 
 
@@ -36,17 +36,19 @@ class EnvStringResolver {
    */
   resolve() {
     const string = this.string;
-    return String(string).replace(ENV_VAR_PATTERN, (_match, braced, bare) => {
-      const varName = braced || bare;
-      const resolved = process.env[varName];
+    return string.replace(ENV_VAR_PATTERN, this.#replace.bind(this));
+  }
 
-      if (resolved === undefined) {
-        console.warn(`Environment variable not defined: ${varName}`);
-        return '';
-      }
+  #replace(_match, braced, bare) {
+    const varName = braced || bare;
+    const resolved = process.env[varName];
 
-      return resolved;
-    });
+    if (resolved === undefined) {
+      console.warn(`Environment variable not defined: ${varName}`);
+      return '';
+    }
+
+    return resolved;
   }
 }
 
