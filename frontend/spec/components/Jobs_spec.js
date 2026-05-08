@@ -1,15 +1,15 @@
 import { createElement } from 'react';
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Jobs from '../../src/components/pages/Jobs.jsx';
 import noop from '../../src/utils/noop.js';
+import { useContainer } from '../support/dom.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
-const render = async (container, root, { initialPath = '/jobs' } = {}) => {
+const render = async (state, { initialPath = '/jobs' } = {}) => {
   await act(async () => {
-    root.render(
+    state.root.render(
       createElement(
         MemoryRouter, { initialEntries: [initialPath] },
         createElement(Routes, null,
@@ -22,32 +22,20 @@ const render = async (container, root, { initialPath = '/jobs' } = {}) => {
 };
 
 describe('Jobs', () => {
-  let container;
-  let root;
-
-  beforeEach(() => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    root = createRoot(container);
-  });
-
-  afterEach(async () => {
-    await act(async () => { root.unmount(); });
-    document.body.removeChild(container);
-  });
+  const state = useContainer();
 
   describe('while loading', () => {
     beforeEach(async () => {
       spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await render(container, root);
+      await render(state);
     });
 
     it('renders a spinner', () => {
-      expect(container.querySelector('.spinner-border')).not.toBeNull();
+      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
     });
 
     it('shows loading text', () => {
-      expect(container.textContent).toContain('Loading jobs');
+      expect(state.container.textContent).toContain('Loading jobs');
     });
   });
 
@@ -62,48 +50,48 @@ describe('Jobs', () => {
             : [];
         return Promise.resolve({ ok: true, json: () => Promise.resolve(data) });
       });
-      await render(container, root);
+      await render(state);
       await flushAsync();
     });
 
     it('does not show a spinner', () => {
-      expect(container.querySelector('.spinner-border')).toBeNull();
+      expect(state.container.querySelector('.spinner-border')).toBeNull();
     });
 
     it('renders a table', () => {
-      expect(container.querySelector('table')).not.toBeNull();
+      expect(state.container.querySelector('table')).not.toBeNull();
     });
 
     it('renders a row for each job', () => {
-      const rows = container.querySelectorAll('tbody tr');
+      const rows = state.container.querySelectorAll('tbody tr');
       expect(rows.length).toBeGreaterThan(0);
     });
 
     it('shows the job id', () => {
-      expect(container.textContent).toContain('abc');
+      expect(state.container.textContent).toContain('abc');
     });
 
     it('shows the job status as a badge', () => {
-      const badges = container.querySelectorAll('.badge');
+      const badges = state.container.querySelectorAll('.badge');
       expect(badges.length).toBeGreaterThan(0);
       expect(badges[0].textContent).toContain('enqueued');
     });
 
     it('shows the job attempts', () => {
-      expect(container.textContent).toContain('0');
+      expect(state.container.textContent).toContain('0');
     });
 
     it('shows the job class', () => {
-      expect(container.textContent).toContain('ResourceRequestJob');
+      expect(state.container.textContent).toContain('ResourceRequestJob');
     });
 
     it('renders the filter checkboxes', () => {
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      const checkboxes = state.container.querySelectorAll('input[type="checkbox"]');
       expect(checkboxes.length).toBeGreaterThan(0);
     });
 
     it('renders a status tab for each status', () => {
-      const tabs = container.querySelectorAll('.nav-tabs .nav-item');
+      const tabs = state.container.querySelectorAll('.nav-tabs .nav-item');
       expect(tabs.length).toBe(5);
     });
   });
@@ -113,16 +101,16 @@ describe('Jobs', () => {
       spyOn(globalThis, 'fetch').and.returnValue(
         Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
       );
-      await render(container, root);
+      await render(state);
       await flushAsync();
     });
 
     it('does not render a table', () => {
-      expect(container.querySelector('table')).toBeNull();
+      expect(state.container.querySelector('table')).toBeNull();
     });
 
     it('shows an empty state message', () => {
-      expect(container.textContent).toContain('No jobs found');
+      expect(state.container.textContent).toContain('No jobs found');
     });
   });
 
@@ -131,24 +119,24 @@ describe('Jobs', () => {
       spyOn(globalThis, 'fetch').and.returnValue(
         Promise.resolve({ ok: false, status: 503 })
       );
-      await render(container, root);
+      await render(state);
       await flushAsync();
     });
 
     it('does not show a spinner', () => {
-      expect(container.querySelector('.spinner-border')).toBeNull();
+      expect(state.container.querySelector('.spinner-border')).toBeNull();
     });
 
     it('renders an error alert', () => {
-      expect(container.querySelector('.alert-danger')).not.toBeNull();
+      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
     });
 
     it('shows a descriptive error message', () => {
-      expect(container.textContent).toContain('Failed to load jobs');
+      expect(state.container.textContent).toContain('Failed to load jobs');
     });
 
     it('includes the error details in the message', () => {
-      expect(container.textContent).toContain('HTTP 503');
+      expect(state.container.textContent).toContain('HTTP 503');
     });
   });
 
@@ -160,7 +148,7 @@ describe('Jobs', () => {
         const data = url.includes('failed') ? failedJobs : [];
         return Promise.resolve({ ok: true, json: () => Promise.resolve(data) });
       });
-      await render(container, root, { initialPath: '/jobs/failed' });
+      await render(state, { initialPath: '/jobs/failed' });
       await flushAsync();
     });
 
@@ -171,7 +159,7 @@ describe('Jobs', () => {
     });
 
     it('renders jobs for that status', () => {
-      expect(container.textContent).toContain('xyz');
+      expect(state.container.textContent).toContain('xyz');
     });
   });
 });
