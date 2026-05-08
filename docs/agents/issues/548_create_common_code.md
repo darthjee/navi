@@ -12,10 +12,41 @@
 
 ## Files to Consolidate
 
-| Shared file | source path | dev/app path |
-|-------------|------------|--------------|
-| `EnvResolver.js` | `source/lib/utils/EnvResolver.js` | `dev/app/lib/utils/EnvResolver.js` |
-| `EnvStringResolver.js` | `source/lib/utils/env_resolver/EnvStringResolver.js` | `dev/app/lib/utils/env_resolver/EnvStringResolver.js` |
+These are the only files that exist in both projects with identical or near-identical logic. All other `dev/app/lib` files are app-specific and have no counterpart in `source/lib`.
+
+| Shared file | source path | dev/app path | Diff |
+|-------------|------------|--------------|------|
+| `EnvResolver.js` | `source/lib/utils/EnvResolver.js` | `dev/app/lib/utils/EnvResolver.js` | `@author` comment only |
+| `EnvStringResolver.js` | `source/lib/utils/env_resolver/EnvStringResolver.js` | `dev/app/lib/utils/env_resolver/EnvStringResolver.js` | `Logger.warn` vs `console.warn` |
+
+### Files to move to `source/lib/common/`
+
+```
+source/lib/utils/EnvResolver.js
+  → source/lib/common/utils/EnvResolver.js
+
+source/lib/utils/env_resolver/EnvStringResolver.js
+  → source/lib/common/utils/env_resolver/EnvStringResolver.js
+```
+
+### Specs to move to `source/spec/lib/common/`
+
+```
+source/spec/lib/utils/EnvResolver_spec.js
+  → source/spec/lib/common/utils/EnvResolver_spec.js
+
+source/spec/lib/utils/env_resolver/EnvStringResolver_spec.js
+  → source/spec/lib/common/utils/env_resolver/EnvStringResolver_spec.js
+```
+
+### Files to delete from `dev/app/`
+
+```
+dev/app/lib/utils/EnvResolver.js
+dev/app/lib/utils/env_resolver/EnvStringResolver.js
+dev/app/spec/lib/utils/EnvResolver_spec.js
+dev/app/spec/lib/utils/env_resolver/EnvStringResolver_spec.js
+```
 
 ## Expected Behavior
 
