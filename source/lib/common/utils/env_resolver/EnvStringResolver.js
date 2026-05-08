@@ -1,4 +1,4 @@
-import { Logger } from '../../../utils/logging/Logger.js';
+import { Logger } from '../logging/Logger.js';
 
 /**
  * Pattern matching environment variable references in strings.

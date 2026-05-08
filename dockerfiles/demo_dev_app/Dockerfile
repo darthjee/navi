@@ -10,7 +10,6 @@ FROM darthjee/node:0.2.1 as builder
 
 COPY --chown=node:node dev/app/ /home/node/app/
 COPY --chown=node:node source/lib/common/ /home/node/app/lib/common/
-COPY --chown=node:node source/lib/utils/logging/ /home/node/app/lib/utils/logging/
 
 RUN rm -rf spec eslint.config.mjs
 

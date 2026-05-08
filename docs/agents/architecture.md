@@ -108,8 +108,8 @@ Concrete `Job` subclasses:
 
 Shared low-level utilities with no domain knowledge:
 
-- **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`.
-- **`utils/logging/`** — `BaseLogger`, `ConsoleLogger`, `BufferedLogger`, `Logger`, `LoggerGroup`, `LogFactory`, `Log`, `LogBuffer`.
+- **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*`.
+- **`utils/logging/`** — compatibility re-exports to `common/utils/logging/*`.
 - **`utils/collections/`** — `Collection`, `IdentifyableCollection`, `Queue`, `SortedCollection`, plus `SortedArrayMerger` and `SortedArraySearcher`.
 - **`utils/generators/`** — `IdGenerator`, `UUidGenerator`, `IncrementalIdGenerator`.
 - **`utils/`** (flat) — `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing).

@@ -123,9 +123,6 @@ jobs:
             rm -rf dev/app/lib/common dev/app/spec/lib/common
             cp -r source/lib/common dev/app/lib/common
             cp -r source/spec/lib/common dev/app/spec/lib/common
-            mkdir -p dev/app/lib/utils
-            rm -rf dev/app/lib/utils/logging
-            cp -r source/lib/utils/logging dev/app/lib/utils/logging
       - run:
           name: Install dependencies
           command: cd dev/app; yarn install
@@ -147,9 +144,6 @@ jobs:
             rm -rf dev/app/lib/common dev/app/spec/lib/common
             cp -r source/lib/common dev/app/lib/common
             cp -r source/spec/lib/common dev/app/spec/lib/common
-            mkdir -p dev/app/lib/utils
-            rm -rf dev/app/lib/utils/logging
-            cp -r source/lib/utils/logging dev/app/lib/utils/logging
       - run:
           name: Install dependencies
           command: cd dev/app; yarn install
