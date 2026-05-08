@@ -7,7 +7,7 @@
     "test": "npx c8 jasmine --config=spec/support/jasmine.json",
     "coverage": "npx c8 --reporter=lcov jasmine --config=spec/support/jasmine.json",
     "lint": "eslint .",
-    "lint_fix": "eslint . --fix",
+    "lint_fix": "eslint lib spec --fix",
     "report": "jscpd app.js lib spec --reporters console,html --output ./report/jscpd"
   },
   "dependencies": {
