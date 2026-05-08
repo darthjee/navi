@@ -1,5 +1,5 @@
-import { EnvStringResolver } from '../../../../lib/utils/env_resolver/EnvStringResolver.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
+import { EnvStringResolver } from '../../../../../lib/common/utils/env_resolver/EnvStringResolver.js';
+import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
 
 describe('EnvStringResolver', () => {
   describe('.resolve', () => {
