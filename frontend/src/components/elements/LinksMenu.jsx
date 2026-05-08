@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import LinksMenuHelper from './helpers/LinksMenuHelper.jsx';
 import LinksClient from '../../clients/LinksClient.js';
 import noop from '../../utils/noop.js';
 
@@ -6,6 +7,7 @@ function LinksMenu() {
   const [links, setLinks] = useState([]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const menu = useMemo(() => new LinksMenuHelper(links), [links]);
 
   useEffect(() => {
     LinksClient.fetchLinks()
@@ -26,30 +28,9 @@ function LinksMenu() {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  if (links.length === 0) return null;
+  if (!menu.hasAny()) return null;
 
-  return (
-    <div ref={containerRef} className="dropdown d-inline-block">
-      <button
-        className="btn btn-sm btn-outline-secondary dropdown-toggle"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
-      >
-        Links
-      </button>
-      {open && (
-        <ul className="dropdown-menu show">
-          {links.map(({ text, url }) => (
-            <li key={`${text}-${url}`}>
-              <a href={url} target="_blank" rel="noreferrer" className="dropdown-item">
-                {text}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+  return menu.renderDropdown(containerRef, open, setOpen);
 }
 
 export default LinksMenu;
