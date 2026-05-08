@@ -1,5 +1,5 @@
-import { AppConfig } from '../../../lib/config/AppConfig.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import { AppConfig } from '../../../lib/config/AppConfig.js';
 import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
 
 const configFixturePath = FixturesUtils.getFixturePath('config.yml');

@@ -1,6 +1,6 @@
 import request from 'supertest';
-import Serializer from '../../../lib/models/Serializer.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import Serializer from '../../../lib/models/Serializer.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
 import { testData as data } from '../../support/fixtures/testData.js';
 import { buildContentHandlerApp } from '../../support/utils/AppFactory.js';

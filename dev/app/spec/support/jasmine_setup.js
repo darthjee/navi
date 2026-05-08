@@ -1,9 +1,9 @@
 import { Logger } from '../../lib/common/utils/logging/Logger.js';
 
-beforeEach(() => {
+globalThis.beforeEach(() => {
   Logger.suppress();
 });
 
-afterEach(() => {
+globalThis.afterEach(() => {
   Logger.reset();
 });

@@ -1,8 +1,8 @@
 import { notFound } from './not_found.js';
 import RequestHandler from './RequestHandler.js';
+import { Logger } from '../common/utils/logging/Logger.js';
 import DataNavigator from '../models/DataNavigator.js';
 import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
-import { Logger } from '../common/utils/logging/Logger.js';
 
 /**
  * Handles an incoming Express request by navigating the in-memory data,
