@@ -368,4 +368,3 @@ When enabled, the UI is accessible at `http://localhost:<port>` and includes the
 **Jobs list (`/#/jobs`)** — shows a table of all jobs across every status, with links to each job's detail page.
 
 **Job detail (`/#/job/:id`)** — shows the full details of a specific job (ID, status, and attempt count).
-

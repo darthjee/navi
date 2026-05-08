@@ -137,6 +137,7 @@ Files that define and export a class must use **CamelCase** naming, matching the
 - `DataNavigator.js` for `class DataNavigator`
 
 This applies to both source files and their corresponding spec files:
+
 - `Router.js` → spec: `Router_spec.js`
 - `DataNavigator.js` → spec: `DataNavigator_spec.js`
 - `Router.js` â spec: `Router_spec.js`
