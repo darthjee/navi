@@ -16,20 +16,8 @@ class EnvResolver {
    */
   static resolveObject(object) {
     return Object.fromEntries(
-      Object.entries(object).map(([key, value]) => [key, EnvResolver.resolveString(value)])
+      Object.entries(object).map(([key, value]) => [key, EnvStringResolver.resolve(value)])
     );
-  }
-
-  /**
-   * Resolves environment variable references in a raw string (e.g. YAML file content).
-   *
-   * Replaces all `$VAR` and `${VAR}` occurrences with their environment values.
-   *
-   * @param {string} string Raw string content.
-   * @returns {string} Resolved string with env var references replaced.
-   */
-  static resolveString(string) {
-    return new EnvStringResolver(string).resolve();
   }
 }
 
