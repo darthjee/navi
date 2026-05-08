@@ -21,11 +21,11 @@ describe('LogsPage', () => {
       await render(state.root);
     });
 
-    it('renders the terminal state.container', () => {
+    it('renders the terminal container', () => {
       expect(state.container.querySelector('.bg-dark')).not.toBeNull();
     });
 
-    it('applies the text-light class to the terminal state.container', () => {
+    it('applies the text-light class to the terminal container', () => {
       expect(state.container.querySelector('.bg-dark.text-light')).not.toBeNull();
     });
 
@@ -134,7 +134,7 @@ describe('LogsPage', () => {
       await flushAsync();
     });
 
-    it('renders the terminal state.container', () => {
+    it('renders the terminal container', () => {
       expect(state.container.querySelector('.bg-dark')).not.toBeNull();
     });
 
