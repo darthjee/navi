@@ -11,13 +11,8 @@ function LinksMenu() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(LinksMenuController.buildEffect(setLinks), []);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const handler = LinksMenuController.buildOutsideClickHandler(containerRef, setOpen);
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(LinksMenuController.buildOutsideClickEffect(open, containerRef, setOpen), [open]);
 
   if (!menu.hasAny()) return null;
 

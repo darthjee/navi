@@ -17,6 +17,16 @@ class LinksMenuController {
       }
     };
   }
+
+  static buildOutsideClickEffect(open, containerRef, setOpen) {
+    return () => {
+      if (!open) return;
+
+      const handler = LinksMenuController.buildOutsideClickHandler(containerRef, setOpen);
+      document.addEventListener('mousedown', handler);
+      return () => document.removeEventListener('mousedown', handler);
+    };
+  }
 }
 
 export default LinksMenuController;
