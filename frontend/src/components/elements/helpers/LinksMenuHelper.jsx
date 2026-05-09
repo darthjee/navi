@@ -9,6 +9,20 @@ class LinksMenuHelper {
     return this.#links.length > 0;
   }
 
+  renderLinks() {
+    return (
+      <ul className="dropdown-menu show">
+        {this.#links.map(({ text, url }) => (
+          <li key={`${text}-${url}`}>
+            <a href={url} target="_blank" rel="noreferrer" className="dropdown-item">
+              {text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   renderDropdown(containerRef, open, setOpen) {
     return (
       <div ref={containerRef} className="dropdown d-inline-block">
@@ -19,17 +33,7 @@ class LinksMenuHelper {
         >
           Links
         </button>
-        {open && (
-          <ul className="dropdown-menu show">
-            {this.#links.map(({ text, url }) => (
-              <li key={`${text}-${url}`}>
-                <a href={url} target="_blank" rel="noreferrer" className="dropdown-item">
-                  {text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
+        {open && this.renderLinks()}
       </div>
     );
   }

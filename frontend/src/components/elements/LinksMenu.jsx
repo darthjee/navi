@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import LinksMenuController from './controllers/LinksMenuController.jsx';
 import LinksMenuHelper from './helpers/LinksMenuHelper.jsx';
-import LinksClient from '../../clients/LinksClient.js';
-import noop from '../../utils/noop.js';
 
 function LinksMenu() {
   const [links, setLinks] = useState([]);
@@ -9,21 +8,13 @@ function LinksMenu() {
   const containerRef = useRef(null);
   const menu = useMemo(() => new LinksMenuHelper(links), [links]);
 
-  useEffect(() => {
-    LinksClient.fetchLinks()
-      .then(setLinks)
-      .catch(noop);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(LinksMenuController.buildEffect(setLinks), []);
 
   useEffect(() => {
     if (!open) return;
 
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-
+    const handler = LinksMenuController.buildOutsideClickHandler(containerRef, setOpen);
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
