@@ -1,6 +1,11 @@
 web:
   port: 8080
   enable_shutdown: false
+  links:
+    - text: Github Source Code
+      url: https://github.com/darthjee/navi
+    - text: Owner
+      url: https://www.linkedin.com/in/fvfavini/
 workers:
   quantity: $WORKERS
   retry_cooldown: $RETRY_COOLDOWN
