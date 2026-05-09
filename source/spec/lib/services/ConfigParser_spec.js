@@ -109,6 +109,13 @@ describe('ConfigParser', () => {
       it('returns the configured web port', () => {
         expect(parseFixture('sample_config_with_web.yml').webConfig.port).toBe(3000);
       });
+
+      it('returns parsed web links', () => {
+        expect(parseFixture('sample_config_with_web.yml').webConfig.links.map((link) => link.toJSON())).toEqual([
+          { text: 'https://example.com', url: 'https://example.com' },
+          { text: 'Docs', url: 'https://example.com/docs' },
+        ]);
+      });
     });
 
     it('returns null for webConfig when the config has no web key', () => {

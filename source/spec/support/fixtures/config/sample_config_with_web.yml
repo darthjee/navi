@@ -1,5 +1,9 @@
 web:
   port: 3000
+  links:
+    - https://example.com
+    - text: Docs
+      url: https://example.com/docs
 workers:
   quantity: 5
 clients:
