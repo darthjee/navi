@@ -15,6 +15,7 @@ import { JobLogsRequestHandler } from './handlers/jobs/JobLogsRequestHandler.js'
 import { JobRequestHandler } from './handlers/jobs/JobRequestHandler.js';
 import { JobRetryRequestHandler } from './handlers/jobs/JobRetryRequestHandler.js';
 import { JobsRequestHandler } from './handlers/jobs/JobsRequestHandler.js';
+import { LinksRequestHandler } from './handlers/LinksRequestHandler.js';
 import { LogsRequestHandler } from './handlers/LogsRequestHandler.js';
 import { SettingsRequestHandler } from './handlers/SettingsRequestHandler.js';
 import { StatsRequestHandler } from './handlers/StatsRequestHandler.js';
@@ -57,6 +58,7 @@ class Router {
       '/job/:id.json':            new JobRequestHandler(),
       '/engine/status':           new EngineStatusRequestHandler(),
       '/logs.json':               new LogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
+      '/links.json':              new LinksRequestHandler({ links: this.#webConfig.links }),
       '/':                        new IndexRequestHandler(),
       '/assets/*path':            new AssetsRequestHandler(),
     };

@@ -26,5 +26,25 @@ describe('WebConfig', () => {
       const config = new WebConfig({ port: 3000, enable_shutdown: false });
       expect(config.enableShutdown).toEqual(false);
     });
+
+    it('defaults links to an empty list', () => {
+      const config = new WebConfig({ port: 3000 });
+      expect(config.links).toEqual([]);
+    });
+
+    it('maps links from string and object entries', () => {
+      const config = new WebConfig({
+        port: 3000,
+        links: [
+          'https://example.com',
+          { text: 'Docs', url: 'https://example.com/docs' },
+        ],
+      });
+
+      expect(config.links.map((link) => link.toJSON())).toEqual([
+        { text: 'https://example.com', url: 'https://example.com' },
+        { text: 'Docs', url: 'https://example.com/docs' },
+      ]);
+    });
   });
 });
