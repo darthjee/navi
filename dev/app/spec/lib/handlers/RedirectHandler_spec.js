@@ -22,6 +22,11 @@ describe('RedirectHandler', () => {
       const res = await request(app).get('/categories').redirects(0);
       expect(res.headers['location']).toBe('/#/categories');
     });
+
+    it('preserves query string in Location header', async () => {
+      const res = await request(app).get('/categories?search=hobbit&order=asc').redirects(0);
+      expect(res.headers['location']).toBe('/#/categories?search=hobbit&order=asc');
+    });
   });
 
   describe('#handle — route with one param', () => {

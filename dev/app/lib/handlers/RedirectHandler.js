@@ -27,7 +27,11 @@ class RedirectHandler extends RequestHandler {
    */
   handle(req, res) {
     const location = new RedirectLocation(this.#target, req.params).build();
-    res.redirect(302, location);
+    const queryIndex = req.originalUrl.indexOf('?');
+    const queryString = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+
+    const redirectLocation = `${location}${queryString}`;
+    res.redirect(302, redirectLocation);
   }
 }
 
