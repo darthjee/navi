@@ -12,6 +12,7 @@ source/lib/server/
 ├── WebServer.js
 ├── Router.js
 ├── RouteRegister.js              # Wraps handlers; maps exceptions to HTTP status codes
+├── HandlerConfig.js              # Lazily instantiates a handler class on each request
 ├── PathValidator.js              # Path-traversal protection
 └── handlers/
     ├── AssetsRequestHandler.js
@@ -36,6 +37,10 @@ source/lib/server/
 ```
 
 ## Routes
+
+Routes are declared declaratively in `Router.js` as a map of path → `HandlerConfig` instance.
+`HandlerConfig` holds the handler class and its parameters, and lazily constructs the handler
+only when a matching request arrives.
 
 | Method | Path | Description |
 |--------|------|-------------|
