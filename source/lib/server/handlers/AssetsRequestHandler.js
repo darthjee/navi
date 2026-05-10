@@ -2,6 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { PathValidator } from '../PathValidator.js';
+import { AssetsHandlerExecutor } from './AssetsHandlerExecutor.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,29 +22,13 @@ class AssetsRequestHandler extends RequestHandler {
   }
 
   /**
-   * Serves the requested asset file, rejecting any path traversal attempt.
+   * Delegates to AssetsHandlerExecutor.
    * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
   handle(req, res) {
-    const assetPath = [].concat(req.params.path).join(path.sep);
-    const resolved = this.#resolveAssetPath(assetPath);
-    res.sendFile(resolved);
-  }
-
-  /**
-   * Resolves and validates the asset path, throwing if a traversal attempt is detected.
-   * @param {string} assetPath - The raw asset path from the request.
-   * @returns {string} The resolved absolute path.
-   * @throws {ForbiddenError} If the path attempts to escape the assets directory.
-   */
-  #resolveAssetPath(assetPath) {
-    const resolved = path.resolve(this.assetsDir, assetPath);
-
-    this.validator.validate(resolved);
-
-    return resolved;
+    new AssetsHandlerExecutor(req, res, this.assetsDir, this.validator).handle();
   }
 }
 
