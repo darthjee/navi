@@ -1,10 +1,10 @@
-import RequestHandlerExecutor from '../../../lib/handlers/RequestHandlerExecutor.js';
+import RedirectHandlerExecutor from '../../../lib/handlers/RedirectHandlerExecutor.js';
 
-describe('RequestHandlerExecutor', () => {
+describe('RedirectHandlerExecutor', () => {
   const execute = ({ target, params = {}, query = {} }) => {
     const request = { params, query };
     const response = { redirect: jasmine.createSpy('redirect') };
-    new RequestHandlerExecutor(request, response, target).handle();
+    new RedirectHandlerExecutor(request, response, target).handle();
     return response.redirect.calls.mostRecent().args;
   };
 

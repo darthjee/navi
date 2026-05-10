@@ -22,21 +22,31 @@ class RedirectQueryString {
     const queryParams = new URLSearchParams();
 
     Object.entries(this.#query).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        value.forEach((item) => {
-          if (!this.#isUnsafeQueryValue(item)) {
-            queryParams.append(key, item);
-          }
-        });
-        return;
-      }
-
-      if (value !== undefined && !this.#isUnsafeQueryValue(value)) {
-        queryParams.append(key, value);
-      }
+      this.#appendQueryValue(queryParams, key, value);
     });
 
     return queryParams.toString();
+  }
+
+  /**
+   * Appends query value(s) into query params, filtering unsafe values.
+   * @param {URLSearchParams} queryParams
+   * @param {string} key
+   * @param {string|string[]|undefined} value
+   */
+  #appendQueryValue(queryParams, key, value) {
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (!this.#isUnsafeQueryValue(item)) {
+          queryParams.append(key, item);
+        }
+      });
+      return;
+    }
+
+    if (value !== undefined && !this.#isUnsafeQueryValue(value)) {
+      queryParams.append(key, value);
+    }
   }
 
   /**

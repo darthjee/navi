@@ -1,5 +1,5 @@
+import RedirectHandlerExecutor from './RedirectHandlerExecutor.js';
 import RequestHandler from './RequestHandler.js';
-import RequestHandlerExecutor from './RequestHandlerExecutor.js';
 
 /**
  * Handles an incoming Express request by issuing an HTTP 302 redirect to
@@ -21,12 +21,12 @@ class RedirectHandler extends RequestHandler {
   }
 
   /**
-   * Delegates redirect processing to RequestHandlerExecutor.
+   * Delegates redirect processing to RedirectHandlerExecutor.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   handle(req, res) {
-    new RequestHandlerExecutor(req, res, this.#target).handle();
+    new RedirectHandlerExecutor(req, res, this.#target).handle();
   }
 }
 
