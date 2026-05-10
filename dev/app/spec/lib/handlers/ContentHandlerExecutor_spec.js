@@ -16,6 +16,16 @@ describe('ContentHandlerExecutor', () => {
     expect(executor).toBeInstanceOf(RequestHandlerExecutor);
   });
 
+  describe('#handle — with default extractorFactory', () => {
+    const app = buildContentExecutorApp('/categories/:id.json', data);
+
+    it('uses RouteParamsExtractor when no factory is provided', async () => {
+      const res = await request(app).get('/categories/1.json');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(jasmine.objectContaining({ id: 1 }));
+    });
+  });
+
   describe('#handle — without a serializer', () => {
     const app = buildContentExecutorApp('/categories/:id/items/:item_id.json', data);
 

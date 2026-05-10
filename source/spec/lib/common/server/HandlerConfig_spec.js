@@ -1,4 +1,4 @@
-import { HandlerConfig } from '../../../lib/server/HandlerConfig.js';
+import { HandlerConfig } from '../../../../lib/common/server/HandlerConfig.js';
 
 describe('HandlerConfig', () => {
   let req;

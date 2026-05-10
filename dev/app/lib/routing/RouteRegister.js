@@ -1,10 +1,8 @@
 /**
- * Unified registry that registers GET routes on an Express router, wiring each
- * route to a {@link RequestHandler} subclass instance.
+ * Unified registry that registers GET routes on an Express router.
  *
- * All handler types (content handlers, redirect handlers, or any future type)
- * are registered through this single registry, provided they implement the
- * common {@link RequestHandler} API (`handle(req, res)`).
+ * Any object that implements `handle(req, res)` can be registered —
+ * including {@link HandlerConfig} instances.
  */
 class RouteRegister {
   #router;
@@ -21,7 +19,7 @@ class RouteRegister {
   /**
    * Registers a GET route wired to the given handler.
    * @param {string} route - Express route pattern.
-   * @param {import('../common/server/RequestHandler.js').RequestHandler} handler - Handler instance with a `handle(req, res)` method.
+   * @param {{ handle(req: object, res: object): void }} handler - Any object with a `handle(req, res)` method.
    * @throws {Error} If the same route pattern has already been registered.
    */
   register(route, handler) {
