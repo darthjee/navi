@@ -1,0 +1,1410 @@
+{
+  "statistics": {
+    "detectionDate": "2026-05-10T13:33:35.908Z",
+    "formats": {
+      "javascript": {
+        "sources": {
+          "src/components/pages/helpers/LogsPageHelper.jsx": {
+            "lines": 12,
+            "tokens": 117,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/helpers/JobsHelper.jsx": {
+            "lines": 51,
+            "tokens": 222,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/helpers/JobHelper.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/StatsHeaderHelper.jsx": {
+            "lines": 4,
+            "tokens": 38,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/LogsHelper.jsx": {
+            "lines": 12,
+            "tokens": 117,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/LinksMenuHelper.jsx": {
+            "lines": 16,
+            "tokens": 147,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/JobDetailsHelper.jsx": {
+            "lines": 33,
+            "tokens": 340,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/EngineControlsHelper.jsx": {
+            "lines": 20,
+            "tokens": 246,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/BaseUrlsMenuHelper.jsx": {
+            "lines": 10,
+            "tokens": 74,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/StatusTabs.jsx": {
+            "lines": 0,
+            "tokens": 21,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/StatusTab.jsx": {
+            "lines": 1,
+            "tokens": 29,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/LogsPage.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/Jobs.jsx": {
+            "lines": 5,
+            "tokens": 70,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/Job.jsx": {
+            "lines": 1,
+            "tokens": 32,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/FilterPanel.jsx": {
+            "lines": 3,
+            "tokens": 21,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/FilterCheckbox.jsx": {
+            "lines": 4,
+            "tokens": 70,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StopButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StatsDisplay.jsx": {
+            "lines": 10,
+            "tokens": 228,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StatItem.jsx": {
+            "lines": 8,
+            "tokens": 96,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StartButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/SingleUrlLink.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ShutdownButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/RetryButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/RestartButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ReadyInRow.jsx": {
+            "lines": 0,
+            "tokens": 5,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/PauseButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/LoadingSpinner.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/JobStatItem.jsx": {
+            "lines": 0,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ErrorAlert.jsx": {
+            "lines": 7,
+            "tokens": 50,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/DropdownMenuContent.jsx": {
+            "lines": 4,
+            "tokens": 39,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/DropdownMenu.jsx": {
+            "lines": 8,
+            "tokens": 80,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ContinueButton.jsx": {
+            "lines": 0,
+            "tokens": 3,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/noop.js": {
+            "lines": 6,
+            "tokens": 23,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/utils/FilterParams.js": {
+            "lines": 41,
+            "tokens": 162,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/constants/jobStatus.js": {
+            "lines": 8,
+            "tokens": 54,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/constants/jobClasses.js": {
+            "lines": 14,
+            "tokens": 37,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/StatsClient.js": {
+            "lines": 19,
+            "tokens": 222,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/LogsClient.js": {
+            "lines": 25,
+            "tokens": 287,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/LinksClient.js": {
+            "lines": 21,
+            "tokens": 136,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 9,
+            "duplicatedTokens": 76,
+            "percentage": 42.86,
+            "percentageTokens": 55.88,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/JobsClient.js": {
+            "lines": 16,
+            "tokens": 220,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/JobClient.js": {
+            "lines": 18,
+            "tokens": 208,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/EngineClient.js": {
+            "lines": 46,
+            "tokens": 421,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/clients/BaseUrlsClient.js": {
+            "lines": 21,
+            "tokens": 136,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 9,
+            "duplicatedTokens": 76,
+            "percentage": 42.86,
+            "percentageTokens": 55.88,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/main.jsx": {
+            "lines": 5,
+            "tokens": 114,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 449,
+          "tokens": 4120,
+          "sources": 44,
+          "clones": 1,
+          "duplicatedLines": 9,
+          "duplicatedTokens": 76,
+          "percentage": 2,
+          "percentageTokens": 1.84,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "jsx": {
+        "sources": {
+          "src/components/pages/helpers/LogsPageHelper.jsx": {
+            "lines": 42,
+            "tokens": 286,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 27,
+            "duplicatedTokens": 196,
+            "percentage": 64.29,
+            "percentageTokens": 68.53,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/helpers/JobsHelper.jsx": {
+            "lines": 80,
+            "tokens": 345,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/helpers/JobHelper.jsx": {
+            "lines": 30,
+            "tokens": 211,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/controllers/LogsPageController.jsx": {
+            "lines": 64,
+            "tokens": 571,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 52,
+            "duplicatedTokens": 499,
+            "percentage": 81.25,
+            "percentageTokens": 87.39,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/controllers/JobsController.jsx": {
+            "lines": 145,
+            "tokens": 768,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/controllers/JobController.jsx": {
+            "lines": 21,
+            "tokens": 180,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/StatsHeaderHelper.jsx": {
+            "lines": 18,
+            "tokens": 133,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/LogsHelper.jsx": {
+            "lines": 42,
+            "tokens": 286,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 27,
+            "duplicatedTokens": 196,
+            "percentage": 64.29,
+            "percentageTokens": 68.53,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/LinksMenuHelper.jsx": {
+            "lines": 41,
+            "tokens": 301,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/JobDetailsHelper.jsx": {
+            "lines": 73,
+            "tokens": 702,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/EngineControlsHelper.jsx": {
+            "lines": 55,
+            "tokens": 512,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/helpers/BaseUrlsMenuHelper.jsx": {
+            "lines": 43,
+            "tokens": 268,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/controllers/StatsHeaderController.jsx": {
+            "lines": 36,
+            "tokens": 288,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/controllers/ReadyCountdownController.jsx": {
+            "lines": 24,
+            "tokens": 197,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/controllers/LogsController.jsx": {
+            "lines": 64,
+            "tokens": 587,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 52,
+            "duplicatedTokens": 499,
+            "percentage": 81.25,
+            "percentageTokens": 85.01,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/controllers/LinksMenuController.jsx": {
+            "lines": 31,
+            "tokens": 244,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 84,
+            "percentage": 38.71,
+            "percentageTokens": 34.43,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/controllers/EngineControlsController.jsx": {
+            "lines": 78,
+            "tokens": 643,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/controllers/BaseUrlsMenuController.jsx": {
+            "lines": 21,
+            "tokens": 149,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 84,
+            "percentage": 57.14,
+            "percentageTokens": 56.38,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/StatusTabs.jsx": {
+            "lines": 13,
+            "tokens": 121,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/StatusTab.jsx": {
+            "lines": 16,
+            "tokens": 136,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/LogsPage.jsx": {
+            "lines": 7,
+            "tokens": 50,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/Layout.jsx": {
+            "lines": 23,
+            "tokens": 174,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/Jobs.jsx": {
+            "lines": 65,
+            "tokens": 653,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/Job.jsx": {
+            "lines": 37,
+            "tokens": 412,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/FilterPanel.jsx": {
+            "lines": 21,
+            "tokens": 156,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/pages/FilterCheckbox.jsx": {
+            "lines": 17,
+            "tokens": 152,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/TransitionSpinner.jsx": {
+            "lines": 6,
+            "tokens": 49,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StopButton.jsx": {
+            "lines": 9,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StatsHeader.jsx": {
+            "lines": 23,
+            "tokens": 212,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StatsDisplay.jsx": {
+            "lines": 29,
+            "tokens": 412,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StatItem.jsx": {
+            "lines": 15,
+            "tokens": 168,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/StartButton.jsx": {
+            "lines": 9,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/SingleUrlLink.jsx": {
+            "lines": 13,
+            "tokens": 70,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ShutdownButton.jsx": {
+            "lines": 9,
+            "tokens": 73,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/RetryButton.jsx": {
+            "lines": 11,
+            "tokens": 98,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/RestartButton.jsx": {
+            "lines": 9,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/RemainingAttempts.jsx": {
+            "lines": 12,
+            "tokens": 118,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ReadyInRow.jsx": {
+            "lines": 14,
+            "tokens": 129,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ReadyCountdown.jsx": {
+            "lines": 18,
+            "tokens": 156,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/PauseButton.jsx": {
+            "lines": 9,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/Logs.jsx": {
+            "lines": 21,
+            "tokens": 241,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/LoadingSpinner.jsx": {
+            "lines": 9,
+            "tokens": 88,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/LinksMenu.jsx": {
+            "lines": 21,
+            "tokens": 218,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/LastErrorSection.jsx": {
+            "lines": 20,
+            "tokens": 200,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/JobStatItem.jsx": {
+            "lines": 6,
+            "tokens": 77,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/JobDetails.jsx": {
+            "lines": 6,
+            "tokens": 48,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ErrorAlert.jsx": {
+            "lines": 12,
+            "tokens": 108,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/EngineControls.jsx": {
+            "lines": 32,
+            "tokens": 316,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/DropdownMenuContent.jsx": {
+            "lines": 19,
+            "tokens": 130,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/DropdownMenu.jsx": {
+            "lines": 17,
+            "tokens": 147,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/ContinueButton.jsx": {
+            "lines": 9,
+            "tokens": 71,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/CollapsibleSection.jsx": {
+            "lines": 9,
+            "tokens": 59,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/components/elements/BaseUrlsMenu.jsx": {
+            "lines": 28,
+            "tokens": 294,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "src/main.jsx": {
+            "lines": 23,
+            "tokens": 269,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 1525,
+          "tokens": 12560,
+          "sources": 54,
+          "clones": 4,
+          "duplicatedLines": 91,
+          "duplicatedTokens": 779,
+          "percentage": 5.97,
+          "percentageTokens": 6.2,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 1974,
+      "tokens": 16680,
+      "sources": 98,
+      "clones": 5,
+      "duplicatedLines": 100,
+      "duplicatedTokens": 855,
+      "percentage": 5.07,
+      "percentageTokens": 5.13,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": [
+    {
+      "format": "jsx",
+      "lines": 28,
+      "fragment": "(logs);\n  }\n\n  render(bottomRef) {\n    return (\n      <div\n        className=\"bg-dark text-light p-3 rounded\"\n        style={{ fontFamily: 'monospace', minHeight: '400px', overflowY: 'auto', maxHeight: '80vh' }}\n      >\n        {this.#logs.map((log) => this.#renderEntry(log))}\n        <div ref={bottomRef} />\n      </div>\n    );\n  }\n\n  #renderEntry(log) {\n    return (\n      <div\n        key={log.id}\n        className={LEVEL_CLASS[log.level] ?? ''}\n      >\n        [{log.timestamp}] [{log.level}] {log.message}\n      </div>\n    );\n  }\n}\n\nexport default LogsHelper",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/components/elements/helpers/LogsHelper.jsx",
+        "start": 16,
+        "end": 43,
+        "startLoc": {
+          "line": 16,
+          "column": 11,
+          "position": 89
+        },
+        "endLoc": {
+          "line": 43,
+          "column": 11,
+          "position": 285
+        }
+      },
+      "secondFile": {
+        "name": "src/components/pages/helpers/LogsPageHelper.jsx",
+        "start": 16,
+        "end": 43,
+        "startLoc": {
+          "line": 16,
+          "column": 15,
+          "position": 89
+        },
+        "endLoc": {
+          "line": 43,
+          "column": 15,
+          "position": 285
+        }
+      }
+    },
+    {
+      "format": "jsx",
+      "lines": 45,
+      "fragment": ");\n  }\n\n  buildPollingEffect(cancelledRef, lastIdRef, setLogs) {\n    return () => {\n      cancelledRef.current = false;\n      this.#poll(cancelledRef, lastIdRef, setLogs);\n      return () => {\n        cancelledRef.current = true;\n      };\n    };\n  }\n\n  buildScrollEffect(bottomRef) {\n    return () => {\n      if (this.#logs.length > 0) {\n        bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });\n      }\n    };\n  }\n\n  #hasEntries(entries) {\n    return entries.length !== 0;\n  }\n\n  #appendEntries(entries, lastIdRef, setLogs, cancelledRef) {\n    lastIdRef.current = entries[entries.length - 1].id;\n    setLogs((prev) => [...prev, ...entries]);\n    this.#poll(cancelledRef, lastIdRef, setLogs);\n  }\n\n  #handleEntries(entries, cancelledRef, lastIdRef, setLogs) {\n    if (cancelledRef.current) return;\n\n    if (this.#hasEntries(entries)) {\n      this.#appendEntries(entries, lastIdRef, setLogs, cancelledRef);\n    } else {\n      setTimeout(() => this.#poll(cancelledRef, lastIdRef, setLogs), POLL_DELAY_MS);\n    }\n  }\n\n  #poll(cancelledRef, lastIdRef, setLogs) {\n    if (cancelledRef.current) return;\n\n    this",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/components/elements/controllers/LogsController.jsx",
+        "start": 13,
+        "end": 57,
+        "startLoc": {
+          "line": 13,
+          "column": 10,
+          "position": 84
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 5,
+          "position": 479
+        }
+      },
+      "secondFile": {
+        "name": "src/components/pages/controllers/LogsPageController.jsx",
+        "start": 13,
+        "end": 57,
+        "startLoc": {
+          "line": 13,
+          "column": 5,
+          "position": 71
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 10,
+          "position": 466
+        }
+      }
+    },
+    {
+      "format": "jsx",
+      "lines": 9,
+      "fragment": "fetchLogs({ lastId: lastIdRef.current })\n      .then((entries) => this.#handleEntries(entries, cancelledRef, lastIdRef, setLogs))\n      .catch(() => {\n        if (!cancelledRef.current) setTimeout(() => this.#poll(cancelledRef, lastIdRef, setLogs), POLL_DELAY_MS);\n      });\n  }\n}\n\nexport default LogsController",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/components/elements/controllers/LogsController.jsx",
+        "start": 57,
+        "end": 65,
+        "startLoc": {
+          "line": 57,
+          "column": 2,
+          "position": 482
+        },
+        "endLoc": {
+          "line": 65,
+          "column": 15,
+          "position": 586
+        }
+      },
+      "secondFile": {
+        "name": "src/components/pages/controllers/LogsPageController.jsx",
+        "start": 57,
+        "end": 65,
+        "startLoc": {
+          "line": 57,
+          "column": 5,
+          "position": 466
+        },
+        "endLoc": {
+          "line": 65,
+          "column": 19,
+          "position": 570
+        }
+      }
+    },
+    {
+      "format": "jsx",
+      "lines": 13,
+      "fragment": ")\n        .catch(noop);\n    };\n  }\n\n  static buildOutsideClickHandler(containerRef, setOpen) {\n    return (e) => {\n      if (containerRef.current && !containerRef.current.contains(e.target)) {\n        setOpen(false);\n      }\n    };\n  }\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/components/elements/controllers/BaseUrlsMenuController.jsx",
+        "start": 8,
+        "end": 20,
+        "startLoc": {
+          "line": 8,
+          "column": 12,
+          "position": 57
+        },
+        "endLoc": {
+          "line": 20,
+          "column": 2,
+          "position": 141
+        }
+      },
+      "secondFile": {
+        "name": "src/components/elements/controllers/LinksMenuController.jsx",
+        "start": 8,
+        "end": 21,
+        "startLoc": {
+          "line": 8,
+          "column": 9,
+          "position": 57
+        },
+        "endLoc": {
+          "line": 21,
+          "column": 7,
+          "position": 143
+        }
+      }
+    },
+    {
+      "format": "javascript",
+      "lines": 10,
+      "fragment": ".#buildResponseHandler);\n  }\n\n  static #handleResponse(res) {\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\n    return res.json();\n  }\n\n  static #buildResponseHandler(data) {\n    return data.base_urls",
+      "tokens": 0,
+      "firstFile": {
+        "name": "src/clients/BaseUrlsClient.js",
+        "start": 9,
+        "end": 18,
+        "startLoc": {
+          "line": 9,
+          "column": 15,
+          "position": 40
+        },
+        "endLoc": {
+          "line": 18,
+          "column": 10,
+          "position": 116
+        }
+      },
+      "secondFile": {
+        "name": "src/clients/LinksClient.js",
+        "start": 9,
+        "end": 18,
+        "startLoc": {
+          "line": 9,
+          "column": 12,
+          "position": 40
+        },
+        "endLoc": {
+          "line": 18,
+          "column": 6,
+          "position": 116
+        }
+      }
+    }
+  ],
+  "filename": "/home/runner/work/navi/navi/frontend/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
+}
