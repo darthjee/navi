@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { PathValidator } from '../PathValidator.js';
-import { RequestHandler } from '../RequestHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

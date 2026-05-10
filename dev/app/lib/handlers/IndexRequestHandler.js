@@ -1,6 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import RequestHandler from './RequestHandler.js';
+import { RequestHandler } from '../common/server/RequestHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const staticDir = path.resolve(__dirname, '../static');

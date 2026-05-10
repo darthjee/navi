@@ -109,6 +109,7 @@ Concrete `Job` subclasses:
 Shared low-level utilities with no domain knowledge:
 
 - **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*`.
+- **`common/server/`** — shared server base classes consumed by both `source/` and `dev/app/`: `RequestHandler` (abstract base).
 - **`utils/logging/`** — compatibility re-exports to `common/utils/logging/*`.
 - **`utils/collections/`** — `Collection`, `IdentifyableCollection`, `Queue`, `SortedCollection`, plus `SortedArrayMerger` and `SortedArraySearcher`.
 - **`utils/generators/`** — `IdGenerator`, `UUidGenerator`, `IncrementalIdGenerator`.
@@ -125,11 +126,11 @@ Business logic and I/O layer:
 
 ### `server/`
 
-Express-based web server. `Router` wires all request handlers and serves the React SPA from `source/static/`. Handlers extend `RequestHandler` and are registered via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
+Express-based web server. `Router` wires all request handlers and serves the React SPA from `source/static/`. Handlers extend `RequestHandler` (from `common/server/`) and are registered via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
 
 Subfolders:
 
-- `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `PathValidator`, `RequestHandler` (abstract base)
+- `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `PathValidator`
 - `server/handlers/` — general handlers: `AssetsRequestHandler`, `IndexRequestHandler`, `JobsFilter`, `LinksRequestHandler`, `LogsRequestHandler`, `SettingsRequestHandler`, `StatsRequestHandler`
 - `server/handlers/engine/` — engine lifecycle handlers: `EngineContinueRequestHandler`, `EnginePauseRequestHandler`, `EngineRestartRequestHandler`, `EngineShutdownRequestHandler`, `EngineStartRequestHandler`, `EngineStatusRequestHandler`, `EngineStopRequestHandler`
 - `server/handlers/jobs/` — job handlers: `JobLogsRequestHandler`, `JobRequestHandler`, `JobRetryRequestHandler`, `JobsRequestHandler`
@@ -162,6 +163,7 @@ source/spec/
     common/
       utils/
         env_resolver/
+      server/
     services/
     utils/
       logging/
