@@ -3,7 +3,7 @@ import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandle
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import Serializer from '../../../lib/models/Serializer.js';
-import { BOOKS_CATEGORY, HOBBIT_ITEM, ALL_CATEGORIES } from '../../support/fixtures/expectedResponses.js';
+import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
 import { testData as data } from '../../support/fixtures/testData.js';
 import { buildContentExecutorApp } from '../../support/utils/AppFactory.js';
 

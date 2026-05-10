@@ -1,10 +1,10 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express, { Router as ExpressRouter } from 'express';
-import { HandlerConfig } from '../common/server/HandlerConfig.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
 import RouteRegister from './RouteRegister.js';
 import { ROUTES } from './routes.config.js';
+import { HandlerConfig } from '../common/server/HandlerConfig.js';
 import CollectionHandlerExecutor from '../handlers/CollectionHandlerExecutor.js';
 import ContentHandlerExecutor from '../handlers/ContentHandlerExecutor.js';
 import IndexHandlerExecutor from '../handlers/IndexHandlerExecutor.js';
