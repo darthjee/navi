@@ -1,5 +1,5 @@
+import RedirectHandlerExecutor from './RedirectHandlerExecutor.js';
 import RequestHandler from './RequestHandler.js';
-import RedirectLocation from '../models/RedirectLocation.js';
 
 /**
  * Handles an incoming Express request by issuing an HTTP 302 redirect to
@@ -21,13 +21,12 @@ class RedirectHandler extends RequestHandler {
   }
 
   /**
-   * Builds the redirect location and responds with 302.
+   * Delegates redirect processing to RedirectHandlerExecutor.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   handle(req, res) {
-    const location = new RedirectLocation(this.#target, req.params).build();
-    res.redirect(302, location);
+    new RedirectHandlerExecutor(req, res, this.#target).handle();
   }
 }
 
