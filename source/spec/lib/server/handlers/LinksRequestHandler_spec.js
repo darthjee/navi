@@ -24,7 +24,7 @@ describe('LinksRequestHandler', () => {
         const handler = new LinksRequestHandler({
           links: [
             new Link({ url: 'https://shared.com' }),
-            new Link({ text: 'Docs', url: 'https://shared.com/docs' }),
+            new Link({ text: 'Docs', url: 'https://shared.test/docs' }),
           ],
         });
 
@@ -33,7 +33,7 @@ describe('LinksRequestHandler', () => {
         expect(res.json).toHaveBeenCalledWith({
           links: [
             { text: 'https://shared.com', url: 'https://shared.com' },
-            { text: 'Docs', url: 'https://shared.com/docs' },
+            { text: 'Docs', url: 'https://shared.test/docs' },
             { text: 'default', url: 'https://example.com' },
           ],
         });
@@ -59,7 +59,7 @@ describe('LinksRequestHandler', () => {
     });
 
     describe('when links are not configured', () => {
-      it('responds with an empty list', () => {
+      it('responds with only client-derived links', () => {
         const handler = new LinksRequestHandler();
         handler.handle({}, res);
         expect(res.json).toHaveBeenCalledWith({
