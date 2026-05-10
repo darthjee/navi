@@ -1,4 +1,6 @@
+import { Link } from '../../models/configs/Link.js';
 import { ClientRegistry } from '../../registry/ClientRegistry.js';
+import { LinksSerializer } from '../../serializers/LinksSerializer.js';
 import { RequestHandler } from '../RequestHandler.js';
 
 /**
@@ -26,13 +28,25 @@ class LinksRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(_req, res) {
-    const links = this.#links.map((link) => link.toJSON());
-    const clientsLinks = ClientRegistry.all().map((client) => ({
-      url: client.baseUrl,
-      text: client.linkText ?? client.name,
-    }));
+    res.json({ links: LinksSerializer.serialize(this.#allLinks()) });
+  }
 
-    res.json({ links: [...links, ...clientsLinks] });
+  /**
+   * Returns configured and client-derived links as Link instances.
+   * @returns {Array<Link>} All links for endpoint response.
+   */
+  #allLinks() {
+    return [...this.#links, ...this.#clientLinks()];
+  }
+
+  /**
+   * Converts clients into Link instances.
+   * @returns {Array<Link>} Client-derived links.
+   */
+  #clientLinks() {
+    return ClientRegistry.all().map((client) => (
+      new Link({ url: client.baseUrl, text: client.linkText ?? client.name })
+    ));
   }
 }
 
