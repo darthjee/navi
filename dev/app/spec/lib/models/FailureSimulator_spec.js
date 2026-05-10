@@ -15,12 +15,12 @@ describe('FailureSimulator', () => {
     const simulator = new FailureSimulator(0);
 
     it('calls next', () => {
-      simulator.handle({}, res, next);
+      simulator.handle({ path: '/categories.json' }, res, next);
       expect(next).toHaveBeenCalled();
     });
 
     it('does not respond', () => {
-      simulator.handle({}, res, next);
+      simulator.handle({ path: '/categories.json' }, res, next);
       expect(res.status).not.toHaveBeenCalled();
     });
   });
@@ -29,18 +29,42 @@ describe('FailureSimulator', () => {
     const simulator = new FailureSimulator(1);
 
     it('responds with 502', () => {
-      simulator.handle({}, res, next);
+      simulator.handle({ path: '/categories.json' }, res, next);
       expect(res.status).toHaveBeenCalledWith(502);
     });
 
     it('responds with simulated failure body', () => {
-      simulator.handle({}, res, next);
+      simulator.handle({ path: '/categories.json' }, res, next);
       expect(jsonSpy).toHaveBeenCalledWith({ error: 'Simulated failure' });
     });
 
     it('does not call next', () => {
-      simulator.handle({}, res, next);
+      simulator.handle({ path: '/categories.json' }, res, next);
       expect(next).not.toHaveBeenCalled();
+    });
+
+    describe('for the root path (/)', () => {
+      it('calls next without failing', () => {
+        simulator.handle({ path: '/' }, res, next);
+        expect(next).toHaveBeenCalled();
+      });
+
+      it('does not respond with 502', () => {
+        simulator.handle({ path: '/' }, res, next);
+        expect(res.status).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('for an assets path (/assets/app.js)', () => {
+      it('calls next without failing', () => {
+        simulator.handle({ path: '/assets/app.js' }, res, next);
+        expect(next).toHaveBeenCalled();
+      });
+
+      it('does not respond with 502', () => {
+        simulator.handle({ path: '/assets/app.js' }, res, next);
+        expect(res.status).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -53,12 +77,12 @@ describe('FailureSimulator', () => {
       });
 
       it('responds with 502', () => {
-        simulator.handle({}, res, next);
+        simulator.handle({ path: '/categories.json' }, res, next);
         expect(res.status).toHaveBeenCalledWith(502);
       });
 
       it('does not call next', () => {
-        simulator.handle({}, res, next);
+        simulator.handle({ path: '/categories.json' }, res, next);
         expect(next).not.toHaveBeenCalled();
       });
     });
@@ -69,12 +93,12 @@ describe('FailureSimulator', () => {
       });
 
       it('calls next', () => {
-        simulator.handle({}, res, next);
+        simulator.handle({ path: '/categories.json' }, res, next);
         expect(next).toHaveBeenCalled();
       });
 
       it('does not respond', () => {
-        simulator.handle({}, res, next);
+        simulator.handle({ path: '/categories.json' }, res, next);
         expect(res.status).not.toHaveBeenCalled();
       });
     });
