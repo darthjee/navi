@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { EngineShutdownHandlerExecutor } from './EngineShutdownHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 
 /**
  * Handles PATCH /engine/shutdown requests.

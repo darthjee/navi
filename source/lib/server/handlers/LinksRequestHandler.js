@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { LinksHandlerExecutor } from './LinksHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Handles GET /links.json requests.

@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { JobRetryHandlerExecutor } from './JobRetryHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 
 /**
  * Handles PATCH /jobs/:id/retry requests.

@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { JobsHandlerExecutor } from './JobsHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 
 /**
  * Handles GET /jobs/:status.json requests.

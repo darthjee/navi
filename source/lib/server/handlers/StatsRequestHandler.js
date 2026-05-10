@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { StatsHandlerExecutor } from './StatsHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Handles GET /stats.json requests.

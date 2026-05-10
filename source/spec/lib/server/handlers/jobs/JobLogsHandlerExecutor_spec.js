@@ -34,10 +34,10 @@ describe('JobLogsHandlerExecutor', () => {
 
     describe('when there are logs for the given job', () => {
       beforeEach(() => {
-        LogRegistry.info('first',  { jobId: 'job-1' });
+        LogRegistry.info('first', { jobId: 'job-1' });
         LogRegistry.warn('second', { jobId: 'job-1' });
-        LogRegistry.info('third',  { jobId: 'job-1' });
-        LogRegistry.info('other',  { jobId: 'job-2' });
+        LogRegistry.info('third', { jobId: 'job-1' });
+        LogRegistry.info('other', { jobId: 'job-2' });
       });
 
       it('responds with logs for that job only', () => {

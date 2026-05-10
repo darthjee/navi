@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { SettingsHandlerExecutor } from './SettingsHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Handles GET /settings.json requests.

@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { EngineContinueHandlerExecutor } from './EngineContinueHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 
 /**
  * Handles PATCH /engine/continue requests.

@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { LogsHandlerExecutor } from './LogsHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Handles GET /logs.json requests.

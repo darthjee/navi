@@ -1,5 +1,5 @@
-import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { IndexHandlerExecutor } from './IndexHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Handles GET / and SPA catch-all requests by serving index.html.
