@@ -27,10 +27,23 @@ class RedirectHandler extends RequestHandler {
    */
   handle(req, res) {
     const location = new RedirectLocation(this.#target, req.params).build();
-    const queryIndex = req.originalUrl.indexOf('?');
-    const queryString = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+    const queryParams = new URLSearchParams();
 
-    const redirectLocation = `${location}${queryString}`;
+    Object.entries(req.query).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          queryParams.append(key, `${item}`);
+        });
+        return;
+      }
+
+      if (value !== undefined) {
+        queryParams.append(key, `${value}`);
+      }
+    });
+
+    const queryString = queryParams.toString();
+    const redirectLocation = queryString === '' ? location : `${location}?${queryString}`;
     res.redirect(302, redirectLocation);
   }
 }
