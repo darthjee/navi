@@ -27,6 +27,11 @@ describe('RedirectHandler', () => {
       const res = await request(app).get('/categories?search=hobbit&order=asc').redirects(0);
       expect(res.headers['location']).toBe('/#/categories?search=hobbit&order=asc');
     });
+
+    it('preserves repeated query parameters in Location header', async () => {
+      const res = await request(app).get('/categories?tag=books&tag=fantasy').redirects(0);
+      expect(res.headers['location']).toBe('/#/categories?tag=books&tag=fantasy');
+    });
   });
 
   describe('#handle — route with one param', () => {
@@ -57,6 +62,15 @@ describe('RedirectHandler', () => {
     it('substitutes both params into the Location header', async () => {
       const res = await request(app).get('/categories/3/items/7').redirects(0);
       expect(res.headers['location']).toBe('/#/categories/3/items/7');
+    });
+  });
+
+  describe('#handle — unsafe redirect destination', () => {
+    const app = buildApp('/categories/:id', 'http://example.com/:id');
+
+    it('falls back to /#/ when destination is not a safe relative hash route', async () => {
+      const res = await request(app).get('/categories/3').redirects(0);
+      expect(res.headers['location']).toBe('/#/');
     });
   });
 });

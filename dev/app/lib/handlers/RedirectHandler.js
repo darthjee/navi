@@ -10,7 +10,7 @@ import RedirectLocation from '../models/RedirectLocation.js';
  */
 class RedirectHandler extends RequestHandler {
   #target;
-  #safeRedirectPattern = /^\/#\/[A-Za-z0-9/_-]*(\?[A-Za-z0-9\-._~%!$&'()*+,;=:@/?]*)?$/;
+  #safeRedirectPattern = /^\/#\/[A-Za-z0-9/_-]*(\?[A-Za-z0-9\-._~%!$&'()*+,;=:/?]*)?$/;
 
   /**
    * @param {string} target - Hash-based redirect target template (e.g. '/#/categories/:id').
