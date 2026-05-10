@@ -10,6 +10,7 @@ import RedirectLocation from '../models/RedirectLocation.js';
  */
 class RedirectHandler extends RequestHandler {
   #target;
+  #safeRedirectPattern = /^\/#\/[A-Za-z0-9/_-]*(\?[A-Za-z0-9\-._~%!$&'()*+,;=:@/?]*)?$/;
 
   /**
    * @param {string} target - Hash-based redirect target template (e.g. '/#/categories/:id').
@@ -27,24 +28,36 @@ class RedirectHandler extends RequestHandler {
    */
   handle(req, res) {
     const location = new RedirectLocation(this.#target, req.params).build();
+    const queryString = this.#buildQueryString(req.query);
+    const redirectLocation = queryString === '' ? location : `${location}?${queryString}`;
+    const safeRedirectLocation = this.#isSafeRedirectLocation(redirectLocation)
+      ? redirectLocation
+      : '/#/';
+
+    res.redirect(302, safeRedirectLocation);
+  }
+
+  #buildQueryString(query) {
     const queryParams = new URLSearchParams();
 
-    Object.entries(req.query).forEach(([key, value]) => {
+    Object.entries(query).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         value.forEach((item) => {
-          queryParams.append(key, `${item}`);
+          queryParams.append(key, item);
         });
         return;
       }
 
       if (value !== undefined) {
-        queryParams.append(key, `${value}`);
+        queryParams.append(key, value);
       }
     });
 
-    const queryString = queryParams.toString();
-    const redirectLocation = queryString === '' ? location : `${location}?${queryString}`;
-    res.redirect(302, redirectLocation);
+    return queryParams.toString();
+  }
+
+  #isSafeRedirectLocation(location) {
+    return this.#safeRedirectPattern.test(location);
   }
 }
 
