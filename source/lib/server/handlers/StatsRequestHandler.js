@@ -1,6 +1,5 @@
-import { JobRegistry } from '../../background/JobRegistry.js';
-import { WorkersRegistry } from '../../background/WorkersRegistry.js';
 import { RequestHandler } from '../../common/server/RequestHandler.js';
+import { StatsHandlerExecutor } from './StatsHandlerExecutor.js';
 
 /**
  * Handles GET /stats.json requests.
@@ -15,16 +14,13 @@ class StatsRequestHandler extends RequestHandler {
   }
 
   /**
-   * Responds with combined job and worker stats.
-   * @param {object} _req - The Express request object.
+   * Delegates to StatsHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
-  handle(_req, res) {
-    res.json({
-      jobs:    JobRegistry.stats(),
-      workers: WorkersRegistry.stats(),
-    });
+  handle(req, res) {
+    new StatsHandlerExecutor(req, res).handle();
   }
 }
 
