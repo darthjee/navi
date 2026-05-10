@@ -7,7 +7,11 @@ class RequestHandlerExecutor {
   #request;
   #response;
   #target;
+  // Only allow relative hash-routes and RFC3986-safe query characters.
+  // This guarantees redirects stay inside the SPA (`/#/...`) and never become absolute URLs.
   #safeRedirectPattern = /^\/#\/[A-Za-z0-9/_-]*(\?[A-Za-z0-9\-._~%!$&'()*+,;=:/?]*)?$/;
+  // Reject protocol-relative (`//host`) and absolute (`scheme://host`) URL-like values
+  // so query params cannot smuggle external redirect targets.
   #unsafeQueryValuePattern = /^(\/\/|[a-z][a-z0-9+.-]*:\/\/)/i;
 
   /**
@@ -73,7 +77,7 @@ class RequestHandlerExecutor {
 
   /**
    * Checks whether a query value looks like a URL or protocol-relative URL.
-   * @param {string} value
+   * @param {unknown} value
    * @returns {boolean}
    */
   #isUnsafeQueryValue(value) {
