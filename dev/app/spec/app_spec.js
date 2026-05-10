@@ -125,4 +125,9 @@ describe('with failureRate = 1', () => {
     const res = await request(failingApp).get('/unknown');
     expect(res.status).toBe(502);
   });
+
+  it('does not fail on GET /', async () => {
+    const res = await request(failingApp).get('/');
+    expect(res.status).not.toBe(502);
+  });
 });
