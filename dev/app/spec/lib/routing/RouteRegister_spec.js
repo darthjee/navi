@@ -1,6 +1,7 @@
 import express from 'express';
 import request from 'supertest';
-import ContentHandler from '../../../lib/handlers/ContentHandler.js';
+import { HandlerConfig } from '../../../lib/common/server/HandlerConfig.js';
+import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import RouteRegister from '../../../lib/routing/RouteRegister.js';
 import { ALL_CATEGORIES, BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
 import { testData as data } from '../../support/fixtures/testData.js';
@@ -11,7 +12,7 @@ describe('RouteRegister', () => {
     describe('when the same route is registered twice', () => {
       it('throws an error identifying the duplicate', () => {
         const register = new RouteRegister(express());
-        const handler = new ContentHandler('/categories.json', data);
+        const handler = new HandlerConfig(ContentHandlerExecutor, ['/categories.json', data]);
         register.register('/categories.json', handler);
         expect(() => register.register('/categories.json', handler))
           .toThrowError('RouteRegister: duplicate route "/categories.json"');
@@ -95,8 +96,8 @@ describe('RouteRegister', () => {
   describe('#routes', () => {
     it('returns the list of registered route patterns in registration order', () => {
       const register = new RouteRegister(express());
-      register.register('/categories.json', new ContentHandler('/categories.json', data));
-      register.register('/categories/:id.json', new ContentHandler('/categories/:id.json', data));
+      register.register('/categories.json', new HandlerConfig(ContentHandlerExecutor, ['/categories.json', data]));
+      register.register('/categories/:id.json', new HandlerConfig(ContentHandlerExecutor, ['/categories/:id.json', data]));
       expect(register.routes()).toEqual(['/categories.json', '/categories/:id.json']);
     });
 
