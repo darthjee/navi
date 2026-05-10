@@ -1,6 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
+import { EngineStartHandlerExecutor } from './EngineStartHandlerExecutor.js';
 
 /**
  * Handles PATCH /engine/start requests.
@@ -16,18 +15,13 @@ class EngineStartRequestHandler extends RequestHandler {
   }
 
   /**
-   * Starts engine processing from a stopped state, re-enqueueing initial jobs.
-   * @param {object} _req - The Express request object.
+   * Delegates to EngineStartHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {Promise<void>}
    */
-  async handle(_req, res) {
-    if (!Application.isStopped()) {
-      throw new ConflictError();
-    }
-
-    await Application.start();
-    res.json({ status: 'running' });
+  async handle(req, res) {
+    await new EngineStartHandlerExecutor(req, res).handle();
   }
 }
 

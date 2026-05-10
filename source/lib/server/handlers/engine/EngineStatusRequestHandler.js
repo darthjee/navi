@@ -1,5 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { Application } from '../../../services/Application.js';
+import { EngineStatusHandlerExecutor } from './EngineStatusHandlerExecutor.js';
 
 /**
  * Handles GET /engine/status requests.
@@ -14,13 +14,13 @@ class EngineStatusRequestHandler extends RequestHandler {
   }
 
   /**
-   * Responds with the current engine status.
-   * @param {object} _req - The Express request object.
+   * Delegates to EngineStatusHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
-  handle(_req, res) {
-    res.json({ status: Application.status() });
+  handle(req, res) {
+    new EngineStatusHandlerExecutor(req, res).handle();
   }
 }
 

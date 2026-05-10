@@ -1,6 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
+import { EngineStopHandlerExecutor } from './EngineStopHandlerExecutor.js';
 
 /**
  * Handles PATCH /engine/stop requests.
@@ -16,18 +15,13 @@ class EngineStopRequestHandler extends RequestHandler {
   }
 
   /**
-   * Initiates engine stop. Responds immediately with the transitional status.
-   * @param {object} _req - The Express request object.
+   * Delegates to EngineStopHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {Promise<void>}
    */
-  async handle(_req, res) {
-    if (!Application.isRunning()) {
-      throw new ConflictError();
-    }
-
-    Application.stop();
-    res.json({ status: 'stopping' });
+  async handle(req, res) {
+    await new EngineStopHandlerExecutor(req, res).handle();
   }
 }
 

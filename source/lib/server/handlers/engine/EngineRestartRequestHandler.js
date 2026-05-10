@@ -1,6 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
+import { EngineRestartHandlerExecutor } from './EngineRestartHandlerExecutor.js';
 
 /**
  * Handles PATCH /engine/restart requests.
@@ -16,18 +15,13 @@ class EngineRestartRequestHandler extends RequestHandler {
   }
 
   /**
-   * Initiates engine restart. Responds immediately with the transitional status.
-   * @param {object} _req - The Express request object.
+   * Delegates to EngineRestartHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {Promise<void>}
    */
-  async handle(_req, res) {
-    if (!Application.isRunning()) {
-      throw new ConflictError();
-    }
-
-    Application.restart();
-    res.json({ status: 'stopping' });
+  async handle(req, res) {
+    await new EngineRestartHandlerExecutor(req, res).handle();
   }
 }
 

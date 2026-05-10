@@ -1,6 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
+import { EngineContinueHandlerExecutor } from './EngineContinueHandlerExecutor.js';
 
 /**
  * Handles PATCH /engine/continue requests.
@@ -16,18 +15,13 @@ class EngineContinueRequestHandler extends RequestHandler {
   }
 
   /**
-   * Resumes engine processing after a pause.
-   * @param {object} _req - The Express request object.
+   * Delegates to EngineContinueHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {Promise<void>}
    */
-  async handle(_req, res) {
-    if (!Application.isPaused()) {
-      throw new ConflictError();
-    }
-
-    await Application.continue();
-    res.json({ status: 'running' });
+  async handle(req, res) {
+    await new EngineContinueHandlerExecutor(req, res).handle();
   }
 }
 
