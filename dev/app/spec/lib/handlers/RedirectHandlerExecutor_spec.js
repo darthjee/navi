@@ -1,3 +1,4 @@
+import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandlerExecutor.js';
 import RedirectHandlerExecutor from '../../../lib/handlers/RedirectHandlerExecutor.js';
 
 describe('RedirectHandlerExecutor', () => {
@@ -7,6 +8,11 @@ describe('RedirectHandlerExecutor', () => {
     new RedirectHandlerExecutor(request, response, target).handle();
     return response.redirect.calls.mostRecent().args;
   };
+
+  it('is an instance of RequestHandlerExecutor', () => {
+    const executor = new RedirectHandlerExecutor({}, {}, '/#/');
+    expect(executor).toBeInstanceOf(RequestHandlerExecutor);
+  });
 
   it('builds redirect location with params and query string', () => {
     const result = execute({

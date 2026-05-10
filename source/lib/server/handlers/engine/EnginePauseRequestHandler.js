@@ -1,6 +1,5 @@
+import { EnginePauseHandlerExecutor } from './EnginePauseHandlerExecutor.js';
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
 
 /**
  * Handles PATCH /engine/pause requests.
@@ -16,18 +15,13 @@ class EnginePauseRequestHandler extends RequestHandler {
   }
 
   /**
-   * Initiates engine pause. Responds immediately with the transitional status.
-   * @param {object} _req - The Express request object.
+   * Delegates to EnginePauseHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {Promise<void>}
    */
-  async handle(_req, res) {
-    if (!Application.isRunning()) {
-      throw new ConflictError();
-    }
-
-    Application.pause();
-    res.json({ status: 'pausing' });
+  async handle(req, res) {
+    await new EnginePauseHandlerExecutor(req, res).handle();
   }
 }
 

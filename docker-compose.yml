@@ -53,6 +53,7 @@ services:
     volumes:
       - ./dev/app/:/home/node/app/
       - ./source/lib/common:/home/node/app/lib/common
+      - ./source/spec/lib/common:/home/node/app/spec/lib/common
       - ./docker_volumes/node_modules_dev:/home/node/app/node_modules
     ports:
       - 0.0.0.0:3020:8080

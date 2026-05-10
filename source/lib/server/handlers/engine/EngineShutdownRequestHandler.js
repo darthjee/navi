@@ -1,5 +1,5 @@
+import { EngineShutdownHandlerExecutor } from './EngineShutdownHandlerExecutor.js';
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { Application } from '../../../services/Application.js';
 
 /**
  * Handles PATCH /engine/shutdown requests.
@@ -15,14 +15,13 @@ class EngineShutdownRequestHandler extends RequestHandler {
   }
 
   /**
-   * Initiates server shutdown. Responds immediately with the transitional status.
-   * @param {object} _req - The Express request object.
+   * Delegates to EngineShutdownHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
-  handle(_req, res) {
-    Application.shutdown();
-    res.json({ status: 'stopping' });
+  handle(req, res) {
+    new EngineShutdownHandlerExecutor(req, res).handle();
   }
 }
 

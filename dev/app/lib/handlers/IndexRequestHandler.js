@@ -1,22 +1,18 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import IndexHandlerExecutor from './IndexHandlerExecutor.js';
 import { RequestHandler } from '../common/server/RequestHandler.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir = path.resolve(__dirname, '../static');
 
 /**
  * Handles GET / and SPA catch-all requests by serving index.html.
  */
 class IndexRequestHandler extends RequestHandler {
   /**
-   * Responds by sending static/index.html.
-   * @param {import('express').Request} _req
+   * Delegates to IndexHandlerExecutor.
+   * @param {import('express').Request} req
    * @param {import('express').Response} res
    * @returns {void}
    */
-  handle(_req, res) {
-    res.sendFile(path.join(staticDir, 'index.html'));
+  handle(req, res) {
+    new IndexHandlerExecutor(req, res).handle();
   }
 }
 

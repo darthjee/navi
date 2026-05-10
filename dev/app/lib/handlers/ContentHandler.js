@@ -1,7 +1,5 @@
-import { notFound } from './not_found.js';
+import ContentHandlerExecutor from './ContentHandlerExecutor.js';
 import { RequestHandler } from '../common/server/RequestHandler.js';
-import { Logger } from '../common/utils/logging/Logger.js';
-import DataNavigator from '../models/DataNavigator.js';
 import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
 
 /**
@@ -34,44 +32,44 @@ class ContentHandler extends RequestHandler {
   }
 
   /**
-   * Navigates the data for the given route/params and delegates to
-   * {@link _respond} to write the response. Responds 404 if navigation
-   * returns null.
+   * Delegates to ContentHandlerExecutor.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   handle(req, res) {
-    try {
-      const steps = this.#extractorFactory(this.#route, req.params).steps();
-      const result = new DataNavigator(this.#data, steps).navigate();
-      if (result === null) return notFound(res);
-      this._respond(result, req, res);
-    } catch (e) {
-      Logger.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${req.url}) — ${e.message}`);
-      res.status(400).json({ error: e.message });
-    }
+    new ContentHandlerExecutor(req, res, this._route, this._data, this._serializer, this._extractorFactory).handle();
   }
 
   /**
-   * Writes the navigation result as a JSON response. Applies serialization
-   * if a serializer was provided. Subclasses may override this method to
-   * add extra behaviour (e.g. pagination headers).
-   *
-   * @param {*} result - The raw navigation result.
-   * @param {import('express').Request} _req
-   * @param {import('express').Response} res
+   * Returns the route pattern. Exposed for subclasses.
+   * @returns {string}
    */
-  _respond(result, _req, res) {
-    res.json(this.#serializer ? this.#serializer.serialize(result) : result);
+  get _route() {
+    return this.#route;
   }
 
   /**
-   * Returns the serializer configured on this handler, or `null`.
-   * Exposed for use by subclasses.
+   * Returns the root data structure. Exposed for subclasses.
+   * @returns {Object}
+   */
+  get _data() {
+    return this.#data;
+  }
+
+  /**
+   * Returns the configured serializer, or null. Exposed for subclasses.
    * @returns {import('./Serializer.js').default|null}
    */
   get _serializer() {
     return this.#serializer;
+  }
+
+  /**
+   * Returns the extractor factory. Exposed for subclasses.
+   * @returns {Function}
+   */
+  get _extractorFactory() {
+    return this.#extractorFactory;
   }
 }
 

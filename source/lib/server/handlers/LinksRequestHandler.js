@@ -1,7 +1,5 @@
+import { LinksHandlerExecutor } from './LinksHandlerExecutor.js';
 import { RequestHandler } from '../../common/server/RequestHandler.js';
-import { Link } from '../../models/configs/Link.js';
-import { ClientRegistry } from '../../registry/ClientRegistry.js';
-import { LinksSerializer } from '../../serializers/LinksSerializer.js';
 
 /**
  * Handles GET /links.json requests.
@@ -22,31 +20,13 @@ class LinksRequestHandler extends RequestHandler {
   }
 
   /**
-   * Responds with configured links.
-   * @param {object} _req - The Express request object.
+   * Delegates to LinksHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
-  handle(_req, res) {
-    res.json({ links: LinksSerializer.serialize(this.#allLinks()) });
-  }
-
-  /**
-   * Returns configured and client-derived links as Link instances.
-   * @returns {Array<Link>} All links for endpoint response.
-   */
-  #allLinks() {
-    return [...this.#links, ...this.#clientLinks()];
-  }
-
-  /**
-   * Converts clients into Link instances.
-   * @returns {Array<Link>} Client-derived links.
-   */
-  #clientLinks() {
-    return ClientRegistry.all().map((client) => (
-      new Link({ url: client.baseUrl, text: client.linkText ?? client.name })
-    ));
+  handle(req, res) {
+    new LinksHandlerExecutor(req, res, this.#links).handle();
   }
 }
 

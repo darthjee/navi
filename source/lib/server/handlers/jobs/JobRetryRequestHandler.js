@@ -1,9 +1,5 @@
-import { JobRegistry } from '../../../background/JobRegistry.js';
+import { JobRetryHandlerExecutor } from './JobRetryHandlerExecutor.js';
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { NotFoundError } from '../../../exceptions/http/NotFoundError.js';
-
-const RETRYABLE_STATUSES = new Set(['failed', 'dead']);
 
 /**
  * Handles PATCH /jobs/:id/retry requests.
@@ -20,20 +16,13 @@ class JobRetryRequestHandler extends RequestHandler {
   }
 
   /**
-   * Retries the specified job by moving it to the retry queue.
+   * Delegates to JobRetryHandlerExecutor.
    * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
   handle(req, res) {
-    const { id } = req.params;
-    const result = JobRegistry.jobById(id);
-
-    if (!result) throw new NotFoundError('Job not found');
-    if (!RETRYABLE_STATUSES.has(result.status)) throw new ConflictError();
-
-    JobRegistry.retryJob(id);
-    res.json({ status: 'enqueued' });
+    new JobRetryHandlerExecutor(req, res).handle();
   }
 }
 

@@ -1,6 +1,5 @@
+import { JobLogsHandlerExecutor } from './JobLogsHandlerExecutor.js';
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { LogRegistry } from '../../../registry/LogRegistry.js';
-import { LogSerializer } from '../../../serializers/LogSerializer.js';
 
 /**
  * Handles GET /jobs/:job_id/logs.json requests.
@@ -23,16 +22,13 @@ class JobLogsRequestHandler extends RequestHandler {
   }
 
   /**
-   * Responds with a paginated JSON array of log entries for the given job.
+   * Delegates to JobLogsHandlerExecutor.
    * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
   handle(req, res) {
-    const { job_id: jobId } = req.params;
-    const { last_id: lastId } = req.query;
-    const logs = LogRegistry.getLogsByJobId(jobId, { lastId });
-    res.json(LogSerializer.serialize(logs.slice(0, this.#pageSize)));
+    new JobLogsHandlerExecutor(req, res, this.#pageSize).handle();
   }
 }
 
