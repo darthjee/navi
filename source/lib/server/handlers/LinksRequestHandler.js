@@ -1,3 +1,4 @@
+import { ClientRegistry } from '../../registry/ClientRegistry.js';
 import { RequestHandler } from '../RequestHandler.js';
 
 /**
@@ -25,7 +26,13 @@ class LinksRequestHandler extends RequestHandler {
    * @returns {void}
    */
   handle(_req, res) {
-    res.json({ links: this.#links.map((link) => link.toJSON()) });
+    const links = this.#links.map((link) => link.toJSON());
+    const clientsLinks = ClientRegistry.all().map((client) => ({
+      url: client.baseUrl,
+      text: client.linkText ?? client.name,
+    }));
+
+    res.json({ links: [...links, ...clientsLinks] });
   }
 }
 

@@ -48,6 +48,7 @@ failure:
 clients:
   default:
     base_url: https://example.com
+    linkText: Main Website   # optional; used by GET /links.json (defaults to client key)
     timeout: 5000            # optional; ms (default: 5000)
   auth_api:
     base_url: https://api.example.com

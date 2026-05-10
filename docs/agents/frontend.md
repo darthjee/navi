@@ -37,7 +37,6 @@ frontend/
 │       │   ├── controllers/      # Data/logic controller classes
 │       │   └── helpers/          # HTML rendering helpers
 │       └── elements/             # Reusable UI widgets
-│           ├── BaseUrlsMenu.jsx
 │           ├── EngineControls.jsx
 │           ├── StatsHeader.jsx
 │           ├── JobDetails.jsx

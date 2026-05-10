@@ -13,7 +13,6 @@ source/lib/server/
 ├── RequestHandler.js             # Abstract base class
 └── handlers/
     ├── AssetsRequestHandler.js
-    ├── BaseUrlsRequestHandler.js
     ├── IndexRequestHandler.js
     ├── JobsFilter.js
     ├── LogsRequestHandler.js
@@ -40,9 +39,9 @@ source/lib/server/
 |--------|------|-------------|
 | `GET` | `/settings.json` | Returns `{ "enable_shutdown": true }` when shutdown is enabled; 403 when disabled. |
 | `GET` | `/stats.json` | Aggregated worker and job-queue counts. |
+| `GET` | `/links.json` | Configured `web.links` plus one link per client (`base_url` and `linkText`/client name). |
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
-| `GET` | `/clients/base_urls.json` | Unique list of client base URLs. |
 | `GET` | `/engine/status` | Returns `{ status }` with the current engine status. |
 | `PATCH` | `/engine/pause` | Sets status → `pausing`. Returns 409 if not `running`. |
 | `PATCH` | `/engine/stop` | Sets status → `stopping`, clears queues when workers idle. Returns 409 if not `running`. |

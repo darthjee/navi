@@ -13,12 +13,14 @@ class Client {
    * @param {object} attributes Client attributes.
    * @param {string} attributes.name Name identifying this client.
    * @param {string} attributes.baseUrl Base URL used to build full request URLs.
+   * @param {string|null} [attributes.linkText] Optional display text for UI links.
    * @param {number} [attributes.timeout] Optional request timeout in milliseconds.
    * @param {object} [attributes.headers] Optional HTTP headers sent with every request.
    */
-  constructor({ name, baseUrl, timeout = 5000, headers = {} }) {
+  constructor({ name, baseUrl, linkText = null, timeout = 5000, headers = {} }) {
     this.name = name;
     this.baseUrl = baseUrl;
+    this.linkText = linkText;
     this.timeout = timeout;
     this.headers = headers;
   }
@@ -29,6 +31,7 @@ class Client {
    * @param {string} name The name identifying the client.
    * @param {object} config Client configuration object.
    * @param {string} config.base_url Base URL for the client.
+   * @param {string} [config.linkText] Optional display text for UI links.
    * @param {number} [config.timeout] Optional request timeout in milliseconds.
    * @param {object} [config.headers] Optional HTTP headers.
    * @returns {Client} A new Client instance.
@@ -36,7 +39,8 @@ class Client {
   static fromObject(name, config) {
     const headers = config.headers || {};
     const baseUrl = config.base_url;
-    return new Client({ name, baseUrl, timeout: config.timeout, headers });
+    const linkText = config.linkText ?? null;
+    return new Client({ name, baseUrl, linkText, timeout: config.timeout, headers });
   }
 
   /**
