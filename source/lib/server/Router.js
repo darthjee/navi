@@ -2,28 +2,31 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import { HandlerConfig } from './HandlerConfig.js';
-import { AssetsRequestHandler } from './handlers/AssetsRequestHandler.js';
-import { EngineContinueRequestHandler } from './handlers/engine/EngineContinueRequestHandler.js';
-import { EnginePauseRequestHandler } from './handlers/engine/EnginePauseRequestHandler.js';
-import { EngineRestartRequestHandler } from './handlers/engine/EngineRestartRequestHandler.js';
-import { EngineShutdownRequestHandler } from './handlers/engine/EngineShutdownRequestHandler.js';
-import { EngineStartRequestHandler } from './handlers/engine/EngineStartRequestHandler.js';
-import { EngineStatusRequestHandler } from './handlers/engine/EngineStatusRequestHandler.js';
-import { EngineStopRequestHandler } from './handlers/engine/EngineStopRequestHandler.js';
-import { IndexRequestHandler } from './handlers/IndexRequestHandler.js';
-import { JobLogsRequestHandler } from './handlers/jobs/JobLogsRequestHandler.js';
-import { JobRequestHandler } from './handlers/jobs/JobRequestHandler.js';
-import { JobRetryRequestHandler } from './handlers/jobs/JobRetryRequestHandler.js';
-import { JobsRequestHandler } from './handlers/jobs/JobsRequestHandler.js';
-import { LinksRequestHandler } from './handlers/LinksRequestHandler.js';
-import { LogsRequestHandler } from './handlers/LogsRequestHandler.js';
-import { SettingsRequestHandler } from './handlers/SettingsRequestHandler.js';
-import { StatsRequestHandler } from './handlers/StatsRequestHandler.js';
+import { PathValidator } from './PathValidator.js';
+import { AssetsHandlerExecutor } from './handlers/AssetsHandlerExecutor.js';
+import { EngineContinueHandlerExecutor } from './handlers/engine/EngineContinueHandlerExecutor.js';
+import { EnginePauseHandlerExecutor } from './handlers/engine/EnginePauseHandlerExecutor.js';
+import { EngineRestartHandlerExecutor } from './handlers/engine/EngineRestartHandlerExecutor.js';
+import { EngineShutdownHandlerExecutor } from './handlers/engine/EngineShutdownHandlerExecutor.js';
+import { EngineStartHandlerExecutor } from './handlers/engine/EngineStartHandlerExecutor.js';
+import { EngineStatusHandlerExecutor } from './handlers/engine/EngineStatusHandlerExecutor.js';
+import { EngineStopHandlerExecutor } from './handlers/engine/EngineStopHandlerExecutor.js';
+import { IndexHandlerExecutor } from './handlers/IndexHandlerExecutor.js';
+import { JobLogsHandlerExecutor } from './handlers/jobs/JobLogsHandlerExecutor.js';
+import { JobHandlerExecutor } from './handlers/jobs/JobHandlerExecutor.js';
+import { JobRetryHandlerExecutor } from './handlers/jobs/JobRetryHandlerExecutor.js';
+import { JobsHandlerExecutor } from './handlers/jobs/JobsHandlerExecutor.js';
+import { LinksHandlerExecutor } from './handlers/LinksHandlerExecutor.js';
+import { LogsHandlerExecutor } from './handlers/LogsHandlerExecutor.js';
+import { SettingsHandlerExecutor } from './handlers/SettingsHandlerExecutor.js';
+import { StatsHandlerExecutor } from './handlers/StatsHandlerExecutor.js';
 import { RouteRegister } from './RouteRegister.js';
 
 const { Router: ExpressRouter } = express;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const staticDir = path.join(__dirname, '../../static');
+const assetsDir = path.join(staticDir, 'assets');
+const assetsValidator = new PathValidator(assetsDir);
 
 /**
  * Builds the Express router with all application routes.
@@ -50,26 +53,26 @@ class Router {
     const register = new RouteRegister(router);
 
     const GET_ROUTES = {
-      '/settings.json':           new HandlerConfig(SettingsRequestHandler, { enableShutdown: this.#webConfig.enableShutdown }),
-      '/stats.json':              new HandlerConfig(StatsRequestHandler),
-      '/jobs/:status.json':       new HandlerConfig(JobsRequestHandler),
-      '/jobs/:job_id/logs.json':  new HandlerConfig(JobLogsRequestHandler, { pageSize: this.#webConfig.logsPageSize }),
-      '/job/:id.json':            new HandlerConfig(JobRequestHandler),
-      '/engine/status':           new HandlerConfig(EngineStatusRequestHandler),
-      '/logs.json':               new HandlerConfig(LogsRequestHandler, { pageSize: this.#webConfig.logsPageSize }),
-      '/links.json':              new HandlerConfig(LinksRequestHandler, { links: this.#webConfig.links }),
-      '/':                        new HandlerConfig(IndexRequestHandler),
-      '/assets/*path':            new HandlerConfig(AssetsRequestHandler),
+      '/settings.json':           new HandlerConfig(SettingsHandlerExecutor, this.#webConfig.enableShutdown),
+      '/stats.json':              new HandlerConfig(StatsHandlerExecutor),
+      '/jobs/:status.json':       new HandlerConfig(JobsHandlerExecutor),
+      '/jobs/:job_id/logs.json':  new HandlerConfig(JobLogsHandlerExecutor, this.#webConfig.logsPageSize),
+      '/job/:id.json':            new HandlerConfig(JobHandlerExecutor),
+      '/engine/status':           new HandlerConfig(EngineStatusHandlerExecutor),
+      '/logs.json':               new HandlerConfig(LogsHandlerExecutor, this.#webConfig.logsPageSize),
+      '/links.json':              new HandlerConfig(LinksHandlerExecutor, this.#webConfig.links),
+      '/':                        new HandlerConfig(IndexHandlerExecutor),
+      '/assets/*path':            new HandlerConfig(AssetsHandlerExecutor, [assetsDir, assetsValidator]),
     };
 
     const PATCH_ROUTES = {
-      '/jobs/:id/retry':   new HandlerConfig(JobRetryRequestHandler),
-      '/engine/pause':     new HandlerConfig(EnginePauseRequestHandler),
-      '/engine/stop':      new HandlerConfig(EngineStopRequestHandler),
-      '/engine/continue':  new HandlerConfig(EngineContinueRequestHandler),
-      '/engine/start':     new HandlerConfig(EngineStartRequestHandler),
-      '/engine/restart':   new HandlerConfig(EngineRestartRequestHandler),
-      '/engine/shutdown':  new HandlerConfig(EngineShutdownRequestHandler),
+      '/jobs/:id/retry':   new HandlerConfig(JobRetryHandlerExecutor),
+      '/engine/pause':     new HandlerConfig(EnginePauseHandlerExecutor),
+      '/engine/stop':      new HandlerConfig(EngineStopHandlerExecutor),
+      '/engine/continue':  new HandlerConfig(EngineContinueHandlerExecutor),
+      '/engine/start':     new HandlerConfig(EngineStartHandlerExecutor),
+      '/engine/restart':   new HandlerConfig(EngineRestartHandlerExecutor),
+      '/engine/shutdown':  new HandlerConfig(EngineShutdownHandlerExecutor),
     };
 
     Object.entries(GET_ROUTES).forEach(([route, handler]) => {
@@ -83,7 +86,7 @@ class Router {
     router.use(express.static(staticDir));
 
     router.use((_req, res) => {
-      new IndexRequestHandler().handle(_req, res);
+      new HandlerConfig(IndexHandlerExecutor).handle(_req, res);
     });
 
     return router;
