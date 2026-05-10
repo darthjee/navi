@@ -1,13 +1,14 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express, { Router as ExpressRouter } from 'express';
+import { HandlerConfig } from '../common/server/HandlerConfig.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
 import RouteRegister from './RouteRegister.js';
 import { ROUTES } from './routes.config.js';
-import CollectionHandler from '../handlers/CollectionHandler.js';
-import ContentHandler from '../handlers/ContentHandler.js';
-import IndexRequestHandler from '../handlers/IndexRequestHandler.js';
-import RedirectHandler from '../handlers/RedirectHandler.js';
+import CollectionHandlerExecutor from '../handlers/CollectionHandlerExecutor.js';
+import ContentHandlerExecutor from '../handlers/ContentHandlerExecutor.js';
+import IndexHandlerExecutor from '../handlers/IndexHandlerExecutor.js';
+import RedirectHandlerExecutor from '../handlers/RedirectHandlerExecutor.js';
 import Serializer from '../models/Serializer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -39,18 +40,18 @@ class Router {
 
     ROUTES.forEach(({ route, attributes, collection }) => {
       const serializer = attributes ? new Serializer(attributes) : null;
-      const HandlerClass = collection ? CollectionHandler : ContentHandler;
-      register.register(route, new HandlerClass(route, this.#data, serializer));
+      const ExecutorClass = collection ? CollectionHandlerExecutor : ContentHandlerExecutor;
+      register.register(route, new HandlerConfig(ExecutorClass, [route, this.#data, serializer]));
     });
 
     REDIRECT_ROUTES.forEach(({ route, target }) => {
-      register.register(route, new RedirectHandler(target));
+      register.register(route, new HandlerConfig(RedirectHandlerExecutor, [target]));
     });
 
     router.use(express.static(staticDir));
 
     router.use((_req, res) => {
-      new IndexRequestHandler().handle(_req, res);
+      new HandlerConfig(IndexHandlerExecutor).handle(_req, res);
     });
 
     return router;
