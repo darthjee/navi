@@ -30,7 +30,6 @@ dev/app/
 │   │   ├── ContentHandler.js       # Data-fetching handler (extends RequestHandler)
 │   │   ├── IndexRequestHandler.js  # Serves the SPA index.html
 │   │   ├── RedirectHandler.js      # Issues HTTP 302 to hash-based SPA routes
-│   │   ├── RequestHandler.js       # Abstract base class defining handle(req, res)
 │   │   └── not_found.js            # Sends a 404 JSON response
 │   ├── models/
 │   │   ├── DataNavigator.js        # Traverses the in-memory data structure by steps
@@ -44,10 +43,12 @@ dev/app/
 │   │   ├── redirect_routes.config.js # Redirect route definitions
 │   │   └── routes.config.js        # JSON API route definitions
 │   ├── common/                     # Mounted from source/lib/common
-│   │   └── utils/
-│   │       ├── EnvResolver.js
-│   │       ├── env_resolver/EnvStringResolver.js
-│   │       └── logging/
+│   │   ├── utils/
+│   │   │   ├── EnvResolver.js
+│   │   │   ├── env_resolver/EnvStringResolver.js
+│   │   │   └── logging/
+│   │   └── server/
+│   │       └── RequestHandler.js   # Abstract base class defining handle(req, res)
 └── spec/
 ```
 

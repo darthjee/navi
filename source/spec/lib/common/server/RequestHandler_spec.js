@@ -1,4 +1,4 @@
-import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
+import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 
 describe('RequestHandler', () => {
   describe('#handle', () => {

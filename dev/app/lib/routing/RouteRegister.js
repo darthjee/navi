@@ -21,7 +21,7 @@ class RouteRegister {
   /**
    * Registers a GET route wired to the given handler.
    * @param {string} route - Express route pattern.
-   * @param {import('./RequestHandler.js').default} handler - Handler instance with a `handle(req, res)` method.
+   * @param {import('../common/server/RequestHandler.js').RequestHandler} handler - Handler instance with a `handle(req, res)` method.
    * @throws {Error} If the same route pattern has already been registered.
    */
   register(route, handler) {
