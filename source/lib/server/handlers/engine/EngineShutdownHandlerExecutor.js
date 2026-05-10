@@ -1,11 +1,11 @@
-import { RequestHandlerExecutor } from '../../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { Application } from '../../../services/Application.js';
 
 /**
  * Executes request-handling behaviour for PATCH /engine/shutdown.
  * @author darthjee
  */
-class EngineShutdownHandlerExecutor extends RequestHandlerExecutor {
+class EngineShutdownHandlerExecutor extends RequestHandler {
   #response;
 
   /**

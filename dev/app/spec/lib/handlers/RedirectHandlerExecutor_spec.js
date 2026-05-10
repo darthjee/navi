@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
 import RedirectHandlerExecutor from '../../../lib/handlers/RedirectHandlerExecutor.js';
 
 describe('RedirectHandlerExecutor', () => {
@@ -11,7 +11,7 @@ describe('RedirectHandlerExecutor', () => {
 
   it('is an instance of RequestHandlerExecutor', () => {
     const executor = new RedirectHandlerExecutor({}, {}, '/#/');
-    expect(executor).toBeInstanceOf(RequestHandlerExecutor);
+    expect(executor).toBeInstanceOf(RequestHandler);
   });
 
   it('builds redirect location with params and query string', () => {

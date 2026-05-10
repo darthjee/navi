@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { ConflictError } from '../../../exceptions/http/ConflictError.js';
 import { Application } from '../../../services/Application.js';
 
@@ -6,7 +6,7 @@ import { Application } from '../../../services/Application.js';
  * Executes request-handling behaviour for PATCH /engine/start.
  * @author darthjee
  */
-class EngineStartHandlerExecutor extends RequestHandlerExecutor {
+class EngineStartHandlerExecutor extends RequestHandler {
   #response;
 
   /**

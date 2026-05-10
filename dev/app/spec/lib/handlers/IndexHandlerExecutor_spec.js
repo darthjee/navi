@@ -1,5 +1,5 @@
 import path from 'path';
-import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
 import IndexHandlerExecutor from '../../../lib/handlers/IndexHandlerExecutor.js';
 
 describe('IndexHandlerExecutor', () => {
@@ -10,7 +10,7 @@ describe('IndexHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new IndexHandlerExecutor({}, res)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new IndexHandlerExecutor({}, res)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

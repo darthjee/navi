@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { EngineStatusHandlerExecutor } from '../../../../../lib/server/handlers/engine/EngineStatusHandlerExecutor.js';
 import { Application } from '../../../../../lib/services/Application.js';
 
@@ -14,7 +14,7 @@ describe('EngineStatusHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new EngineStatusHandlerExecutor({}, res)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new EngineStatusHandlerExecutor({}, res)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

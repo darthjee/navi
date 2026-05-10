@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { Link } from '../../models/configs/Link.js';
 import { ClientRegistry } from '../../registry/ClientRegistry.js';
 import { LinksSerializer } from '../../serializers/LinksSerializer.js';
@@ -7,7 +7,7 @@ import { LinksSerializer } from '../../serializers/LinksSerializer.js';
  * Executes request-handling behaviour for GET /links.json.
  * @author darthjee
  */
-class LinksHandlerExecutor extends RequestHandlerExecutor {
+class LinksHandlerExecutor extends RequestHandler {
   #response;
   #links;
 

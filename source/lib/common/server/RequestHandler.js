@@ -1,8 +1,8 @@
 /**
- * Base class for request handler executors.
+ * Base class for request handlers.
  * @author darthjee
  */
-class RequestHandlerExecutor {
+class RequestHandler {
   /**
    * Executes the request-handling behaviour.
    * @returns {void}
@@ -10,4 +10,4 @@ class RequestHandlerExecutor {
   handle() {}
 }
 
-export { RequestHandlerExecutor };
+export { RequestHandler };

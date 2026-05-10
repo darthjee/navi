@@ -1,6 +1,6 @@
 import { JobRegistry } from '../../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../../lib/background/WorkersRegistry.js';
-import { RequestHandlerExecutor } from '../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { StatsHandlerExecutor } from '../../../../lib/server/handlers/StatsHandlerExecutor.js';
 import { IdentifyableCollection } from '../../../../lib/utils/collections/IdentifyableCollection.js';
 
@@ -25,7 +25,7 @@ describe('StatsHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new StatsHandlerExecutor({}, res)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new StatsHandlerExecutor({}, res)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

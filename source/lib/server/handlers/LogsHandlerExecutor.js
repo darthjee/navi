@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { LogSerializer } from '../../serializers/LogSerializer.js';
 
@@ -8,7 +8,7 @@ import { LogSerializer } from '../../serializers/LogSerializer.js';
  * Returns 400 when both jobId and workerId are present simultaneously.
  * @author darthjee
  */
-class LogsHandlerExecutor extends RequestHandlerExecutor {
+class LogsHandlerExecutor extends RequestHandler {
   #request;
   #response;
   #pageSize;

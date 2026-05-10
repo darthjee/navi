@@ -1,5 +1,5 @@
 import path from 'path';
-import { RequestHandlerExecutor } from '../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { ForbiddenError } from '../../../../lib/exceptions/http/ForbiddenError.js';
 import { AssetsHandlerExecutor } from '../../../../lib/server/handlers/AssetsHandlerExecutor.js';
 import { PathValidator } from '../../../../lib/server/PathValidator.js';
@@ -20,7 +20,7 @@ describe('AssetsHandlerExecutor', () => {
 
   it('is an instance of RequestHandlerExecutor', () => {
     const executor = new AssetsHandlerExecutor({}, res, fixtureAssetsDir, validator);
-    expect(executor).toBeInstanceOf(RequestHandlerExecutor);
+    expect(executor).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

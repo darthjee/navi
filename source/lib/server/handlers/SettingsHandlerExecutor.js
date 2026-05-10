@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { ForbiddenError } from '../../exceptions/http/ForbiddenError.js';
 
 /**
@@ -6,7 +6,7 @@ import { ForbiddenError } from '../../exceptions/http/ForbiddenError.js';
  * Throws ForbiddenError when shutdown is disabled.
  * @author darthjee
  */
-class SettingsHandlerExecutor extends RequestHandlerExecutor {
+class SettingsHandlerExecutor extends RequestHandler {
   #response;
   #enableShutdown;
 

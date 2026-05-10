@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { LogRegistry } from '../../../../../lib/registry/LogRegistry.js';
 import { JobLogsHandlerExecutor } from '../../../../../lib/server/handlers/jobs/JobLogsHandlerExecutor.js';
 import { EngineEvents } from '../../../../../lib/services/EngineEvents.js';
@@ -21,7 +21,7 @@ describe('JobLogsHandlerExecutor', () => {
 
   it('is an instance of RequestHandlerExecutor', () => {
     expect(new JobLogsHandlerExecutor({ params: {}, query: {} }, res, 20))
-      .toBeInstanceOf(RequestHandlerExecutor);
+      .toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { SettingsHandlerExecutor } from '../../../../lib/server/handlers/SettingsHandlerExecutor.js';
 
 describe('SettingsHandlerExecutor', () => {
@@ -9,7 +9,7 @@ describe('SettingsHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new SettingsHandlerExecutor({}, res, true)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new SettingsHandlerExecutor({}, res, true)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

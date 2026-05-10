@@ -1,5 +1,5 @@
 import { JobRegistry } from '../../../background/JobRegistry.js';
-import { RequestHandlerExecutor } from '../../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { ConflictError } from '../../../exceptions/http/ConflictError.js';
 import { NotFoundError } from '../../../exceptions/http/NotFoundError.js';
 
@@ -9,7 +9,7 @@ const RETRYABLE_STATUSES = new Set(['failed', 'dead']);
  * Executes request-handling behaviour for PATCH /jobs/:id/retry.
  * @author darthjee
  */
-class JobRetryHandlerExecutor extends RequestHandlerExecutor {
+class JobRetryHandlerExecutor extends RequestHandler {
   #request;
   #response;
 

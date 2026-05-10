@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { Link } from '../../../../lib/models/configs/Link.js';
 import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
 import { LinksHandlerExecutor } from '../../../../lib/server/handlers/LinksHandlerExecutor.js';
@@ -20,7 +20,7 @@ describe('LinksHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new LinksHandlerExecutor({}, res, [])).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new LinksHandlerExecutor({}, res, [])).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

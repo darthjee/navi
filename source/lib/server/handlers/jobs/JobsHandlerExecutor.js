@@ -1,5 +1,5 @@
 import { JobRegistry } from '../../../background/JobRegistry.js';
-import { RequestHandlerExecutor } from '../../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { JobSerializer } from '../../../serializers/JobSerializer.js';
 import { JobsFilter } from '../JobsFilter.js';
 
@@ -7,7 +7,7 @@ import { JobsFilter } from '../JobsFilter.js';
  * Executes request-handling behaviour for GET /jobs/:status.json.
  * @author darthjee
  */
-class JobsHandlerExecutor extends RequestHandlerExecutor {
+class JobsHandlerExecutor extends RequestHandler {
   #request;
   #response;
 

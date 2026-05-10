@@ -1,5 +1,5 @@
 import { JobRegistry } from '../../../background/JobRegistry.js';
-import { RequestHandlerExecutor } from '../../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { NotFoundError } from '../../../exceptions/http/NotFoundError.js';
 import { JobSerializer } from '../../../serializers/JobSerializer.js';
 
@@ -7,7 +7,7 @@ import { JobSerializer } from '../../../serializers/JobSerializer.js';
  * Executes request-handling behaviour for GET /job/:id.json.
  * @author darthjee
  */
-class JobHandlerExecutor extends RequestHandlerExecutor {
+class JobHandlerExecutor extends RequestHandler {
   #request;
   #response;
 

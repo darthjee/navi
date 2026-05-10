@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { LogRegistry } from '../../../registry/LogRegistry.js';
 import { LogSerializer } from '../../../serializers/LogSerializer.js';
 
@@ -6,7 +6,7 @@ import { LogSerializer } from '../../../serializers/LogSerializer.js';
  * Executes request-handling behaviour for GET /jobs/:job_id/logs.json.
  * @author darthjee
  */
-class JobLogsHandlerExecutor extends RequestHandlerExecutor {
+class JobLogsHandlerExecutor extends RequestHandler {
   #request;
   #response;
   #pageSize;

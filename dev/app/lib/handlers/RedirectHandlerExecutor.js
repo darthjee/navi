@@ -1,11 +1,11 @@
-import { RequestHandlerExecutor } from '../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../common/server/RequestHandler.js';
 import RedirectLocation from '../models/RedirectLocation.js';
 import RedirectQueryString from '../models/RedirectQueryString.js';
 
 /**
  * Executes request-handling behavior for redirect routes.
  */
-class RedirectHandlerExecutor extends RequestHandlerExecutor {
+class RedirectHandlerExecutor extends RequestHandler {
   #request;
   #response;
   #target;

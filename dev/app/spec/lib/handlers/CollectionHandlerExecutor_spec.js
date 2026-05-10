@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
 import { AppConfig } from '../../../lib/config/AppConfig.js';
 import CollectionHandlerExecutor from '../../../lib/handlers/CollectionHandlerExecutor.js';
 import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
@@ -21,7 +21,7 @@ describe('CollectionHandlerExecutor', () => {
 
   it('is an instance of RequestHandlerExecutor', () => {
     const factory = (_r, _p) => ({ steps: () => [] });
-    expect(new CollectionHandlerExecutor({}, {}, '/', {}, null, factory)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new CollectionHandlerExecutor({}, {}, '/', {}, null, factory)).toBeInstanceOf(RequestHandler);
   });
 
   it('is an instance of ContentHandlerExecutor', () => {

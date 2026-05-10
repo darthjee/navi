@@ -1,12 +1,12 @@
 import { JobRegistry } from '../../background/JobRegistry.js';
 import { WorkersRegistry } from '../../background/WorkersRegistry.js';
-import { RequestHandlerExecutor } from '../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Executes request-handling behaviour for GET /stats.json.
  * @author darthjee
  */
-class StatsHandlerExecutor extends RequestHandlerExecutor {
+class StatsHandlerExecutor extends RequestHandler {
   #response;
 
   /**

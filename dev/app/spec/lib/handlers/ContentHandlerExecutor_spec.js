@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import Serializer from '../../../lib/models/Serializer.js';
@@ -13,7 +13,7 @@ describe('ContentHandlerExecutor', () => {
   it('is an instance of RequestHandlerExecutor', () => {
     const factory = (_r, _p) => ({ steps: () => [] });
     const executor = new ContentHandlerExecutor({}, {}, '/any', {}, null, factory);
-    expect(executor).toBeInstanceOf(RequestHandlerExecutor);
+    expect(executor).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle — with default extractorFactory', () => {

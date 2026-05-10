@@ -1,12 +1,12 @@
 import path from 'path';
-import { RequestHandlerExecutor } from '../../common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 
 /**
  * Executes request-handling behaviour for static asset routes.
  * Rejects path traversal attempts with 403 Forbidden.
  * @author darthjee
  */
-class AssetsHandlerExecutor extends RequestHandlerExecutor {
+class AssetsHandlerExecutor extends RequestHandler {
   #request;
   #response;
   #assetsDir;

@@ -1,4 +1,4 @@
-import { RequestHandlerExecutor } from '../../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { EnginePauseHandlerExecutor } from '../../../../../lib/server/handlers/engine/EnginePauseHandlerExecutor.js';
 import { Application } from '../../../../../lib/services/Application.js';
@@ -16,7 +16,7 @@ describe('EnginePauseHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new EnginePauseHandlerExecutor({}, res)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new EnginePauseHandlerExecutor({}, res)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {

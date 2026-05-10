@@ -1,5 +1,5 @@
 import { JobRegistry } from '../../../../../lib/background/JobRegistry.js';
-import { RequestHandlerExecutor } from '../../../../../lib/common/server/RequestHandlerExecutor.js';
+import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { JobsHandlerExecutor } from '../../../../../lib/server/handlers/jobs/JobsHandlerExecutor.js';
 
 describe('JobsHandlerExecutor', () => {
@@ -15,7 +15,7 @@ describe('JobsHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new JobsHandlerExecutor({}, res)).toBeInstanceOf(RequestHandlerExecutor);
+    expect(new JobsHandlerExecutor({}, res)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {
