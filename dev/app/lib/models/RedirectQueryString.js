@@ -36,17 +36,27 @@ class RedirectQueryString {
    */
   #appendQueryValue(queryParams, key, value) {
     if (Array.isArray(value)) {
-      value.forEach((item) => {
-        if (!this.#isUnsafeQueryValue(item)) {
-          queryParams.append(key, item);
-        }
-      });
+      this.#appendArrayQueryValue(queryParams, key, value);
       return;
     }
 
     if (value !== undefined && !this.#isUnsafeQueryValue(value)) {
       queryParams.append(key, value);
     }
+  }
+
+  /**
+   * Appends array query values into query params, filtering unsafe values.
+   * @param {URLSearchParams} queryParams
+   * @param {string} key
+   * @param {string[]} values
+   */
+  #appendArrayQueryValue(queryParams, key, values) {
+    values.forEach((item) => {
+      if (!this.#isUnsafeQueryValue(item)) {
+        queryParams.append(key, item);
+      }
+    });
   }
 
   /**
