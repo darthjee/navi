@@ -1,5 +1,5 @@
-import { RequestHandler } from '../common/server/RequestHandler.js';
 import ContentHandlerExecutor from './ContentHandlerExecutor.js';
+import { RequestHandler } from '../common/server/RequestHandler.js';
 import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
 
 /**

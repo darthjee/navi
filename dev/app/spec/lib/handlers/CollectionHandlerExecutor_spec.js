@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { AppConfig } from '../../../lib/config/AppConfig.js';
 import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandlerExecutor.js';
+import { AppConfig } from '../../../lib/config/AppConfig.js';
 import CollectionHandlerExecutor from '../../../lib/handlers/CollectionHandlerExecutor.js';
 import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import Serializer from '../../../lib/models/Serializer.js';

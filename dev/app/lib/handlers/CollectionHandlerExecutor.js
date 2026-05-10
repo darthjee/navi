@@ -1,5 +1,5 @@
-import { AppConfig } from '../config/AppConfig.js';
 import ContentHandlerExecutor from './ContentHandlerExecutor.js';
+import { AppConfig } from '../config/AppConfig.js';
 
 /**
  * Executes request-handling behaviour for collection routes, applying
