@@ -2,7 +2,6 @@ import { notFound } from './not_found.js';
 import { RequestHandlerExecutor } from '../common/server/RequestHandlerExecutor.js';
 import { Logger } from '../common/utils/logging/Logger.js';
 import DataNavigator from '../models/DataNavigator.js';
-import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
 
 /**
  * Executes request-handling behaviour for data-fetching routes by navigating
