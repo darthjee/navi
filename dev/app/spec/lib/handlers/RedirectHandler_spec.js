@@ -32,6 +32,13 @@ describe('RedirectHandler', () => {
       const res = await request(app).get('/categories?tag=books&tag=fantasy').redirects(0);
       expect(res.headers['location']).toBe('/#/categories?tag=books&tag=fantasy');
     });
+
+    it('drops query params that look like external URLs', async () => {
+      const res = await request(app)
+        .get('/categories?redirect=//evil.com&search=hobbit')
+        .redirects(0);
+      expect(res.headers['location']).toBe('/#/categories?search=hobbit');
+    });
   });
 
   describe('#handle — route with one param', () => {

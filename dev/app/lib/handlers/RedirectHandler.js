@@ -11,6 +11,7 @@ import RedirectLocation from '../models/RedirectLocation.js';
 class RedirectHandler extends RequestHandler {
   #target;
   #safeRedirectPattern = /^\/#\/[A-Za-z0-9/_-]*(\?[A-Za-z0-9\-._~%!$&'()*+,;=:/?]*)?$/;
+  #unsafeQueryValuePattern = /^(\/\/|[a-z][a-z0-9+.-]*:\/\/)/i;
 
   /**
    * @param {string} target - Hash-based redirect target template (e.g. '/#/categories/:id').
@@ -37,18 +38,26 @@ class RedirectHandler extends RequestHandler {
     res.redirect(302, safeRedirectLocation);
   }
 
+  /**
+   * Builds a normalized query string from request query params while rejecting
+   * potentially unsafe URL-like values.
+   * @param {Object<string, string|string[]|undefined>} query
+   * @returns {string}
+   */
   #buildQueryString(query) {
     const queryParams = new URLSearchParams();
 
     Object.entries(query).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         value.forEach((item) => {
-          queryParams.append(key, item);
+          if (!this.#isUnsafeQueryValue(item)) {
+            queryParams.append(key, item);
+          }
         });
         return;
       }
 
-      if (value !== undefined) {
+      if (value !== undefined && !this.#isUnsafeQueryValue(value)) {
         queryParams.append(key, value);
       }
     });
@@ -56,8 +65,17 @@ class RedirectHandler extends RequestHandler {
     return queryParams.toString();
   }
 
+  /**
+   * Checks whether the resolved redirect destination is a safe relative hash route.
+   * @param {string} location
+   * @returns {boolean}
+   */
   #isSafeRedirectLocation(location) {
     return this.#safeRedirectPattern.test(location);
+  }
+
+  #isUnsafeQueryValue(value) {
+    return this.#unsafeQueryValuePattern.test(`${value}`);
   }
 }
 
