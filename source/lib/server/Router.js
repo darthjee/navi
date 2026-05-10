@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import { HandlerConfig } from './HandlerConfig.js';
 import { AssetsRequestHandler } from './handlers/AssetsRequestHandler.js';
 import { EngineContinueRequestHandler } from './handlers/engine/EngineContinueRequestHandler.js';
 import { EnginePauseRequestHandler } from './handlers/engine/EnginePauseRequestHandler.js';
@@ -49,26 +50,26 @@ class Router {
     const register = new RouteRegister(router);
 
     const GET_ROUTES = {
-      '/settings.json':           new SettingsRequestHandler({ enableShutdown: this.#webConfig.enableShutdown }),
-      '/stats.json':              new StatsRequestHandler(),
-      '/jobs/:status.json':       new JobsRequestHandler(),
-      '/jobs/:job_id/logs.json':  new JobLogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
-      '/job/:id.json':            new JobRequestHandler(),
-      '/engine/status':           new EngineStatusRequestHandler(),
-      '/logs.json':               new LogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
-      '/links.json':              new LinksRequestHandler({ links: this.#webConfig.links }),
-      '/':                        new IndexRequestHandler(),
-      '/assets/*path':            new AssetsRequestHandler(),
+      '/settings.json':           new HandlerConfig(SettingsRequestHandler, { enableShutdown: this.#webConfig.enableShutdown }),
+      '/stats.json':              new HandlerConfig(StatsRequestHandler),
+      '/jobs/:status.json':       new HandlerConfig(JobsRequestHandler),
+      '/jobs/:job_id/logs.json':  new HandlerConfig(JobLogsRequestHandler, { pageSize: this.#webConfig.logsPageSize }),
+      '/job/:id.json':            new HandlerConfig(JobRequestHandler),
+      '/engine/status':           new HandlerConfig(EngineStatusRequestHandler),
+      '/logs.json':               new HandlerConfig(LogsRequestHandler, { pageSize: this.#webConfig.logsPageSize }),
+      '/links.json':              new HandlerConfig(LinksRequestHandler, { links: this.#webConfig.links }),
+      '/':                        new HandlerConfig(IndexRequestHandler),
+      '/assets/*path':            new HandlerConfig(AssetsRequestHandler),
     };
 
     const PATCH_ROUTES = {
-      '/jobs/:id/retry':   new JobRetryRequestHandler(),
-      '/engine/pause':     new EnginePauseRequestHandler(),
-      '/engine/stop':      new EngineStopRequestHandler(),
-      '/engine/continue':  new EngineContinueRequestHandler(),
-      '/engine/start':     new EngineStartRequestHandler(),
-      '/engine/restart':   new EngineRestartRequestHandler(),
-      '/engine/shutdown':  new EngineShutdownRequestHandler(),
+      '/jobs/:id/retry':   new HandlerConfig(JobRetryRequestHandler),
+      '/engine/pause':     new HandlerConfig(EnginePauseRequestHandler),
+      '/engine/stop':      new HandlerConfig(EngineStopRequestHandler),
+      '/engine/continue':  new HandlerConfig(EngineContinueRequestHandler),
+      '/engine/start':     new HandlerConfig(EngineStartRequestHandler),
+      '/engine/restart':   new HandlerConfig(EngineRestartRequestHandler),
+      '/engine/shutdown':  new HandlerConfig(EngineShutdownRequestHandler),
     };
 
     Object.entries(GET_ROUTES).forEach(([route, handler]) => {
