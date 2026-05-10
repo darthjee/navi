@@ -5,7 +5,6 @@ import ContentHandler from '../../../lib/handlers/ContentHandler.js';
 import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import { notFound } from '../../../lib/handlers/not_found.js';
 import Serializer from '../../../lib/models/Serializer.js';
-import RouteParamsExtractor from '../../../lib/routing/RouteParamsExtractor.js';
 import Router from '../../../lib/routing/Router.js';
 import RouteRegister from '../../../lib/routing/RouteRegister.js';
 
@@ -25,15 +24,13 @@ export const buildContentHandlerApp = (route, routerData, serializer = null, ext
 
 export const buildCollectionExecutorApp = (route, routerData, serializer = null) => {
   const app = express();
-  const factory = (r, params) => new RouteParamsExtractor(r, params);
-  app.get(route, (req, res) => new CollectionHandlerExecutor(req, res, route, routerData, serializer, factory).handle());
+  app.get(route, (req, res) => new CollectionHandlerExecutor(req, res, route, routerData, serializer).handle());
   return app;
 };
 
 export const buildContentExecutorApp = (route, routerData, serializer = null, extractorFactory = null) => {
   const app = express();
-  const factory = extractorFactory ?? ((r, params) => new RouteParamsExtractor(r, params));
-  app.get(route, (req, res) => new ContentHandlerExecutor(req, res, route, routerData, serializer, factory).handle());
+  app.get(route, (req, res) => new ContentHandlerExecutor(req, res, route, routerData, serializer, extractorFactory).handle());
   return app;
 };
 

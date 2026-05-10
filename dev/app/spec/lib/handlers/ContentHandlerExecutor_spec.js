@@ -3,7 +3,7 @@ import { RequestHandlerExecutor } from '../../../lib/common/server/RequestHandle
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import Serializer from '../../../lib/models/Serializer.js';
-import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
+import { BOOKS_CATEGORY, HOBBIT_ITEM, ALL_CATEGORIES } from '../../support/fixtures/expectedResponses.js';
 import { testData as data } from '../../support/fixtures/testData.js';
 import { buildContentExecutorApp } from '../../support/utils/AppFactory.js';
 
@@ -14,6 +14,16 @@ describe('ContentHandlerExecutor', () => {
     const factory = (_r, _p) => ({ steps: () => [] });
     const executor = new ContentHandlerExecutor({}, {}, '/any', {}, null, factory);
     expect(executor).toBeInstanceOf(RequestHandlerExecutor);
+  });
+
+  describe('#handle — with default extractorFactory', () => {
+    const app = buildContentExecutorApp('/categories/:id.json', data);
+
+    it('uses RouteParamsExtractor when no factory is provided', async () => {
+      const res = await request(app).get('/categories/1.json');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(jasmine.objectContaining({ id: 1 }));
+    });
   });
 
   describe('#handle — without a serializer', () => {
