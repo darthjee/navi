@@ -6,5 +6,20 @@ describe('RequestHandler', () => {
       const handler = new RequestHandler();
       expect(() => handler.handle({}, {})).not.toThrow();
     });
+
+    it('allows subclasses to override handle', () => {
+      class MyHandler extends RequestHandler {
+        handle(_req, res) { res.result = 'ok'; }
+      }
+      const handler = new MyHandler();
+      const res = {};
+      handler.handle({}, res);
+      expect(res.result).toBe('ok');
+    });
+
+    it('is an instance of RequestHandler when subclassed', () => {
+      class MyHandler extends RequestHandler {}
+      expect(new MyHandler()).toBeInstanceOf(RequestHandler);
+    });
   });
 });
