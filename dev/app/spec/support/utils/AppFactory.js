@@ -1,8 +1,11 @@
 import express from 'express';
 import CollectionHandler from '../../../lib/handlers/CollectionHandler.js';
+import CollectionHandlerExecutor from '../../../lib/handlers/CollectionHandlerExecutor.js';
 import ContentHandler from '../../../lib/handlers/ContentHandler.js';
+import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
 import { notFound } from '../../../lib/handlers/not_found.js';
 import Serializer from '../../../lib/models/Serializer.js';
+import RouteParamsExtractor from '../../../lib/routing/RouteParamsExtractor.js';
 import Router from '../../../lib/routing/Router.js';
 import RouteRegister from '../../../lib/routing/RouteRegister.js';
 
@@ -17,6 +20,20 @@ export const buildContentHandlerApp = (route, routerData, serializer = null, ext
   const app = express();
   const handler = new ContentHandler(route, routerData, serializer, extractorFactory);
   app.get(route, (req, res) => handler.handle(req, res));
+  return app;
+};
+
+export const buildCollectionExecutorApp = (route, routerData, serializer = null) => {
+  const app = express();
+  const factory = (r, params) => new RouteParamsExtractor(r, params);
+  app.get(route, (req, res) => new CollectionHandlerExecutor(req, res, route, routerData, serializer, factory).handle());
+  return app;
+};
+
+export const buildContentExecutorApp = (route, routerData, serializer = null, extractorFactory = null) => {
+  const app = express();
+  const factory = extractorFactory ?? ((r, params) => new RouteParamsExtractor(r, params));
+  app.get(route, (req, res) => new ContentHandlerExecutor(req, res, route, routerData, serializer, factory).handle());
   return app;
 };
 

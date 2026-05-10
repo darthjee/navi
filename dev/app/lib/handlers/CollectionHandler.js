@@ -1,43 +1,22 @@
+import CollectionHandlerExecutor from './CollectionHandlerExecutor.js';
 import ContentHandler from './ContentHandler.js';
-import { AppConfig } from '../config/AppConfig.js';
 
 /**
  * Handles collection endpoints by applying pagination logic and setting
  * `PAGE`, `PAGE-SIZE`, and `PAGES` response headers.
  *
- * Extends {@link ContentHandler} and overrides the response step to slice
- * the result set according to `page` and `page_size` query parameters.
- * Unparseable parameter values fall back to defaults:
- * - `page` defaults to `1`
- * - `page_size` defaults to `AppConfig.json.pageSize`
- *
- * When `page` is out of range an empty array is returned.
+ * Extends {@link ContentHandler} and delegates to {@link CollectionHandlerExecutor}
+ * which overrides the respond step to slice the result set according to
+ * `page` and `page_size` query parameters.
  */
 class CollectionHandler extends ContentHandler {
   /**
-   * Applies pagination to the navigation result, sets pagination headers,
-   * and writes the JSON response.
-   *
-   * @param {Array} result - The full navigation result array.
+   * Delegates to CollectionHandlerExecutor.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
-  _respond(result, req, res) {
-    const rawPageSize = parseInt(req.query.page_size, 10);
-    const rawPage = parseInt(req.query.page, 10);
-
-    const pageSize = Number.isNaN(rawPageSize) ? AppConfig.json.pageSize : rawPageSize;
-    const page = Number.isNaN(rawPage) ? 1 : rawPage;
-
-    const serialized = this._serializer ? this._serializer.serialize(result) : result;
-    const totalPages = Math.ceil(serialized.length / pageSize);
-    const start = (page - 1) * pageSize;
-    const pageData = serialized.slice(start, start + pageSize);
-
-    res.set('PAGE', String(page));
-    res.set('PAGE-SIZE', String(pageSize));
-    res.set('PAGES', String(totalPages));
-    res.json(pageData);
+  handle(req, res) {
+    new CollectionHandlerExecutor(req, res, this._route, this._data, this._serializer, this._extractorFactory).handle();
   }
 }
 
