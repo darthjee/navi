@@ -1,2 +1,4 @@
 lib/common/
 spec/lib/common/
+coverage/
+report/
