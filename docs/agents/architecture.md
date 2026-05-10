@@ -130,7 +130,7 @@ Express-based web server. `Router` wires all request handlers and serves the Rea
 Subfolders:
 
 - `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `PathValidator`, `RequestHandler` (abstract base)
-- `server/handlers/` — general handlers: `AssetsRequestHandler`, `BaseUrlsRequestHandler`, `IndexRequestHandler`, `JobsFilter`, `LogsRequestHandler`, `SettingsRequestHandler`, `StatsRequestHandler`
+- `server/handlers/` — general handlers: `AssetsRequestHandler`, `IndexRequestHandler`, `JobsFilter`, `LinksRequestHandler`, `LogsRequestHandler`, `SettingsRequestHandler`, `StatsRequestHandler`
 - `server/handlers/engine/` — engine lifecycle handlers: `EngineContinueRequestHandler`, `EnginePauseRequestHandler`, `EngineRestartRequestHandler`, `EngineShutdownRequestHandler`, `EngineStartRequestHandler`, `EngineStatusRequestHandler`, `EngineStopRequestHandler`
 - `server/handlers/jobs/` — job handlers: `JobLogsRequestHandler`, `JobRequestHandler`, `JobRetryRequestHandler`, `JobsRequestHandler`
 

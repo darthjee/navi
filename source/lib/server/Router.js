@@ -2,7 +2,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import { AssetsRequestHandler } from './handlers/AssetsRequestHandler.js';
-import { BaseUrlsRequestHandler } from './handlers/BaseUrlsRequestHandler.js';
 import { EngineContinueRequestHandler } from './handlers/engine/EngineContinueRequestHandler.js';
 import { EnginePauseRequestHandler } from './handlers/engine/EnginePauseRequestHandler.js';
 import { EngineRestartRequestHandler } from './handlers/engine/EngineRestartRequestHandler.js';
@@ -52,7 +51,6 @@ class Router {
     const GET_ROUTES = {
       '/settings.json':           new SettingsRequestHandler({ enableShutdown: this.#webConfig.enableShutdown }),
       '/stats.json':              new StatsRequestHandler(),
-      '/clients/base_urls.json':  new BaseUrlsRequestHandler(),
       '/jobs/:status.json':       new JobsRequestHandler(),
       '/jobs/:job_id/logs.json':  new JobLogsRequestHandler({ pageSize: this.#webConfig.logsPageSize }),
       '/job/:id.json':            new JobRequestHandler(),

@@ -204,5 +204,28 @@ describe('Client', () => {
         expect(result.headers).toEqual({});
       });
     });
+
+    describe('when linkText is provided', () => {
+      it('creates a client with the configured link text', () => {
+        const config = {
+          base_url: 'https://example.com',
+          linkText: 'Default Domain',
+        };
+
+        const result = Client.fromObject('default', config);
+
+        expect(result.linkText).toEqual('Default Domain');
+      });
+    });
+
+    describe('when linkText is not provided', () => {
+      it('creates a client with null link text', () => {
+        const config = { base_url: 'https://example.com' };
+
+        const result = Client.fromObject('default', config);
+
+        expect(result.linkText).toBeNull();
+      });
+    });
   });
 });
