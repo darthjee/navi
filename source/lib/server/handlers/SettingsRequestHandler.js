@@ -1,5 +1,5 @@
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { ForbiddenError } from '../../exceptions/http/ForbiddenError.js';
-import { RequestHandler } from '../RequestHandler.js';
 
 /**
  * Handles GET /settings.json requests.

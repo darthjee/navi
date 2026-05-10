@@ -1,5 +1,5 @@
 import RedirectHandlerExecutor from './RedirectHandlerExecutor.js';
-import RequestHandler from './RequestHandler.js';
+import { RequestHandler } from '../common/server/RequestHandler.js';
 
 /**
  * Handles an incoming Express request by issuing an HTTP 302 redirect to

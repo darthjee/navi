@@ -5,12 +5,14 @@ The main application includes an optional Express-based web server that exposes 
 ## Source layout
 
 ```
+source/lib/common/server/
+└── RequestHandler.js             # Abstract base class (shared with dev/app)
+
 source/lib/server/
 ├── WebServer.js
 ├── Router.js
 ├── RouteRegister.js              # Wraps handlers; maps exceptions to HTTP status codes
 ├── PathValidator.js              # Path-traversal protection
-├── RequestHandler.js             # Abstract base class
 └── handlers/
     ├── AssetsRequestHandler.js
     ├── IndexRequestHandler.js

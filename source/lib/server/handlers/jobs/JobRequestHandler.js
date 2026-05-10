@@ -1,7 +1,7 @@
 import { JobRegistry } from '../../../background/JobRegistry.js';
+import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { NotFoundError } from '../../../exceptions/http/NotFoundError.js';
 import { JobSerializer } from '../../../serializers/JobSerializer.js';
-import { RequestHandler } from '../../RequestHandler.js';
 
 /**
  * Handles GET /job/:id.json requests.

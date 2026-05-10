@@ -1,7 +1,7 @@
+import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { Link } from '../../models/configs/Link.js';
 import { ClientRegistry } from '../../registry/ClientRegistry.js';
 import { LinksSerializer } from '../../serializers/LinksSerializer.js';
-import { RequestHandler } from '../RequestHandler.js';
 
 /**
  * Handles GET /links.json requests.
