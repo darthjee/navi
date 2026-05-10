@@ -10,31 +10,40 @@ describe('HandlerConfig', () => {
   });
 
   describe('#handle', () => {
-    it('instantiates the handler class with the given parameters and delegates', () => {
+    it('instantiates the handler executor class with the given parameters and delegates', () => {
       const handleSpy = jasmine.createSpy('handle');
+      let receivedReq;
+      let receivedRes;
       let receivedParams;
 
-      class FakeHandler {
-        constructor(params) { receivedParams = params; }
-        handle(r, s) { handleSpy(r, s); }
+      class FakeHandlerExecutor {
+        constructor(request, response, ...params) {
+          receivedReq = request;
+          receivedRes = response;
+          receivedParams = params;
+        }
+
+        handle() { handleSpy(); }
       }
 
-      const config = new HandlerConfig(FakeHandler, { foo: 'bar' });
+      const config = new HandlerConfig(FakeHandlerExecutor, [{ foo: 'bar' }, 'baz']);
       config.handle(req, res);
 
-      expect(receivedParams).toEqual({ foo: 'bar' });
-      expect(handleSpy).toHaveBeenCalledWith(req, res);
+      expect(receivedReq).toBe(req);
+      expect(receivedRes).toBe(res);
+      expect(receivedParams).toEqual([{ foo: 'bar' }, 'baz']);
+      expect(handleSpy).toHaveBeenCalled();
     });
 
-    it('creates a new handler instance on each call', () => {
+    it('creates a new handler executor instance on each call', () => {
       const instances = [];
 
-      class FakeHandler {
+      class FakeHandlerExecutor {
         constructor() { instances.push(this); }
         handle() {}
       }
 
-      const config = new HandlerConfig(FakeHandler, {});
+      const config = new HandlerConfig(FakeHandlerExecutor, []);
       config.handle(req, res);
       config.handle(req, res);
 
@@ -42,18 +51,32 @@ describe('HandlerConfig', () => {
       expect(instances[0]).not.toBe(instances[1]);
     });
 
-    it('uses empty object as default parameters', () => {
+    it('uses an empty list as default parameters', () => {
       let receivedParams;
 
-      class FakeHandler {
-        constructor(params) { receivedParams = params; }
+      class FakeHandlerExecutor {
+        constructor(_request, _response, ...params) { receivedParams = params; }
         handle() {}
       }
 
-      const config = new HandlerConfig(FakeHandler);
+      const config = new HandlerConfig(FakeHandlerExecutor);
       config.handle(req, res);
 
-      expect(receivedParams).toEqual({});
+      expect(receivedParams).toEqual([]);
+    });
+
+    it('wraps a single parameter into a list', () => {
+      let receivedParams;
+
+      class FakeHandlerExecutor {
+        constructor(_request, _response, ...params) { receivedParams = params; }
+        handle() {}
+      }
+
+      const config = new HandlerConfig(FakeHandlerExecutor, 'page-size');
+      config.handle(req, res);
+
+      expect(receivedParams).toEqual(['page-size']);
     });
   });
 });

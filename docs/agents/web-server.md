@@ -6,41 +6,43 @@ The main application includes an optional Express-based web server that exposes 
 
 ```
 source/lib/common/server/
-└── RequestHandler.js             # Abstract base class (shared with dev/app)
+├── RequestHandler.js             # Abstract base class (shared with dev/app)
+└── RequestHandlerExecutor.js     # Abstract executor base class
 
 source/lib/server/
 ├── WebServer.js
 ├── Router.js
 ├── RouteRegister.js              # Wraps handlers; maps exceptions to HTTP status codes
-├── HandlerConfig.js              # Lazily instantiates a handler class on each request
+├── HandlerConfig.js              # Lazily instantiates an executor class on each request
 ├── PathValidator.js              # Path-traversal protection
 └── handlers/
-    ├── AssetsRequestHandler.js
-    ├── IndexRequestHandler.js
+    ├── AssetsHandlerExecutor.js
+    ├── IndexHandlerExecutor.js
     ├── JobsFilter.js
-    ├── LogsRequestHandler.js
-    ├── SettingsRequestHandler.js
-    ├── StatsRequestHandler.js
+    ├── LinksHandlerExecutor.js
+    ├── LogsHandlerExecutor.js
+    ├── SettingsHandlerExecutor.js
+    ├── StatsHandlerExecutor.js
     ├── engine/
-    │   ├── EngineContinueRequestHandler.js
-    │   ├── EnginePauseRequestHandler.js
-    │   ├── EngineRestartRequestHandler.js
-    │   ├── EngineShutdownRequestHandler.js
-    │   ├── EngineStartRequestHandler.js
-    │   ├── EngineStatusRequestHandler.js
-    │   └── EngineStopRequestHandler.js
+    │   ├── EngineContinueHandlerExecutor.js
+    │   ├── EnginePauseHandlerExecutor.js
+    │   ├── EngineRestartHandlerExecutor.js
+    │   ├── EngineShutdownHandlerExecutor.js
+    │   ├── EngineStartHandlerExecutor.js
+    │   ├── EngineStatusHandlerExecutor.js
+    │   └── EngineStopHandlerExecutor.js
     └── jobs/
-        ├── JobLogsRequestHandler.js
-        ├── JobRequestHandler.js
-        ├── JobRetryRequestHandler.js
-        └── JobsRequestHandler.js
+        ├── JobHandlerExecutor.js
+        ├── JobLogsHandlerExecutor.js
+        ├── JobRetryHandlerExecutor.js
+        └── JobsHandlerExecutor.js
 ```
 
 ## Routes
 
 Routes are declared declaratively in `Router.js` as a map of path → `HandlerConfig` instance.
-`HandlerConfig` holds the handler class and its parameters, and lazily constructs the handler
-only when a matching request arrives.
+`HandlerConfig` holds the executor class and any extra constructor parameters, and lazily
+constructs the executor as `(req, res, ...parameters)` only when a matching request arrives.
 
 | Method | Path | Description |
 |--------|------|-------------|

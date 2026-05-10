@@ -126,14 +126,14 @@ Business logic and I/O layer:
 
 ### `server/`
 
-Express-based web server. `Router` wires all request handlers and serves the React SPA from `source/static/`. Routes are declared as a config map of path → `HandlerConfig` instance; `HandlerConfig` holds the handler class and parameters and lazily constructs the handler on each request. Handlers extend `RequestHandler` (from `common/server/`) and are registered via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
+Express-based web server. `Router` wires all request handler executors and serves the React SPA from `source/static/`. Routes are declared as a config map of path → `HandlerConfig` instance; `HandlerConfig` holds the executor class and any extra constructor parameters, then lazily constructs the executor with `(req, res, ...parameters)` on each request. The shared `RequestHandler` base remains under `common/server/` for `dev/app`, while `source/` routes register executors directly via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
 
 Subfolders:
 
 - `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `HandlerConfig`, `PathValidator`
-- `server/handlers/` — general handlers: `AssetsRequestHandler`, `IndexRequestHandler`, `JobsFilter`, `LinksRequestHandler`, `LogsRequestHandler`, `SettingsRequestHandler`, `StatsRequestHandler`
-- `server/handlers/engine/` — engine lifecycle handlers: `EngineContinueRequestHandler`, `EnginePauseRequestHandler`, `EngineRestartRequestHandler`, `EngineShutdownRequestHandler`, `EngineStartRequestHandler`, `EngineStatusRequestHandler`, `EngineStopRequestHandler`
-- `server/handlers/jobs/` — job handlers: `JobLogsRequestHandler`, `JobRequestHandler`, `JobRetryRequestHandler`, `JobsRequestHandler`
+- `server/handlers/` — general executors and helpers: `AssetsHandlerExecutor`, `IndexHandlerExecutor`, `JobsFilter`, `LinksHandlerExecutor`, `LogsHandlerExecutor`, `SettingsHandlerExecutor`, `StatsHandlerExecutor`
+- `server/handlers/engine/` — engine lifecycle executors: `EngineContinueHandlerExecutor`, `EnginePauseHandlerExecutor`, `EngineRestartHandlerExecutor`, `EngineShutdownHandlerExecutor`, `EngineStartHandlerExecutor`, `EngineStatusHandlerExecutor`, `EngineStopHandlerExecutor`
+- `server/handlers/jobs/` — job executors: `JobLogsHandlerExecutor`, `JobHandlerExecutor`, `JobRetryHandlerExecutor`, `JobsHandlerExecutor`
 
 ## Test Layout
 
