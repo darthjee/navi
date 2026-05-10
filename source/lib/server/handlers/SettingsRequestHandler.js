@@ -1,5 +1,5 @@
 import { RequestHandler } from '../../common/server/RequestHandler.js';
-import { ForbiddenError } from '../../exceptions/http/ForbiddenError.js';
+import { SettingsHandlerExecutor } from './SettingsHandlerExecutor.js';
 
 /**
  * Handles GET /settings.json requests.
@@ -21,14 +21,13 @@ class SettingsRequestHandler extends RequestHandler {
   }
 
   /**
-   * Responds with the application settings JSON.
-   * @param {object} _req - The Express request object.
+   * Delegates to SettingsHandlerExecutor.
+   * @param {object} req - The Express request object.
    * @param {object} res - The Express response object.
    * @returns {void}
    */
-  handle(_req, res) {
-    if (!this.#enableShutdown) throw new ForbiddenError();
-    res.json({ enable_shutdown: true });
+  handle(req, res) {
+    new SettingsHandlerExecutor(req, res, this.#enableShutdown).handle();
   }
 }
 
