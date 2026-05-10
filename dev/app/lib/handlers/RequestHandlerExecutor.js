@@ -71,6 +71,11 @@ class RequestHandlerExecutor {
     return this.#safeRedirectPattern.test(location);
   }
 
+  /**
+   * Checks whether a query value looks like a URL or protocol-relative URL.
+   * @param {string} value
+   * @returns {boolean}
+   */
   #isUnsafeQueryValue(value) {
     return this.#unsafeQueryValuePattern.test(`${value}`);
   }
