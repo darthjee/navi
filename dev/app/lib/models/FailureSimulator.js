@@ -1,3 +1,6 @@
+const STATIC_ROOT = '/';
+const STATIC_ASSETS_PREFIX = '/assets/';
+
 /**
  * Express middleware that randomly fails HTTP requests at a configurable rate.
  */
@@ -19,7 +22,7 @@ class FailureSimulator {
    * @param {import('express').NextFunction} next
    */
   handle(req, res, next) {
-    if (req.path === '/' || req.path.startsWith('/assets/')) {
+    if (this.#isStaticPath(req.path)) {
       return next();
     }
 
@@ -28,6 +31,15 @@ class FailureSimulator {
     } else {
       next();
     }
+  }
+
+  /**
+   * Returns true if the given path is a static route that should be exempt from failure injection.
+   * @param {string} path
+   * @returns {boolean}
+   */
+  #isStaticPath(path) {
+    return path === STATIC_ROOT || path.startsWith(STATIC_ASSETS_PREFIX);
   }
 }
 
