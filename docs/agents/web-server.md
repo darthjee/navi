@@ -7,7 +7,7 @@ The main application includes an optional Express-based web server that exposes 
 ```
 source/lib/common/server/
 ├── RequestHandler.js             # Abstract base class (shared with dev/app)
-└── RequestHandlerExecutor.js     # Abstract executor base class
+└── RequestHandler.js     # Abstract executor base class
 
 source/lib/server/
 ├── WebServer.js
@@ -16,26 +16,26 @@ source/lib/server/
 ├── HandlerConfig.js              # Lazily instantiates an executor class on each request
 ├── PathValidator.js              # Path-traversal protection
 └── handlers/
-    ├── AssetsHandlerExecutor.js
-    ├── IndexHandlerExecutor.js
+    ├── AssetsHandler.js
+    ├── IndexHandler.js
     ├── JobsFilter.js
-    ├── LinksHandlerExecutor.js
-    ├── LogsHandlerExecutor.js
-    ├── SettingsHandlerExecutor.js
-    ├── StatsHandlerExecutor.js
+    ├── LinksHandler.js
+    ├── LogsHandler.js
+    ├── SettingsHandler.js
+    ├── StatsHandler.js
     ├── engine/
-    │   ├── EngineContinueHandlerExecutor.js
-    │   ├── EnginePauseHandlerExecutor.js
-    │   ├── EngineRestartHandlerExecutor.js
-    │   ├── EngineShutdownHandlerExecutor.js
-    │   ├── EngineStartHandlerExecutor.js
-    │   ├── EngineStatusHandlerExecutor.js
-    │   └── EngineStopHandlerExecutor.js
+    │   ├── EngineContinueHandler.js
+    │   ├── EnginePauseHandler.js
+    │   ├── EngineRestartHandler.js
+    │   ├── EngineShutdownHandler.js
+    │   ├── EngineStartHandler.js
+    │   ├── EngineStatusHandler.js
+    │   └── EngineStopHandler.js
     └── jobs/
-        ├── JobHandlerExecutor.js
-        ├── JobLogsHandlerExecutor.js
-        ├── JobRetryHandlerExecutor.js
-        └── JobsHandlerExecutor.js
+        ├── JobHandler.js
+        ├── JobLogsHandler.js
+        ├── JobRetryHandler.js
+        └── JobsHandler.js
 ```
 
 ## Routes
