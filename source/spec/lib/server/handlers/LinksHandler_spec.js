@@ -1,3 +1,4 @@
+import { HandlerConfig } from '../../../../lib/common/server/HandlerConfig.js';
 import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { Link } from '../../../../lib/models/configs/Link.js';
 import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
@@ -64,6 +65,46 @@ describe("describe('LinksHandler'", () => {
 
         expect(res.json).toHaveBeenCalledWith({
           links: [{ text: 'default', url: 'https://example.com' }],
+        });
+      });
+    });
+
+    describe('when instantiated via HandlerConfig', () => {
+      const handleConfiguredLinks = (links) => {
+        new HandlerConfig(LinksHandler, [links]).handle({}, res);
+      };
+
+      it('responds with client-derived links when no links are configured', () => {
+        handleConfiguredLinks([]);
+
+        expect(res.json).toHaveBeenCalledWith({
+          links: [{ text: 'default', url: 'https://example.com' }],
+        });
+      });
+
+      it('responds with configured and client-derived links when one link is configured', () => {
+        handleConfiguredLinks([new Link({ text: 'Docs', url: 'https://shared.test/docs' })]);
+
+        expect(res.json).toHaveBeenCalledWith({
+          links: [
+            { text: 'Docs', url: 'https://shared.test/docs' },
+            { text: 'default', url: 'https://example.com' },
+          ],
+        });
+      });
+
+      it('responds with configured and client-derived links when multiple links are configured', () => {
+        handleConfiguredLinks([
+          new Link({ url: 'https://shared.com' }),
+          new Link({ text: 'Docs', url: 'https://shared.test/docs' }),
+        ]);
+
+        expect(res.json).toHaveBeenCalledWith({
+          links: [
+            { text: 'https://shared.com', url: 'https://shared.com' },
+            { text: 'Docs', url: 'https://shared.test/docs' },
+            { text: 'default', url: 'https://example.com' },
+          ],
         });
       });
     });
