@@ -2,28 +2,61 @@
 
 ## Description
 
-`LinksHandler` receives `webConfig.links` from the YAML configuration. When only a single link is configured, YAML parsing produces a plain object instead of a single-element array. The `#allLinks()` method then fails because it uses spread (`...this.#links`) expecting an array.
+The `/links.json` endpoint always crashes when called. The root cause is in how `Router.js` registers `LinksHandler` via `HandlerConfig`: `this.#webConfig.links` is itself an array of `Link` objects, which `HandlerConfig` misidentifies as a list of separate parameters and spreads them individually into the constructor — so `LinksHandler` receives only the first `Link` as its `links` argument instead of the full array.
 
 ## Problem
 
-- When the YAML config has a single `links` entry, the parsed value is an object, not an array.
-- `LinksHandler#allLinks()` calls `[...this.#links, ...this.#clientLinks()]`, which throws when `this.#links` is not iterable.
-- The `/links.json` endpoint fails in any configuration with exactly one link.
+In `Router.js` (`source/lib/server/Router.js:63`):
+```js
+'/links.json': new HandlerConfig(LinksHandler, this.#webConfig.links)
+```
+
+`HandlerConfig` (`source/lib/common/server/HandlerConfig.js:16`) does:
+```js
+this.#parameters = Array.isArray(parameters) ? parameters : [parameters];
+```
+
+Since `this.#webConfig.links` is an array, `Array.isArray` returns `true` and the links are stored as individual entries in `#parameters`. Then on each request:
+```js
+new LinksHandler(req, res, ...this.#parameters)
+// becomes: new LinksHandler(req, res, link1, link2, ...)
+```
+
+`LinksHandler`'s constructor only captures the third argument as `links`:
+```js
+constructor(_request, response, links) { this.#links = links; }
+```
+
+So `this.#links` ends up being a single `Link` object (or `undefined` when there are no links). When `#allLinks()` tries to spread it:
+```js
+return [...this.#links, ...this.#clientLinks()];
+```
+it throws a `TypeError` because a `Link` object is not iterable.
 
 ## Expected Behavior
 
-- `LinksHandler` should treat a single-link config the same as a multi-link config.
-- `/links.json` must return the correct JSON response regardless of whether one or many links are configured.
+- `/links.json` must return the correct JSON response regardless of how many links are configured (zero, one, or many).
 
 ## Solution
 
-- Normalize `this.#links` to always be an array in the `LinksHandler` constructor (e.g. `this.#links = [].concat(links ?? [])`).
-- Add a spec covering the single-link case to prevent regression.
+Wrap the links array in an outer array when registering the route in `Router.js`:
+
+```js
+'/links.json': new HandlerConfig(LinksHandler, [this.#webConfig.links])
+```
+
+This makes `this.#parameters = [linksArray]`, so the handler is called as:
+```js
+new LinksHandler(req, res, linksArray)
+```
+and `this.#links` correctly receives the full array.
+
+Add a spec for `LinksHandler` via `HandlerConfig` (or extend the `Router` integration spec) covering zero, one, and multiple configured links to prevent regression.
 
 ## Benefits
 
-- Makes the links endpoint robust to YAML single-value vs. array ambiguity.
-- Consistent behaviour regardless of how many links are configured.
+- Fixes a silent regression: the endpoint has been broken for all configurations with a `links` section.
+- Keeps the fix minimal and local — `HandlerConfig`'s existing design is preserved for all other handlers.
 
 ---
 See issue for details: https://github.com/darthjee/navi/issues/586
