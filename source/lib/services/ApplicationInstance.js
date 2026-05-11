@@ -76,11 +76,7 @@ class ApplicationInstance {
     this.#aggregator.add(this.#enginePromise);
 
     await this.#aggregator.wait();
-    this.#engineStatus = 'stopped';
-    EngineEvents.emit('stop');
-
-    this.#printRunSummary();
-    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
+    this.#finishRun();
   }
 
   /**
@@ -270,6 +266,17 @@ class ApplicationInstance {
       ...this.config.workersConfig,
     });
     WorkersRegistry.initWorkers();
+  }
+
+  /**
+   * Finalizes the run lifecycle by emitting stop events and evaluating failures.
+   * @returns {void}
+   */
+  #finishRun() {
+    this.#engineStatus = 'stopped';
+    EngineEvents.emit('stop');
+    this.#printRunSummary();
+    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
   }
 
   /**
