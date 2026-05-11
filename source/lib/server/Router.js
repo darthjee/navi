@@ -60,7 +60,7 @@ class Router {
       '/job/:id.json':            new HandlerConfig(JobHandler),
       '/engine/status':           new HandlerConfig(EngineStatusHandler),
       '/logs.json':               new HandlerConfig(LogsHandler, this.#webConfig.logsPageSize),
-      '/links.json':              new HandlerConfig(LinksHandler, this.#webConfig.links),
+      '/links.json':              new HandlerConfig(LinksHandler, [this.#webConfig.links]),
       '/':                        new HandlerConfig(IndexHandler),
       '/assets/*path':            new HandlerConfig(AssetsHandler, [assetsDir, assetsValidator]),
     };
