@@ -3,6 +3,7 @@ import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../lib/services/ApplicationInstance.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';
+import { FailureChecker } from '../../../lib/services/FailureChecker.js';
 
 describe('ApplicationInstance', () => {
   let instance;
@@ -154,6 +155,36 @@ describe('ApplicationInstance', () => {
 
         expect(instance.engine.stop).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('#run', () => {
+    beforeEach(() => {
+      instance.config = {
+        workersConfig: { sleep: 1 },
+        failureConfig: { threshold: 30 },
+      };
+    });
+
+    it('prints the run summary before checking failures', async () => {
+      spyOn(instance, 'buildEngine').and.returnValue({ start: async () => {} });
+      spyOn(instance, 'buildWebServer').and.returnValue(null);
+      spyOn(instance, 'enqueueFirstJobs').and.stub();
+      spyOn(JobRegistry, 'stats').and.returnValue({
+        total: 10,
+        failed: 1,
+        retryQueue: 1,
+        dead: 2,
+      });
+      spyOn(LogRegistry, 'info').and.stub();
+      spyOn(FailureChecker.prototype, 'check').and.stub();
+
+      await instance.run();
+
+      expect(LogRegistry.info).toHaveBeenCalledWith(
+        'Total: 10\nFailed: 4 (40%)\nThreshold: 30%\nResult: Failure'
+      );
+      expect(LogRegistry.info).toHaveBeenCalledBefore(FailureChecker.prototype.check);
     });
   });
 });

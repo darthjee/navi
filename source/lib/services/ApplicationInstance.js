@@ -1,6 +1,7 @@
 import { Engine } from './Engine.js';
 import { EngineEvents } from './EngineEvents.js';
 import { FailureChecker } from './FailureChecker.js';
+import { RunSummary } from './RunSummary.js';
 import { JobFactory } from '../background/JobFactory.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { WorkersRegistry } from '../background/WorkersRegistry.js';
@@ -75,10 +76,7 @@ class ApplicationInstance {
     this.#aggregator.add(this.#enginePromise);
 
     await this.#aggregator.wait();
-    this.#engineStatus = 'stopped';
-    EngineEvents.emit('stop');
-
-    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
+    this.#finishRun();
   }
 
   /**
@@ -268,6 +266,32 @@ class ApplicationInstance {
       ...this.config.workersConfig,
     });
     WorkersRegistry.initWorkers();
+  }
+
+  /**
+   * Finalizes the run lifecycle by emitting stop events and evaluating failures.
+   * @returns {void}
+   */
+  #finishRun() {
+    this.#engineStatus = 'stopped';
+    EngineEvents.emit('stop');
+    this.#printRunSummary();
+    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
+  }
+
+  /**
+   * Prints the final run summary before threshold checking.
+   * @returns {void}
+   */
+  #printRunSummary() {
+    const stats = JobRegistry.stats();
+    const summary = new RunSummary({
+      totalJobs: stats.total,
+      failedJobs: stats.failed + stats.retryQueue + stats.dead,
+      threshold: this.config.failureConfig?.threshold,
+    });
+
+    LogRegistry.info(summary.report());
   }
 }
 
