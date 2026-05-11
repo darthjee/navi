@@ -131,9 +131,9 @@ Express-based web server. `Router` wires all request handler executors and serve
 Subfolders:
 
 - `server/` — routing infrastructure: `WebServer`, `Router`, `RouteRegister`, `HandlerConfig`, `PathValidator`
-- `server/handlers/` — general executors and helpers: `AssetsHandlerExecutor`, `IndexHandlerExecutor`, `JobsFilter`, `LinksHandlerExecutor`, `LogsHandlerExecutor`, `SettingsHandlerExecutor`, `StatsHandlerExecutor`
-- `server/handlers/engine/` — engine lifecycle executors: `EngineContinueHandlerExecutor`, `EnginePauseHandlerExecutor`, `EngineRestartHandlerExecutor`, `EngineShutdownHandlerExecutor`, `EngineStartHandlerExecutor`, `EngineStatusHandlerExecutor`, `EngineStopHandlerExecutor`
-- `server/handlers/jobs/` — job executors: `JobLogsHandlerExecutor`, `JobHandlerExecutor`, `JobRetryHandlerExecutor`, `JobsHandlerExecutor`
+- `server/handlers/` — general executors and helpers: `AssetsHandler`, `IndexHandler`, `JobsFilter`, `LinksHandler`, `LogsHandler`, `SettingsHandler`, `StatsHandler`
+- `server/handlers/engine/` — engine lifecycle executors: `EngineContinueHandler`, `EnginePauseHandler`, `EngineRestartHandler`, `EngineShutdownHandler`, `EngineStartHandler`, `EngineStatusHandler`, `EngineStopHandler`
+- `server/handlers/jobs/` — job executors: `JobLogsHandler`, `JobHandler`, `JobRetryHandler`, `JobsHandler`
 
 ## Test Layout
 
