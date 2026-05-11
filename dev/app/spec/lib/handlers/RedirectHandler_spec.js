@@ -1,16 +1,16 @@
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
-import RedirectHandlerExecutor from '../../../lib/handlers/RedirectHandlerExecutor.js';
+import RedirectHandler from '../../../lib/handlers/RedirectHandler.js';
 
-describe('RedirectHandlerExecutor', () => {
+describe('RedirectHandler', () => {
   const execute = ({ target, params = {}, query = {} }) => {
     const request = { params, query };
     const response = { redirect: jasmine.createSpy('redirect') };
-    new RedirectHandlerExecutor(request, response, target).handle();
+    new RedirectHandler(request, response, target).handle();
     return response.redirect.calls.mostRecent().args;
   };
 
   it('is an instance of RequestHandlerExecutor', () => {
-    const executor = new RedirectHandlerExecutor({}, {}, '/#/');
+    const executor = new RedirectHandler({}, {}, '/#/');
     expect(executor).toBeInstanceOf(RequestHandler);
   });
 

@@ -1,8 +1,8 @@
 import path from 'path';
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
-import IndexHandlerExecutor from '../../../lib/handlers/IndexHandlerExecutor.js';
+import IndexHandler from '../../../lib/handlers/IndexHandler.js';
 
-describe('IndexHandlerExecutor', () => {
+describe('IndexHandler', () => {
   let res;
 
   beforeEach(() => {
@@ -10,12 +10,12 @@ describe('IndexHandlerExecutor', () => {
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
-    expect(new IndexHandlerExecutor({}, res)).toBeInstanceOf(RequestHandler);
+    expect(new IndexHandler({}, res)).toBeInstanceOf(RequestHandler);
   });
 
   describe('#handle', () => {
     it('sends index.html from the static directory', () => {
-      new IndexHandlerExecutor({}, res).handle();
+      new IndexHandler({}, res).handle();
 
       const [filePath] = res.sendFile.calls.mostRecent().args;
       expect(path.basename(filePath)).toEqual('index.html');

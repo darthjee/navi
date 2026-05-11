@@ -1,11 +1,11 @@
-import ContentHandlerExecutor from './ContentHandlerExecutor.js';
+import ContentHandler from './ContentHandler.js';
 import { AppConfig } from '../config/AppConfig.js';
 
 /**
  * Executes request-handling behaviour for collection routes, applying
  * pagination and setting PAGE, PAGE-SIZE, and PAGES response headers.
  */
-class CollectionHandlerExecutor extends ContentHandlerExecutor {
+class CollectionHandler extends ContentHandler {
   /**
    * Applies pagination to the result, sets pagination headers, and writes
    * the JSON response.
@@ -32,4 +32,4 @@ class CollectionHandlerExecutor extends ContentHandlerExecutor {
   }
 }
 
-export default CollectionHandlerExecutor;
+export default CollectionHandler;

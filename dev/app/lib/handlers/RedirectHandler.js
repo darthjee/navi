@@ -5,7 +5,7 @@ import RedirectQueryString from '../models/RedirectQueryString.js';
 /**
  * Executes request-handling behavior for redirect routes.
  */
-class RedirectHandlerExecutor extends RequestHandler {
+class RedirectHandler extends RequestHandler {
   #request;
   #response;
   #target;
@@ -61,4 +61,4 @@ class RedirectHandlerExecutor extends RequestHandler {
   }
 }
 
-export default RedirectHandlerExecutor;
+export default RedirectHandler;

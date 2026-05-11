@@ -1,18 +1,18 @@
 import request from 'supertest';
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
-import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
+import ContentHandler from '../../../lib/handlers/ContentHandler.js';
 import Serializer from '../../../lib/models/Serializer.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
 import { testData as data } from '../../support/fixtures/testData.js';
 import { buildContentExecutorApp } from '../../support/utils/AppFactory.js';
 
-describe('ContentHandlerExecutor', () => {
+describe('ContentHandler', () => {
   const defaultSerializer = new Serializer(['id', 'name']);
 
   it('is an instance of RequestHandlerExecutor', () => {
     const factory = (_r, _p) => ({ steps: () => [] });
-    const executor = new ContentHandlerExecutor({}, {}, '/any', {}, null, factory);
+    const executor = new ContentHandler({}, {}, '/any', {}, null, factory);
     expect(executor).toBeInstanceOf(RequestHandler);
   });
 

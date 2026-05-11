@@ -8,7 +8,7 @@ const staticDir = path.resolve(__dirname, '../static');
 /**
  * Executes request-handling behaviour for the SPA index route.
  */
-class IndexHandlerExecutor extends RequestHandler {
+class IndexHandler extends RequestHandler {
   #response;
 
   /**
@@ -29,4 +29,4 @@ class IndexHandlerExecutor extends RequestHandler {
   }
 }
 
-export default IndexHandlerExecutor;
+export default IndexHandler;

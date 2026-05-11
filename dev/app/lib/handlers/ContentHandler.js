@@ -8,7 +8,7 @@ import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
  * Executes request-handling behaviour for data-fetching routes by navigating
  * in-memory data and writing a JSON response.
  */
-class ContentHandlerExecutor extends RequestHandler {
+class ContentHandler extends RequestHandler {
   #request;
   #response;
   #route;
@@ -46,7 +46,7 @@ class ContentHandlerExecutor extends RequestHandler {
       if (result === null) return notFound(this.#response);
       this._respond(result, this.#request, this.#response);
     } catch (e) {
-      Logger.warn(`ContentHandlerExecutor: extraction failed for route "${this.#route}" (url: ${this.#request.url}) — ${e.message}`);
+      Logger.warn(`ContentHandler: extraction failed for route "${this.#route}" (url: ${this.#request.url}) — ${e.message}`);
       this.#response.status(400).json({ error: e.message });
     }
   }
@@ -71,4 +71,4 @@ class ContentHandlerExecutor extends RequestHandler {
   }
 }
 
-export default ContentHandlerExecutor;
+export default ContentHandler;

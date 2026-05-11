@@ -1,13 +1,13 @@
 import request from 'supertest';
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
 import { AppConfig } from '../../../lib/config/AppConfig.js';
-import CollectionHandlerExecutor from '../../../lib/handlers/CollectionHandlerExecutor.js';
-import ContentHandlerExecutor from '../../../lib/handlers/ContentHandlerExecutor.js';
+import CollectionHandler from '../../../lib/handlers/CollectionHandler.js';
+import ContentHandler from '../../../lib/handlers/ContentHandler.js';
 import Serializer from '../../../lib/models/Serializer.js';
 import { testData as data } from '../../support/fixtures/testData.js';
 import { buildCollectionExecutorApp } from '../../support/utils/AppFactory.js';
 
-describe('CollectionHandlerExecutor', () => {
+describe('CollectionHandler', () => {
   const route = '/categories/:id/items.json';
   const serializer = new Serializer(['id', 'name']);
 
@@ -21,12 +21,12 @@ describe('CollectionHandlerExecutor', () => {
 
   it('is an instance of RequestHandlerExecutor', () => {
     const factory = (_r, _p) => ({ steps: () => [] });
-    expect(new CollectionHandlerExecutor({}, {}, '/', {}, null, factory)).toBeInstanceOf(RequestHandler);
+    expect(new CollectionHandler({}, {}, '/', {}, null, factory)).toBeInstanceOf(RequestHandler);
   });
 
-  it('is an instance of ContentHandlerExecutor', () => {
+  it('is an instance of ContentHandler', () => {
     const factory = (_r, _p) => ({ steps: () => [] });
-    expect(new CollectionHandlerExecutor({}, {}, '/', {}, null, factory)).toBeInstanceOf(ContentHandlerExecutor);
+    expect(new CollectionHandler({}, {}, '/', {}, null, factory)).toBeInstanceOf(ContentHandler);
   });
 
   describe('#handle — pagination headers', () => {
