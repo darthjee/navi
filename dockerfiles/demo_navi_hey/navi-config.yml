@@ -12,6 +12,7 @@ workers:
   max-retries: $MAX_RETRIES
 clients:
   default:
+    text: Target Host
     base_url: $BASE_URL
     timeout: $TIMOUT
 resources:

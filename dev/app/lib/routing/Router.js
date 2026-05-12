@@ -12,7 +12,7 @@ import RedirectHandler from '../handlers/RedirectHandler.js';
 import Serializer from '../models/Serializer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir = path.join(__dirname, '../static');
+const staticDir = path.join(__dirname, '../../static');
 
 /**
  * Builds and returns the configured Express router with all application routes
