@@ -15,6 +15,10 @@ clients:
     linkText: Target Host
     base_url: $BASE_URL
     timeout: $TIMOUT
+  oak:
+    linkText: Oak Application
+    base_url: $OAK_BASE_URL
+    timeout: $TIMOUT
 resources:
   home:
     - url: /
