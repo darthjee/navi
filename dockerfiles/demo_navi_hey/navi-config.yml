@@ -94,3 +94,139 @@ resources:
       status: 302
     - url: /#/categories/{:category_id}/items/{:id}
       status: 200
+
+  oak_home:
+    - url: /
+      status: 200
+      assets:
+        - selector: 'link[rel="stylesheet"]'
+          attribute: href
+        - selector: 'script[src]'
+          attribute: src
+
+  oak_user_navigation:
+    - url: /user/categories.json
+      status: 200
+
+  oak_templates:
+    - url: /?ajax=true
+      status: 200
+    - url: /categories?ajax=true
+      status: 200
+    - url: /categories/:category_slug?ajax=true
+      status: 200
+    - url: /categories/:category_slug/items?ajax=true
+      status: 200
+    - url: /categories/:category_slug/items/:id?ajax=true
+      status: 200
+    - url: /kinds?ajax=true
+      status: 200
+    - url: /kinds/:king_slug?ajax=true
+      status: 200
+
+  oak_categories:
+    - url: /categories.json
+      status: 200
+      paginated_actions:
+        - resource: oak_paginated_categories
+          pagination:
+            - pages: headers['pages']
+            - page_key: page
+            - zero_indexed: false
+    - url: /categories
+      status: 302
+    - url: /#/categories
+      status: 200
+
+  oak_paginated_categories:
+    - url: /categories.json?page={:page}
+      status: 200
+      actions:
+        - resource: oak_category
+          parameters:
+            slug: parsedBody.slug
+        - resource: oak_category_items
+          parameters:
+            category_slug: parsedBody.slug
+    - url: /categories?page={:page}
+      status: 302
+    - url: /#/categories?page={:page}
+      status: 200
+
+  oak_category:
+    - url: /categories/{:slug}.json
+      status: 200
+    - url: /categories/{:slug}
+      status: 302
+    - url: /#/categories/{:slug}
+      status: 200
+
+  oak_category_items:
+    - url: /categories/{:category_slug}/items.json
+      status: 200
+      paginated_actions:
+        - resource: oak_paginated_category_items
+          pagination:
+            - pages: headers['pages']
+            - page_key: page
+            - zero_indexed: false
+    - url: /categories/{:category_slug}/items
+      status: 302
+    - url: /#/categories/{:category_slug}/items
+      status: 200
+
+  oak_paginated_category_items:
+    - url: /categories/{:category_slug}/items.json?page={:page}
+      status: 200
+      actions:
+        - resource: oak_category_item
+          parameters:
+            id: parsedBody.id
+            category_slug: parsedBody.category_slug
+    - url: /categories/{:category_slug}/items?page={:page}
+      status: 302
+    - url: /#/categories/{:category_slug}/items?page={:page}
+      status: 200
+
+  oak_category_item:
+    - url: /categories/{:category_slug}/items/{:id}.json
+      status: 200
+    - url: /categories/{:category_slug}/items/{:id}
+      status: 302
+    - url: /#/categories/{:category_slug}/items/{:id}
+      status: 200
+
+  oak_kinds:
+    - url: /kinds.json
+      status: 200
+      paginated_actions:
+        - resource: oak_paginated_kinds
+          pagination:
+            - pages: headers['pages']
+            - page_key: page
+            - zero_indexed: false
+    - url: /kinds
+      status: 302
+    - url: /#/kinds
+      status: 200
+
+  oak_paginated_kinds:
+    - url: /kinds.json?page={:page}
+      status: 200
+      actions:
+        - resource: oak_kind
+          parameters:
+            slug: parsedBody.slug
+    - url: /kinds?page={:page}
+      status: 302
+    - url: /#/kinds?page={:page}
+      status: 200
+
+  oak_kind:
+    - url: /kinds/{:slug}.json
+      status: 200
+    - url: /kinds/{:slug}
+      status: 302
+    - url: /#/kinds/{:slug}
+      status: 200
+
