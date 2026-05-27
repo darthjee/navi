@@ -1,13 +1,15 @@
 import LinksDropdownItem from './LinksDropdownItem.jsx';
 
-function renderLinks(links) {
-  return (
-    <ul className="dropdown-menu show">
-      {links.map(({ text, url }) => (
-        <LinksDropdownItem key={`${text}-${url}`} text={text} url={url} />
-      ))}
-    </ul>
-  );
+class LinksDropdownHelper {
+  static renderLinks(links) {
+    return (
+      <ul className="dropdown-menu show">
+        {links.map(({ text, url }) => (
+          <LinksDropdownItem key={`${text}-${url}`} text={text} url={url} />
+        ))}
+      </ul>
+    );
+  }
 }
 
 function LinksDropdown({ containerRef, open, setOpen, links }) {
@@ -20,7 +22,7 @@ function LinksDropdown({ containerRef, open, setOpen, links }) {
       >
         Links
       </button>
-      {open && renderLinks(links)}
+      {open && LinksDropdownHelper.renderLinks(links)}
     </div>
   );
 }

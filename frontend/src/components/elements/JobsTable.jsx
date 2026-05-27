@@ -1,27 +1,29 @@
 import JobRow from './JobRow.jsx';
 
-function renderHeader() {
-  return (
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Status</th>
-        <th>Attempts</th>
-        <th>Class</th>
-        <th>URL</th>
-      </tr>
-    </thead>
-  );
-}
+class JobsTableHelper {
+  static renderHeader() {
+    return (
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Class</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+    );
+  }
 
-function renderBody(jobs) {
-  return (
-    <tbody>
-      {jobs.map((job) => (
-        <JobRow key={job.id} job={job} />
-      ))}
-    </tbody>
-  );
+  static renderBody(jobs) {
+    return (
+      <tbody>
+        {jobs.map((job) => (
+          <JobRow key={job.id} job={job} />
+        ))}
+      </tbody>
+    );
+  }
 }
 
 function JobsTable({ jobs }) {
@@ -31,8 +33,8 @@ function JobsTable({ jobs }) {
 
   return (
     <table className="table table-striped">
-      {renderHeader()}
-      {renderBody(jobs)}
+      {JobsTableHelper.renderHeader()}
+      {JobsTableHelper.renderBody(jobs)}
     </table>
   );
 }

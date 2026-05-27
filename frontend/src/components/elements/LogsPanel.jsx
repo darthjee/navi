@@ -1,9 +1,11 @@
 import LogEntry from './LogEntry.jsx';
 
-function renderEntries(logs) {
-  return logs.map((log) => (
-    <LogEntry key={log.id} log={log} />
-  ));
+class LogsPanelHelper {
+  static renderEntries(logs) {
+    return logs.map((log) => (
+      <LogEntry key={log.id} log={log} />
+    ));
+  }
 }
 
 function LogsPanel({ logs, bottomRef }) {
@@ -12,7 +14,7 @@ function LogsPanel({ logs, bottomRef }) {
       className="bg-dark text-light p-3 rounded"
       style={{ fontFamily: 'monospace', minHeight: '400px', overflowY: 'auto', maxHeight: '80vh' }}
     >
-      {renderEntries(logs)}
+      {LogsPanelHelper.renderEntries(logs)}
       <div ref={bottomRef} />
     </div>
   );
