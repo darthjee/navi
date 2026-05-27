@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { VARIANT_BY_STATUS } from '../../../constants/jobStatus.js';
 import CollapsibleSection from '../CollapsibleSection.jsx';
+import JobStatusBadge from '../JobStatusBadge.jsx';
 import LastErrorSection from '../LastErrorSection.jsx';
 import ReadyInRow from '../ReadyInRow.jsx';
 import RemainingAttempts from '../RemainingAttempts.jsx';
@@ -8,8 +8,6 @@ import RetryButton from '../RetryButton.jsx';
 
 class JobDetailsHelper {
   static render(job, onRetry) {
-    const variant = VARIANT_BY_STATUS[job.status] ?? 'secondary';
-
     return (
       <div className="container mt-4">
         <h1 className="mb-4">Job Details</h1>
@@ -21,7 +19,7 @@ class JobDetailsHelper {
 
               <dt className="col-sm-3">Status</dt>
               <dd className="col-sm-9">
-                <span className={`badge text-bg-${variant}`}>{job.status}</span>
+                <JobStatusBadge status={job.status} />
               </dd>
 
               <dt className="col-sm-3">Attempts</dt>

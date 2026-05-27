@@ -1,3 +1,5 @@
+import LinksDropdown from '../LinksDropdown.jsx';
+
 class LinksMenuHelper {
   #links;
 
@@ -9,32 +11,14 @@ class LinksMenuHelper {
     return this.#links.length > 0;
   }
 
-  renderLinks() {
-    return (
-      <ul className="dropdown-menu show">
-        {this.#links.map(({ text, url }) => (
-          <li key={`${text}-${url}`}>
-            <a href={url} target="_blank" rel="noreferrer" className="dropdown-item">
-              {text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
   renderDropdown(containerRef, open, setOpen) {
     return (
-      <div ref={containerRef} className="dropdown d-inline-block">
-        <button
-          className="btn btn-sm btn-outline-secondary dropdown-toggle"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
-        >
-          Links
-        </button>
-        {open && this.renderLinks()}
-      </div>
+      <LinksDropdown
+        containerRef={containerRef}
+        open={open}
+        setOpen={setOpen}
+        links={this.#links}
+      />
     );
   }
 }
