@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import JobsController from './controllers/JobsController.jsx';
 import JobsHelper from './helpers/JobsHelper.jsx';
-import { VARIANT_BY_STATUS } from '../../constants/jobStatus.js';
+import JobsTable from '../elements/JobsTable.jsx';
 
 function Jobs() {
   const { status } = useParams();
@@ -26,39 +26,7 @@ function Jobs() {
       <h1 className="mb-4">Jobs</h1>
       {JobsHelper.renderStatusTabs(status, filterQuery)}
       {JobsHelper.renderFilterPanel(activeFilters, handleClassFilterChange)}
-      {jobs.length === 0
-        ? <p className="text-muted">No jobs found.</p>
-        : (
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Status</th>
-                <th>Attempts</th>
-                <th>Class</th>
-                <th>URL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((job) => (
-                <tr key={job.id}>
-                  <td>
-                    <Link to={`/job/${job.id}`}>{job.id}</Link>
-                  </td>
-                  <td>
-                    <span className={`badge text-bg-${VARIANT_BY_STATUS[job.status] ?? 'secondary'}`}>
-                      {job.status}
-                    </span>
-                  </td>
-                  <td>{job.attempts}</td>
-                  <td>{job.jobClass}</td>
-                  <td>{job.url ?? '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )
-      }
+      <JobsTable jobs={jobs} />
     </div>
   );
 }
