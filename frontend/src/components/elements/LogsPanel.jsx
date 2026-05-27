@@ -1,12 +1,4 @@
-import LogEntry from './LogEntry.jsx';
-
-class LogsPanelHelper {
-  static renderEntries(logs) {
-    return logs.map((log) => (
-      <LogEntry key={log.id} log={log} />
-    ));
-  }
-}
+import LogsPanelHelper from './helpers/LogsPanelHelper.jsx';
 
 function LogsPanel({ logs, bottomRef }) {
   return (

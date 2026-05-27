@@ -1,16 +1,4 @@
-import LinksDropdownItem from './LinksDropdownItem.jsx';
-
-class LinksDropdownHelper {
-  static renderLinks(links) {
-    return (
-      <ul className="dropdown-menu show">
-        {links.map(({ text, url }) => (
-          <LinksDropdownItem key={`${text}-${url}`} text={text} url={url} />
-        ))}
-      </ul>
-    );
-  }
-}
+import LinksDropdownHelper from './helpers/LinksDropdownHelper.jsx';
 
 function LinksDropdown({ containerRef, open, setOpen, links }) {
   return (
