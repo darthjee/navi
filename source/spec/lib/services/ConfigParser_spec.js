@@ -122,6 +122,17 @@ describe('ConfigParser', () => {
       expect(parseFixture('sample_config.yml').webConfig).toBeNull();
     });
 
+    [
+      { description: 'web.port is null', fixtureName: 'sample_config_with_null_web_port.yml' },
+      { description: 'web.port is false', fixtureName: 'sample_config_with_false_web_port.yml' },
+      { description: 'web.port is blank', fixtureName: 'sample_config_with_blank_web_port.yml' },
+      { description: 'web.port is the string "false"', fixtureName: 'sample_config_with_string_false_web_port.yml' },
+    ].forEach(({ description, fixtureName }) => {
+      it(`returns null for webConfig when ${description}`, () => {
+        expect(parseFixture(fixtureName).webConfig).toBeNull();
+      });
+    });
+
     describe('when client config includes headers', () => {
       it('returns clients with parsed headers', () => {
         expect(parseFixture('sample_config_with_headers.yml').clients.auth_api.headers).toEqual({

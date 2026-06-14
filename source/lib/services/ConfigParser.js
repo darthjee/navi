@@ -74,11 +74,13 @@ class ConfigParser {
   }
 
   /**
-   * Creates a WebConfig from the parsed YAML web section, or null if absent.
+   * Creates a WebConfig from the parsed YAML web section, or null if absent or port is falsy.
    * @returns {WebConfig|null} The web configuration instance or null.
    */
   #webConfig() {
     if (!this.config.web) return null;
+    const { port } = this.config.web;
+    if (!port || port === 'false') return null;
     return new WebConfig(this.config.web);
   }
 
