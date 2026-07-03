@@ -15,6 +15,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 |------|----------|
 | [Overview](docs/agents/overview.md) | What Navi is, the resource-chaining concept, and the implementation checklist (done vs. planned). |
 | [Architecture](docs/agents/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
+| [Folder Structure](docs/agents/folder-structure.md) | Top-level directory layout and the role of each folder. |
 | [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, YAML structure, initial enqueueing, Engine loop, worker execution, failure handling, web UI routes. |
 | [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
 | [Dangers](docs/agents/dangers.md) | Async pitfalls, synchronous test dummies, and rules for planning cooldowns, sleeps, and waits. |
