@@ -129,6 +129,7 @@ resources:
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
+| `web.autostart` | Optional. Whether the engine starts processing immediately at boot. Defaults to `true`; set to `false` to boot with the web server up but the engine paused until `PATCH /engine/start` is called. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
