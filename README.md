@@ -63,6 +63,7 @@ failure:
 
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
+  autostart: true       # whether the engine starts processing immediately at boot (default: true)
 
 clients:
   default:
@@ -353,7 +354,10 @@ Enable it by adding a `web:` section to your configuration file:
 ```yaml
 web:
   port: 3000
+  autostart: true # optional, defaults to true
 ```
+
+By default, the engine starts processing jobs immediately at boot. Setting `autostart: false` boots the web server without starting the engine — job processing stays paused until an operator calls `PATCH /engine/start` (optionally with a `{ "resources": [...] }` body naming which configured resources to enqueue).
 
 When enabled, the UI is accessible at `http://localhost:<port>` and includes the following screens:
 

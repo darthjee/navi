@@ -56,6 +56,8 @@ The two key mounts are:
 - `/var/www/html/static/` — static files Tent will serve directly.
 - `/var/www/html/configuration/` — PHP rule files that define routing behavior.
 
+> **Note:** Tent proxies to the `backend`/`frontend` links as soon as they accept connections, independent of whether the proxied application is actively doing background work. For example, Navi's web server accepts HTTP requests immediately at boot even when `web.autostart: false` defers its job-processing engine — see the main [README](../README.md#web-ui).
+
 ---
 
 ## Configuration Folder Layout
