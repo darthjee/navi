@@ -7,25 +7,42 @@ import { Application } from '../../../services/Application.js';
  * @author darthjee
  */
 class EngineStartHandler extends RequestHandler {
+  #request;
   #response;
 
   /**
-   * @param {object} _request - The Express request object.
+   * @param {object} request - The Express request object.
    * @param {object} response - The Express response object.
    */
-  constructor(_request, response) {
+  constructor(request, response) {
     super();
+    this.#request = request;
     this.#response = response;
   }
 
   /**
-   * Starts engine processing from a stopped state.
+   * Starts engine processing from a stopped state, or pushes resources into an
+   * already-running engine. The request body may name which resources to
+   * enqueue (`{ resources: [...] }`); when omitted, all parameter-free
+   * resources are enqueued.
    * @returns {Promise<void>}
    */
   async handle() {
-    if (!Application.isStopped()) throw new ConflictError();
-    await Application.start();
-    this.#response.json({ status: 'running' });
+    const resources = Array.isArray(this.#request.body?.resources) ? this.#request.body.resources : [];
+
+    if (Application.isStopped()) {
+      const result = await Application.start(resources);
+      this.#response.json({ status: 'running', ...result });
+      return;
+    }
+
+    if (Application.isRunning()) {
+      const result = Application.enqueueResources(resources);
+      this.#response.json({ status: 'running', ...result });
+      return;
+    }
+
+    throw new ConflictError();
   }
 }
 

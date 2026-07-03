@@ -32,6 +32,12 @@ describe('ResourceRegistry', () => {
       const registry = new CustomResourceRegistry({});
       expect(() => registry.getItem('x')).toThrowError(CustomNotFound);
     });
+
+    it('reports whether a resource is present via has', () => {
+      const registry = new ResourceRegistry({ categories: { url: '/categories' } });
+      expect(registry.has('categories')).toBe(true);
+      expect(registry.has('missing')).toBe(false);
+    });
   });
 
   describe('.build', () => {
@@ -77,6 +83,20 @@ describe('ResourceRegistry', () => {
 
     it('throws if build has not been called', () => {
       expect(() => ResourceRegistry.getItem('x')).toThrowError(
+        'ResourceRegistry has not been built. Call ResourceRegistry.build() first.'
+      );
+    });
+  });
+
+  describe('.has', () => {
+    it('delegates to the singleton instance', () => {
+      ResourceRegistry.build({ cats: { url: '/cats' } });
+      expect(ResourceRegistry.has('cats')).toBe(true);
+      expect(ResourceRegistry.has('missing')).toBe(false);
+    });
+
+    it('throws if build has not been called', () => {
+      expect(() => ResourceRegistry.has('x')).toThrowError(
         'ResourceRegistry has not been built. Call ResourceRegistry.build() first.'
       );
     });

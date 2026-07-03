@@ -14,6 +14,7 @@ import { Config } from '../models/configs/Config.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
 import { WebServer } from '../server/WebServer.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
+import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
 import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
@@ -68,9 +69,15 @@ class ApplicationInstance {
 
     this.engine = this.buildEngine();
     this.webServer = this.buildWebServer();
-    this.enqueueFirstJobs();
 
-    this.#engineStatus = 'running';
+    if (this.#shouldAutostart()) {
+      this.enqueueFirstJobs();
+      this.#engineStatus = 'running';
+    } else {
+      this.engine.pause();
+      this.#engineStatus = 'stopped';
+    }
+
     this.#aggregator.add(this.webServer?.start());
     this.#enginePromise = this.engine.start();
     this.#aggregator.add(this.#enginePromise);
@@ -118,6 +125,22 @@ class ApplicationInstance {
     new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
       JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
     });
+  }
+
+  /**
+   * Enqueues resources by name, or all parameter-free resources when no names are given.
+   * Unknown resource names, or resources with any request that needs parameters, are
+   * skipped entirely and reported back rather than failing the whole call.
+   * @param {Array<string>} [names=[]] - Resource names to enqueue; omit/empty for the default set.
+   * @returns {{enqueued: Array<string>, skippedResources: Array<{name: string, reason: string}>}} The enqueued names and any skipped resources.
+   */
+  enqueueResources(names = []) {
+    if (!names.length) {
+      this.enqueueFirstJobs();
+      return { enqueued: [], skippedResources: [] };
+    }
+
+    return new ResourceEnqueuer().enqueue(names);
   }
 
   /**
@@ -199,17 +222,19 @@ class ApplicationInstance {
   }
 
   /**
-   * Starts processing from a stopped state by calling engine.resume() and re-enqueueing initial jobs.
+   * Starts processing from a stopped state by calling engine.resume() and enqueueing resources.
    * No new engine is created; the existing loop continues.
    * Only valid when status is 'stopped'.
-   * @returns {Promise<void>}
+   * @param {Array<string>} [names=[]] - Resource names to enqueue; omit/empty for the default set.
+   * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
-  async start() {
-    if (this.#engineStatus !== 'stopped') return;
+  async start(names = []) {
+    if (this.#engineStatus !== 'stopped') return undefined;
     this.engine.resume();
-    this.enqueueFirstJobs();
+    const result = this.enqueueResources(names);
     this.#engineStatus = 'running';
     EngineEvents.emit('start');
+    return result;
   }
 
   /**
@@ -234,6 +259,15 @@ class ApplicationInstance {
       await this.stop();
     }
     this.engine.stop();
+  }
+
+  /**
+   * Determines whether the engine should start processing immediately at boot.
+   * Defaults to true when there is no web configuration or no explicit setting.
+   * @returns {boolean} True if the engine should auto-start.
+   */
+  #shouldAutostart() {
+    return this.config.webConfig?.autostart ?? true;
   }
 
   /**

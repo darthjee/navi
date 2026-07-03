@@ -27,6 +27,16 @@ describe('WebConfig', () => {
       expect(config.enableShutdown).toEqual(false);
     });
 
+    it('defaults autostart to true', () => {
+      const config = new WebConfig({ port: 3000 });
+      expect(config.autostart).toEqual(true);
+    });
+
+    it('stores autostart as false', () => {
+      const config = new WebConfig({ port: 3000, autostart: false });
+      expect(config.autostart).toEqual(false);
+    });
+
     it('defaults links to an empty list', () => {
       const config = new WebConfig({ port: 3000 });
       expect(config.links).toEqual([]);

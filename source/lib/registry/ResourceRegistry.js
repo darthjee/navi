@@ -57,6 +57,16 @@ class ResourceRegistry extends NamedRegistry {
   }
 
   /**
+   * Checks whether a resource with the given name exists in the singleton instance.
+   * @param {string} name - The name of the resource to check.
+   * @returns {boolean} True if a resource with the given name exists.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static has(name) {
+    return ResourceRegistry.#getInstance().has(name);
+  }
+
+  /**
    * Filters the resources in the singleton instance based on a predicate function.
    * @param {function} predicate - The predicate function to test each resource.
    * @returns {Array} An array of resources that match the predicate.

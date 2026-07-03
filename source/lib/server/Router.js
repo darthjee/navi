@@ -52,6 +52,8 @@ class Router {
     const router = ExpressRouter();
     const register = new RouteRegister(router);
 
+    router.use(express.json());
+
     const GET_ROUTES = {
       '/settings.json':           new HandlerConfig(SettingsHandler, this.#webConfig.enableShutdown),
       '/stats.json':              new HandlerConfig(StatsHandler),

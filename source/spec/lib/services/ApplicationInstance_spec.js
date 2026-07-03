@@ -4,6 +4,7 @@ import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../lib/services/ApplicationInstance.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { FailureChecker } from '../../../lib/services/FailureChecker.js';
+import { ResourceEnqueuer } from '../../../lib/utils/ResourceEnqueuer.js';
 
 describe('ApplicationInstance', () => {
   let instance;
@@ -116,6 +117,47 @@ describe('ApplicationInstance', () => {
       await instance.start();
       expect(EngineEvents.emit).toHaveBeenCalledWith('start');
     });
+
+    it('enqueues the default set when no names are given', async () => {
+      await instance.stop();
+      await instance.start();
+      expect(instance.enqueueFirstJobs).toHaveBeenCalled();
+    });
+
+    it('delegates to enqueueResources and returns its result', async () => {
+      await instance.stop();
+      spyOn(instance, 'enqueueResources').and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
+
+      const result = await instance.start(['home_page']);
+
+      expect(instance.enqueueResources).toHaveBeenCalledWith(['home_page']);
+      expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
+    });
+
+    it('returns undefined when not stopped', async () => {
+      const result = await instance.start();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('#enqueueResources', () => {
+    it('falls back to enqueueFirstJobs when no names are given', () => {
+      spyOn(instance, 'enqueueFirstJobs').and.stub();
+
+      const result = instance.enqueueResources();
+
+      expect(instance.enqueueFirstJobs).toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [] });
+    });
+
+    it('delegates named resources to ResourceEnqueuer', () => {
+      spyOn(ResourceEnqueuer.prototype, 'enqueue').and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
+
+      const result = instance.enqueueResources(['home_page']);
+
+      expect(ResourceEnqueuer.prototype.enqueue).toHaveBeenCalledWith(['home_page']);
+      expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
+    });
   });
 
   describe('#shutdown', () => {
@@ -185,6 +227,27 @@ describe('ApplicationInstance', () => {
         'Total: 10\nFailed: 4 (40%)\nThreshold: 30%\nResult: Failure'
       );
       expect(LogRegistry.info).toHaveBeenCalledBefore(FailureChecker.prototype.check);
+    });
+
+    describe('when web.autostart is false', () => {
+      beforeEach(() => {
+        instance.config.webConfig = { autostart: false };
+      });
+
+      it('boots paused and stopped instead of enqueueing and running', async () => {
+        const engine = { start: async () => {}, pause: jasmine.createSpy('pause') };
+        spyOn(instance, 'buildEngine').and.returnValue(engine);
+        spyOn(instance, 'buildWebServer').and.returnValue(null);
+        spyOn(instance, 'enqueueFirstJobs').and.stub();
+        spyOn(JobRegistry, 'stats').and.returnValue({ total: 0, failed: 0, retryQueue: 0, dead: 0 });
+        spyOn(LogRegistry, 'info').and.stub();
+        spyOn(FailureChecker.prototype, 'check').and.stub();
+
+        await instance.run();
+
+        expect(engine.pause).toHaveBeenCalled();
+        expect(instance.enqueueFirstJobs).not.toHaveBeenCalled();
+      });
     });
   });
 });

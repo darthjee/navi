@@ -55,12 +55,37 @@ constructs the executor as `(req, res, ...parameters)` only when a matching requ
 | `PATCH` | `/engine/pause` | Sets status → `pausing`. Returns 409 if not `running`. |
 | `PATCH` | `/engine/stop` | Sets status → `stopping`, clears queues when workers idle. Returns 409 if not `running`. |
 | `PATCH` | `/engine/continue` | Resumes from `paused`. Returns 409 if not `paused`. |
-| `PATCH` | `/engine/start` | Starts from `stopped`. Returns 409 if not `stopped`. |
+| `PATCH` | `/engine/start` | Starts from `stopped`, or pushes resources into an already-`running` engine. Returns 409 if `paused`/`pausing`/`stopping`. See [below](#engine-start-request-and-response) for the body/response shape. |
 | `PATCH` | `/engine/restart` | Stops then restarts (async). Returns 409 if not `running`. |
 | `GET` | `/assets/*path` | Serves built frontend assets; rejects path-traversal with 403. |
 | `GET` | `/` and `*` | Serves `source/static/index.html` (SPA entry + catch-all). |
 
 The PATCH lifecycle endpoints return immediately with the transitional status and do not wait for workers to finish. Poll `GET /engine/status` to detect when the transition completes.
+
+### `/engine/start` request and response
+
+The request body may name which resources to enqueue:
+
+```json
+{
+  "resources": ["home_page", "categories"]
+}
+```
+
+Names refer to entries in the config's top-level `resources:` map. If the body is empty/omitted, all parameter-free resources are enqueued (today's default behavior). Whether the engine was `stopped` (and is now started) or already `running` (resources pushed into the existing queue), the response is:
+
+```json
+{
+  "status": "running",
+  "enqueued": ["home_page"],
+  "skippedResources": [
+    { "name": "products", "reason": "needs_params" },
+    { "name": "unknown_resource", "reason": "not_found" }
+  ]
+}
+```
+
+A resource is skipped (never partially enqueued) when its name isn't found in the registry (`not_found`) or when any of its requests needs parameters that weren't supplied (`needs_params`). When the body is empty/omitted, `enqueued` and `skippedResources` are always empty — the default bulk enqueue works at the request level, not by resource name.
 
 ## Serialization
 
@@ -97,6 +122,9 @@ The PATCH lifecycle endpoints return immediately with the transitional status an
 web:
   port: 3000
   enable_shutdown: true  # optional, defaults to true
+  autostart: true        # optional, defaults to true
 ```
 
 When `enable_shutdown` is `false`, `GET /settings.json` returns 403 and the frontend hides the shutdown button.
+
+When `autostart` is `false`, the application boots with the web server running but the engine `stopped` (no jobs enqueued, no allocation happening) until `PATCH /engine/start` is called. This only takes effect when `web.port` is configured — without a web server there's no way to trigger a manual start.

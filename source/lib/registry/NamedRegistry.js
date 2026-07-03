@@ -39,6 +39,15 @@ class NamedRegistry {
   }
 
   /**
+   * Checks whether an item with the given name exists in the registry.
+   * @param {string} name The name to check.
+   * @returns {boolean} True if an item with the given name exists.
+   */
+  has(name) {
+    return name in this.items;
+  }
+
+  /**
    * Filters the items in the registry based on a predicate function.
    * @param {function} predicate The predicate function to test each item.
    * @returns {Array} An array of items that match the predicate.
