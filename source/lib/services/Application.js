@@ -113,6 +113,15 @@ class Application {
   }
 
   /**
+   * Enqueues resources by name, or all parameter-free resources when no names are given.
+   * @param {Array<string>} [names] - Resource names to enqueue; omit/empty for the default set.
+   * @returns {{enqueued: Array<string>, skippedResources: Array<object>}}
+   */
+  static enqueueResources(names) {
+    return Application.#getInstance().enqueueResources(names);
+  }
+
+  /**
    * Gets the buffered logger from the singleton instance.
    * @returns {BufferedLogger} The buffered logger instance.
    */
@@ -146,10 +155,11 @@ class Application {
 
   /**
    * Starts processing from a stopped state.
-   * @returns {Promise<void>}
+   * @param {Array<string>} [names] - Resource names to enqueue; omit/empty for the default set.
+   * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
-  static async start() {
-    return Application.#getInstance().start();
+  static async start(names) {
+    return Application.#getInstance().start(names);
   }
 
   /**

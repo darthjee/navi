@@ -41,6 +41,7 @@ log:
 
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
+  autostart: true      # whether the engine starts processing immediately at boot (default: true)
 
 failure:
   threshold: 10.0      # exit non-zero if more than 10% of jobs are dead (optional)
@@ -205,3 +206,5 @@ stopped  ──[PATCH /engine/start]──────────────�
 ```
 
 Any call-site that enqueues a side-effect job checks `Application.isStopped()` before calling `JobRegistry.enqueue()`. If stopped, the enqueue is silently skipped.
+
+When `web.autostart` is `false`, the application boots directly into `stopped` instead of `running` — see [Web Server](web-server.md#engine-start-request-and-response) for the `PATCH /engine/start` request/response contract that resumes it (optionally naming which resources to enqueue).

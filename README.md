@@ -8,9 +8,9 @@
 
 Cache Warmer Tool
 
-**Current Version:** [1.3.2](https://github.com/darthjee/navi/releases/tag/1.3.2)
+**Current Version:** [1.4.0](https://github.com/darthjee/navi/releases/tag/1.4.0)
 
-**Next Release:** [1.3.3](https://github.com/darthjee/navi/compare/1.3.2...main)
+**Next Release:** [1.4.1](https://github.com/darthjee/navi/compare/1.4.0...main)
 
 ---
 
@@ -63,6 +63,7 @@ failure:
 
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
+  autostart: true       # whether the engine starts processing immediately at boot (default: true)
 
 clients:
   default:
@@ -128,6 +129,7 @@ resources:
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
+| `web.autostart` | Optional. Whether the engine starts processing immediately at boot. Defaults to `true`; set to `false` to boot with the web server up but the engine paused until `PATCH /engine/start` is called. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
@@ -353,7 +355,10 @@ Enable it by adding a `web:` section to your configuration file:
 ```yaml
 web:
   port: 3000
+  autostart: true # optional, defaults to true
 ```
+
+By default, the engine starts processing jobs immediately at boot. Setting `autostart: false` boots the web server without starting the engine — job processing stays paused until an operator calls `PATCH /engine/start` (optionally with a `{ "resources": [...] }` body naming which configured resources to enqueue).
 
 When enabled, the UI is accessible at `http://localhost:<port>` and includes the following screens:
 

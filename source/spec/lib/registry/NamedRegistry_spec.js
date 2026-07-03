@@ -36,6 +36,18 @@ describe('NamedRegistry', () => {
     });
   });
 
+  describe('#has', () => {
+    it('returns true when the item is present', () => {
+      const registry = new NamedRegistry({ foo: 'bar' });
+      expect(registry.has('foo')).toBe(true);
+    });
+
+    it('returns false when the item is missing', () => {
+      const registry = new NamedRegistry({});
+      expect(registry.has('missing')).toBe(false);
+    });
+  });
+
   describe('#filter', () => {
     const items = {
       foo: { name: 'foo', value: 1 },
