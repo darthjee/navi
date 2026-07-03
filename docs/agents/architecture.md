@@ -124,6 +124,17 @@ Business logic and I/O layer:
 - **`Client`** — Axios-based HTTP executor; `perform()` for URL-template requests, `performUrl()` for absolute URLs; supports per-client headers with env var interpolation.
 - **`ConfigLoader`** / **`ConfigParser`** / **`ArgumentsParser`** — config file I/O and CLI argument parsing.
 
+### `factory/`
+
+- **`Factory`** — generic object-builder: configured with a class and an optional attributes generator; `build(...args)` produces attribute-generator output first (if any), then instantiates the configured class (or returns a plain object if none is set).
+
+### `serializers/`
+
+Plain-object views of domain models, used by the web server's JSON responses:
+
+- **`Serializer`** — abstract base; static `serialize(itemOrList, options)` maps over arrays and delegates single items to `_serializeObject`, which subclasses must override.
+- **`LinksSerializer`**, **`LogSerializer`**, **`JobSerializer`**, **`JobIndexSerializer`**, **`JobShowSerializer`** — concrete serializers for their respective domain objects.
+
 ### `server/`
 
 Express-based web server. `Router` wires all request handler executors and serves the React SPA from `source/static/`. Routes are declared as a config map of path → `HandlerConfig` instance; `HandlerConfig` holds the executor class and any extra constructor parameters, then lazily constructs the executor with `(req, res, ...parameters)` on each request. The shared `RequestHandler` base remains under `common/server/` for `dev/app`, while `source/` routes register executors directly via `RouteRegister`, which maps domain errors to HTTP status codes (403/404/500). See [Web Server](web-server.md) for the full route reference.
