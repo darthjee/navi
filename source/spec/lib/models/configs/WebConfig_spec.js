@@ -37,6 +37,16 @@ describe('WebConfig', () => {
       expect(config.autostart).toEqual(false);
     });
 
+    it('defaults idleTimeout to 0', () => {
+      const config = new WebConfig({ port: 3000 });
+      expect(config.idleTimeout).toEqual(0);
+    });
+
+    it('stores a custom idleTimeout', () => {
+      const config = new WebConfig({ port: 3000, idle_timeout: 900 });
+      expect(config.idleTimeout).toEqual(900);
+    });
+
     it('defaults links to an empty list', () => {
       const config = new WebConfig({ port: 3000 });
       expect(config.links).toEqual([]);

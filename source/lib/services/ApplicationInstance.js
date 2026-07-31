@@ -94,6 +94,8 @@ class ApplicationInstance {
     return new Engine({
       sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
       keepAlive: !!this.config.webConfig,
+      idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
+      onIdleTimeout: () => this.#handleIdleTimeout(),
     });
   }
 
@@ -268,6 +270,16 @@ class ApplicationInstance {
    */
   #shouldAutostart() {
     return this.config.webConfig?.autostart ?? true;
+  }
+
+  /**
+   * Invoked by the Engine when `web.idle_timeout` has elapsed with no jobs
+   * queued and no busy workers. Shuts the application down exactly like a
+   * manual `PATCH /engine/shutdown` call, regardless of `enable_shutdown`.
+   * @returns {Promise<void>}
+   */
+  async #handleIdleTimeout() {
+    await this.shutdown();
   }
 
   /**
