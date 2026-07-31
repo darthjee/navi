@@ -175,6 +175,97 @@ describe('Engine', () => {
 
         expect(engine.allocator.allocate).toHaveBeenCalled();
       });
+
+      describe('idle timeout', () => {
+        // Idle-timeout tests exercise real Date.now() elapsed time (like Job.js's
+        // readyBy/isReadyBy), so every test that expects onIdleTimeout NOT to be
+        // driven by real time uses a hard iteration safety net (via promoteReadyJobs)
+        // so a broken implementation fails fast instead of hanging the suite.
+        const SAFETY_NET_ITERATIONS = 20000;
+
+        it('never fires when idleTimeoutMs is 0 (the default — disabled)', async () => {
+          const onIdleTimeout = jasmine.createSpy('onIdleTimeout');
+          engine = new Engine({ keepAlive: true, sleepMs: -1, onIdleTimeout });
+
+          let iterations = 0;
+          spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+            iterations++;
+            if (iterations >= 5) engine.stop();
+          });
+
+          await engine.start();
+
+          expect(onIdleTimeout).not.toHaveBeenCalled();
+        });
+
+        it('fires once after the queue and workers have been idle for idleTimeoutMs', async () => {
+          const onIdleTimeout = jasmine.createSpy('onIdleTimeout').and.callFake(() => engine.stop());
+          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+
+          let iterations = 0;
+          spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+            iterations++;
+            if (iterations >= SAFETY_NET_ITERATIONS) engine.stop();
+          });
+
+          await engine.start();
+
+          expect(onIdleTimeout).toHaveBeenCalledTimes(1);
+          expect(iterations).toBeLessThan(SAFETY_NET_ITERATIONS);
+        });
+
+        it('fires at most once even while remaining idle across further ticks', async () => {
+          const onIdleTimeout = jasmine.createSpy('onIdleTimeout');
+          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+
+          let iterations = 0;
+          spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+            iterations++;
+            if (onIdleTimeout.calls.count() > 0 && iterations >= 100) engine.stop();
+            if (iterations >= SAFETY_NET_ITERATIONS) engine.stop();
+          });
+
+          await engine.start();
+
+          expect(onIdleTimeout).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not fire while jobs are queued', async () => {
+          const onIdleTimeout = jasmine.createSpy('onIdleTimeout');
+          spyOn(JobRegistry, 'hasJob').and.returnValue(true);
+          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+
+          let iterations = 0;
+          spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+            iterations++;
+            if (iterations >= SAFETY_NET_ITERATIONS) engine.stop();
+          });
+
+          await engine.start();
+
+          expect(onIdleTimeout).not.toHaveBeenCalled();
+        });
+
+        it('resets the idle window when activity resumes, then fires once idle again', async () => {
+          const onIdleTimeout = jasmine.createSpy('onIdleTimeout').and.callFake(() => engine.stop());
+          let busy = true;
+          spyOn(WorkersRegistry, 'hasBusyWorker').and.callFake(() => busy);
+          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+
+          let iterations = 0;
+          spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+            iterations++;
+            if (iterations === 100) busy = false; // goes idle only after a while spent busy
+            if (iterations >= SAFETY_NET_ITERATIONS) engine.stop();
+          });
+
+          await engine.start();
+
+          expect(onIdleTimeout).toHaveBeenCalledTimes(1);
+          expect(iterations).toBeGreaterThanOrEqual(100);
+          expect(iterations).toBeLessThan(SAFETY_NET_ITERATIONS);
+        });
+      });
     });
   });
 });

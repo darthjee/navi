@@ -10,12 +10,20 @@ import { Logger } from '../utils/logging/Logger.js';
  * jobs to workers until there are no more jobs and no more busy workers.
  * In keepAlive mode (web UI present), the loop continues indefinitely until
  * `stop()` is explicitly called.
+ *
+ * When `idleTimeoutMs` is set, the loop also tracks how long it has been idle
+ * (no jobs queued and no busy workers) and invokes `onIdleTimeout` once that
+ * threshold is crossed; the idle window resets as soon as activity resumes.
  */
 class Engine {
   #sleepMs;
   #stopped = false;
   #paused = false;
   #keepAlive;
+  #idleTimeoutMs;
+  #onIdleTimeout;
+  #idleSince = null;
+  #idleTimeoutFired = false;
 
   /**
    * Creates an instance of Engine.
@@ -23,10 +31,14 @@ class Engine {
    * @param {WorkersAllocator} param0.allocator - The workers allocator to manage job allocation.
    * @param {number} [param0.sleepMs=500] - Milliseconds to wait when all jobs are in cooldown. Use a negative value to disable sleeping (e.g. in tests).
    * @param {boolean} [param0.keepAlive=false] - When true, the loop runs indefinitely until `stop()` is called (web UI mode).
+   * @param {number} [param0.idleTimeoutMs=0] - Milliseconds of inactivity before `onIdleTimeout` fires. `0` disables idle-timeout tracking.
+   * @param {Function} [param0.onIdleTimeout] - Callback invoked (without being awaited) once the idle threshold is reached. Fires at most once per idle window.
    */
-  constructor({ allocator, sleepMs = 500, keepAlive = false } = {}) {
+  constructor({ allocator, sleepMs = 500, keepAlive = false, idleTimeoutMs = 0, onIdleTimeout = () => {} } = {}) {
     this.#sleepMs = sleepMs;
     this.#keepAlive = keepAlive;
+    this.#idleTimeoutMs = idleTimeoutMs;
+    this.#onIdleTimeout = onIdleTimeout;
 
     this.allocator = allocator || new WorkersAllocator();
   }
@@ -75,6 +87,8 @@ class Engine {
         this.allocator.allocate();
       }
 
+      this.#checkIdleTimeout();
+
       // wait before next iteration so the block runs ~once per second
       await this.#sleep();
     }
@@ -96,6 +110,33 @@ class Engine {
    */
   #continueAllocating() {
     return JobRegistry.hasJob() || WorkersRegistry.hasBusyWorker();
+  }
+
+  /**
+   * Tracks idle time (no queued jobs, no busy workers) across loop ticks and
+   * fires `onIdleTimeout` once at most per idle window when `idleTimeoutMs`
+   * is exceeded. Any activity resets the window. No-op when idle-timeout
+   * tracking is disabled (`idleTimeoutMs <= 0`).
+   * @returns {void}
+   */
+  #checkIdleTimeout() {
+    if (this.#idleTimeoutMs <= 0) return;
+
+    if (this.#continueAllocating()) {
+      this.#idleSince = null;
+      this.#idleTimeoutFired = false;
+      return;
+    }
+
+    if (this.#idleSince === null) {
+      this.#idleSince = Date.now();
+      return;
+    }
+
+    if (!this.#idleTimeoutFired && Date.now() - this.#idleSince >= this.#idleTimeoutMs) {
+      this.#idleTimeoutFired = true;
+      this.#onIdleTimeout();
+    }
   }
 
   /**

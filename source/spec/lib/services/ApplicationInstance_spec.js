@@ -200,6 +200,75 @@ describe('ApplicationInstance', () => {
     });
   });
 
+  describe('#buildEngine', () => {
+    beforeEach(() => {
+      instance.webServer = null;
+      spyOn(JobRegistry, 'hasReadyJob').and.returnValue(false);
+      spyOn(JobRegistry, 'hasJob').and.returnValue(false);
+    });
+
+    it('wires web.idle_timeout into the built Engine and calls shutdown() once it expires', async () => {
+      instance.config = {
+        workersConfig: { sleep: -1 },
+        webConfig: { idleTimeout: 0.001 }, // 1ms — idle_timeout=0 means "disabled", so use the smallest enabled value
+      };
+      spyOn(instance, 'shutdown').and.callThrough();
+
+      const engine = instance.buildEngine();
+
+      let iterations = 0;
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+        iterations++;
+        // stop as soon as shutdown() fired; a generous safety net avoids a
+        // hang if the implementation is broken and it never fires at all.
+        if (instance.shutdown.calls.count() > 0 || iterations >= 20000) engine.stop();
+      });
+
+      await engine.start();
+
+      expect(instance.shutdown).toHaveBeenCalled();
+    });
+
+    it('does not shut down before a larger configured idle_timeout has elapsed', async () => {
+      instance.config = {
+        workersConfig: { sleep: -1 },
+        webConfig: { idleTimeout: 60 },
+      };
+      spyOn(instance, 'shutdown');
+
+      const engine = instance.buildEngine();
+
+      let iterations = 0;
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+        iterations++;
+        if (iterations >= 5) engine.stop();
+      });
+
+      await engine.start();
+
+      expect(instance.shutdown).not.toHaveBeenCalled();
+    });
+
+    it('disables idle-timeout tracking when there is no web config', async () => {
+      instance.config = {
+        workersConfig: { sleep: -1 },
+      };
+      spyOn(instance, 'shutdown');
+
+      const engine = instance.buildEngine();
+
+      let iterations = 0;
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+        iterations++;
+        if (iterations >= 5) engine.stop();
+      });
+
+      await engine.start();
+
+      expect(instance.shutdown).not.toHaveBeenCalled();
+    });
+  });
+
   describe('#run', () => {
     beforeEach(() => {
       instance.config = {
