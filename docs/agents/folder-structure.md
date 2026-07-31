@@ -12,6 +12,7 @@
 | `scripts/` | Shell utilities for CI, release, and version bumping. |
 | `docs/` | Project documentation, including the `docs/agents/` set read by AI coding agents. |
 | `.circleci/` | CircleCI pipeline configuration. |
+| `.claude/` | Claude Code configuration: specialist agent definitions, scripts, and settings. |
 | `.github/` | GitHub PR/commit templates and Copilot instructions. |
 | `AGENTS.md` | Shared instructions for all AI coding agents. |
 | `CLAUDE.md` | Points to `AGENTS.md`. |
@@ -21,6 +22,7 @@
 | `DOCKERHUB_DESCRIPTION.md` | Description published to Docker Hub for the `navi-hey` image. |
 | `.env` / `.env.sample` | Environment variables for local Docker Compose setup. |
 | `.codacy.yaml` | Codacy static analysis configuration. |
+| `LICENSE` | Project license. |
 | `navi.png` | Project logo used in documentation. |
 
 ## `dev/` (Sample apps used to test Navi locally)

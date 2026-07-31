@@ -161,3 +161,4 @@ frontend/node_modules
 **/*.orig
 
 output/
+.claude/state/
