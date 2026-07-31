@@ -123,8 +123,11 @@ web:
   port: 3000
   enable_shutdown: true  # optional, defaults to true
   autostart: true        # optional, defaults to true
+  idle_timeout: 900       # optional, seconds; 0/unset disables auto-shutdown (default)
 ```
 
 When `enable_shutdown` is `false`, `GET /settings.json` returns 403 and the frontend hides the shutdown button.
 
 When `autostart` is `false`, the application boots with the web server running but the engine `stopped` (no jobs enqueued, no allocation happening) until `PATCH /engine/start` is called. This only takes effect when `web.port` is configured — without a web server there's no way to trigger a manual start.
+
+When `idle_timeout` is set to a positive number of seconds, the application auto-shuts-down (web server included, same as `PATCH /engine/shutdown`) once it has gone that long with no busy workers and no jobs in any queue. The countdown starts as soon as the application goes idle and resets any time a job exists or a worker becomes busy again — it is re-evaluated on every `Engine` loop tick rather than tracked by a separate timer. This applies independently of `enable_shutdown`: disabling the manual shutdown button/endpoint does not disable `idle_timeout`. Leaving `idle_timeout` unset (or `0`) preserves the default behavior — the web server lingers indefinitely.

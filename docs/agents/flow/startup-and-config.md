@@ -42,6 +42,7 @@ log:
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
   autostart: true      # whether the engine starts processing immediately at boot (default: true)
+  idle_timeout: 900    # seconds of inactivity before auto-shutdown (default: 0, disabled)
 
 failure:
   threshold: 10.0      # exit non-zero if more than 10% of jobs are dead (optional)
