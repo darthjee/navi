@@ -1,0 +1,12 @@
+workers:
+  quantity: 5
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+      actions:
+        - resource: missing_resource
+          namespace: unknown_namespace
+clients:
+  default:
+    base_url: https://example.com

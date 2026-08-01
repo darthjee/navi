@@ -3,6 +3,7 @@ import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
+import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
 import { Application } from '../../../lib/services/Application.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';
@@ -24,6 +25,7 @@ class RegistryCleanupUtils {
     LogRegistry.reset();
     WorkersRegistry.reset();
     ResourceRegistry.reset();
+    NamespaceMap.reset();
     Application.reset();
     EngineEvents.reset();
   }

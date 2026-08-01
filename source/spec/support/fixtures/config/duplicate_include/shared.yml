@@ -1,0 +1,5 @@
+namespace: shared
+resources:
+  shared_resource:
+    - url: /shared.json
+      status: 200

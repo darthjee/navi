@@ -1,0 +1,13 @@
+workers:
+  quantity: 5
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+clients:
+  default:
+    base_url: https://example.com
+
+include:
+  - shared.yml
+  - shared.yml

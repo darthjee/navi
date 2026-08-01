@@ -1,0 +1,4 @@
+resources:
+  categories:
+    - url: /other-categories.json
+      status: 200

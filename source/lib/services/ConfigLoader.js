@@ -1,12 +1,12 @@
-import { readFileSync } from 'node:fs';
-import YAML from 'yaml';
+import { ConfigIncluder } from './ConfigIncluder.js';
 import { ConfigParser } from './ConfigParser.js';
-import { EnvStringResolver } from '../common/utils/env_resolver/EnvStringResolver.js';
-import { ConfigurationFileNotFound } from '../exceptions/config/ConfigurationFileNotFound.js';
-import { Logger } from '../utils/logging/Logger.js';
+import { NamespaceMapBuilder } from './NamespaceMapBuilder.js';
 
 /**
- * ConfigLoader loads a YAML configuration file and delegates parsing to ConfigParser.
+ * ConfigLoader loads a YAML configuration file (and every file transitively reachable
+ * through its `include:` chain), grouping the resources/clients contributed by each
+ * file into a NamespaceMap, and sourcing worker/web/log/failure sections from the
+ * entry file only.
  * @author darthjee
  */
 class ConfigLoader {
@@ -18,58 +18,53 @@ class ConfigLoader {
   }
 
   /**
-   * Creates a mapped resource object from a YAML file.
-   *
-   * The YAML must contain a top-level `resources` key.
+   * Loads the configuration starting from the given entry file path.
    *
    * @param {string} filePath Path to the YAML configuration file.
    * @returns {{
-   * resources: Record<string, Resource>,
-   * clients: Record<string, Client>,
-   * workers: WorkersConfig
-   * }} Mapped resources and clients by name. and workers configuration.
-   * @throws {MissingTopLevelConfigKey} Throws when the file is invalid or does not contain required keys.
+   * namespaceMap: Record<string, Namespace>,
+   * workersConfig: WorkersConfig,
+   * webConfig: WebConfig|null,
+   * logConfig: LogConfig,
+   * failureConfig: FailureConfig|null
+   * }} The built namespace map, alongside the entry file's non-resource configuration sections.
+   * @throws {MissingTopLevelConfigKey} Throws when a single-file (no `include:`) config is
+   * invalid or does not contain required keys.
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
+   * @throws {ConfigurationIncludeNotFound} If an included configuration file is not found.
    */
   static fromFile(filePath) {
     return new ConfigLoader(filePath).load();
   }
 
   /**
-   * Reads and parses the YAML configuration file, then delegates to ConfigParser.
+   * Resolves the include chain, builds the NamespaceMap, and extracts the entry
+   * file's worker/web/log/failure configuration sections.
    * @returns {{
-   * resources: Record<string, Resource>,
-   * clients: Record<string, Client>,
-   * workersConfig: WorkersConfig
-   * }} Mapped resources and clients by name. and workers configuration.
+   * namespaceMap: Record<string, Namespace>,
+   * workersConfig: WorkersConfig,
+   * webConfig: WebConfig|null,
+   * logConfig: LogConfig,
+   * failureConfig: FailureConfig|null
+   * }} The built namespace map, alongside the entry file's non-resource configuration sections.
+   * @throws {MissingTopLevelConfigKey} Throws when a single-file (no `include:`) config is
+   * invalid or does not contain required keys.
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
-   * @throws {MissingTopLevelConfigKey} Throws when the file is invalid or does not contain required keys.
+   * @throws {ConfigurationIncludeNotFound} If an included configuration file is not found.
    */
   load() {
-    return ConfigParser.fromObject(this.#parseYaml());
-  }
+    const includer = new ConfigIncluder(this.filePath);
+    const files = includer.resolve();
+    const namespaceMap = NamespaceMapBuilder.build(files);
+    const entryConfig = ConfigParser.fromObject(includer.entryRaw, { strict: false });
 
-  /**
-   * Reads and parses the raw YAML file content into a plain object.
-   * @returns {object} The raw parsed YAML object.
-   * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
-   */
-  #parseYaml() {
-    return YAML.parse(EnvStringResolver.resolve(this.#yamlContent()));
-  }
-
-  /**
-   * Reads the YAML configuration file content.
-   * @returns {string} The content of the YAML file as a string.
-   * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
-   */
-  #yamlContent() {
-    try {
-      return readFileSync(this.filePath, 'utf8');
-    } catch (err) {
-      Logger.error(`Configuration file not found: ${this.filePath}`);
-      throw new ConfigurationFileNotFound(this.filePath);
-    }
+    return {
+      namespaceMap,
+      workersConfig: entryConfig.workersConfig,
+      webConfig:     entryConfig.webConfig,
+      logConfig:     entryConfig.logConfig,
+      failureConfig: entryConfig.failureConfig,
+    };
   }
 }
 

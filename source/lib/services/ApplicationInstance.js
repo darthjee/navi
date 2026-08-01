@@ -297,11 +297,11 @@ class ApplicationInstance {
    * @returns {void}
    */
   #initRegistries() {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.clientRegistry } });
+    JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.namespaceMap } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
     JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
-    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.clientRegistry } });
-    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.clientRegistry } });
+    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.namespaceMap } });
+    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.namespaceMap } });
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 
