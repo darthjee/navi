@@ -17,7 +17,9 @@ class AssetRequestEnqueuer {
    * @param {string} rawHtml The raw HTML response body.
    * @param {AssetRequest} assetRequest The asset extraction rule.
    * @param {object} jobRegistry The job registry used to enqueue AssetDownloadJobs.
-   * @param {object} clientRegistry The client registry used for URL resolution.
+   * @param {NamespaceMap} clientRegistry The namespace map used for URL resolution.
+   * Asset/HTML-parse client resolution is not namespace-aware: lookups always
+   * resolve against the `default` namespace.
    */
   constructor(rawHtml, assetRequest, jobRegistry, clientRegistry) {
     this.#rawHtml = rawHtml;
@@ -64,7 +66,7 @@ class AssetRequestEnqueuer {
     if (url.startsWith('//')) {
       return `https:${url}`;
     }
-    const client = this.#clientRegistry.getClient(this.#assetRequest.client);
+    const client = this.#clientRegistry.getClient('default', this.#assetRequest.client);
     return `${client.baseUrl}${url}`;
   }
 }

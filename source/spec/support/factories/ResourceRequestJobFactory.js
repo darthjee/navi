@@ -1,4 +1,4 @@
-import { ClientRegistryFactory } from './ClientRegistryFactory.js';
+import { NamespaceMapFactory } from './NamespaceMapFactory.js';
 import { ResourceRequestFactory } from './ResourceRequestFactory.js';
 import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 
@@ -11,14 +11,14 @@ class ResourceRequestJobFactory {
    * @param {object} [params={}] - Optional attributes.
    * @param {string} [params.id='id'] - The job ID.
    * @param {ResourceRequest} [params.resourceRequest] - The resource request. Defaults to ResourceRequestFactory.build().
-   * @param {ClientRegistry} [params.clients] - The client registry. Defaults to ClientRegistryFactory.build().
+   * @param {NamespaceMap} [params.clients] - The namespace map. Defaults to NamespaceMapFactory.build().
    * @param {object} [params.parameters={}] - The job parameters.
    * @returns {ResourceRequestJob} A new ResourceRequestJob instance.
    */
   static build({
     id = 'id',
     resourceRequest = ResourceRequestFactory.build(),
-    clients = ClientRegistryFactory.build(),
+    clients = NamespaceMapFactory.build(),
     parameters = {},
   } = {}) {
     return new ResourceRequestJob({ id, resourceRequest, clients, parameters });

@@ -10,10 +10,11 @@ class ResourceFactory {
    * @param {object} [params={}] - Optional attributes.
    * @param {string} [params.name='categories'] - The resource name.
    * @param {Array} [params.resourceRequests] - List of ResourceRequest instances. Defaults to one default ResourceRequestFactory.build().
+   * @param {string} [params.namespace='default'] - The namespace this resource was declared in.
    * @returns {Resource} A new Resource instance.
    */
-  static build({ name = 'categories', resourceRequests = [ResourceRequestFactory.build()] } = {}) {
-    return new Resource({ name, resourceRequests });
+  static build({ name = 'categories', resourceRequests = [ResourceRequestFactory.build()], namespace = 'default' } = {}) {
+    return new Resource({ name, resourceRequests, namespace });
   }
 }
 
