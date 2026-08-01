@@ -39,6 +39,7 @@ Key features:
 - Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
 - Paginated resource support: `paginated_actions` fan out one request per page based on a page-count expression evaluated against the response.
 - Automatic retry of failed requests after the main queue is exhausted.
+- Config splitting: split `resources`/`clients` across multiple files with top-level `include`/`namespace` keys, with validated cross-namespace references. See [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/HOW_TO_USE_NAVI.md#splitting-configuration-across-files) for details.
 
 ---
 
@@ -64,6 +65,7 @@ failure:
 web:
   port: 3000           # port for the monitoring web UI (omit to disable)
   autostart: true       # whether the engine starts processing immediately at boot (default: true)
+  idle_timeout: 900     # seconds of inactivity before auto-shutdown (default: 0, disabled)
 
 clients:
   default:
@@ -113,6 +115,7 @@ resources:
   products:
     - url: /categories/{:category_id}/products/{:page}.json
       status: 200
+      disabled: true   # optional: excludes this request from every enqueue path (see below)
   kind:
     - url: /kinds/{:id}.json
       status: 200
@@ -130,6 +133,7 @@ resources:
 | `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `web.autostart` | Optional. Whether the engine starts processing immediately at boot. Defaults to `true`; set to `false` to boot with the web server up but the engine paused until `PATCH /engine/start` is called. |
+| `web.idle_timeout` | Optional. Seconds of sustained idleness (no busy workers, no jobs in any queue) before the application auto-shuts-down, same as `PATCH /engine/shutdown`. The countdown resets whenever a job exists or a worker becomes busy. Defaults to `0` (disabled — the web server lingers indefinitely). Independent of `web.enable_shutdown`. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
@@ -137,6 +141,7 @@ resources:
 | `url` | URL path (appended to the client's `base_url`). Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
+| `disabled` / `enabled` | Optional. Set `disabled: true` (or `enabled: false`) on a resource-request entry to keep its YAML definition in place while excluding it from every enqueue path: startup, manual/API trigger by name, and as an `actions`/`paginated_actions` target. `disabled: true` always wins over any `enabled` value. Defaults to enabled. |
 | `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
 | `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response wrapper (e.g. `parsedBody.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
