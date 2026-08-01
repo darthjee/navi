@@ -12,10 +12,20 @@ class ResourceRequestFactory {
    * @param {string|{name: string, namespace: string}} [params.clientName] - The client reference to use for this request.
    * @param {Array} [params.actions] - List of raw action config objects.
    * @param {string} [params.namespace='default'] - The namespace of the owning Resource.
+   * @param {boolean} [params.enabled] - Whether the request is enabled.
+   * @param {boolean} [params.disabled] - Whether the request is disabled.
    * @returns {ResourceRequest} A new ResourceRequest instance.
    */
-  static build({ url = '/categories.json', status = 200, clientName = undefined, actions = [], namespace = 'default' } = {}) {
-    return new ResourceRequest({ url, status, clientName, actions, namespace });
+  static build({
+    url = '/categories.json',
+    status = 200,
+    clientName = undefined,
+    actions = [],
+    namespace = 'default',
+    enabled = undefined,
+    disabled = undefined,
+  } = {}) {
+    return new ResourceRequest({ url, status, clientName, actions, namespace, enabled, disabled });
   }
 }
 

@@ -14,6 +14,7 @@ class ResourceRequest {
   #clientName;
   #clientNamespace;
   #namespace;
+  #disabled;
 
   /**
    * @param {object} attributes ResourceRequest attributes
@@ -25,11 +26,26 @@ class ResourceRequest {
    * @param {Array} [attributes.actions=[]] List of raw action config objects.
    * @param {Array} [attributes.assets=[]] List of raw asset extraction rule objects.
    * @param {Array} [attributes.paginated_actions=[]] List of raw paginated action config objects.
+   * @param {boolean} [attributes.enabled] Whether this request is enabled. Defaults to enabled
+   * when omitted. Ignored when `disabled` is `true`.
+   * @param {boolean} [attributes.disabled] Whether this request is disabled. Takes precedence
+   * over `enabled` when `true`.
    */
-  constructor({ url, status, clientName, namespace = 'default', actions = [], assets = [], paginated_actions = [] }) {
+  constructor({
+    url,
+    status,
+    clientName,
+    namespace = 'default',
+    actions = [],
+    assets = [],
+    paginated_actions = [],
+    enabled,
+    disabled,
+  }) {
     this.url = url;
     this.status = status;
     this.#namespace = namespace;
+    this.#disabled = disabled === true || enabled === false;
 
     const parsedClient = ResourceRequest.#parseClient(clientName);
     this.#clientName = parsedClient.name;
@@ -64,6 +80,17 @@ class ResourceRequest {
    */
   get namespace() {
     return this.#namespace;
+  }
+
+  /**
+   * Returns whether this resource request is disabled, i.e. it must not be enqueued
+   * through any path (startup, manual trigger, or chained actions). A request is
+   * disabled when `disabled: true` was given (regardless of `enabled`), or when
+   * `enabled: false` was given. Otherwise it is enabled (the default).
+   * @returns {boolean} True if the request is disabled.
+   */
+  get disabled() {
+    return this.#disabled;
   }
 
   /**

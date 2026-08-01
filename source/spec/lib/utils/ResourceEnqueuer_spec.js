@@ -45,6 +45,28 @@ describe('ResourceEnqueuer', () => {
       expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'categories', reason: 'needs_params' }] });
     });
 
+    it('skips a resource entirely when any of its requests is disabled', () => {
+      const disabledRequest = ResourceRequestFactory.build({ url: '/disabled.json', disabled: true });
+      const disabledResource = ResourceFactory.build({ name: 'disabled', resourceRequests: [disabledRequest] });
+      ResourceRegistry.build({ disabled: disabledResource });
+
+      const result = new ResourceEnqueuer().enqueue(['disabled']);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'disabled', reason: 'disabled' }] });
+    });
+
+    it('skips a resource as disabled even when it also needs parameters', () => {
+      const disabledRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json', disabled: true });
+      const disabledResource = ResourceFactory.build({ name: 'disabled', resourceRequests: [disabledRequest] });
+      ResourceRegistry.build({ disabled: disabledResource });
+
+      const result = new ResourceEnqueuer().enqueue(['disabled']);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'disabled', reason: 'disabled' }] });
+    });
+
     it('handles a mix of enqueued and skipped names in one call', () => {
       const homePageRequest = ResourceRequestFactory.build({ url: '/' });
       const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });

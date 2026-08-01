@@ -24,6 +24,11 @@ class ResourceEnqueuer {
       }
 
       const resource = ResourceRegistry.getItem(name);
+      if (resource.resourceRequests.some((request) => request.disabled)) {
+        skippedResources.push({ name, reason: 'disabled' });
+        return;
+      }
+
       if (resource.resourceRequests.some((request) => request.needsParams())) {
         skippedResources.push({ name, reason: 'needs_params' });
         return;

@@ -133,6 +133,33 @@ describe('ResourceRequestPaginatedAction', () => {
       );
     });
 
+    it('skips disabled ResourceRequests when enqueueing the target resource', () => {
+      const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
+      const disabledRequest = ResourceRequestFactory.build({ url: '/products/disabled.json', disabled: true });
+
+      registerProductsResource(resourceRequest, disabledRequest);
+
+      new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(3);
+      [1, 2, 3].forEach((page) => {
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest, parameters: { page } },
+        );
+      });
+    });
+
+    it('does not enqueue anything when every ResourceRequest of the target resource is disabled', () => {
+      const disabledRequest = ResourceRequestFactory.build({ url: '/products/disabled.json', disabled: true });
+
+      registerProductsResource(disabledRequest);
+
+      new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+    });
+
     it('throws ResourceNotFound when the target resource is missing', () => {
       ResourceActionUtils.registerResource('other', []);
       const action = new ResourceRequestPaginatedAction({ resource: 'unknown', pagination });

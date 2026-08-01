@@ -116,6 +116,30 @@ describe('ResourceRequestAction', () => {
       );
     });
 
+    it('skips disabled ResourceRequests when enqueueing the target resource', () => {
+      const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
+      const disabledRequest = ResourceRequestFactory.build({ url: '/products/disabled.json', disabled: true });
+
+      registerProductsResource(resourceRequest, disabledRequest);
+
+      ResourceRequestActionFactory.build({ resource: 'products' }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+        'ResourceRequestJob',
+        { resourceRequest, parameters: {} },
+      );
+    });
+
+    it('does not enqueue anything when every ResourceRequest of the target resource is disabled', () => {
+      const disabledRequest = ResourceRequestFactory.build({ url: '/products/disabled.json', disabled: true });
+
+      registerProductsResource(disabledRequest);
+
+      ResourceRequestActionFactory.build({ resource: 'products' }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+    });
+
     it('throws ResourceNotFound when the target resource is missing', () => {
       ResourceActionUtils.registerResource('other', []);
       const action = ResourceRequestActionFactory.build({ resource: 'unknown' });

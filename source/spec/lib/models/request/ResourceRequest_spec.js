@@ -119,6 +119,30 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#disabled', () => {
+    [
+      { description: 'when neither enabled nor disabled is given', attrs: {}, expected: false },
+      { description: 'when enabled is true', attrs: { enabled: true }, expected: false },
+      { description: 'when enabled is false', attrs: { enabled: false }, expected: true },
+      { description: 'when disabled is true', attrs: { disabled: true }, expected: true },
+      { description: 'when disabled is false', attrs: { disabled: false }, expected: false },
+      {
+        description: 'when enabled is true and disabled is true (disabled wins)',
+        attrs: { enabled: true, disabled: true },
+        expected: true,
+      },
+      {
+        description: 'when enabled is false and disabled is false',
+        attrs: { enabled: false, disabled: false },
+        expected: true,
+      },
+    ].forEach(({ description, attrs, expected }) => {
+      it(`returns ${expected} ${description}`, () => {
+        expect(ResourceRequestFactory.build(attrs).disabled).toBe(expected);
+      });
+    });
+  });
+
   describe('#resolveUrl', () => {
     [
       {
