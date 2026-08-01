@@ -79,6 +79,7 @@ resources:
   products:
     - url: /categories/{:category_id}/products.json
       status: 200
+      disabled: true       # excluded from every enqueue path (see below)
   home_page:
     - url: /
       status: 200
@@ -95,3 +96,6 @@ resources:
 >
 > **Header names are always lowercase.**
 > Node.js normalizes HTTP response header names to lowercase before they reach Navi. Always use lowercase when referencing headers (e.g. `headers['x-total-pages']`, not `headers['X-Total-Pages']`).
+>
+> **Disabling a resource request without deleting it.**
+> Any individual resource-request entry (an item under `resources.<name>`) can be marked `disabled: true` (or `enabled: false`) to keep its YAML definition in place while excluding it from every enqueue path: `enqueueFirstJobs()` at startup, manual/API trigger by name, and as the target of another (enabled) resource's `actions`/`paginated_actions`. `disabled: true` always wins over any `enabled` value.

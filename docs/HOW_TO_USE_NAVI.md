@@ -73,6 +73,7 @@ resources:
             id: parsedBody.id   # extract "id" from each response item
     - url: /products         # redirect — Navi validates the 302 status
       status: 302
+      disabled: true         # temporarily skip this entry without deleting it
     - url: /#/products       # hash-based SPA route — same HTML template as home
       status: 200
   product_detail:
@@ -98,6 +99,8 @@ Key points:
 | `url` | URL path appended to `base_url`. Supports `{:placeholder}` tokens. |
 | `status` | Expected HTTP status code. Requests returning a different code are retried. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
+| `enabled` | Optional. Set to `false` to mark this request disabled. Defaults to `true`. |
+| `disabled` | Optional. Set to `true` to mark this request disabled — always wins over `enabled`. Defaults to `false`. A disabled request is never enqueued (not at startup, not on manual/API trigger, and not when targeted by another resource's `actions`/`paginated_actions`). |
 | `actions[].resource` | Resource to enqueue after a successful response (resource chaining). |
 | `actions[].parameters` | Path expressions that extract values from the response (e.g. `parsedBody.id`, `headers['x-next-page']`). |
 | `paginated_actions` | Optional. Like `actions`, but fans out one request per page instead of one per array item. |
