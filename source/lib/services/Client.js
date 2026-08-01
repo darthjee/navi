@@ -16,13 +16,15 @@ class Client {
    * @param {string|null} [attributes.linkText] Optional display text for UI links.
    * @param {number} [attributes.timeout] Optional request timeout in milliseconds.
    * @param {object} [attributes.headers] Optional HTTP headers sent with every request.
+   * @param {string} [attributes.namespace='default'] The namespace this client was declared in.
    */
-  constructor({ name, baseUrl, linkText = null, timeout = 5000, headers = {} }) {
+  constructor({ name, baseUrl, linkText = null, timeout = 5000, headers = {}, namespace = 'default' }) {
     this.name = name;
     this.baseUrl = baseUrl;
     this.linkText = linkText;
     this.timeout = timeout;
     this.headers = headers;
+    this.namespace = namespace;
   }
 
   /**
@@ -34,23 +36,27 @@ class Client {
    * @param {string} [config.linkText] Optional display text for UI links.
    * @param {number} [config.timeout] Optional request timeout in milliseconds.
    * @param {object} [config.headers] Optional HTTP headers.
+   * @param {object} [options={}] Additional options.
+   * @param {string} [options.namespace='default'] The namespace this client was declared in.
    * @returns {Client} A new Client instance.
    */
-  static fromObject(name, config) {
+  static fromObject(name, config, { namespace = 'default' } = {}) {
     const headers = config.headers || {};
     const baseUrl = config.base_url;
     const linkText = config.linkText ?? null;
-    return new Client({ name, baseUrl, linkText, timeout: config.timeout, headers });
+    return new Client({ name, baseUrl, linkText, timeout: config.timeout, headers, namespace });
   }
 
   /**
    * Creates an array of Client instances from a map of client configurations.
    *
    * @param {object} object Map of client names to client configuration objects.
+   * @param {object} [options={}] Additional options.
+   * @param {string} [options.namespace='default'] The namespace these clients were declared in.
    * @returns {Array<Client>} List of Client instances.
    */
-  static fromListObject(object) {
-    return Object.entries(object).map(([name, config]) => Client.fromObject(name, config));
+  static fromListObject(object, { namespace = 'default' } = {}) {
+    return Object.entries(object).map(([name, config]) => Client.fromObject(name, config, { namespace }));
   }
 
   /**

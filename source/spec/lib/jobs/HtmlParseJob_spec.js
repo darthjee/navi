@@ -2,7 +2,7 @@ import { Job } from '../../../lib/background/Job.js';
 import { HtmlParseJob } from '../../../lib/jobs/HtmlParseJob.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
-import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
+import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 
 describe('HtmlParseJob', () => {
   let job;
@@ -23,7 +23,7 @@ describe('HtmlParseJob', () => {
       '</head></html>';
 
     jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
-    clientRegistry = ClientRegistryFactory.build();
+    clientRegistry = NamespaceMapFactory.build();
   });
 
   describe('#constructor', () => {

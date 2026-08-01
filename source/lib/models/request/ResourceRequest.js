@@ -12,23 +12,32 @@ import { Application } from '../../services/Application.js';
  */
 class ResourceRequest {
   #clientName;
+  #clientNamespace;
+  #namespace;
 
   /**
    * @param {object} attributes ResourceRequest attributes
    * @param {string} attributes.url The URL to request.
    * @param {number} attributes.status The expected status code of the response.
-   * @param {string} [attributes.clientName] The name of the client to use for this request.
+   * @param {string|{name: string, namespace: string}} [attributes.clientName] The client to use for this
+   * request: either the bare client name (shorthand), or an object with an explicit target `namespace`.
+   * @param {string} [attributes.namespace='default'] The namespace of the Resource that owns this request.
    * @param {Array} [attributes.actions=[]] List of raw action config objects.
    * @param {Array} [attributes.assets=[]] List of raw asset extraction rule objects.
    * @param {Array} [attributes.paginated_actions=[]] List of raw paginated action config objects.
    */
-  constructor({ url, status, clientName, actions = [], assets = [], paginated_actions = [] }) {
+  constructor({ url, status, clientName, namespace = 'default', actions = [], assets = [], paginated_actions = [] }) {
     this.url = url;
     this.status = status;
-    this.#clientName = clientName;
-    this.actions = ResourceRequestAction.fromList(actions);
+    this.#namespace = namespace;
+
+    const parsedClient = ResourceRequest.#parseClient(clientName);
+    this.#clientName = parsedClient.name;
+    this.#clientNamespace = parsedClient.namespace;
+
+    this.actions = ResourceRequestAction.fromList(actions, { originNamespace: namespace });
     this.assets = AssetRequest.fromListObject(assets);
-    this.paginatedActions = ResourceRequestPaginatedAction.fromList(paginated_actions);
+    this.paginatedActions = ResourceRequestPaginatedAction.fromList(paginated_actions, { originNamespace: namespace });
   }
 
   /**
@@ -38,6 +47,23 @@ class ResourceRequest {
    */
   get clientName() {
     return this.#clientName;
+  }
+
+  /**
+   * Returns the explicit target namespace of the client associated with this request,
+   * as inherited from the parent Resource's client attribute, or null when not given.
+   * @returns {string|null} The client's target namespace, or null when not explicitly set.
+   */
+  get clientNamespace() {
+    return this.#clientNamespace;
+  }
+
+  /**
+   * Returns the namespace of the Resource that owns this request.
+   * @returns {string} The owning resource's namespace.
+   */
+  get namespace() {
+    return this.#namespace;
   }
 
   /**
@@ -116,11 +142,27 @@ class ResourceRequest {
    * Creates a list of ResourceRequest instances from an array of objects.
    * @param {Array<{ url: string, status: number }>} array list of objects with attributes to create a new ResourceRequest
    * @param {object} [options={}] optional options to assign to each ResourceRequest
-   * @param {string} [options.clientName] optional client name to assign to each ResourceRequest
+   * @param {string|{name: string, namespace: string}} [options.clientName] optional client reference
+   * to assign to each ResourceRequest.
+   * @param {string} [options.namespace='default'] the namespace of the owning Resource.
    * @returns {Array<ResourceRequest>} list of ResourceRequest instances
    */
-  static fromList(array, { clientName } = {}) {
-    return array.map((attrs) => new ResourceRequest({ ...attrs, clientName }));
+  static fromList(array, { clientName, namespace = 'default' } = {}) {
+    return array.map((attrs) => new ResourceRequest({ ...attrs, clientName, namespace }));
+  }
+
+  /**
+   * Parses a raw client reference into a name/namespace pair.
+   * Accepts either a bare string (shorthand, resolved in the requester's own namespace)
+   * or an object with an explicit target `namespace`.
+   * @param {string|{name: string, namespace: string}} [client] The raw client reference.
+   * @returns {{name: string|undefined, namespace: string|null}} The parsed client name and target namespace.
+   */
+  static #parseClient(client) {
+    if (client && typeof client === 'object') {
+      return { name: client.name, namespace: client.namespace ?? null };
+    }
+    return { name: client, namespace: null };
   }
 }
 

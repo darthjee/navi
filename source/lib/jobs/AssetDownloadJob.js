@@ -19,7 +19,8 @@ class AssetDownloadJob extends Job {
    * @param {string} params.url - The fully-resolved asset URL to fetch.
    * @param {string} [params.client] - Named client to use (defaults to `'default'`).
    * @param {number} params.status - Expected HTTP status code.
-   * @param {object} params.clientRegistry - The client registry used to look up the client.
+   * @param {NamespaceMap} params.clientRegistry - The namespace map used to look up the client.
+   * Resolution always targets the `default` namespace (not namespace-aware).
    */
   constructor({ id, url, client, status, clientRegistry }) {
     super({ id });
@@ -46,7 +47,7 @@ class AssetDownloadJob extends Job {
     logContext.debug(`AssetDownloadJob #${this.id} performing`);
     try {
       this.lastError = undefined;
-      const client = this.#clientRegistry.getClient(this.#clientName);
+      const client = this.#clientRegistry.getClient('default', this.#clientName);
       return await client.performUrl(this.#url, this.#status, logContext);
     } catch (error) {
       logContext.error(`AssetDownloadJob #${this.id} failed: ${error}`);

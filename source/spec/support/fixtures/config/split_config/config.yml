@@ -1,0 +1,20 @@
+workers:
+  quantity: 5
+resources:
+  people:
+    - url: /people.json
+      status: 200
+      paginated_actions:
+        - resource: paginated_people
+          namespace: paginated
+          pagination:
+            - pages: parsedBody.pagination.pages
+            - page_key: page
+            - zero_indexed: false
+  person:
+    - url: /people/:id.json
+      status: 200
+
+include:
+  - paginated_resources.yml
+  - clients.yml

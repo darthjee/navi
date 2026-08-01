@@ -1,26 +1,33 @@
 import { LogConfig } from './LogConfig.js';
 import { ClientRegistry } from '../../registry/ClientRegistry.js';
+import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { ResourceRegistry } from '../../registry/ResourceRegistry.js';
 import { ConfigLoader } from '../../services/ConfigLoader.js';
 
+const DEFAULT_NAMESPACE = 'default';
+
 /**
  * Config is a class that represents the configuration for the application.
- * It includes the resources and clients that are to be included in the configuration.
+ * It includes the namespace map (resources/clients, grouped by namespace) that is
+ * to be included in the configuration.
  * @author darthjee
  */
 class Config {
   /**
    * @param {object} params initialization parameters for the Config instance.
-   * @param {Record<string, Resource>} params.resources - A mapping of resource names to Resource instances.
-   * @param {Record<string, Client>} params.clients - A mapping of client names to Client instances.
+   * @param {Record<string, Namespace>} params.namespaceMap - A mapping of namespace name to Namespace instance.
    * @param {WorkersConfig} params.workersConfig - The configuration for worker instances.
    * @param {WebConfig|null} [params.webConfig] - Optional web server configuration.
    * @param {LogConfig} [params.logConfig] - Optional log configuration.
    * @param {FailureConfig|null} [params.failureConfig] - Optional failure threshold configuration.
    */
-  constructor({ resources, clients, workersConfig, webConfig, logConfig, failureConfig }) {
-    this.resourceRegistry = ResourceRegistry.build(resources);
-    this.clientRegistry = ClientRegistry.build(clients);
+  constructor({ namespaceMap, workersConfig, webConfig, logConfig, failureConfig }) {
+    this.namespaceMap = NamespaceMap.build(namespaceMap);
+
+    const defaultNamespace = namespaceMap[DEFAULT_NAMESPACE];
+    this.resourceRegistry = ResourceRegistry.build(defaultNamespace ? defaultNamespace.resourceRegistry.items : {});
+    this.clientRegistry = ClientRegistry.build(defaultNamespace ? defaultNamespace.clientRegistry.items : {});
+
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;
     this.logConfig = logConfig ?? new LogConfig();
@@ -28,18 +35,22 @@ class Config {
   }
 
   /**
-   * Returns the resource identified by the given name.
+   * Returns the resource identified by the given name, resolved as if the caller
+   * originated from the `default` namespace.
    *
    * @param {string} name The name of the resource to retrieve.
+   * @param {string|null} [namespace=null] Explicit target namespace, or null to resolve
+   * against `default` (falling back to `default` again when not found there either).
    * @returns {Resource} The matching Resource instance.
    * @throws {Error} Throws when no resource with the given name exists.
    */
-  getResource(name) {
-    return this.resourceRegistry.getItem(name);
+  getResource(name, namespace = null) {
+    return this.namespaceMap.getResource(DEFAULT_NAMESPACE, name, namespace);
   }
 
   /**
-   * Returns the client identified by the given name.
+   * Returns the client identified by the given name, resolved as if the caller
+   * originated from the `default` namespace.
    *
    * When `name` is `"default"` or not provided, the method first tries to
    * return the client registered under the `"default"` key.  If no such
@@ -49,11 +60,13 @@ class Config {
    * @see ClientRegistry#getClient for the client retrieval logic.
    *
    * @param {string} [name] The name of the client to retrieve.
+   * @param {string|null} [namespace=null] Explicit target namespace, or null to resolve
+   * against `default` (falling back to `default` again when not found there either).
    * @returns {Client} The matching Client instance.
    * @throws {ClientNotFound} Throws when the named or default client is not found.
    */
-  getClient(name) {
-    return this.clientRegistry.getClient(name);
+  getClient(name, namespace = null) {
+    return this.namespaceMap.getClient(DEFAULT_NAMESPACE, name, namespace);
   }
 
   /**

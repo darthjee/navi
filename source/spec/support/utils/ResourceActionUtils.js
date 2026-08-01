@@ -1,6 +1,7 @@
 import { LoggerUtils } from './LoggerUtils.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
+import { Namespace } from '../../../lib/registry/Namespace.js';
+import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ResourceFactory } from '../factories/ResourceFactory.js';
 
 /**
@@ -20,20 +21,24 @@ class ResourceActionUtils {
 
     afterEach(() => {
       JobRegistry.reset();
-      ResourceRegistry.reset();
+      NamespaceMap.reset();
     });
   }
 
   /**
-   * Builds a ResourceRegistry entry for the given resource name.
+   * Builds a NamespaceMap singleton containing a single namespace with the given resource registered.
    * @param {string} name - Resource name.
    * @param {Array} resourceRequests - Resource requests to register.
+   * @param {object} [options={}] - Additional options.
+   * @param {string} [options.namespace='default'] - The namespace to register the resource under.
    * @returns {object} Registered resource.
    */
-  static registerResource(name, resourceRequests) {
-    const resource = ResourceFactory.build({ name, resourceRequests });
+  static registerResource(name, resourceRequests, { namespace = 'default' } = {}) {
+    const resource = ResourceFactory.build({ name, resourceRequests, namespace });
 
-    ResourceRegistry.build({ [name]: resource });
+    NamespaceMap.build({
+      [namespace]: new Namespace({ name: namespace, resources: { [name]: resource } }),
+    });
 
     return resource;
   }

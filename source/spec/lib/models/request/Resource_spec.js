@@ -33,6 +33,30 @@ describe('Resource', () => {
 
       expect(resource.resourceRequests.every((rr) => rr.clientName === 'myClient')).toBeTrue();
     });
+
+    it('propagates an object-form client reference (with namespace) to each ResourceRequest', () => {
+      const resource = Resource.fromObject({
+        name,
+        client: { name: 'myClient', namespace: 'clients' },
+        resourceRequests,
+      });
+
+      expect(resource.resourceRequests.every((rr) => rr.clientName === 'myClient' && rr.clientNamespace === 'clients')).toBeTrue();
+    });
+
+    it('defaults the namespace to "default"', () => {
+      const resource = Resource.fromObject({ name, resourceRequests });
+
+      expect(resource.namespace).toBe('default');
+      expect(resource.resourceRequests.every((rr) => rr.namespace === 'default')).toBeTrue();
+    });
+
+    it('propagates a given namespace to the resource and its ResourceRequests', () => {
+      const resource = Resource.fromObject({ name, resourceRequests }, { namespace: 'paginated' });
+
+      expect(resource.namespace).toBe('paginated');
+      expect(resource.resourceRequests.every((rr) => rr.namespace === 'paginated')).toBeTrue();
+    });
   });
 
   describe('.fromListObject', () => {
@@ -64,6 +88,12 @@ describe('Resource', () => {
           ],
         }),
       ]);
+    });
+
+    it('propagates a given namespace to every built Resource', () => {
+      const mappedResources = Resource.fromListObject(resources, { namespace: 'paginated' });
+
+      expect(mappedResources.every((resource) => resource.namespace === 'paginated')).toBeTrue();
     });
   });
 });

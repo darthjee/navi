@@ -1,0 +1,5 @@
+namespace: clients
+clients:
+  non-default:
+    base_url: https://example.com
+    timeout: 5000

@@ -1,6 +1,7 @@
 import { JobRegistry } from '../../../../lib/background/JobRegistry.js';
 import { MissingActionResource } from '../../../../lib/exceptions/registry/MissingActionResource.js';
 import { MissingMappingVariable } from '../../../../lib/exceptions/registry/MissingMappingVariable.js';
+import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
 import { ResourceRequestAction } from '../../../../lib/models/request/ResourceRequestAction.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
@@ -141,6 +142,42 @@ describe('ResourceRequestAction', () => {
       ResourceRequestActionFactory.build({ resource: 'products' }).execute(responseWrapper);
 
       expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+    });
+
+    describe('namespace resolution', () => {
+      it('resolves the target resource from an explicit namespace', () => {
+        const resourceRequest = ResourceRequestFactory.build({ url: '/paginated/products.json' });
+        ResourceActionUtils.registerResource('products', [resourceRequest], { namespace: 'paginated' });
+
+        ResourceRequestActionFactory.build({ resource: 'products', namespace: 'paginated', originNamespace: 'default' })
+          .execute(responseWrapper);
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+          'ResourceRequestJob',
+          { resourceRequest, parameters: {} },
+        );
+      });
+
+      it('falls back to the default namespace when the origin namespace lookup fails', () => {
+        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
+        registerProductsResource(resourceRequest);
+
+        ResourceRequestActionFactory.build({ resource: 'products', originNamespace: 'paginated' })
+          .execute(responseWrapper);
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+          'ResourceRequestJob',
+          { resourceRequest, parameters: {} },
+        );
+      });
+
+      it('throws NamespaceNotFound when the explicit target namespace does not exist', () => {
+        registerProductsResource(ResourceRequestFactory.build({ url: '/products.json' }));
+        const action = ResourceRequestActionFactory.build({ resource: 'products', namespace: 'unknown' });
+
+        expect(() => action.execute(responseWrapper))
+          .toThrowMatching((error) => error instanceof NamespaceNotFound);
+      });
     });
   });
 });

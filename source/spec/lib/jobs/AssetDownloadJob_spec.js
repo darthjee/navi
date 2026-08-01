@@ -2,7 +2,7 @@ import { Job } from '../../../lib/background/Job.js';
 import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
 import { AssetDownloadJob } from '../../../lib/jobs/AssetDownloadJob.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
+import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
@@ -19,7 +19,7 @@ describe('AssetDownloadJob', () => {
     LoggerUtils.stubLoggerMethods();
     logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     client = ClientFactory.build({ baseUrl });
-    clientRegistry = ClientRegistryFactory.build({ default: client });
+    clientRegistry = NamespaceMapFactory.build({ clients: { default: client } });
     job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, status: 200, clientRegistry });
   });
 
@@ -84,7 +84,7 @@ describe('AssetDownloadJob', () => {
     describe('when a named client is specified', () => {
       it('uses the named client', async () => {
         const cdnClient = ClientFactory.build({ name: 'cdn', baseUrl: 'https://cdn.example.com' });
-        clientRegistry = ClientRegistryFactory.build({ cdn: cdnClient });
+        clientRegistry = NamespaceMapFactory.build({ clients: { cdn: cdnClient } });
         AxiosUtils.stubGet(200);
         job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, client: 'cdn', status: 200, clientRegistry });
         await expectAsync(job.perform(logContext)).toBeResolved();

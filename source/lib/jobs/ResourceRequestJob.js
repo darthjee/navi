@@ -18,7 +18,7 @@ class ResourceRequestJob extends Job {
    * @param {string} params.id - The unique identifier for this job.
    * @param {ResourceRequest} params.resourceRequest - The resource request associated with this job.
    * @param {object} params.parameters - Additional parameters for the request.
-   * @param {ClientRegistry} params.clients - Clients registry to be used in a request.
+   * @param {NamespaceMap} params.clients - The namespace map used to resolve the client for this request.
    */
   constructor({ id, resourceRequest, parameters, clients }) {
     super({ id });
@@ -87,7 +87,11 @@ class ResourceRequestJob extends Job {
    */
   #getClient() {
     if (!this.#client) {
-      this.#client = this.#clients.getClient(this.#resourceRequest.clientName);
+      this.#client = this.#clients.getClient(
+        this.#resourceRequest.namespace,
+        this.#resourceRequest.clientName,
+        this.#resourceRequest.clientNamespace,
+      );
     }
     return this.#client;
   }

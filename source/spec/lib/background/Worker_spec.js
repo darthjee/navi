@@ -9,7 +9,7 @@ import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
+import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
@@ -36,7 +36,7 @@ describe('Worker', () => {
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
-    clients = ClientRegistryFactory.build({});
+    clients = NamespaceMapFactory.build({ clients: {} });
     JobFactory.build('ResourceRequestJob', { attributes: { clients } });
     finished = new IdentifyableCollection();
     failed = new Queue();
@@ -73,7 +73,7 @@ describe('Worker', () => {
     beforeEach(() => {
       resourceRequest = ResourceRequestFactory.build({ url, status });
       client = ClientFactory.build({ baseUrl });
-      clients = ClientRegistryFactory.build({ default: client });
+      clients = NamespaceMapFactory.build({ clients: { default: client } });
       parameters = {};
 
       job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });

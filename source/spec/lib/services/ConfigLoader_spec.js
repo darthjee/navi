@@ -1,38 +1,31 @@
 import { ConfigurationFileNotFound } from '../../../lib/exceptions/config/ConfigurationFileNotFound.js';
+import { DuplicateNamespaceItem } from '../../../lib/exceptions/registry/DuplicateNamespaceItem.js';
+import { NamespaceNotFound } from '../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { WorkersConfig } from '../../../lib/models/configs/WorkersConfig.js';
 import { ConfigLoader } from '../../../lib/services/ConfigLoader.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
-import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
 
 describe('ConfigLoader', () => {
-  let expectedResources;
-  let expectedClients;
   let expectedWorkersConfig;
 
   describe('.fromFile', () => {
-    beforeEach(() => {
-      expectedResources = { categories: ResourceFactory.build() };
-    });
-
     describe('when the yaml file is valid', () => {
       let config;
 
       beforeEach(() => {
-        expectedClients = { default: ClientFactory.build({ timeout: 5000 }) };
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
 
         const configFilePath = FixturesUtils.getFixturePath('config/sample_config.yml');
         config = ConfigLoader.fromFile(configFilePath);
       });
 
-      it('returns mapped resources by name', () => {
-        expect(config.resources).toEqual(expectedResources);
+      it('returns a namespaceMap with the default namespace resources', () => {
+        expect(config.namespaceMap.default.resourceRegistry.getItem('categories')).toBeDefined();
       });
 
-      it('returns mapped clients by name', () => {
-        expect(config.clients).toEqual(expectedClients);
+      it('returns a namespaceMap with the default namespace clients', () => {
+        expect(config.namespaceMap.default.clientRegistry.getClient('default').baseUrl).toBe('https://example.com');
       });
 
       it('returns workers configuration', () => {
@@ -44,7 +37,6 @@ describe('ConfigLoader', () => {
       let config;
 
       beforeEach(() => {
-        expectedClients = { default: ClientFactory.build() };
         expectedWorkersConfig = new WorkersConfig({ quantity: 1 });
 
         const configFilePath = FixturesUtils.getFixturePath('config/missing_workers_config.yml');
@@ -52,11 +44,7 @@ describe('ConfigLoader', () => {
       });
 
       it('returns mapped resources by name', () => {
-        expect(config.resources).toEqual(expectedResources);
-      });
-
-      it('returns mapped clients by name', () => {
-        expect(config.clients).toEqual(expectedClients);
+        expect(config.namespaceMap.default.resourceRegistry.getItem('categories')).toBeDefined();
       });
 
       it('returns workers default configuration', () => {
@@ -116,13 +104,41 @@ describe('ConfigLoader', () => {
       });
 
       it('resolves env vars in base_url', () => {
-        expect(config.clients['default'].baseUrl).toEqual('https://resolved.example.com');
+        expect(config.namespaceMap.default.clientRegistry.getClient('default').baseUrl).toEqual('https://resolved.example.com');
       });
 
       it('resolves env vars in headers', () => {
-        expect(config.clients['default'].headers).toEqual({
+        expect(config.namespaceMap.default.clientRegistry.getClient('default').headers).toEqual({
           Authorization: 'Bearer resolved-token',
         });
+      });
+    });
+
+    describe('when the config is split across multiple included files', () => {
+      it('groups resources/clients by namespace across the whole include chain', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/split_config/config.yml');
+
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        expect(config.namespaceMap.default.resourceRegistry.getItem('people')).toBeDefined();
+        expect(config.namespaceMap.paginated.resourceRegistry.getItem('paginated_people')).toBeDefined();
+        expect(config.namespaceMap.clients.clientRegistry.getClient('non-default')).toBeDefined();
+      });
+    });
+
+    describe('when two included files declare the same resource name in the same namespace', () => {
+      it('throws DuplicateNamespaceItem', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/duplicate_namespace/config.yml');
+
+        expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(DuplicateNamespaceItem);
+      });
+    });
+
+    describe('when an action references a namespace that does not exist', () => {
+      it('throws NamespaceNotFound eagerly at load time', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/unresolvable_namespace/config.yml');
+
+        expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(NamespaceNotFound);
       });
     });
   });

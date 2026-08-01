@@ -1,4 +1,4 @@
-import { ClientRegistryFactory } from './ClientRegistryFactory.js';
+import { NamespaceMapFactory } from './NamespaceMapFactory.js';
 import { JobFactory } from '../../../lib/background/JobFactory.js';
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 
@@ -11,10 +11,10 @@ class JobRegistryFactory {
    * The factory is passed explicitly to bypass the global JobFactory registry,
    * keeping each test instance self-contained and free from global state.
    * @param {object} [params={}] - Optional attributes.
-   * @param {ClientRegistry} [params.clients] - The client registry. Defaults to ClientRegistryFactory.build().
+   * @param {NamespaceMap} [params.clients] - The namespace map. Defaults to NamespaceMapFactory.build().
    * @returns {JobRegistry} A new JobRegistry instance.
    */
-  static build({ clients = ClientRegistryFactory.build() } = {}) {
+  static build({ clients = NamespaceMapFactory.build() } = {}) {
     const factory = new JobFactory({ attributes: { clients } });
     return new JobRegistry({ factory });
   }

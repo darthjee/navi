@@ -13,17 +13,29 @@ import { Resource } from '../models/request/Resource.js';
  * @author darthjee
  */
 class ConfigParser {
+  #namespace;
+  #strict;
+
   /**
    * @param {object} config Parsed configuration object from a YAML file.
+   * @param {object} [options={}] Additional options.
+   * @param {string} [options.namespace='default'] The namespace `resources`/`clients` in this
+   * file were declared under.
+   * @param {boolean} [options.strict=true] When true, missing top-level `resources`/`clients`
+   * keys raise. When false (used for files parsed as part of an `include:` chain), missing
+   * keys default to an empty map instead of raising.
    */
-  constructor(config) {
+  constructor(config, { namespace = 'default', strict = true } = {}) {
     this.config = config;
+    this.#namespace = namespace;
+    this.#strict = strict;
   }
 
   /**
    * Creates a mapped configuration from a plain parsed YAML object.
    *
    * @param {object} config Parsed configuration object from a YAML file.
+   * @param {object} [options={}] Additional options, forwarded to the constructor.
    * @returns {{
    * resources: Record<string, Resource>,
    * clients: Record<string, Client>,
@@ -31,8 +43,8 @@ class ConfigParser {
    * }} Mapped resources and clients by name. and workers configuration.
    * @throws {Error} Throws when the config is invalid or missing required keys.
    */
-  static fromObject(config) {
-    return new ConfigParser(config).parse();
+  static fromObject(config, options = {}) {
+    return new ConfigParser(config, options).parse();
   }
 
   /**
@@ -124,7 +136,7 @@ class ConfigParser {
   #loadResources() {
     this.#requireKey('resources', MissingResourceConfig);
 
-    return Resource.fromListObject(this.config.resources);
+    return Resource.fromListObject(this.config?.resources ?? {}, { namespace: this.#namespace });
   }
 
   /**
@@ -135,17 +147,21 @@ class ConfigParser {
   #loadClients() {
     this.#requireKey('clients', MissingClientsConfig);
 
-    return Client.fromListObject(this.config.clients);
+    return Client.fromListObject(this.config?.clients ?? {}, { namespace: this.#namespace });
   }
 
   /**
    * Validates that the config object contains the specified key.
+   * Skipped entirely (no error, missing key defaults to an empty map by the caller)
+   * when this parser was built in non-strict mode (see the constructor `strict` option).
    * @param {string} key - The key to check for.
    * @param {Function} ExceptionClass - The exception class to throw if the key is missing.
    * @returns {void}
-   * @throws {Error} Throws if the config is invalid or missing the key.
+   * @throws {Error} Throws if the config is invalid or missing the key (strict mode only).
    */
   #requireKey(key, ExceptionClass) {
+    if (!this.#strict) return;
+
     if (!this.config || typeof this.config !== 'object' || !(key in this.config)) {
       throw new ExceptionClass();
     }

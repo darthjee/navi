@@ -2,7 +2,7 @@ import { AssetRequestEnqueuer } from '../../../lib/enqueuers/AssetRequestEnqueue
 import { Application } from '../../../lib/services/Application.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
-import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
+import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 
 describe('AssetRequestEnqueuer', () => {
   let rawHtml;
@@ -19,7 +19,7 @@ describe('AssetRequestEnqueuer', () => {
     rawHtml = '<html><head><link rel="stylesheet" href="/styles.css"></head></html>';
     assetRequest = AssetRequestFactory.build({ selector: 'link[rel="stylesheet"]', attribute: 'href' });
     jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
-    clientRegistry = ClientRegistryFactory.build();
+    clientRegistry = NamespaceMapFactory.build();
   });
 
   describe('#enqueue', () => {

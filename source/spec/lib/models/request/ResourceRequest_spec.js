@@ -51,6 +51,17 @@ describe('ResourceRequest', () => {
       expect(resourceRequests[0].actions.length).toBe(1);
     });
 
+    it('assigns the given namespace to each ResourceRequest, defaulting to "default"', () => {
+      const [withNamespace] = ResourceRequest.fromList(
+        [{ url: '/categories.json', status: 200 }],
+        { namespace: 'paginated' },
+      );
+      const [withoutNamespace] = ResourceRequest.fromList([{ url: '/categories.json', status: 200 }]);
+
+      expect(withNamespace.namespace).toBe('paginated');
+      expect(withoutNamespace.namespace).toBe('default');
+    });
+
     describe('with assets', () => {
       it('parses assets into AssetRequest instances', () => {
         const [resourceRequest] = ResourceRequest.fromList([
@@ -73,8 +84,38 @@ describe('ResourceRequest', () => {
       expect(ResourceRequestFactory.build().clientName).toBeUndefined();
     });
 
-    it('returns the clientName when set', () => {
+    it('returns the clientName when set as a bare string', () => {
       expect(ResourceRequestFactory.build({ clientName: 'myClient' }).clientName).toBe('myClient');
+    });
+
+    it('returns the name when set as an object with an explicit namespace', () => {
+      const request = ResourceRequestFactory.build({ clientName: { name: 'myClient', namespace: 'clients' } });
+      expect(request.clientName).toBe('myClient');
+    });
+  });
+
+  describe('#clientNamespace', () => {
+    it('returns null when no clientName is set', () => {
+      expect(ResourceRequestFactory.build().clientNamespace).toBeNull();
+    });
+
+    it('returns null when clientName is a bare string (shorthand)', () => {
+      expect(ResourceRequestFactory.build({ clientName: 'myClient' }).clientNamespace).toBeNull();
+    });
+
+    it('returns the explicit namespace when clientName is given as an object', () => {
+      const request = ResourceRequestFactory.build({ clientName: { name: 'myClient', namespace: 'clients' } });
+      expect(request.clientNamespace).toBe('clients');
+    });
+  });
+
+  describe('#namespace', () => {
+    it('defaults to "default"', () => {
+      expect(ResourceRequestFactory.build().namespace).toBe('default');
+    });
+
+    it('returns the given namespace', () => {
+      expect(ResourceRequestFactory.build({ namespace: 'paginated' }).namespace).toBe('paginated');
     });
   });
 

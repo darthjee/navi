@@ -2,7 +2,7 @@ import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
 import { ResponseWrapper } from '../../../lib/models/response/ResponseWrapper.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { ClientRegistryFactory } from '../../support/factories/ClientRegistryFactory.js';
+import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
@@ -45,7 +45,7 @@ describe('ResourceRequestJob', () => {
     LoggerUtils.stubLoggerMethods();
     logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
     client = ClientFactory.build({ baseUrl });
-    clients = ClientRegistryFactory.build({ default: client });
+    clients = NamespaceMapFactory.build({ clients: { default: client } });
 
     rebuildJob();
   });
@@ -229,6 +229,35 @@ describe('ResourceRequestJob', () => {
 
         expect(resourceRequest.enqueueAssets).toHaveBeenCalledTimes(1);
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('namespace-aware client resolution', () => {
+      let otherClient;
+
+      beforeEach(() => {
+        otherClient = ClientFactory.build({ name: 'other', baseUrl: 'http://other.example.com' });
+        clients = NamespaceMapFactory.build({
+          namespace: 'paginated',
+          clients: { other: otherClient },
+        });
+        resourceRequest = ResourceRequestFactory.build({
+          url,
+          status,
+          clientName: { name: 'other', namespace: 'paginated' },
+          namespace: 'default',
+        });
+        parameters = {};
+        job = ResourceRequestJobFactory.build({ resourceRequest, clients, parameters });
+        stubEnqueueMethods();
+      });
+
+      it('resolves the client from the explicit target namespace', async () => {
+        response = AxiosUtils.stubGet(200, '[]');
+
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+
+        expect(axios.get).toHaveBeenCalledWith('http://other.example.com/categories.json', expectedRequestOptions);
       });
     });
   });

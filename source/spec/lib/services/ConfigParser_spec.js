@@ -173,5 +173,45 @@ describe('ConfigParser', () => {
     it('returns null for failureConfig when the config has no failure key', () => {
       expect(parseFixture('sample_config.yml').failureConfig).toBeNull();
     });
+
+    describe('when a namespace option is given', () => {
+      it('propagates the namespace to every parsed resource', () => {
+        const config = ConfigParser.fromObject(
+          FixturesUtils.loadYamlFixture('config/sample_config.yml'),
+          { namespace: 'paginated' },
+        );
+
+        expect(config.resources.categories.namespace).toBe('paginated');
+      });
+
+      it('propagates the namespace to every parsed client', () => {
+        const config = ConfigParser.fromObject(
+          FixturesUtils.loadYamlFixture('config/sample_config.yml'),
+          { namespace: 'paginated' },
+        );
+
+        expect(config.clients.default.namespace).toBe('paginated');
+      });
+    });
+
+    describe('when strict is false', () => {
+      it('defaults resources to an empty map instead of throwing when the key is missing', () => {
+        const config = ConfigParser.fromObject(
+          FixturesUtils.loadYamlFixture('config/missing_resources_sample_config.yml'),
+          { strict: false },
+        );
+
+        expect(config.resources).toEqual({});
+      });
+
+      it('defaults clients to an empty map instead of throwing when the key is missing', () => {
+        const config = ConfigParser.fromObject(
+          FixturesUtils.loadYamlFixture('config/missing_clients_sample_config.yml'),
+          { strict: false },
+        );
+
+        expect(config.clients).toEqual({});
+      });
+    });
   });
 });

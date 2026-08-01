@@ -9,12 +9,13 @@ class ResourceRequestFactory {
    * @param {object} [params={}] - Optional attributes.
    * @param {string} [params.url='/categories.json'] - The URL template.
    * @param {number} [params.status=200] - The expected HTTP status code.
-   * @param {string} [params.clientName] - The name of the client to use for this request.
+   * @param {string|{name: string, namespace: string}} [params.clientName] - The client reference to use for this request.
    * @param {Array} [params.actions] - List of raw action config objects.
+   * @param {string} [params.namespace='default'] - The namespace of the owning Resource.
    * @returns {ResourceRequest} A new ResourceRequest instance.
    */
-  static build({ url = '/categories.json', status = 200, clientName = undefined, actions = [] } = {}) {
-    return new ResourceRequest({ url, status, clientName, actions });
+  static build({ url = '/categories.json', status = 200, clientName = undefined, actions = [], namespace = 'default' } = {}) {
+    return new ResourceRequest({ url, status, clientName, actions, namespace });
   }
 }
 

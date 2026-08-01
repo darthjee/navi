@@ -1,0 +1,10 @@
+namespace: paginated
+resources:
+  paginated_people:
+    - url: /people.json?page={page}
+      status: 200
+      actions:
+        - resource: person
+          namespace: default
+          parameters:
+            id: parsedBody.id
