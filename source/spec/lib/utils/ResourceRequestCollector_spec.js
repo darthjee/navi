@@ -80,5 +80,19 @@ describe('ResourceRequestCollector', () => {
         productsRequest,
       ]);
     });
+
+    it('excludes disabled requests even when they need no parameters', () => {
+      const disabledRequest = ResourceRequestFactory.build({ url: '/disabled.json', disabled: true });
+      const disabledResource = ResourceFactory.build({
+        name: 'disabled',
+        resourceRequests: [categoriesRequest, disabledRequest],
+      });
+      const registry = new ResourceRegistry({ disabled: disabledResource });
+      const collector = new ResourceRequestCollector(registry);
+
+      expect(collector.requestsNeedingNoParams()).toEqual([
+        categoriesRequest,
+      ]);
+    });
   });
 });

@@ -80,12 +80,13 @@ Names refer to entries in the config's top-level `resources:` map. If the body i
   "enqueued": ["home_page"],
   "skippedResources": [
     { "name": "products", "reason": "needs_params" },
-    { "name": "unknown_resource", "reason": "not_found" }
+    { "name": "unknown_resource", "reason": "not_found" },
+    { "name": "legacy_search", "reason": "disabled" }
   ]
 }
 ```
 
-A resource is skipped (never partially enqueued) when its name isn't found in the registry (`not_found`) or when any of its requests needs parameters that weren't supplied (`needs_params`). When the body is empty/omitted, `enqueued` and `skippedResources` are always empty — the default bulk enqueue works at the request level, not by resource name.
+A resource is skipped (never partially enqueued) when its name isn't found in the registry (`not_found`), when any of its requests needs parameters that weren't supplied (`needs_params`), or when any of its requests is marked `disabled: true` / `enabled: false` (`disabled`). When the body is empty/omitted, `enqueued` and `skippedResources` are always empty — the default bulk enqueue works at the request level, not by resource name.
 
 ## Serialization
 

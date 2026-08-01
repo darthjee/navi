@@ -65,6 +65,8 @@ class ResourceRequestAction {
     const resource = this.#namespaceMap.getResource(this.originNamespace, this.resource, this.namespace);
 
     for (const resourceRequest of resource.resourceRequests) {
+      if (resourceRequest.disabled) continue;
+
       this.#jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: vars });
     }
   }

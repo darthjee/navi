@@ -90,6 +90,8 @@ class ResourceRequestPaginatedAction {
     for (const page of pages) {
       const pageParameters = { ...parameters, [this.#pagination.pageKey]: page };
       for (const resourceRequest of resource.resourceRequests) {
+        if (resourceRequest.disabled) continue;
+
         this.#jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: pageParameters });
       }
     }

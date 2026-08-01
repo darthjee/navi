@@ -23,12 +23,12 @@ class ResourceRequestCollector {
 
   /**
    * Returns only the ResourceRequest instances that do not require parameter substitution,
-   * i.e. those whose URL templates contain no {:placeholder} tokens.
+   * i.e. those whose URL templates contain no {:placeholder} tokens, and that are not disabled.
    * These are safe to enqueue at startup without any additional context.
-   * @returns {Array<ResourceRequest>} Resource requests that need no parameters.
+   * @returns {Array<ResourceRequest>} Resource requests that need no parameters and are enabled.
    */
   requestsNeedingNoParams() {
-    return this.allRequests().filter((request) => !request.needsParams());
+    return this.allRequests().filter((request) => !request.needsParams() && !request.disabled);
   }
 }
 
