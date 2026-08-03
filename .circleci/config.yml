@@ -35,8 +35,16 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - jasmine-client:
+          filters:
+            tags:
+              only: /.*/
+      - checks-client:
+          filters:
+            tags:
+              only: /.*/
       - coverage-final:
-          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend]
+          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client]
           filters:
             tags:
               only: /.*/
@@ -213,6 +221,36 @@ jobs:
       - run:
           name: Upload coverage to Codacy (partial)
           command: cd frontend; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+
+  jasmine-client:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd clients/node; yarn install
+      - run:
+          name: Unit tests (Jasmine + c8 coverage)
+          command: cd clients/node; npm run coverage
+      - run:
+          name: Upload coverage to Codacy (partial)
+          command: cd clients/node; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+
+  checks-client:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd clients/node; yarn install
+      - run:
+          name: Lint
+          command: cd clients/node; npm run lint
+      - run:
+          name: Duplication report (JSCPD)
+          command: cd clients/node; npm run report
 
   coverage-final:
     docker:

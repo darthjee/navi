@@ -23,6 +23,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Web Server](docs/agents/web-server.md) | The optional Express web server built into the main application: routes, request handlers, serializers, error handling, and static-file serving. |
 | [Frontend](docs/agents/frontend.md) | The React SPA monitoring dashboard: technology stack, routing, API clients, component hierarchy, build process, and integration with the backend. |
 | [Dev Proxy](docs/agents/dev-proxy.md) | The Tent-powered reverse proxy (`dev/proxy`) used in local development: configuration files, caching behaviour, request flow, and how to extend the rules. |
+| [Client (Node)](docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`): package layout, the `/api/*` surface it wraps, CLI usage, testing, and CI jobs. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
 
