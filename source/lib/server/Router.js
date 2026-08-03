@@ -3,6 +3,9 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import { AssetsHandler } from './handlers/AssetsHandler.js';
 import { HandlerConfig } from '../common/server/HandlerConfig.js';
+import { ApiConfigHandler } from './handlers/api/ApiConfigHandler.js';
+import { ApiEngineStartHandler } from './handlers/api/ApiEngineStartHandler.js';
+import { ApiEngineStopHandler } from './handlers/api/ApiEngineStopHandler.js';
 import { EngineContinueHandler } from './handlers/engine/EngineContinueHandler.js';
 import { EnginePauseHandler } from './handlers/engine/EnginePauseHandler.js';
 import { EngineRestartHandler } from './handlers/engine/EngineRestartHandler.js';
@@ -77,12 +80,22 @@ class Router {
       '/engine/shutdown':  new HandlerConfig(EngineShutdownHandler),
     };
 
+    const POST_ROUTES = {
+      '/api/config':        new HandlerConfig(ApiConfigHandler, this.#webConfig.apiToken),
+      '/api/engine/start':  new HandlerConfig(ApiEngineStartHandler, this.#webConfig.apiToken),
+      '/api/engine/stop':   new HandlerConfig(ApiEngineStopHandler, this.#webConfig.apiToken),
+    };
+
     Object.entries(GET_ROUTES).forEach(([route, handler]) => {
       register.register({ route, handler });
     });
 
     Object.entries(PATCH_ROUTES).forEach(([route, handler]) => {
       register.registerPatch({ route, handler });
+    });
+
+    Object.entries(POST_ROUTES).forEach(([route, handler]) => {
+      register.registerPost({ route, handler });
     });
 
     router.use(express.static(staticDir));

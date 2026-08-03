@@ -138,6 +138,43 @@ describe('ApplicationInstance', () => {
       const result = await instance.start();
       expect(result).toBeUndefined();
     });
+
+    describe('when called with { enqueue: false }', () => {
+      it('transitions to running without enqueueing anything', async () => {
+        await instance.stop();
+        spyOn(instance.engine, 'resume');
+
+        const result = await instance.start([], { enqueue: false });
+
+        expect(instance.engine.resume).toHaveBeenCalled();
+        expect(instance.status()).toBe('running');
+        expect(instance.enqueueFirstJobs).not.toHaveBeenCalled();
+        expect(result).toEqual({ enqueued: [], skippedResources: [] });
+      });
+
+      it('does not call enqueueResources', async () => {
+        await instance.stop();
+        spyOn(instance, 'enqueueResources');
+
+        await instance.start(['home_page'], { enqueue: false });
+
+        expect(instance.enqueueResources).not.toHaveBeenCalled();
+      });
+
+      it('still emits a start event on EngineEvents', async () => {
+        await instance.stop();
+        spyOn(EngineEvents, 'emit');
+
+        await instance.start([], { enqueue: false });
+
+        expect(EngineEvents.emit).toHaveBeenCalledWith('start');
+      });
+
+      it('returns undefined when not stopped', async () => {
+        const result = await instance.start([], { enqueue: false });
+        expect(result).toBeUndefined();
+      });
+    });
   });
 
   describe('#enqueueResources', () => {
