@@ -1,5 +1,4 @@
 import { ConfigurationFileNotFound } from '../../../lib/exceptions/config/ConfigurationFileNotFound.js';
-import { DuplicateNamespaceItem } from '../../../lib/exceptions/registry/DuplicateNamespaceItem.js';
 import { NamespaceNotFound } from '../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { WorkersConfig } from '../../../lib/models/configs/WorkersConfig.js';
 import { ConfigLoader } from '../../../lib/services/ConfigLoader.js';
@@ -127,10 +126,13 @@ describe('ConfigLoader', () => {
     });
 
     describe('when two included files declare the same resource name in the same namespace', () => {
-      it('throws DuplicateNamespaceItem', () => {
+      it('replaces on collision, the later included file winning', () => {
         const configFilePath = FixturesUtils.getFixturePath('config/duplicate_namespace/config.yml');
 
-        expect(() => ConfigLoader.fromFile(configFilePath)).toThrowError(DuplicateNamespaceItem);
+        const config = ConfigLoader.fromFile(configFilePath);
+
+        const [request] = config.namespaceMap.default.resourceRegistry.getItem('categories').resourceRequests;
+        expect(request.url).toBe('/other-categories.json');
       });
     });
 

@@ -22,7 +22,18 @@ class NamedRegistry {
    * @param {object} items An object mapping item names to their corresponding instances.
    */
   constructor(items) {
+    this.replaceItems(items);
+  }
+
+  /**
+   * Replaces the registry's items, invalidating any memoized {@link #size} so it
+   * reflects the new item count on the next call.
+   * @param {object} items An object mapping item names to their corresponding instances.
+   * @returns {void}
+   */
+  replaceItems(items) {
     this.items = items;
+    this.#size = undefined;
   }
 
   /**

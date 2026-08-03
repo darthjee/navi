@@ -1,7 +1,8 @@
 import { HandlerConfig } from '../../../../lib/common/server/HandlerConfig.js';
 import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { Link } from '../../../../lib/models/configs/Link.js';
-import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
+import { Namespace } from '../../../../lib/registry/Namespace.js';
+import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { LinksHandler } from '../../../../lib/server/handlers/LinksHandler.js';
 import { Client } from '../../../../lib/services/Client.js';
 
@@ -9,15 +10,17 @@ describe("describe('LinksHandler'", () => {
   let res;
 
   beforeEach(() => {
-    ClientRegistry.reset();
-    ClientRegistry.build({
-      default: new Client({ name: 'default', baseUrl: 'https://example.com' }),
+    NamespaceMap.build({
+      default: new Namespace({
+        name: 'default',
+        clients: { default: new Client({ name: 'default', baseUrl: 'https://example.com' }) },
+      }),
     });
     res = { json: jasmine.createSpy('json') };
   });
 
   afterEach(() => {
-    ClientRegistry.reset();
+    NamespaceMap.reset();
   });
 
   it('is an instance of RequestHandlerExecutor', () => {
@@ -46,9 +49,12 @@ describe("describe('LinksHandler'", () => {
 
     describe('when clients have link text configured', () => {
       it('uses the configured text instead of client key', () => {
-        ClientRegistry.reset();
-        ClientRegistry.build({
-          default: new Client({ name: 'default', baseUrl: 'https://example.com', linkText: 'Default Domain' }),
+        NamespaceMap.reset();
+        NamespaceMap.build({
+          default: new Namespace({
+            name: 'default',
+            clients: { default: new Client({ name: 'default', baseUrl: 'https://example.com', linkText: 'Default Domain' }) },
+          }),
         });
 
         new LinksHandler({}, res, []).handle();
@@ -61,6 +67,25 @@ describe("describe('LinksHandler'", () => {
 
     describe('when no links are configured', () => {
       it('responds with only client-derived links', () => {
+        new LinksHandler({}, res, []).handle();
+
+        expect(res.json).toHaveBeenCalledWith({
+          links: [{ text: 'default', url: 'https://example.com' }],
+        });
+      });
+    });
+
+    describe('when a namespace other than default has clients', () => {
+      it('does not include them in the response', () => {
+        NamespaceMap.include([
+          {
+            namespace: 'other',
+            resources: {},
+            clients: { extra: { base_url: 'https://extra.example.com' } },
+            filePath: 'other.yml',
+          },
+        ]);
+
         new LinksHandler({}, res, []).handle();
 
         expect(res.json).toHaveBeenCalledWith({

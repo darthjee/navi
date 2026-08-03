@@ -1,5 +1,4 @@
 import { LogConfig } from './LogConfig.js';
-import { ClientRegistry } from '../../registry/ClientRegistry.js';
 import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { ResourceRegistry } from '../../registry/ResourceRegistry.js';
 import { ConfigLoader } from '../../services/ConfigLoader.js';
@@ -25,8 +24,7 @@ class Config {
     this.namespaceMap = NamespaceMap.build(namespaceMap);
 
     const defaultNamespace = namespaceMap[DEFAULT_NAMESPACE];
-    this.resourceRegistry = ResourceRegistry.build(defaultNamespace ? defaultNamespace.resourceRegistry.items : {});
-    this.clientRegistry = ClientRegistry.build(defaultNamespace ? defaultNamespace.clientRegistry.items : {});
+    this.resourceRegistry = defaultNamespace ? defaultNamespace.resourceRegistry : new ResourceRegistry({});
 
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;

@@ -1,27 +1,19 @@
-import { DuplicateNamespaceItem } from '../../../../lib/exceptions/registry/DuplicateNamespaceItem.js';
 import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
 import { LogConfig } from '../../../../lib/models/configs/LogConfig.js';
 import { WorkersConfig } from '../../../../lib/models/configs/WorkersConfig.js';
-import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { ResourceRegistry } from '../../../../lib/registry/ResourceRegistry.js';
-import { ClientFactory } from '../../../support/factories/ClientFactory.js';
-import { ClientRegistryFactory } from '../../../support/factories/ClientRegistryFactory.js';
 import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
 
 describe('Config', () => {
   let expectedResources;
-  let expectedClients;
-  let expectedClientRegistry;
   let expectedResourceRegistry;
   let expectedWorkersConfig;
 
   afterEach(() => {
-    ClientRegistry.reset();
-    ResourceRegistry.reset();
     NamespaceMap.reset();
   });
 
@@ -31,10 +23,6 @@ describe('Config', () => {
         expectedResources = {
           categories: ResourceFactory.build(),
         };
-        expectedClients = {
-          default: ClientFactory.build({ timeout: 5000 }),
-        };
-        expectedClientRegistry = ClientRegistryFactory.build(expectedClients);
         expectedResourceRegistry = new ResourceRegistry(expectedResources);
         expectedWorkersConfig = new WorkersConfig({ quantity: 5 });
       });
@@ -46,7 +34,7 @@ describe('Config', () => {
 
         expect(config instanceof Config).toBeTrue();
         expect(config.resourceRegistry).toEqual(expectedResourceRegistry);
-        expect(config.clientRegistry).toEqual(expectedClientRegistry);
+        expect(config.clientRegistry).toBeUndefined();
         expect(config.workersConfig).toEqual(expectedWorkersConfig);
         expect(config.logConfig instanceof LogConfig).toBeTrue();
         expect(config.logConfig.size).toBe(100);
@@ -134,10 +122,13 @@ describe('Config', () => {
     });
 
     describe('when two included files declare the same resource name in the same namespace', () => {
-      it('throws DuplicateNamespaceItem', () => {
+      it('replaces on collision, the later included file winning', () => {
         const configFilePath = FixturesUtils.getFixturePath('config/duplicate_namespace/config.yml');
 
-        expect(() => Config.fromFile(configFilePath)).toThrowError(DuplicateNamespaceItem);
+        const config = Config.fromFile(configFilePath);
+
+        const [request] = config.getResource('categories').resourceRequests;
+        expect(request.url).toBe('/other-categories.json');
       });
     });
 

@@ -1,7 +1,9 @@
 import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { Link } from '../../models/configs/Link.js';
-import { ClientRegistry } from '../../registry/ClientRegistry.js';
+import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { LinksSerializer } from '../../serializers/LinksSerializer.js';
+
+const DEFAULT_NAMESPACE = 'default';
 
 /**
  * Executes request-handling behaviour for GET /links.json.
@@ -38,10 +40,13 @@ class LinksHandler extends RequestHandler {
   }
 
   /**
+   * Returns links derived from the `default` namespace's clients only, so a
+   * namespace added later (e.g. via a future config-addition endpoint) does not
+   * silently leak its clients into the public `/links.json` response.
    * @returns {Array<Link>}
    */
   #clientLinks() {
-    return ClientRegistry.all().map((client) => (
+    return NamespaceMap.getNamespace(DEFAULT_NAMESPACE).clientRegistry.filter(() => true).map((client) => (
       new Link({ url: client.baseUrl, text: client.linkText ?? client.name })
     ));
   }

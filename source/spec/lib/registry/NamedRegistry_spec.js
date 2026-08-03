@@ -104,4 +104,25 @@ describe('NamedRegistry', () => {
       expect(emptyRegistry.size()).toBe(0);
     });
   });
+
+  describe('#replaceItems', () => {
+    it('makes getItem/has resolve against the new items', () => {
+      const registry = new NamedRegistry({ foo: 'bar' });
+
+      registry.replaceItems({ baz: 'qux' });
+
+      expect(registry.has('foo')).toBe(false);
+      expect(registry.has('baz')).toBe(true);
+      expect(registry.getItem('baz')).toBe('qux');
+    });
+
+    it('reflects the new item count in size(), even when size() was already called once before', () => {
+      const registry = new NamedRegistry({ foo: 1, bar: 2 });
+      expect(registry.size()).toBe(2);
+
+      registry.replaceItems({ foo: 1, bar: 2, baz: 3 });
+
+      expect(registry.size()).toBe(3);
+    });
+  });
 });

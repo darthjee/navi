@@ -113,6 +113,103 @@ describe('NamespaceMap', () => {
         expect(namespaceMap.getClient('clients', 'default', null)).toBe(clientsClient);
       });
     });
+
+    describe('#include', () => {
+      let namespaceMap;
+
+      beforeEach(() => {
+        namespaceMap = new NamespaceMap(namespaces);
+      });
+
+      it('adds a brand-new namespace', () => {
+        const result = namespaceMap.include([
+          {
+            namespace: 'fresh',
+            resources: { widgets: [{ url: '/widgets.json', status: 200 }] },
+            clients: {},
+            filePath: 'fresh.yml',
+          },
+        ]);
+
+        expect(result).toBe(namespaceMap);
+        expect(namespaceMap.getResource('default', 'widgets', 'fresh')).toBeDefined();
+      });
+
+      it('appends a resource to an already-existing namespace, preserving what was already there', () => {
+        namespaceMap.include([
+          {
+            namespace: 'default',
+            resources: { extra: [{ url: '/extra.json', status: 200 }] },
+            clients: {},
+            filePath: 'extra.yml',
+          },
+        ]);
+
+        expect(namespaceMap.getResource('default', 'people', null)).toBe(defaultResource);
+        expect(namespaceMap.getResource('default', 'extra', null)).toBeDefined();
+      });
+
+      it('replaces an already-registered resource on name collision', () => {
+        namespaceMap.include([
+          {
+            namespace: 'default',
+            resources: { people: [{ url: '/new-people.json', status: 200 }] },
+            clients: {},
+            filePath: 'update.yml',
+          },
+        ]);
+
+        const resource = namespaceMap.getResource('default', 'people', null);
+        expect(resource).not.toBe(defaultResource);
+        expect(resource.resourceRequests[0].url).toBe('/new-people.json');
+      });
+
+      it('replaces an already-registered client on name collision', () => {
+        namespaceMap.include([
+          {
+            namespace: 'default',
+            resources: {},
+            clients: { default: { base_url: 'https://updated.example.com' } },
+            filePath: 'update.yml',
+          },
+        ]);
+
+        const client = namespaceMap.getClient('default', 'default', null);
+        expect(client).not.toBe(defaultClient);
+        expect(client.baseUrl).toBe('https://updated.example.com');
+      });
+
+      it('still validates cross-references, rejecting an added resource with an unresolvable reference', () => {
+        expect(() => namespaceMap.include([
+          {
+            namespace: 'default',
+            resources: {
+              broken: [{ url: '/broken.json', status: 200, actions: [{ resource: 'missing' }] }],
+            },
+            clients: {},
+            filePath: 'broken.yml',
+          },
+        ])).toThrowError(ResourceNotFound);
+      });
+
+      it('is observed immediately by a pre-existing reference to the same singleton, with no re-fetch needed', () => {
+        NamespaceMap.build(namespaces);
+        const staticSnapshotBefore = () => NamespaceMap.getResource('default', 'people', null);
+        expect(staticSnapshotBefore()).toBe(defaultResource);
+
+        NamespaceMap.include([
+          {
+            namespace: 'default',
+            resources: { people: [{ url: '/new-people.json', status: 200 }] },
+            clients: {},
+            filePath: 'update.yml',
+          },
+        ]);
+
+        expect(staticSnapshotBefore()).not.toBe(defaultResource);
+        expect(staticSnapshotBefore().resourceRequests[0].url).toBe('/new-people.json');
+      });
+    });
   });
 
   describe('.build', () => {
@@ -156,6 +253,35 @@ describe('NamespaceMap', () => {
     it('delegates to the singleton instance', () => {
       NamespaceMap.build(namespaces);
       expect(NamespaceMap.getClient('default', 'default')).toBe(defaultClient);
+    });
+  });
+
+  describe('.getNamespace', () => {
+    it('delegates to the singleton instance', () => {
+      NamespaceMap.build(namespaces);
+      expect(NamespaceMap.getNamespace('paginated')).toBe(namespaces.paginated);
+    });
+
+    it('throws NamespaceNotFound when the namespace does not exist', () => {
+      NamespaceMap.build(namespaces);
+      expect(() => NamespaceMap.getNamespace('unknown')).toThrowError(NamespaceNotFound);
+    });
+  });
+
+  describe('.include', () => {
+    it('delegates to the singleton instance', () => {
+      NamespaceMap.build(namespaces);
+
+      NamespaceMap.include([
+        {
+          namespace: 'fresh',
+          resources: { widgets: [{ url: '/widgets.json', status: 200 }] },
+          clients: {},
+          filePath: 'fresh.yml',
+        },
+      ]);
+
+      expect(NamespaceMap.getResource('default', 'widgets', 'fresh')).toBeDefined();
     });
   });
 });

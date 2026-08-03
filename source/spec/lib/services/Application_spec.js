@@ -67,9 +67,8 @@ describe('Application', () => {
         });
       });
 
-      it('uses clientRegistry instead of exposing config.clients', () => {
+      it('does not expose a config.clients property', () => {
         expect(app.config.clients).toBeUndefined();
-        expect(app.config.clientRegistry).toBeDefined();
       });
 
       it('initializes workers using the configured quantity', () => {
