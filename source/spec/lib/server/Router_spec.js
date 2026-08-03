@@ -1,9 +1,7 @@
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
-import { Client } from '../../../lib/services/Client.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
@@ -12,7 +10,6 @@ describe('Router', () => {
 
   beforeEach(() => {
     Logger.suppress();
-    ClientRegistry.build({ default: new Client({ name: 'default', baseUrl: 'https://example.com' }) });
     JobRegistry.build({ cooldown: -1 });
     LogRegistry.build();
     WorkersRegistry.build({ quantity: 0 });
@@ -20,7 +17,6 @@ describe('Router', () => {
   });
 
   afterEach(() => {
-    ClientRegistry.reset();
     JobRegistry.reset();
     LogRegistry.reset();
     Logger.reset();

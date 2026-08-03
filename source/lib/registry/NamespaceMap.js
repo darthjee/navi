@@ -2,6 +2,7 @@ import { NamedRegistry } from './NamedRegistry.js';
 import { ClientNotFound } from '../exceptions/registry/ClientNotFound.js';
 import { NamespaceNotFound } from '../exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../exceptions/registry/ResourceNotFound.js';
+import { NamespaceMapBuilder } from '../services/NamespaceMapBuilder.js';
 
 const DEFAULT_NAMESPACE = 'default';
 
@@ -10,8 +11,12 @@ const DEFAULT_NAMESPACE = 'default';
  *
  * Implements a static singleton facade: call `NamespaceMap.build(namespaces)` once
  * during application bootstrap, then use static delegation methods (`getResource`,
- * `getClient`) to access it. Use `NamespaceMap.reset()` in tests to restore a clean
- * state between examples.
+ * `getClient`, `getNamespace`, `include`) to access it. Use `NamespaceMap.reset()` in
+ * tests to restore a clean state between examples.
+ *
+ * `include(files)` (instance and static) reuses `NamespaceMapBuilder`'s merge/validation
+ * logic to add or update a namespace's resources/clients into the running map, after
+ * boot, with the same fail-fast guarantees boot-time loading already has.
  *
  * Resolution rules:
  * - When an explicit target namespace is given and it (or the item within it) cannot
@@ -80,6 +85,31 @@ class NamespaceMap extends NamedRegistry {
   }
 
   /**
+   * Returns a namespace, by name, from the singleton instance.
+   * @param {string} name The namespace name.
+   * @returns {Namespace} The resolved namespace.
+   * @throws {NamespaceNotFound} When the namespace cannot be found.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static getNamespace(name) {
+    return NamespaceMap.#getInstance().getItem(name);
+  }
+
+  /**
+   * Merges the given files' resources/clients into the singleton instance, reusing
+   * `NamespaceMapBuilder`'s merge and cross-reference validation logic.
+   * @param {Array<{namespace: string, resources: object, clients: object, filePath: string}>} files
+   * The flat list of files (see `ConfigIncluder`).
+   * @returns {NamespaceMap} The singleton instance.
+   * @throws {NamespaceNotFound|ResourceNotFound|ClientNotFound} When a resource/client
+   * reference cannot be resolved.
+   * @throws {Error} If `build()` has not been called.
+   */
+  static include(files) {
+    return NamespaceMap.#getInstance().include(files);
+  }
+
+  /**
    * Returns the singleton instance, throwing if not yet built.
    * @returns {NamespaceMap} The singleton instance.
    * @throws {Error} If `build()` has not been called.
@@ -127,6 +157,22 @@ class NamespaceMap extends NamedRegistry {
       method: 'getClient',
       NotFoundError: ClientNotFound,
     });
+  }
+
+  /**
+   * Merges the given files' resources/clients into this namespace map, creating
+   * new namespaces and/or extending or replacing items in already-existing ones,
+   * reusing the same merge/validation logic used at boot.
+   * @param {Array<{namespace: string, resources: object, clients: object, filePath: string}>} files
+   * The flat list of files (see `ConfigIncluder`).
+   * @returns {NamespaceMap} this, for chaining.
+   * @throws {NamespaceNotFound|ResourceNotFound|ClientNotFound} When a resource/client
+   * reference cannot be resolved.
+   */
+  include(files) {
+    const namespaces = NamespaceMapBuilder.build(files, this.items);
+    this.replaceItems(namespaces);
+    return this;
   }
 
   /**

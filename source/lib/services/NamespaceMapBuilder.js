@@ -1,5 +1,4 @@
 import { ConfigParser } from './ConfigParser.js';
-import { DuplicateNamespaceItem } from '../exceptions/registry/DuplicateNamespaceItem.js';
 import { Namespace } from '../registry/Namespace.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
 
@@ -9,37 +8,46 @@ import { NamespaceMap } from '../registry/NamespaceMap.js';
  * eagerly validates every resource/client reference collected while parsing (actions,
  * paginated_actions, and resource-level client references), so unresolvable
  * references fail fast at load time rather than at request time.
+ *
+ * When an `existingNamespaces` map is given, its namespaces' current resources/clients
+ * are merged with the new `files`, so this same builder serves both boot-time loading
+ * (no existing namespaces) and later additions into an already-running `NamespaceMap`.
  * @author darthjee
  */
 class NamespaceMapBuilder {
   #files;
+  #existingNamespaces;
   #strict;
 
   /**
    * @param {Array<{namespace: string, resources: object, clients: object, filePath: string}>} files
    * The flat list of files returned by `ConfigIncluder`.
+   * @param {Record<string, Namespace>} [existingNamespaces={}] An already-built namespace
+   * map to merge `files` into, replacing on name collision.
    */
-  constructor(files) {
+  constructor(files, existingNamespaces = {}) {
     this.#files = files;
+    this.#existingNamespaces = existingNamespaces;
     this.#strict = files.length === 1;
   }
 
   /**
-   * Builds a namespace map from the given list of files.
+   * Builds a namespace map from the given list of files, optionally merged into an
+   * already-built namespace map.
    * @param {Array<{namespace: string, resources: object, clients: object, filePath: string}>} files
    * The flat list of files returned by `ConfigIncluder`.
+   * @param {Record<string, Namespace>} [existingNamespaces={}] An already-built namespace
+   * map to merge `files` into, replacing on name collision.
    * @returns {Record<string, Namespace>} A map of namespace name to Namespace instance.
    */
-  static build(files) {
-    return new NamespaceMapBuilder(files).build();
+  static build(files, existingNamespaces = {}) {
+    return new NamespaceMapBuilder(files, existingNamespaces).build();
   }
 
   /**
    * Groups files by namespace, builds one Namespace per group, and eagerly
    * validates every cross-reference before returning.
    * @returns {Record<string, Namespace>} A map of namespace name to Namespace instance.
-   * @throws {DuplicateNamespaceItem} When two files sharing a namespace declare the
-   * same resource or client name.
    * @throws {NamespaceNotFound|ResourceNotFound|ClientNotFound} When a resource/client
    * reference cannot be resolved.
    */
@@ -50,13 +58,14 @@ class NamespaceMapBuilder {
   }
 
   /**
-   * Groups every file's parsed resources/clients by namespace name, raising on
-   * duplicate names within a namespace group, then builds one Namespace per group.
+   * Groups every file's parsed resources/clients by namespace name (seeded from any
+   * already-existing namespace's current items, replacing on name collision), then
+   * builds one fresh Namespace per group.
    * @returns {Record<string, Namespace>} A map of namespace name to Namespace instance.
    * @private
    */
   #buildNamespaces() {
-    const groups = {};
+    const groups = this.#seedGroups();
 
     this.#files.forEach((file) => {
       const parsed = ConfigParser.fromObject(
@@ -65,8 +74,8 @@ class NamespaceMapBuilder {
       );
 
       const group = groups[file.namespace] ??= { resources: {}, clients: {} };
-      this.#mergeInto(group.resources, parsed.resources, file.namespace, 'resource');
-      this.#mergeInto(group.clients, parsed.clients, file.namespace, 'client');
+      this.#mergeInto(group.resources, parsed.resources);
+      this.#mergeInto(group.clients, parsed.clients);
     });
 
     return Object.fromEntries(
@@ -74,6 +83,26 @@ class NamespaceMapBuilder {
         return [name, new Namespace({ name, resources, clients })];
       })
     );
+  }
+
+  /**
+   * Seeds the groups accumulator from each already-existing namespace's current
+   * resources/clients, so untouched namespaces are preserved and touched ones are
+   * merged into rather than replaced wholesale.
+   * @returns {Record<string, {resources: object, clients: object}>} The seeded groups accumulator.
+   * @private
+   */
+  #seedGroups() {
+    const groups = {};
+
+    Object.entries(this.#existingNamespaces).forEach(([name, namespace]) => {
+      groups[name] = {
+        resources: { ...namespace.resourceRegistry.items },
+        clients: { ...namespace.clientRegistry.items },
+      };
+    });
+
+    return groups;
   }
 
   /**
@@ -93,21 +122,16 @@ class NamespaceMapBuilder {
   }
 
   /**
-   * Merges a file's parsed items into the namespace group's accumulator, raising
-   * when an item name is already present.
+   * Merges a file's parsed items into the namespace group's accumulator, replacing
+   * (rather than raising) when an item name is already present — the last item
+   * registered under a given name wins.
    * @param {object} target The namespace group's accumulator map.
    * @param {object} source The current file's parsed items.
-   * @param {string} namespace The namespace name being merged into.
-   * @param {string} itemType Either 'resource' or 'client' (used for the error message).
    * @returns {void}
-   * @throws {DuplicateNamespaceItem} When an item name is already present in the group.
    * @private
    */
-  #mergeInto(target, source, namespace, itemType) {
+  #mergeInto(target, source) {
     Object.entries(source).forEach(([name, item]) => {
-      if (name in target) {
-        throw new DuplicateNamespaceItem(name, { namespace, itemType });
-      }
       target[name] = item;
     });
   }

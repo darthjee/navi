@@ -1,12 +1,13 @@
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
+import { Namespace } from '../../../lib/registry/Namespace.js';
+import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ResourceEnqueuer } from '../../../lib/utils/ResourceEnqueuer.js';
 import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 
 describe('ResourceEnqueuer', () => {
   afterEach(() => {
-    ResourceRegistry.reset();
+    NamespaceMap.reset();
   });
 
   describe('#enqueue', () => {
@@ -17,7 +18,7 @@ describe('ResourceEnqueuer', () => {
     it('enqueues every parameter-free request of a named resource', () => {
       const homePageRequest = ResourceRequestFactory.build({ url: '/' });
       const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
-      ResourceRegistry.build({ home_page: homePageResource });
+      NamespaceMap.build({ default: new Namespace({ name: 'default', resources: { home_page: homePageResource } }) });
 
       const result = new ResourceEnqueuer().enqueue(['home_page']);
 
@@ -26,7 +27,7 @@ describe('ResourceEnqueuer', () => {
     });
 
     it('skips an unknown resource name as not_found', () => {
-      ResourceRegistry.build({});
+      NamespaceMap.build({ default: new Namespace({ name: 'default' }) });
 
       const result = new ResourceEnqueuer().enqueue(['missing']);
 
@@ -37,7 +38,7 @@ describe('ResourceEnqueuer', () => {
     it('skips a resource entirely when any of its requests needs parameters', () => {
       const categoryRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
       const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
-      ResourceRegistry.build({ categories: categoriesResource });
+      NamespaceMap.build({ default: new Namespace({ name: 'default', resources: { categories: categoriesResource } }) });
 
       const result = new ResourceEnqueuer().enqueue(['categories']);
 
@@ -48,7 +49,7 @@ describe('ResourceEnqueuer', () => {
     it('skips a resource entirely when any of its requests is disabled', () => {
       const disabledRequest = ResourceRequestFactory.build({ url: '/disabled.json', disabled: true });
       const disabledResource = ResourceFactory.build({ name: 'disabled', resourceRequests: [disabledRequest] });
-      ResourceRegistry.build({ disabled: disabledResource });
+      NamespaceMap.build({ default: new Namespace({ name: 'default', resources: { disabled: disabledResource } }) });
 
       const result = new ResourceEnqueuer().enqueue(['disabled']);
 
@@ -59,7 +60,7 @@ describe('ResourceEnqueuer', () => {
     it('skips a resource as disabled even when it also needs parameters', () => {
       const disabledRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json', disabled: true });
       const disabledResource = ResourceFactory.build({ name: 'disabled', resourceRequests: [disabledRequest] });
-      ResourceRegistry.build({ disabled: disabledResource });
+      NamespaceMap.build({ default: new Namespace({ name: 'default', resources: { disabled: disabledResource } }) });
 
       const result = new ResourceEnqueuer().enqueue(['disabled']);
 
@@ -72,7 +73,12 @@ describe('ResourceEnqueuer', () => {
       const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
       const categoryRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
       const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
-      ResourceRegistry.build({ home_page: homePageResource, categories: categoriesResource });
+      NamespaceMap.build({
+        default: new Namespace({
+          name: 'default',
+          resources: { home_page: homePageResource, categories: categoriesResource },
+        }),
+      });
 
       const result = new ResourceEnqueuer().enqueue(['home_page', 'categories', 'missing']);
 

@@ -1,16 +1,12 @@
 import { ClientNotFound } from '../../../../lib/exceptions/registry/ClientNotFound.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
-import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
 import { Namespace } from '../../../../lib/registry/Namespace.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
-import { ResourceRegistry } from '../../../../lib/registry/ResourceRegistry.js';
 import { Client } from '../../../../lib/services/Client.js';
 import { ClientFactory } from '../../../support/factories/ClientFactory.js';
 
 describe('Config', () => {
   afterEach(() => {
-    ClientRegistry.reset();
-    ResourceRegistry.reset();
     NamespaceMap.reset();
   });
 
