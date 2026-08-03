@@ -1,6 +1,6 @@
-import { SecuredRequestHandler } from '../../../../../lib/common/server/SecuredRequestHandler.js';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { ApiEngineStopHandler } from '../../../../../lib/server/handlers/api/ApiEngineStopHandler.js';
+import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
 import { Application } from '../../../../../lib/services/Application.js';
 
 describe('ApiEngineStopHandler', () => {

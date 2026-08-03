@@ -1,7 +1,7 @@
-import { SecuredRequestHandler } from '../../../common/server/SecuredRequestHandler.js';
 import { ConflictError } from '../../../exceptions/http/ConflictError.js';
 import { Application } from '../../../services/Application.js';
 import { ResourceEnqueuer } from '../../../utils/ResourceEnqueuer.js';
+import { SecuredRequestHandler } from '../../SecuredRequestHandler.js';
 
 /**
  * Executes request-handling behaviour for POST /api/engine/start.

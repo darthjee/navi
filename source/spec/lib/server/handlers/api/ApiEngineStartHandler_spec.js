@@ -1,9 +1,9 @@
 import { JobRegistry } from '../../../../../lib/background/JobRegistry.js';
-import { SecuredRequestHandler } from '../../../../../lib/common/server/SecuredRequestHandler.js';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { Namespace } from '../../../../../lib/registry/Namespace.js';
 import { NamespaceMap } from '../../../../../lib/registry/NamespaceMap.js';
 import { ApiEngineStartHandler } from '../../../../../lib/server/handlers/api/ApiEngineStartHandler.js';
+import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
 import { Application } from '../../../../../lib/services/Application.js';
 import { ResourceFactory } from '../../../../support/factories/ResourceFactory.js';
 import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';

@@ -1,5 +1,5 @@
-import { RequestHandler } from './RequestHandler.js';
-import { ForbiddenError } from '../../exceptions/http/ForbiddenError.js';
+import { RequestHandler } from '../common/server/RequestHandler.js';
+import { ForbiddenError } from '../exceptions/http/ForbiddenError.js';
 
 /**
  * Base class for token-secured request handlers (the `/api/*` namespace).

@@ -1,8 +1,8 @@
-import { SecuredRequestHandler } from '../../../common/server/SecuredRequestHandler.js';
 import { AppError } from '../../../exceptions/AppError.js';
 import { NamespaceMap } from '../../../registry/NamespaceMap.js';
 import { Application } from '../../../services/Application.js';
 import { ResourceEnqueuer } from '../../../utils/ResourceEnqueuer.js';
+import { SecuredRequestHandler } from '../../SecuredRequestHandler.js';
 
 /**
  * Executes request-handling behaviour for POST /api/config.

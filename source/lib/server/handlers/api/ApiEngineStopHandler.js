@@ -1,5 +1,5 @@
-import { SecuredRequestHandler } from '../../../common/server/SecuredRequestHandler.js';
 import { EngineStopService } from '../../../services/EngineStopService.js';
+import { SecuredRequestHandler } from '../../SecuredRequestHandler.js';
 
 /**
  * Executes request-handling behaviour for POST /api/engine/stop.

@@ -1,6 +1,6 @@
-import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
-import { SecuredRequestHandler } from '../../../../lib/common/server/SecuredRequestHandler.js';
-import { ForbiddenError } from '../../../../lib/exceptions/http/ForbiddenError.js';
+import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
+import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
+import { SecuredRequestHandler } from '../../../lib/server/SecuredRequestHandler.js';
 
 describe('SecuredRequestHandler', () => {
   let req;

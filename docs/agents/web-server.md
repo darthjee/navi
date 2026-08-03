@@ -7,14 +7,14 @@ The main application includes an optional Express-based web server that exposes 
 ```
 source/lib/common/server/
 ├── RequestHandler.js             # Abstract base class (shared with dev/app)
-├── HandlerConfig.js               # Lazily instantiates an executor class on each request
-└── SecuredRequestHandler.js       # Base class for token-secured `/api/*` handlers
+└── HandlerConfig.js               # Lazily instantiates an executor class on each request
 
 source/lib/server/
 ├── WebServer.js
 ├── Router.js
 ├── RouteRegister.js              # Wraps handlers; maps exceptions to HTTP status codes
 ├── PathValidator.js              # Path-traversal protection
+├── SecuredRequestHandler.js      # Base class for token-secured `/api/*` handlers
 └── handlers/
     ├── AssetsHandler.js
     ├── IndexHandler.js
