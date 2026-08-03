@@ -39,7 +39,7 @@ Key features:
 - Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
 - Paginated resource support: `paginated_actions` fan out one request per page based on a page-count expression evaluated against the response.
 - Automatic retry of failed requests after the main queue is exhausted.
-- Config splitting: split `resources`/`clients` across multiple files with top-level `include`/`namespace` keys, with validated cross-namespace references. See [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/HOW_TO_USE_NAVI.md#splitting-configuration-across-files) for details.
+- Config splitting: split `resources`/`clients` across multiple files with top-level `include`/`namespace` keys, with validated cross-namespace references. See [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/navi/splitting-configuration.md) for details.
 
 ---
 
