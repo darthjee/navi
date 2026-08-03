@@ -23,6 +23,7 @@ Delegate implementation work to the right agent. Never implement what belongs to
 | `engine` | `source/` — the Navi cache-warmer core: models, jobs, workers, registries, web server, serializers |
 | `frontend` | `frontend/` — the React + Vite monitoring dashboard SPA |
 | `dev` | `dev/` — dev backend, dev frontend, and the two Tent reverse proxies used to exercise Navi locally |
+| `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
 
 ## How to coordinate
 
@@ -47,6 +48,7 @@ When a task spans multiple agents:
 | [Web Server](../../docs/agents/web-server.md) | The optional Express web server built into the main application. |
 | [Frontend](../../docs/agents/frontend.md) | The React SPA monitoring dashboard. |
 | [Dev Proxy](../../docs/agents/dev-proxy.md) | The Tent-powered reverse proxy used in local development. |
+| [Client (Node)](../../docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`) wrapping Navi's `/api/*` HTTP namespace. |
 | [Plans](../../docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](../../docs/agents/issues/) | Detailed specs for open GitHub issues. |
 

@@ -7,6 +7,7 @@
 | `source/` | Navi cache-warmer Node.js application (the main library). |
 | `frontend/` | Navi web UI monitoring dashboard (React + Vite). |
 | `dev/` | Sample apps and services used to exercise Navi in local development (dev backend, dev frontend, and two reverse proxies). |
+| `clients/` | Client packages for Navi's token-secured `/api/*` HTTP namespace, one subfolder per supported language. |
 | `dockerfiles/` | Dockerfiles for each service image (dev app, dev frontend, dev proxies, production build). |
 | `docker_volumes/` | Development/runtime data mounted into containers via `docker-compose.yml`. |
 | `scripts/` | Shell utilities for CI, release, and version bumping. |
@@ -33,6 +34,14 @@
 | `dev/frontend/` | Dev frontend: React SPA for browsing the dev backend API. |
 | `dev/proxy/` | `navi_proxy`: Tent-powered reverse proxy dedicated to cache-warming tests. |
 | `dev/web_proxy/` | `navi_web_proxy`: second Tent-powered reverse proxy (fronts the dev frontend/web UI). |
+
+## `clients/` (Client packages wrapping the `/api/*` namespace)
+
+| Subdirectory | Description |
+|--------------|-------------|
+| `clients/node/` | `navi-hey-client`: Node.js library + `navi-client` CLI wrapping `POST /api/config`, `POST /api/engine/start`, `POST /api/engine/stop`. |
+
+Designed to hold one subfolder per supported client language; `clients/node/` is the first. Future languages get their own subfolder alongside it.
 
 ## `docker_volumes/` (Mounted development/runtime data)
 
