@@ -13,14 +13,16 @@ class WebConfig {
    * @param {boolean} [config.autostart=true] - Whether the engine starts processing immediately at boot.
    * @param {number} [config.idle_timeout=0] - Seconds of inactivity (no busy workers, no queued jobs) before the application auto-shuts-down. `0` disables auto-shutdown.
    * @param {Array<string|object>} [config.links=[]] - Links shown in the web UI.
+   * @param {object} [config.api={}] - Configuration for the token-secured `/api` namespace (`{ token }`).
    */
-  constructor({ port, logs_page_size: logsPageSize = 20, enable_shutdown: enableShutdown = true, autostart = true, idle_timeout: idleTimeout = 0, links = [] }) {
+  constructor({ port, logs_page_size: logsPageSize = 20, enable_shutdown: enableShutdown = true, autostart = true, idle_timeout: idleTimeout = 0, links = [], api = {} }) {
     this.port = port;
     this.logsPageSize = logsPageSize;
     this.enableShutdown = enableShutdown;
     this.autostart = autostart;
     this.idleTimeout = idleTimeout;
     this.links = links.map((link) => Link.fromObject(link));
+    this.apiToken = api?.token ?? null;
   }
 }
 

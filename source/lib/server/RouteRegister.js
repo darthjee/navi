@@ -56,6 +56,25 @@ class RouteRegister {
   }
 
   /**
+   * Registers a POST route on the router.
+   * Catches ForbiddenError → 403, NotFoundError → 404, and any other error → 500.
+   * @param {object} params - Options for registering a route.
+   * @param {string} params.route - The route path (e.g. '/api/config').
+   * @param {object} params.handler - The handler whose handle method is called.
+   * @returns {void}
+   */
+  registerPost({ route, handler }) {
+    this.#router.post(route, async (req, res) => {
+      try {
+        await handler.handle(req, res);
+        Logger.debug(`${req.method} ${req.path} ${res.statusCode}`);
+      } catch (e) {
+        this.#handleError(e, req, res);
+      }
+    });
+  }
+
+  /**
    * Maps a caught exception to an HTTP error response and logs the access entry.
    * @param {Error} e - The caught exception.
    * @param {object} req - The Express request object.

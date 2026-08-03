@@ -228,15 +228,19 @@ class ApplicationInstance {
    * No new engine is created; the existing loop continues.
    * Only valid when status is 'stopped'.
    * @param {Array<string>} [names=[]] - Resource names to enqueue; omit/empty for the default set.
+   * @param {object} [options={}] - Extra options.
+   * @param {boolean} [options.enqueue=true] - When false, only transitions the engine to
+   * `running` without enqueueing anything — used by callers (namespace-scoped `/api`
+   * flows) that manage their own enqueueing afterwards.
    * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
-  async start(names = []) {
+  async start(names = [], { enqueue = true } = {}) {
     if (this.#engineStatus !== 'stopped') return undefined;
     this.engine.resume();
-    const result = this.enqueueResources(names);
     this.#engineStatus = 'running';
     EngineEvents.emit('start');
-    return result;
+    if (!enqueue) return { enqueued: [], skippedResources: [] };
+    return this.enqueueResources(names);
   }
 
   /**

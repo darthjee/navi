@@ -156,10 +156,11 @@ class Application {
   /**
    * Starts processing from a stopped state.
    * @param {Array<string>} [names] - Resource names to enqueue; omit/empty for the default set.
+   * @param {object} [options] - Extra options, forwarded to `ApplicationInstance#start`.
    * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
-  static async start(names) {
-    return Application.#getInstance().start(names);
+  static async start(names, options) {
+    return Application.#getInstance().start(names, options);
   }
 
   /**

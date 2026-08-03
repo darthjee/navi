@@ -52,6 +52,16 @@ describe('WebConfig', () => {
       expect(config.links).toEqual([]);
     });
 
+    it('defaults apiToken to null', () => {
+      const config = new WebConfig({ port: 3000 });
+      expect(config.apiToken).toBeNull();
+    });
+
+    it('stores a custom api.token', () => {
+      const config = new WebConfig({ port: 3000, api: { token: 'secret' } });
+      expect(config.apiToken).toEqual('secret');
+    });
+
     it('maps links from string and object entries', () => {
       const config = new WebConfig({
         port: 3000,

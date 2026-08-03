@@ -90,5 +90,75 @@ describe('ResourceEnqueuer', () => {
         ],
       });
     });
+
+    it('resolves resources against an explicit non-default namespace', () => {
+      const homePageRequest = ResourceRequestFactory.build({ url: '/' });
+      const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
+      NamespaceMap.build({
+        default: new Namespace({ name: 'default' }),
+        reports: new Namespace({ name: 'reports', resources: { home_page: homePageResource } }),
+      });
+
+      const result = new ResourceEnqueuer('reports').enqueue(['home_page']);
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledWith('ResourceRequestJob', { resourceRequest: homePageRequest, parameters: {} });
+      expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
+    });
+
+    it('does not fall back to the default namespace when resolving an explicit namespace', () => {
+      const homePageResource = ResourceFactory.build({ name: 'home_page' });
+      NamespaceMap.build({
+        default: new Namespace({ name: 'default', resources: { home_page: homePageResource } }),
+        reports: new Namespace({ name: 'reports' }),
+      });
+
+      const result = new ResourceEnqueuer('reports').enqueue(['home_page']);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'home_page', reason: 'not_found' }] });
+    });
+
+    it('skips every name as not_found when the target namespace does not exist', () => {
+      NamespaceMap.build({ default: new Namespace({ name: 'default' }) });
+
+      const result = new ResourceEnqueuer('missing_namespace').enqueue(['home_page']);
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'home_page', reason: 'not_found' }] });
+    });
+  });
+
+  describe('#enqueueAll', () => {
+    beforeEach(() => {
+      spyOn(JobRegistry, 'enqueue').and.stub();
+    });
+
+    it('enqueues every parameter-free, enabled resource request in the target namespace', () => {
+      const homePageRequest = ResourceRequestFactory.build({ url: '/' });
+      const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
+      const categoryRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
+      const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
+      NamespaceMap.build({
+        default: new Namespace({ name: 'default' }),
+        reports: new Namespace({
+          name: 'reports',
+          resources: { home_page: homePageResource, categories: categoriesResource },
+        }),
+      });
+
+      const result = new ResourceEnqueuer('reports').enqueueAll();
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('ResourceRequestJob', { resourceRequest: homePageRequest, parameters: {} });
+      expect(result).toEqual({ enqueued: [], skippedResources: [] });
+    });
+
+    it('does nothing when the target namespace does not exist', () => {
+      NamespaceMap.build({ default: new Namespace({ name: 'default' }) });
+
+      const result = new ResourceEnqueuer('missing_namespace').enqueueAll();
+
+      expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [] });
+    });
   });
 });
