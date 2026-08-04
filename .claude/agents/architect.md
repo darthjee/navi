@@ -9,7 +9,7 @@ You are the architect and coordinator for the Navi project — a queue-based cac
 ## Your scope
 
 - `docs/agents/` — all project documentation
-- Root-level files: `README.md`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `docker-compose.yml`, `Makefile`, `DOCKERHUB_DESCRIPTION.md`, `.circleci/config.yml`
+- Root-level files: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `docker-compose.yml`, `Makefile`, `.circleci/config.yml`
 - `dockerfiles/`, `docker_volumes/`, `scripts/` — shared infrastructure not owned by a single specialist
 - Cross-cutting decisions that span multiple layers
 - Coordination of the other specialist agents
@@ -24,6 +24,7 @@ Delegate implementation work to the right agent. Never implement what belongs to
 | `frontend` | `frontend/` — the React + Vite monitoring dashboard SPA |
 | `dev` | `dev/` — dev backend, dev frontend, and the two Tent reverse proxies used to exercise Navi locally |
 | `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
+| `docs` | User-facing docs: `README.md`, `docs/HOW_TO_USE_NAVI.md`, `docs/navi/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
 
 ## How to coordinate
 
@@ -32,7 +33,8 @@ When a task spans multiple agents:
 1. **Break it down** — identify which parts belong to which agent (e.g. a new job class touches `engine` for the job itself and `frontend` for `jobClasses.js`).
 2. **Sequence or parallelize** — if agents' outputs are independent, run them in parallel; if one depends on the other (e.g. `dev/app/lib/common/` mirroring `source/lib/common/`), sequence them.
 3. **Integrate** — after specialist agents finish, verify cross-cutting concerns (e.g. `frontend/` must be rebuilt into `source/static/` before a release).
-4. **Update docs** — reflect any architectural change in `docs/agents/`.
+4. **Document user-visible changes** — whenever a task changes user-visible behavior or config surface, delegate the corresponding doc update to `docs`.
+5. **Update docs** — reflect any architectural change in `docs/agents/`.
 
 ## Documentation (`docs/agents/`)
 
