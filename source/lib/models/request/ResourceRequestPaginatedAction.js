@@ -4,6 +4,7 @@ import { LogRegistry } from '../../registry/LogRegistry.js';
 import { NamespaceMap as DefaultNamespaceMap } from '../../registry/NamespaceMap.js';
 import { Application } from '../../services/Application.js';
 import { PaginationConfig } from '../configs/PaginationConfig.js';
+import { ParametersMapper } from '../response/ParametersMapper.js';
 
 /**
  * Represents a single paginated action to execute after a successful resource request response.
@@ -17,6 +18,7 @@ class ResourceRequestPaginatedAction {
   #namespace;
   #originNamespace;
   #pagination;
+  #mapper;
   #jobRegistry;
   #namespaceMap;
 
@@ -28,6 +30,10 @@ class ResourceRequestPaginatedAction {
    * @param {string} [attributes.originNamespace='default'] The namespace of the resource that owns
    * this paginated action. Threaded in at construction time, not read from YAML.
    * @param {Array<object>} attributes.pagination Pagination config list.
+   * @param {object} [attributes.parameters={}] Key-value map where keys are destination
+   * variable names and values are path expressions (e.g. `parsedBody.id`, `headers['page']`),
+   * resolved against the same response used to compute `pages` and merged into each page's
+   * parameters (overriding same-named inherited parameters, but always losing to `page_key`).
    * @param {object} [attributes.jobRegistry=JobRegistry] The job registry to enqueue jobs to.
    * @param {object} [attributes.namespaceMap=NamespaceMap] The namespace map used to look up resources.
    * @throws {MissingActionResource} If resource is absent or falsy.
@@ -37,6 +43,7 @@ class ResourceRequestPaginatedAction {
     namespace = null,
     originNamespace = 'default',
     pagination,
+    parameters = {},
     jobRegistry = DefaultJobRegistry,
     namespaceMap = DefaultNamespaceMap,
   }) {
@@ -45,6 +52,7 @@ class ResourceRequestPaginatedAction {
     this.#namespace = namespace;
     this.#originNamespace = originNamespace;
     this.#pagination = PaginationConfig.fromList(pagination);
+    this.#mapper = new ParametersMapper(parameters);
     this.#jobRegistry = jobRegistry;
     this.#namespaceMap = namespaceMap;
   }
@@ -86,9 +94,14 @@ class ResourceRequestPaginatedAction {
     const count = this.#pagination.resolvePages(responseWrapper);
     const pages = this.#pagination.pageNumbers(count);
     const resource = this.#namespaceMap.getResource(this.#originNamespace, this.#resource, this.#namespace);
+    const mappedParameters = this.#mapper.map(responseWrapper);
 
     for (const page of pages) {
-      const pageParameters = { ...parameters, [this.#pagination.pageKey]: page };
+      const pageParameters = {
+        ...parameters,
+        ...mappedParameters,
+        [this.#pagination.pageKey]: page,
+      };
       for (const resourceRequest of resource.resourceRequests) {
         if (resourceRequest.disabled) continue;
 

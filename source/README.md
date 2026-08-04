@@ -100,6 +100,8 @@ resources:
             - pages: parsedBody.pagination.pages
             - page_key: page
             - zero_indexed: false
+          parameters:
+            per_page: headers['x-per-page']
     - url: /categories
       status: 302
     - url: /#/categories
@@ -147,6 +149,7 @@ When the web server is enabled, the following screens are available:
 | `paginated_actions[].pagination[].pages` | Path expression (e.g. `parsedBody.pagination.pages`) resolving to the total page count. |
 | `paginated_actions[].pagination[].page_key` | Parameter name injected as the current page number into each downstream request. |
 | `paginated_actions[].pagination[].zero_indexed` | Boolean. Pages start at `0` when `true`, at `1` when `false` (default). |
+| `paginated_actions[].parameters` | Optional. Path expressions (same syntax as `actions[].parameters`) resolved against the response and merged into each page's request parameters. `page_key`'s value always takes precedence on key collision. |
 | `assets` | Optional list of asset extraction rules. When present on an HTML resource, Navi parses the response body and enqueues a download job for each matched URL. |
 | `assets[].selector` | CSS selector used to find asset elements in the HTML response (e.g. `script[src]`, `link[rel="stylesheet"]`). |
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
@@ -165,7 +168,7 @@ For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2
 
 ## Paginated Actions
 
-`paginated_actions` complement `actions` when the response indicates multiple pages. Instead of iterating over array items, Navi evaluates a `pages` expression against the whole response, then enqueues one `ResourceRequestJob` per page, injecting the page number under the configured `page_key`.
+`paginated_actions` complement `actions` when the response indicates multiple pages. Instead of iterating over array items, Navi evaluates a `pages` expression against the whole response, then enqueues one `ResourceRequestJob` per page, injecting the page number under the configured `page_key`. An optional `parameters` map (same syntax as `actions[].parameters`) is resolved against that same response and merged into every page's request parameters, overriding same-named inherited parameters — though `page_key`'s value always wins on collision.
 
 ```yaml
 resources:
@@ -178,6 +181,8 @@ resources:
             - pages: parsedBody.pagination.pages
             - page_key: page
             - zero_indexed: false
+          parameters:
+            per_page: headers['x-per-page']
   products_page:
     - url: /products/{:page}.json
       status: 200
