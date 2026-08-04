@@ -153,6 +153,7 @@ resources:
 | `paginated_actions[].pagination[].pages` | Path expression evaluated against the response (e.g. `parsedBody.pagination.pages`) that resolves to the total number of pages. |
 | `paginated_actions[].pagination[].page_key` | The parameter name injected into each downstream request as the current page number. |
 | `paginated_actions[].pagination[].zero_indexed` | Boolean. When `true`, page numbers start at `0`; when `false` (default), they start at `1`. |
+| `paginated_actions[].parameters` | Optional key-value map, same syntax as `actions[].parameters`. Resolved against the same response used for `pages` and merged into each page's request parameters. `page_key`'s value always takes precedence on key collision. |
 | `assets` | Optional list of asset extraction rules. When present on an HTML resource, Navi parses the response body and enqueues a download job for each matched URL. |
 | `assets[].selector` | CSS selector used to find asset elements in the HTML response (e.g. `script[src]`, `link[rel="stylesheet"]`). |
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
@@ -322,7 +323,15 @@ Each `paginated_action` entry specifies a `resource` and a `pagination` block:
 - **`page_key`** — the parameter name injected as the current page number into each downstream request.
 - **`zero_indexed`** — boolean; when `true` pages run from `0` to `pages-1`; when `false` (default) from `1` to `pages`.
 
-The page parameter is merged with any parameters inherited from the parent chain, so `{:page}` (or whatever `page_key` is set to) can be used as a `{:placeholder}` in the target resource's URL template alongside other variables (e.g. `{:category_id}`).
+Optionally, each `paginated_action` entry may also specify a **`parameters`** map (same syntax as `actions[].parameters`) — path expressions resolved against the same response used for `pages`, letting you forward server-reported metadata (e.g. a `per_page` value from a response header) into every paginated request without a separate fetch.
+
+Each downstream request's final parameter set is built in this order (later wins on a key collision):
+
+1. Parameters inherited from the parent chain (existing behavior).
+2. The resolved `parameters` map, when present — overrides same-named inherited parameters.
+3. `page_key`'s page number — always wins, even over a same-named `parameters` entry.
+
+So `{:page}` (or whatever `page_key` is set to) can be used as a `{:placeholder}` in the target resource's URL template alongside other variables (e.g. `{:category_id}`, or any key from `parameters`). If a `parameters` path expression can't be resolved against the response, that one paginated action fails in isolation (no pages enqueued, logged, dead-lettered, no retry) — everything else in the run is unaffected.
 
 Each paginated action is enqueued as a `PaginatedActionProcessingJob`. Unlike `ActionProcessingJob`, it operates on the whole response wrapper (not individual array items) and has no retry rights.
 
@@ -339,12 +348,14 @@ resources:
             - pages: parsedBody.pagination.pages
             - page_key: page
             - zero_indexed: false
+          parameters:
+            per_page: headers['x-per-page']
   products_page:
-    - url: /products/{:page}.json
+    - url: /products/{:page}.json?per_page={:per_page}
       status: 200
 ```
 
-If the `/categories.json` response contains `{ "pagination": { "pages": 3 } }`, Navi enqueues three jobs for `/products/1.json`, `/products/2.json`, and `/products/3.json`.
+If the `/categories.json` response contains `{ "pagination": { "pages": 3 } }` with a `X-Per-Page: 25` response header, Navi enqueues three jobs for `/products/1.json?per_page=25`, `/products/2.json?per_page=25`, and `/products/3.json?per_page=25`.
 
 ---
 
