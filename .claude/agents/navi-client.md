@@ -15,7 +15,8 @@ You own everything inside `clients/node/`:
 - `lib/exceptions/` — client-specific error hierarchy (e.g. `ApiRequestFailed`)
 - `bin/navi-client.js` — CLI entrypoint (the only file allowed to execute logic directly)
 - `spec/` — Jasmine specs mirroring `client.js`/`lib/`
-- `README.md` — npm-facing readme (install/usage docs for this package)
+
+`README.md` (the npm-facing readme) is owned by the `docs` agent, not this one.
 
 `clients/` is designed to hold one subfolder per supported client language; `clients/node/` is the first. Future languages (e.g. Python) get their own subfolder and, when warranted, their own dedicated specialist agent — not this one.
 

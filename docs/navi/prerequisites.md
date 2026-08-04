@@ -82,6 +82,7 @@ Key points:
 | `paginated_actions[].pagination[].pages` | Path expression resolving to the total page count (e.g. `parsedBody.pagination.pages`). |
 | `paginated_actions[].pagination[].page_key` | Parameter name injected as the page number into each downstream request URL. |
 | `paginated_actions[].pagination[].zero_indexed` | Boolean. Pages start at `0` when `true`, at `1` when `false` (default). |
+| `paginated_actions[].parameters` | Optional. Path expressions (same syntax as `actions[].parameters`) resolved against the response and merged into each page's request parameters. `page_key`'s value always takes precedence on key collision. |
 | `assets[].selector` | CSS selector used to find elements in an HTML response body. |
 | `assets[].attribute` | Attribute name on matched elements that holds the asset URL (e.g. `href`, `src`). |
 | `assets[].client` | Optional named client to use when fetching each discovered asset. Defaults to `default`. |
