@@ -19,6 +19,7 @@ Cache Warmer Tool
 ## Table of Contents
 
 - [Overview](#overview)
+- [Quick Start](#quick-start)
 - [Configuration File](#configuration-file)
 - [Running Navi](#running-navi)
 - [Development](#development)
@@ -42,6 +43,40 @@ Key features:
 - Paginated resource support: `paginated_actions` fan out one request per page based on a page-count expression evaluated against the response.
 - Automatic retry of failed requests after the main queue is exhausted.
 - Config splitting: split `resources`/`clients` across multiple files with top-level `include`/`namespace` keys, with validated cross-namespace references. See [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/navi/splitting-configuration.md) for details.
+
+---
+
+## Quick Start
+
+The `darthjee/navi-hey` Docker image ships with a minimal, production-ready configuration (`web` — see `dockerfiles/production_navi_hey/config/web.yml`) baked in, so it works out of the box with zero volume mounts:
+
+```bash
+docker run -p 3000:3000 darthjee/navi-hey:latest
+```
+
+This brings up the monitoring web UI immediately at `http://localhost:3000`, and it stays up indefinitely (no auto-shutdown). The packed config declares no `resources:`/`clients:` — add those afterwards through the [Navi client/API](clients/node/README.md). Every setting in the packed config is overridable via an environment variable, without editing or rebuilding the image:
+
+| Env var | Default | Config field |
+|---------|---------|--------------|
+| `NAVI_CONFIG` | `./config/web.yml` | Path to the config file `navi-hey` loads (`-c`/`--config`). Selects which packed config runs. |
+| `PORT` | `3000` | `web.port` |
+| `LOGS_PAGE_SIZE` | `20` | `web.logs_page_size` |
+| `ENABLE_SHUTDOWN` | `false` | `web.enable_shutdown` |
+| `AUTOSTART` | `true` | `web.autostart` |
+| `IDLE_TIMEOUT` | `0` (disabled) | `web.idle_timeout` |
+| `API_TOKEN` | empty (disabled) | `web.api.token` |
+| `WORKERS` | `1` | `workers.quantity` |
+| `RETRY_COOLDOWN` | `2000` | `workers.retry_cooldown` |
+| `WORKERS_SLEEP` | `500` | `workers.sleep` |
+| `MAX_RETRIES` | `3` | `workers.max-retries` |
+
+For example, to change the exposed port:
+
+```bash
+docker run -p 8080:8080 -e PORT=8080 darthjee/navi-hey:latest
+```
+
+To bring your own full configuration (resources, clients, and more) instead, see [Custom Configuration](#custom-configuration) below.
 
 ---
 
@@ -160,9 +195,9 @@ resources:
 | `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
 | `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
 
-### Providing the config file
+### Custom Configuration
 
-When running via Docker (the recommended approach), mount the YAML file as a volume:
+To bring your own full configuration (with `resources:`/`clients:` of your own) instead of the packed zero-config default (see [Quick Start](#quick-start)), mount the YAML file as a volume:
 
 ```bash
 docker run --rm \
@@ -219,7 +254,13 @@ See the [Running Navi](#running-navi) section below.
    make build
    ```
 
-2. Run Navi with your configuration file:
+2. Run Navi with the packed zero-config default — see [Quick Start](#quick-start):
+
+   ```bash
+   docker run -p 3000:3000 darthjee/navi-hey:latest
+   ```
+
+   Or with your own configuration file — see [Custom Configuration](#custom-configuration):
 
    ```bash
    docker run --rm \

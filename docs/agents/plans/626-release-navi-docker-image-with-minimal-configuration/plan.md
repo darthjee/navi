@@ -49,9 +49,11 @@ workers:
   retry_cooldown: $RETRY_COOLDOWN
   sleep: $WORKERS_SLEEP
   max-retries: $MAX_RETRIES
+resources: {}
+clients: {}
 ```
 
-No `resources:`/`clients:` keys — per the issue, those are added later through the Navi client/API, not baked into the image.
+No resource/client *definitions* baked in — per the issue, those are added later through the Navi client/API, not baked into the image. The empty `resources: {}`/`clients: {}` keys themselves are still required: verified against the published `navi-hey@1.5.1` at implementation time — `NamespaceMapBuilder` (`source/lib/services/NamespaceMapBuilder.js`) sets `strict = files.length === 1`, so a single, `include:`-less config file (like this one) is parsed in strict mode regardless of `ConfigLoader`'s own `strict: false` (which only governs the entry file's `workers`/`web`/`log`/`failure` extraction, not `NamespaceMapBuilder`'s resource/client loading) — `MissingResourceConfig`/`MissingClientsConfig` is thrown if either top-level key is absent, even though an empty map is otherwise accepted.
 
 Update `dockerfiles/production_navi_hey/Dockerfile`:
 
@@ -76,7 +78,7 @@ ENV MAX_RETRIES=3
 
 RUN npm install -g navi-hey@${NAVI_VERSION}
 
-COPY config/web.yml /home/node/app/config/web.yml
+COPY dockerfiles/production_navi_hey/config/web.yml /home/node/app/config/web.yml
 
 USER node
 
@@ -89,6 +91,7 @@ Notes:
 - `NAVI_CONFIG` holds a full relative path (`./config/web.yml`), not a bare name, so overriding it can point at a different folder/extension/absolute path (see issue's "Config selection env var" section for the rationale).
 - `CMD` uses shell form (as the existing `CMD "navi-hey"` already does) so `$NAVI_CONFIG` is resolved by the shell at container start, not baked in at build time.
 - `API_TOKEN` defaults to empty. Verified against `SecuredRequestHandler#authorize()` (`source/lib/server/SecuredRequestHandler.js`): it rejects every `/api/*` request when the configured token is falsy (`!this.#token`), and `WebConfig` sets `apiToken = api?.token ?? null` — an empty string is falsy, so `api: { token: '' }` behaves identically to omitting `api:` entirely (all `/api/*` requests rejected "by design"). Safe to always emit the `api:` block in `config/web.yml`.
+- `COPY`'s source path is `dockerfiles/production_navi_hey/config/web.yml`, not `config/web.yml` — `make build`/`make build-image`/`make release` (`Makefile`) all invoke `docker build -f dockerfiles/production_navi_hey/Dockerfile .`, i.e. the build context is the repo root, not the Dockerfile's own directory, so `COPY` sources must be given relative to the repo root.
 
 ### Step 3 — Verify the image builds and runs zero-config
 
