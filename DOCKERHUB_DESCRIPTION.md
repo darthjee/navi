@@ -27,6 +27,32 @@ Key features:
 
 ## Quick Start
 
+The image ships with a minimal, production-ready configuration baked in, so it works out of the box with zero volume mounts:
+
+```bash
+docker run -p 3000:3000 darthjee/navi-hey:latest
+```
+
+This brings up the monitoring web UI immediately at `http://localhost:3000`, staying up indefinitely (no auto-shutdown). No `resources:`/`clients:` are baked in — add those afterwards through the Navi client/API. Every setting is overridable via an environment variable, without editing or rebuilding the image:
+
+| Env var | Default | Config field |
+|---------|---------|--------------|
+| `NAVI_CONFIG` | `./config/web.yml` | Path to the config file `navi-hey` loads. Selects which packed config runs. |
+| `PORT` | `3000` | `web.port` |
+| `LOGS_PAGE_SIZE` | `20` | `web.logs_page_size` |
+| `ENABLE_SHUTDOWN` | `false` | `web.enable_shutdown` |
+| `AUTOSTART` | `true` | `web.autostart` |
+| `IDLE_TIMEOUT` | `0` (disabled) | `web.idle_timeout` |
+| `API_TOKEN` | empty (disabled) | `web.api.token` |
+| `WORKERS` | `1` | `workers.quantity` |
+| `RETRY_COOLDOWN` | `2000` | `workers.retry_cooldown` |
+| `WORKERS_SLEEP` | `500` | `workers.sleep` |
+| `MAX_RETRIES` | `3` | `workers.max-retries` |
+
+### Custom Configuration
+
+To bring your own full configuration (with `resources:`/`clients:` of your own) instead:
+
 ```bash
 docker run --rm \
   -v /path/to/your/config.yml:/home/node/app/config/navi_config.yml \

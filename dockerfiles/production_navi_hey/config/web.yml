@@ -1,0 +1,15 @@
+web:
+  port: $PORT
+  logs_page_size: $LOGS_PAGE_SIZE
+  enable_shutdown: $ENABLE_SHUTDOWN
+  autostart: $AUTOSTART
+  idle_timeout: $IDLE_TIMEOUT
+  api:
+    token: $API_TOKEN
+workers:
+  quantity: $WORKERS
+  retry_cooldown: $RETRY_COOLDOWN
+  sleep: $WORKERS_SLEEP
+  max-retries: $MAX_RETRIES
+resources: {}
+clients: {}

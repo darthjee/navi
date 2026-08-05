@@ -10,7 +10,7 @@ You are the architect and coordinator for the Navi project — a queue-based cac
 
 - `docs/agents/` — all project documentation
 - Root-level files: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `docker-compose.yml`, `Makefile`, `.circleci/config.yml`
-- `dockerfiles/`, `docker_volumes/`, `scripts/` — shared infrastructure not owned by a single specialist
+- `docker_volumes/`, `scripts/` — shared infrastructure not owned by a single specialist
 - Cross-cutting decisions that span multiple layers
 - Coordination of the other specialist agents
 
@@ -24,6 +24,7 @@ Delegate implementation work to the right agent. Never implement what belongs to
 | `frontend` | `frontend/` — the React + Vite monitoring dashboard SPA |
 | `dev` | `dev/` — dev backend, dev frontend, and the two Tent reverse proxies used to exercise Navi locally |
 | `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
+| `docker` | `dockerfiles/` and root `docker-compose.yml` — Dockerfiles for every service image (dev app, dev frontend, dev proxies, production build) |
 | `docs` | User-facing docs: `README.md`, `docs/HOW_TO_USE_NAVI.md`, `docs/navi/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
 
 ## How to coordinate
