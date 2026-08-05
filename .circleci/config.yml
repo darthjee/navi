@@ -61,6 +61,19 @@ workflows:
               only: /\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
+      - check-client-version-tag:
+          filters:
+            tags:
+              only: /client-\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
+      - npm-publish-client:
+          requires: [check-client-version-tag, jasmine-client, checks-client]
+          filters:
+            tags:
+              only: /client-\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
       - build-and-release:
           requires: [npm-publish]
           filters:
@@ -291,6 +304,29 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
             cd source; npm publish --access public
+
+  check-client-version-tag:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Check tag matches clients/node/package.json and README versions
+          command: bash scripts/check_client_tag_version.sh
+
+  npm-publish-client:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: cd clients/node; yarn install --frozen-lockfile
+      - run:
+          name: Publish to npm
+          command: |
+            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+            cd clients/node; npm publish --access public
 
   build-and-release:
     machine: true
