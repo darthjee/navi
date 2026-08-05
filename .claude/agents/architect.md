@@ -25,7 +25,7 @@ Delegate implementation work to the right agent. Never implement what belongs to
 | `dev` | `dev/` — dev backend, dev frontend, and the two Tent reverse proxies used to exercise Navi locally |
 | `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
 | `docker` | `dockerfiles/` and root `docker-compose.yml` — Dockerfiles for every service image (dev app, dev frontend, dev proxies, production build) |
-| `docs` | User-facing docs: `README.md`, `docs/HOW_TO_USE_NAVI.md`, `docs/navi/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
+| `docs` | User-facing docs: `README.md`, `docs/guides/HOW_TO_USE_NAVI.md`, `docs/guides/navi/*`, `docs/guides/HOW_TO_USE_NAVI-CLIENT.md`, `docs/guides/navi-client/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
 
 ## How to coordinate
 

@@ -207,4 +207,4 @@ docker run --rm \
 
 GitHub repository: [darthjee/navi](https://github.com/darthjee/navi)
 
-Integration guide for developers and AI agents: [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/HOW_TO_USE_NAVI.md)
+Integration guide for developers and AI agents: [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/guides/HOW_TO_USE_NAVI.md)
