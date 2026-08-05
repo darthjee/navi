@@ -10,7 +10,7 @@ navi_app ──► navi_proxy (tent, :3010) ──► navi_dev_app (:3020/:80)
 
 After running Navi, inspect `docker_volumes/proxy_cache/` to confirm which endpoints were warmed — each file corresponds to a URI that Navi successfully pre-fetched.
 
-For a full reference on how Tent works, see [docs/HOW_TO_USE_DARTHJEE-TENT.md](../HOW_TO_USE_DARTHJEE-TENT.md).
+For a full reference on how Tent works, see [docs/agents/external/HOW_TO_USE_DARTHJEE-TENT.md](./external/HOW_TO_USE_DARTHJEE-TENT.md).
 
 ---
 
