@@ -56,7 +56,9 @@ yarn report     # JSCPD duplication report
 - `jasmine-client`: installs dependencies and runs `npm run coverage`, uploading partial coverage to Codacy.
 - `checks-client`: installs dependencies and runs `npm run lint` and `npm run report`.
 
-Both are wired into the `test-and-release` workflow and into `coverage-final`'s `requires` list. Publishing/tagging `navi-hey-client` to npm is **out of scope** for now — there is no `npm-publish-client` job yet; `clients/node/` is not part of `npm-publish`'s or `check-version-tag`'s `requires`/scope. A future issue will need to define a tagging scheme (e.g. a `client-X.Y.Z` prefix) and a corresponding publish job before the package can be released.
+Both are wired into the `test-and-release` workflow and into `coverage-final`'s `requires` list.
+
+Releasing `navi-hey-client` to npm has its own tag-driven flow, fully independent of the app's `X.Y.Z` release cadence: pushing a `client-X.Y.Z` tag runs `check-client-version-tag` (`scripts/check_client_tag_version.sh`, parallel to `scripts/check_tag_version.sh`), which validates the stripped tag version against both `clients/node/package.json`'s `version` and README's **Client Current Version** line, then `npm-publish-client` (gated on `check-client-version-tag`, `jasmine-client`, and `checks-client`) publishes the package to npm using the existing `NPM_TOKEN`. A plain `X.Y.Z` app tag never touches this flow, and a `client-X.Y.Z` tag never touches `npm-publish`.
 
 ## Versioning
 
