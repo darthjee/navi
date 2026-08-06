@@ -15,6 +15,7 @@ describe('CliArgumentsParser', () => {
         token: 'secret',
         action: 'config',
         payload: '{"namespace":"reports"}',
+        configFiles: [],
       });
     });
 
@@ -30,6 +31,7 @@ describe('CliArgumentsParser', () => {
         token: 'secret',
         action: 'engine-stop',
         payload: undefined,
+        configFiles: [],
       });
     });
 
@@ -41,7 +43,64 @@ describe('CliArgumentsParser', () => {
         token: undefined,
         action: undefined,
         payload: undefined,
+        configFiles: [],
       });
+    });
+
+    it('collects repeated --file options', () => {
+      const result = CliArgumentsParser.parse(['--file', 'a.yml', '--file', 'b.yml']);
+
+      expect(result.configFiles).toEqual([
+        { path: 'a.yml', mode: 'auto' },
+        { path: 'b.yml', mode: 'auto' },
+      ]);
+    });
+
+    it('collects repeated --json options', () => {
+      const result = CliArgumentsParser.parse(['--json', 'a.json', '--json', 'b.json']);
+
+      expect(result.configFiles).toEqual([
+        { path: 'a.json', mode: 'json' },
+        { path: 'b.json', mode: 'json' },
+      ]);
+    });
+
+    it('collects repeated --yaml options', () => {
+      const result = CliArgumentsParser.parse(['--yaml', 'a.yml', '--yaml', 'b.yml']);
+
+      expect(result.configFiles).toEqual([
+        { path: 'a.yml', mode: 'yaml' },
+        { path: 'b.yml', mode: 'yaml' },
+      ]);
+    });
+
+    it('combines --file/--json/--yaml, preserving literal command-line order', () => {
+      const result = CliArgumentsParser.parse([
+        '--file', 'a.yml',
+        '--json', 'b.json',
+        '--file', 'c.yml',
+        '--yaml', 'd.yml',
+      ]);
+
+      expect(result.configFiles).toEqual([
+        { path: 'a.yml', mode: 'auto' },
+        { path: 'b.json', mode: 'json' },
+        { path: 'c.yml', mode: 'auto' },
+        { path: 'd.yml', mode: 'yaml' },
+      ]);
+    });
+
+    it('ignores non-config-file options when reconstructing configFiles order', () => {
+      const result = CliArgumentsParser.parse([
+        '--file', 'a.yml',
+        '--base-url', 'http://example.com',
+        '--json', 'b.json',
+      ]);
+
+      expect(result.configFiles).toEqual([
+        { path: 'a.yml', mode: 'auto' },
+        { path: 'b.json', mode: 'json' },
+      ]);
     });
   });
 });

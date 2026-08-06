@@ -191,5 +191,38 @@ describe('ApiConfigHandler', () => {
         expect(ResourceEnqueuer.prototype.enqueue).not.toHaveBeenCalled();
       });
     });
+
+    describe('when the payload contains a literal env var reference', () => {
+      const originalValue = process.env.SOME_VAR;
+
+      beforeEach(() => {
+        process.env.SOME_VAR = 'resolved-value';
+        NamespaceMap.include.and.callThrough();
+        NamespaceMap.build({});
+      });
+
+      afterEach(() => {
+        if (originalValue === undefined) {
+          delete process.env.SOME_VAR;
+        } else {
+          process.env.SOME_VAR = originalValue;
+        }
+        NamespaceMap.reset();
+      });
+
+      it('stores the literal, unresolved value, never resolving env vars on the API path', () => {
+        const req = {
+          body: {
+            namespace: 'reports',
+            resources: { categories: [{ url: '${SOME_VAR}', status: 200 }] },
+          },
+        };
+
+        new ApiConfigHandler(req, res, 'token').process();
+
+        const resource = NamespaceMap.getResource('reports', 'categories');
+        expect(resource.resourceRequests[0].url).toEqual('${SOME_VAR}');
+      });
+    });
   });
 });
