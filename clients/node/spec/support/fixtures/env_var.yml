@@ -1,0 +1,5 @@
+namespace: default
+resources:
+  users:
+    client: api
+    base_url: ${FIXTURE_ENV_VAR}

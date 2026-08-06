@@ -1,4 +1,5 @@
 import { NaviClient } from '../client.js';
+import { ConfigFileGrouper } from './ConfigFileGrouper.js';
 
 const ACTIONS = ['config', 'engine-start', 'engine-stop'];
 
@@ -18,10 +19,12 @@ class CliRunner {
    * @param {string} options.token Bearer token.
    * @param {string} options.action One of `config`, `engine-start`, `engine-stop`.
    * @param {string} [options.payload] Optional JSON request body.
+   * @param {Array<{path: string, mode: 'json'|'yaml'|'auto'}>} [options.configFiles] Optional
+   * ordered `--file`/`--json`/`--yaml` list (`config` action only), mutually exclusive with `payload`.
    * @returns {Promise<number>} The process exit code (`0` on success, `1` on failure).
    */
-  static async run({ baseUrl, token, action, payload }) {
-    const validationError = CliRunner.#validate({ baseUrl, token, action });
+  static async run({ baseUrl, token, action, payload, configFiles = [] }) {
+    const validationError = CliRunner.#validate({ baseUrl, token, action, payload, configFiles });
     if (validationError) {
       console.error(validationError);
       return 1;
@@ -38,7 +41,7 @@ class CliRunner {
     const client = new NaviClient({ baseUrl, token });
 
     try {
-      const result = await CliRunner.#dispatch(client, action, body);
+      const result = await CliRunner.#dispatch(client, action, body, configFiles);
       console.log(JSON.stringify(result, null, 2));
       return 0;
     } catch (error) {
@@ -53,9 +56,15 @@ class CliRunner {
    * @param {NaviClient} client The client instance to call.
    * @param {string} action One of `config`, `engine-start`, `engine-stop`.
    * @param {object} [body] The parsed request body, when given.
+   * @param {Array<{path: string, mode: 'json'|'yaml'|'auto'}>} [configFiles] The ordered
+   * `--file`/`--json`/`--yaml` list, when given (`config` action only).
    * @returns {Promise<*>} The result of the underlying `NaviClient` call.
    */
-  static #dispatch(client, action, body) {
+  static async #dispatch(client, action, body, configFiles) {
+    if (action === 'config' && configFiles.length > 0) {
+      return CliRunner.#configFromEntries(client, configFiles);
+    }
+
     switch (action) {
       case 'config':
         return client.config(body);
@@ -67,19 +76,49 @@ class CliRunner {
   }
 
   /**
+   * Groups the given ordered config file entries by namespace (fail-fast — see
+   * `ConfigFileGrouper`) and issues one `POST /api/config` call per group,
+   * sequentially, in fan-out order. Entries may mix forced/auto-detected modes
+   * (e.g. combined `--file`/`--json`/`--yaml`), which is why this bypasses
+   * `NaviClient#configFromFiles`/`#configFromJson`/`#configFromYaml` — those
+   * assume a single uniform mode for the whole call.
+   *
+   * @param {NaviClient} client The client instance to call.
+   * @param {Array<{path: string, mode: 'json'|'yaml'|'auto'}>} configFiles The ordered
+   * `--file`/`--json`/`--yaml` list.
+   * @returns {Promise<object[]>} One `POST /api/config` response per distinct namespace.
+   * @private
+   */
+  static async #configFromEntries(client, configFiles) {
+    const groups = ConfigFileGrouper.group(configFiles);
+
+    const results = [];
+    for (const group of groups) {
+      results.push(await client.config(group));
+    }
+
+    return results;
+  }
+
+  /**
    * Validates the required CLI options.
    *
    * @param {object} options
    * @param {string} options.baseUrl
    * @param {string} options.token
    * @param {string} options.action
+   * @param {string} [options.payload]
+   * @param {Array} [options.configFiles]
    * @returns {string|null} An error message, or `null` when the options are valid.
    */
-  static #validate({ baseUrl, token, action }) {
+  static #validate({ baseUrl, token, action, payload, configFiles }) {
     if (!baseUrl) return 'Missing required option: --base-url';
     if (!token) return 'Missing required option: --token';
     if (!action) return 'Missing required option: --action';
     if (!ACTIONS.includes(action)) return `Invalid --action "${action}". Must be one of: ${ACTIONS.join(', ')}`;
+    if (payload && configFiles.length > 0) {
+      return '--payload cannot be combined with --file/--json/--yaml';
+    }
 
     return null;
   }

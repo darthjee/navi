@@ -1,0 +1,8 @@
+namespace: reports
+resources:
+  sales:
+    client: api
+    path: /sales
+clients:
+  api:
+    base_url: https://example.com

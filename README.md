@@ -319,6 +319,7 @@ This opens an interactive Bash shell inside the `navi_app` container, where you 
 | `make tests` | Opens a shell in the isolated `navi_tests` container. |
 | `make build-dev` | Builds the development Docker image (`navi:dev`). |
 | `make build` | Builds the production Docker image (`darthjee/navi-hey:latest`). |
+| `make build-client` | Builds the production client Docker image (`darthjee/navi-hey-client:latest`). |
 
 ---
 

@@ -1,3 +1,4 @@
+import { ConfigFileGrouper } from './lib/ConfigFileGrouper.js';
 import { NaviApiClient } from './lib/NaviApiClient.js';
 
 /**
@@ -38,6 +39,53 @@ class NaviClient {
   }
 
   /**
+   * Parses one or more JSON config files (same `namespace`/`resources`/`clients`
+   * shape the engine reads; every other top-level key, including `include`, is
+   * ignored — no `include:` chain is followed) and calls `POST /api/config` once
+   * per distinct namespace, sequentially, in order of first appearance.
+   *
+   * Every given file is parsed up front: if any file is missing or fails to
+   * parse, the call throws before any request is sent.
+   *
+   * @param {string|string[]} paths A single file path, or an array of file paths.
+   * @returns {Promise<object[]>} One `POST /api/config` response per distinct
+   * namespace, in fan-out order.
+   * @throws {ConfigFileParseError} If any given file cannot be read or parsed.
+   * @throws {ApiRequestFailed} If any request fails or its response status is >= 400.
+   */
+  async configFromJson(paths) {
+    return this.#configFromPaths(paths, 'json');
+  }
+
+  /**
+   * Same as {@link NaviClient#configFromJson}, but parses every given file as YAML,
+   * regardless of its extension.
+   *
+   * @param {string|string[]} paths A single file path, or an array of file paths.
+   * @returns {Promise<object[]>} One `POST /api/config` response per distinct
+   * namespace, in fan-out order.
+   * @throws {ConfigFileParseError} If any given file cannot be read or parsed.
+   * @throws {ApiRequestFailed} If any request fails or its response status is >= 400.
+   */
+  async configFromYaml(paths) {
+    return this.#configFromPaths(paths, 'yaml');
+  }
+
+  /**
+   * Same as {@link NaviClient#configFromJson}, but auto-detects each file's parser
+   * from its extension (`.json` → JSON, `.yml`/`.yaml` → YAML).
+   *
+   * @param {string|string[]} paths A single file path, or an array of file paths.
+   * @returns {Promise<object[]>} One `POST /api/config` response per distinct
+   * namespace, in fan-out order.
+   * @throws {ConfigFileParseError} If any given file cannot be read or parsed.
+   * @throws {ApiRequestFailed} If any request fails or its response status is >= 400.
+   */
+  async configFromFiles(paths) {
+    return this.#configFromPaths(paths, 'auto');
+  }
+
+  /**
    * Calls `POST /api/engine/start`, starting or pushing resources into the
    * running instance, scoped per namespace via `targets`.
    *
@@ -58,6 +106,32 @@ class NaviClient {
    */
   async engineStop() {
     return this.apiClient.post('/api/engine/stop');
+  }
+
+  /**
+   * Shared implementation behind `configFromJson`/`configFromYaml`/`configFromFiles`:
+   * normalizes `paths` to an array, parses and groups every file by namespace
+   * (fail-fast — see `ConfigFileGrouper`), then issues one `POST /api/config`
+   * call per namespace group, sequentially, in fan-out order.
+   *
+   * @param {string|string[]} paths A single file path, or an array of file paths.
+   * @param {'json'|'yaml'|'auto'} mode The parser to use for every given file.
+   * @returns {Promise<object[]>} One `POST /api/config` response per distinct
+   * namespace, in fan-out order.
+   * @throws {ConfigFileParseError} If any given file cannot be read or parsed.
+   * @throws {ApiRequestFailed} If any request fails or its response status is >= 400.
+   * @private
+   */
+  async #configFromPaths(paths, mode) {
+    const entries = [].concat(paths).map((path) => { return { path, mode }; });
+    const groups = ConfigFileGrouper.group(entries);
+
+    const results = [];
+    for (const group of groups) {
+      results.push(await this.config(group));
+    }
+
+    return results;
   }
 }
 

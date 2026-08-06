@@ -1,0 +1,8 @@
+namespace: reports
+include:
+  - other_file_that_is_never_read.yml
+workers: 4
+resources:
+  extra:
+    client: api
+    path: /extra
