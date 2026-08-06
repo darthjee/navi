@@ -106,6 +106,18 @@ bump_client() {
 **Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/client-$VERSION)" \
       "$README"
   fi
+
+  if grep -q '\*\*Client Next Version:\*\*' "$README"; then
+    sed -i '' \
+      "s|\*\*Client Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/client-.*)|**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/client-$VERSION...main)|" \
+      "$README"
+  else
+    sed -i '' \
+      "/\*\*Client Current Version:\*\*/a\\
+\\
+**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/client-$VERSION...main)" \
+      "$README"
+  fi
 }
 
 case "$TARGET" in
