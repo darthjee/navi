@@ -36,6 +36,10 @@ await client.engineStart({
 
 // POST /api/engine/stop
 await client.engineStop();
+
+// Read config straight from the same YAML/JSON files the engine reads,
+// one POST /api/config call per distinct namespace found across the files
+await client.configFromFiles(['./config/reports.yml', './config/billing.json']);
 ```
 
 ### `NaviClient`
@@ -49,10 +53,15 @@ await client.engineStop();
 | Method | Maps to |
 |--------|---------|
 | `config(payload)` | `POST /api/config` |
+| `configFromJson(paths)` | `POST /api/config` (once per namespace) — parses one or more files as JSON, fanning out per distinct `namespace` found across them. |
+| `configFromYaml(paths)` | `POST /api/config` (once per namespace) — same as above, forcing YAML parsing. |
+| `configFromFiles(paths)` | `POST /api/config` (once per namespace) — same as above, auto-detecting JSON vs. YAML per file extension (`.json` vs. `.yml`/`.yaml`). |
 | `engineStart(payload = {})` | `POST /api/engine/start` |
 | `engineStop()` | `POST /api/engine/stop` |
 
-Every method returns a `Promise` resolving to the parsed JSON response body, and rejects with an `ApiRequestFailed` error (`statusCode`, `url`, `body`) when the request fails or the response status is `>= 400`.
+`configFromJson`/`configFromYaml`/`configFromFiles` each accept a single path or an array of paths. Every file is read and parsed up front — no `include:` chain resolution, only `namespace`/`resources`/`clients` are extracted — and the call throws before sending any request if any file is missing or fails to parse. Files are grouped by `namespace` (defaulting to `'default'`) in order of first appearance, with same-namespace collisions resolved last-file-wins, and one `POST /api/config` request is issued **sequentially** per namespace group; the call resolves to an array of per-namespace results in that order. `${VAR}`/`$VAR` env references in the file content are resolved locally before sending.
+
+Every method returns a `Promise` resolving to the parsed JSON response body (or, for the `configFrom*` methods, an array of them), and rejects with an `ApiRequestFailed` error (`statusCode`, `url`, `body`) when a request fails or the response status is `>= 400`.
 
 See the main [Navi `/api` namespace documentation](https://github.com/darthjee/navi/blob/main/docs/agents/web-server.md#api-namespace) for the full request/response shape of each route.
 
@@ -67,7 +76,10 @@ npx navi-client --base-url http://localhost:3000 --token $NAVI_API_TOKEN --actio
 | `--base-url` | `-b` | Base URL of the running Navi instance. Required. |
 | `--token` | `-t` | Bearer token. Required. |
 | `--action` | `-a` | One of `config`, `engine-start`, `engine-stop`. Required. |
-| `--payload` | `-p` | Optional JSON request body (used by `config`/`engine-start`). |
+| `--payload` | `-p` | Optional JSON request body (used by `config`/`engine-start`). Mutually exclusive with `--file`/`--json`/`--yaml`. |
+| `--file <path>` | | `config` only. `configFromFiles` semantics (auto-detects JSON/YAML by extension). Repeatable. |
+| `--json <path>` | | `config` only. `configFromJson` semantics (forces JSON parsing). Repeatable. |
+| `--yaml <path>` | | `config` only. `configFromYaml` semantics (forces YAML parsing). Repeatable. |
 
 ```bash
 navi-client -b http://localhost:3000 -t $NAVI_API_TOKEN -a config \
@@ -75,9 +87,14 @@ navi-client -b http://localhost:3000 -t $NAVI_API_TOKEN -a config \
 
 navi-client -b http://localhost:3000 -t $NAVI_API_TOKEN -a engine-start \
   -p '{"targets":[{"namespace":"reports"}]}'
+
+# --file/--json/--yaml are repeatable and combinable, merged in literal
+# command-line order; mutually exclusive with --payload
+navi-client -b http://localhost:3000 -t $NAVI_API_TOKEN -a config \
+  --file ./config/reports.yml --json ./config/billing.json --yaml ./config/extra.yaml
 ```
 
-The CLI prints the JSON response body to stdout on success, or an error message to stderr and exits with status `1` on failure.
+The CLI prints the JSON response body to stdout on success (or, for `config` with `--file`/`--json`/`--yaml`, the array of per-namespace response bodies), or an error message to stderr and exits with status `1` on failure.
 
 ---
 
