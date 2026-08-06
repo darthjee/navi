@@ -1,5 +1,6 @@
 import { NaviClient } from '../../client.js';
 import { CliRunner } from '../../lib/CliRunner.js';
+import { ConfigFileGrouper } from '../../lib/ConfigFileGrouper.js';
 
 describe('CliRunner', () => {
   const baseUrl = 'http://example.com';
@@ -43,6 +44,17 @@ describe('CliRunner', () => {
       });
     });
 
+    describe('validation of --payload / --file/--json/--yaml mutual exclusivity', () => {
+      it('fails when --payload is combined with --file/--json/--yaml', async () => {
+        const code = await CliRunner.run({
+          baseUrl, token, action: 'config', payload: '{}', configFiles: [{ path: 'a.yml', mode: 'auto' }],
+        });
+
+        expect(code).toBe(1);
+        expect(console.error).toHaveBeenCalledWith('--payload cannot be combined with --file/--json/--yaml');
+      });
+    });
+
     describe('when the payload is invalid JSON', () => {
       it('fails with a JSON error message', async () => {
         const code = await CliRunner.run({ baseUrl, token, action: 'config', payload: '{not json' });
@@ -81,6 +93,44 @@ describe('CliRunner', () => {
 
         expect(code).toBe(0);
         expect(NaviClient.prototype.engineStop).toHaveBeenCalled();
+      });
+    });
+
+    describe('when config files are given', () => {
+      it('groups them and calls #config once per namespace, printing the array result', async () => {
+        spyOn(ConfigFileGrouper, 'group').and.returnValue([
+          { namespace: 'ns1', resources: {}, clients: {} },
+          { namespace: 'ns2', resources: {}, clients: {} },
+        ]);
+        spyOn(NaviClient.prototype, 'config').and.returnValues(
+          Promise.resolve({ status: 'accepted', namespace: 'ns1' }),
+          Promise.resolve({ status: 'accepted', namespace: 'ns2' }),
+        );
+
+        const configFiles = [{ path: 'a.yml', mode: 'auto' }, { path: 'b.json', mode: 'json' }];
+        const code = await CliRunner.run({ baseUrl, token, action: 'config', configFiles });
+
+        expect(code).toBe(0);
+        expect(ConfigFileGrouper.group).toHaveBeenCalledWith(configFiles);
+        expect(NaviClient.prototype.config).toHaveBeenCalledWith({ namespace: 'ns1', resources: {}, clients: {} });
+        expect(NaviClient.prototype.config).toHaveBeenCalledWith({ namespace: 'ns2', resources: {}, clients: {} });
+        expect(console.log).toHaveBeenCalledWith(JSON.stringify([
+          { status: 'accepted', namespace: 'ns1' },
+          { status: 'accepted', namespace: 'ns2' },
+        ], null, 2));
+      });
+
+      it('fails without dispatching any request when a file fails to parse', async () => {
+        spyOn(ConfigFileGrouper, 'group').and.throwError('bad file');
+        spyOn(NaviClient.prototype, 'config');
+
+        const code = await CliRunner.run({
+          baseUrl, token, action: 'config', configFiles: [{ path: 'bad.yml', mode: 'auto' }],
+        });
+
+        expect(code).toBe(1);
+        expect(console.error).toHaveBeenCalledWith('bad file');
+        expect(NaviClient.prototype.config).not.toHaveBeenCalled();
       });
     });
 

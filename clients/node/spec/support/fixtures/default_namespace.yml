@@ -1,0 +1,4 @@
+resources:
+  users:
+    client: api
+    path: /users

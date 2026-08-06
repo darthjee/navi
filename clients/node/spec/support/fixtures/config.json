@@ -1,0 +1,9 @@
+{
+  "namespace": "billing",
+  "resources": {
+    "invoices": {
+      "client": "api",
+      "path": "/invoices"
+    }
+  }
+}
