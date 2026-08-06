@@ -1,4 +1,4 @@
-.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up
+.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client
 
 PROJECT ?= navi
 COMPOSE ?= docker compose
@@ -11,7 +11,9 @@ APP_IMAGE ?= $(PROJECT)_app
 DOCKERFILE_DEV ?= dockerfiles/dev_navi_hey/Dockerfile
 DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
 DOCKERFILE_PROD ?= dockerfiles/production_navi_hey/Dockerfile
+DOCKERFILE_PROD_CLIENT ?= dockerfiles/production_navi_client/Dockerfile
 PROD_IMAGE := darthjee/navi-hey
+CLIENT_IMAGE := darthjee/navi-hey-client
 PLATFORM := linux/amd64
 DOCKER_HUB_SCRIPT ?= /home/scripts/sbin/docker_hub.sh
 
@@ -66,6 +68,23 @@ release:
 
 update-description:
 	/bin/sh $(DOCKER_HUB_SCRIPT) login_and_push_description $(PROD_IMAGE) DOCKERHUB_DESCRIPTION.md
+
+build-client:
+	docker build -f $(DOCKERFILE_PROD_CLIENT) . -t $(CLIENT_IMAGE):latest
+
+build-image-client:
+	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make build-image-client)"; exit 1; fi
+	docker build --platform $(PLATFORM) -f $(DOCKERFILE_PROD_CLIENT) --build-arg CLIENT_VERSION=$(TAG) . -t $(CLIENT_IMAGE):$(TAG) -t $(CLIENT_IMAGE):latest
+
+release-client:
+	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make release-client)"; exit 1; fi
+	$(MAKE) build-image-client TAG=$(TAG)
+	@echo "$$DOCKER_HUB_PASSWORD" | docker login -u "$$DOCKER_HUB_USERNAME" --password-stdin
+	docker push $(CLIENT_IMAGE):$(TAG)
+	docker push $(CLIENT_IMAGE):latest
+
+update-description-client:
+	/bin/sh $(DOCKER_HUB_SCRIPT) login_and_push_description $(CLIENT_IMAGE) DOCKERHUB_DESCRIPTION_CLIENT.md
 
 .env:
 	cp .env.sample .env
