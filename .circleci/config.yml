@@ -88,6 +88,20 @@ workflows:
               only: /\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
+      - build-and-release-client:
+          requires: [npm-publish-client]
+          filters:
+            tags:
+              only: /client-\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
+      - update-description-client:
+          requires: [build-and-release-client]
+          filters:
+            tags:
+              only: /client-\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
       - build-and-release-demo:
           requires: [build-and-release]
           filters:
@@ -327,6 +341,23 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
             cd clients/node; npm publish --access public
+
+  build-and-release-client:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build and release client image
+          command: make release-client TAG=$(echo $CIRCLE_TAG | sed 's/^client-//')
+
+  update-description-client:
+    docker:
+      - image: darthjee/scripts:0.6.0
+    steps:
+      - checkout
+      - run:
+          name: Update client Docker Hub description
+          command: sh scripts/update-description-client.sh
 
   build-and-release:
     machine: true
