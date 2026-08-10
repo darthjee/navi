@@ -34,6 +34,11 @@ const restartEngine = () => {
     .then(handleResponse);
 };
 
+const reloadEngine = () => {
+  return fetch('/engine/reload', { method: 'PATCH' })
+    .then(handleResponse);
+};
+
 const shutdownServer = () => {
   return fetch('/engine/shutdown', { method: 'PATCH' })
     .then(handleResponse);
@@ -44,4 +49,4 @@ const getSettings = () => {
     .then(handleResponse);
 };
 
-export { getEngineStatus, getSettings, pauseEngine, stopEngine, continueEngine, startEngine, restartEngine, shutdownServer };
+export { getEngineStatus, getSettings, pauseEngine, stopEngine, continueEngine, startEngine, restartEngine, reloadEngine, shutdownServer };

@@ -8,6 +8,7 @@ import { ApiEngineStartHandler } from './handlers/api/ApiEngineStartHandler.js';
 import { ApiEngineStopHandler } from './handlers/api/ApiEngineStopHandler.js';
 import { EngineContinueHandler } from './handlers/engine/EngineContinueHandler.js';
 import { EnginePauseHandler } from './handlers/engine/EnginePauseHandler.js';
+import { EngineReloadHandler } from './handlers/engine/EngineReloadHandler.js';
 import { EngineRestartHandler } from './handlers/engine/EngineRestartHandler.js';
 import { EngineShutdownHandler } from './handlers/engine/EngineShutdownHandler.js';
 import { EngineStartHandler } from './handlers/engine/EngineStartHandler.js';
@@ -77,6 +78,7 @@ class Router {
       '/engine/continue':  new HandlerConfig(EngineContinueHandler),
       '/engine/start':     new HandlerConfig(EngineStartHandler),
       '/engine/restart':   new HandlerConfig(EngineRestartHandler),
+      '/engine/reload':    new HandlerConfig(EngineReloadHandler),
       '/engine/shutdown':  new HandlerConfig(EngineShutdownHandler),
     };
 

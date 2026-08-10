@@ -1,7 +1,9 @@
 import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
+import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ApplicationInstance } from '../../../lib/services/ApplicationInstance.js';
+import { ConfigIncluder } from '../../../lib/services/ConfigIncluder.js';
 import { EngineEvents } from '../../../lib/services/EngineEvents.js';
 import { FailureChecker } from '../../../lib/services/FailureChecker.js';
 import { ResourceEnqueuer } from '../../../lib/utils/ResourceEnqueuer.js';
@@ -174,6 +176,54 @@ describe('ApplicationInstance', () => {
         const result = await instance.start([], { enqueue: false });
         expect(result).toBeUndefined();
       });
+    });
+  });
+
+  describe('#reload', () => {
+    beforeEach(() => {
+      spyOn(instance, 'enqueueFirstJobs').and.stub();
+    });
+
+    it('stops then starts the engine, in order', async () => {
+      spyOn(ConfigIncluder, 'resolve').and.returnValue([]);
+      spyOn(NamespaceMap, 'include').and.stub();
+      spyOn(instance, 'stop').and.callThrough();
+      spyOn(instance, 'start').and.callThrough();
+
+      await instance.reload();
+
+      expect(instance.stop).toHaveBeenCalledBefore(instance.start);
+      expect(instance.status()).toBe('running');
+    });
+
+    it('merges ConfigIncluder.resolve()\'s result into NamespaceMap between stop and start', async () => {
+      const files = [{ namespace: 'default', resources: {}, clients: {}, filePath: '/config.yml' }];
+      spyOn(ConfigIncluder, 'resolve').and.returnValue(files);
+      spyOn(NamespaceMap, 'include').and.stub();
+      spyOn(instance, 'stop').and.callThrough();
+      spyOn(instance, 'start').and.callThrough();
+
+      await instance.reload();
+
+      expect(NamespaceMap.include).toHaveBeenCalledWith(files);
+      expect(instance.stop).toHaveBeenCalledBefore(NamespaceMap.include);
+      expect(NamespaceMap.include).toHaveBeenCalledBefore(instance.start);
+    });
+
+    it('does nothing when not running', async () => {
+      instance.setStatus('stopped');
+      spyOn(ConfigIncluder, 'resolve');
+      spyOn(NamespaceMap, 'include');
+      spyOn(instance, 'stop');
+      spyOn(instance, 'start');
+
+      await instance.reload();
+
+      expect(instance.stop).not.toHaveBeenCalled();
+      expect(instance.start).not.toHaveBeenCalled();
+      expect(ConfigIncluder.resolve).not.toHaveBeenCalled();
+      expect(NamespaceMap.include).not.toHaveBeenCalled();
+      expect(instance.status()).toBe('stopped');
     });
   });
 

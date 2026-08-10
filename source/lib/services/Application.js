@@ -172,6 +172,15 @@ class Application {
   }
 
   /**
+   * Reloads configuration from disk, merging it into the live namespace, then
+   * restarts processing.
+   * @returns {Promise<void>}
+   */
+  static async reload() {
+    return Application.#getInstance().reload();
+  }
+
+  /**
    * Shuts down the web server and stops the engine.
    * @returns {Promise<void>}
    */

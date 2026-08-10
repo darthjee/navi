@@ -1,5 +1,6 @@
 import ContinueButton from '../ContinueButton.jsx';
 import PauseButton from '../PauseButton.jsx';
+import ReloadButton from '../ReloadButton.jsx';
 import RestartButton from '../RestartButton.jsx';
 import ShutdownButton from '../ShutdownButton.jsx';
 import StartButton from '../StartButton.jsx';
@@ -23,6 +24,10 @@ class EngineControlsHelper {
     return <RestartButton show={view.showRestart()} onClick={() => view.handleRestart()} />;
   }
 
+  renderReloadButton(view) {
+    return <ReloadButton show={view.showReload()} onClick={() => view.handleReload()} />;
+  }
+
   renderContinueButton(view) {
     return <ContinueButton show={view.showContinue()} onClick={() => view.handleContinue()} />;
   }
@@ -44,6 +49,7 @@ class EngineControlsHelper {
           {this.renderPauseButton(view)}
           {this.renderStopButton(view)}
           {this.renderRestartButton(view)}
+          {this.renderReloadButton(view)}
           {this.renderContinueButton(view)}
           {this.renderStartButton(view)}
           {this.renderShutdownButton(view)}
