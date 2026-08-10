@@ -15,7 +15,6 @@ import { LogRegistry } from '../registry/LogRegistry.js';
 import { WebServer } from '../server/WebServer.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
-import { ResourceRequestCollector } from '../utils/ResourceRequestCollector.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
 
@@ -121,12 +120,13 @@ class ApplicationInstance {
    * Enqueues all parameter-free ResourceRequests into the job registry.
    * These are requests whose URLs contain no {:placeholder} tokens and can be
    * processed immediately without any external parameters.
+   * Delegates to `ResourceEnqueuer#enqueueAll` (default namespace), so it always
+   * reflects the live state of the `NamespaceMap` singleton, including resources
+   * added via `POST /api/config` after boot.
    * @returns {void}
    */
   enqueueFirstJobs() {
-    new ResourceRequestCollector(this.config.resourceRegistry).requestsNeedingNoParams().forEach((resourceRequest) => {
-      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
-    });
+    new ResourceEnqueuer().enqueueAll();
   }
 
   /**

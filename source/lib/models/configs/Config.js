@@ -1,4 +1,5 @@
 import { LogConfig } from './LogConfig.js';
+import { NamespaceNotFound } from '../../exceptions/registry/NamespaceNotFound.js';
 import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { ResourceRegistry } from '../../registry/ResourceRegistry.js';
 import { ConfigLoader } from '../../services/ConfigLoader.js';
@@ -23,13 +24,25 @@ class Config {
   constructor({ namespaceMap, workersConfig, webConfig, logConfig, failureConfig }) {
     this.namespaceMap = NamespaceMap.build(namespaceMap);
 
-    const defaultNamespace = namespaceMap[DEFAULT_NAMESPACE];
-    this.resourceRegistry = defaultNamespace ? defaultNamespace.resourceRegistry : new ResourceRegistry({});
-
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;
     this.logConfig = logConfig ?? new LogConfig();
     this.failureConfig = failureConfig ?? null;
+  }
+
+  /**
+   * Returns the current default namespace's resource registry, resolved live
+   * from the `namespaceMap` singleton on every access. Falls back to an empty
+   * `ResourceRegistry` when there is no `default` namespace.
+   * @returns {ResourceRegistry} The default namespace's resource registry.
+   */
+  get resourceRegistry() {
+    try {
+      return this.namespaceMap.getItem(DEFAULT_NAMESPACE).resourceRegistry;
+    } catch (error) {
+      if (error instanceof NamespaceNotFound) return new ResourceRegistry({});
+      throw error;
+    }
   }
 
   /**

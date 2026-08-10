@@ -177,6 +177,16 @@ describe('ApplicationInstance', () => {
     });
   });
 
+  describe('#enqueueFirstJobs', () => {
+    it('delegates to ResourceEnqueuer#enqueueAll', () => {
+      spyOn(ResourceEnqueuer.prototype, 'enqueueAll').and.stub();
+
+      instance.enqueueFirstJobs();
+
+      expect(ResourceEnqueuer.prototype.enqueueAll).toHaveBeenCalled();
+    });
+  });
+
   describe('#enqueueResources', () => {
     it('falls back to enqueueFirstJobs when no names are given', () => {
       spyOn(instance, 'enqueueFirstJobs').and.stub();
