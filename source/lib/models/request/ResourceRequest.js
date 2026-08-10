@@ -4,6 +4,7 @@ import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction
 import { JobRegistry as DefaultJobRegistry } from '../../background/JobRegistry.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
 import { PaginatedActionsEnqueuer } from '../../enqueuers/PaginatedActionsEnqueuer.js';
+import { LogRegistry } from '../../registry/LogRegistry.js';
 import { Application } from '../../services/Application.js';
 
 /**
@@ -15,6 +16,7 @@ class ResourceRequest {
   #clientNamespace;
   #namespace;
   #disabled;
+  #maxPage;
 
   /**
    * @param {object} attributes ResourceRequest attributes
@@ -30,6 +32,9 @@ class ResourceRequest {
    * when omitted. Ignored when `disabled` is `true`.
    * @param {boolean} [attributes.disabled] Whether this request is disabled. Takes precedence
    * over `enabled` when `true`.
+   * @param {number} [attributes.max_page] Caps how many pages of this resource are ever enqueued
+   * when it's the target of another resource's `paginated_actions`. Must be a positive integer;
+   * any other value (including omitted, `null`, or `0`) means unlimited.
    */
   constructor({
     url,
@@ -41,11 +46,13 @@ class ResourceRequest {
     paginated_actions = [],
     enabled,
     disabled,
+    max_page,
   }) {
     this.url = url;
     this.status = status;
     this.#namespace = namespace;
     this.#disabled = disabled === true || enabled === false;
+    this.#maxPage = this.#sanitizeMaxPage(max_page);
 
     const parsedClient = ResourceRequest.#parseClient(clientName);
     this.#clientName = parsedClient.name;
@@ -91,6 +98,15 @@ class ResourceRequest {
    */
   get disabled() {
     return this.#disabled;
+  }
+
+  /**
+   * Returns the cap on how many pages of this resource are ever enqueued when it's the
+   * target of another resource's `paginated_actions`. `null` means unlimited.
+   * @returns {number|null} The positive integer cap, or null when unlimited.
+   */
+  get maxPage() {
+    return this.#maxPage;
   }
 
   /**
@@ -190,6 +206,20 @@ class ResourceRequest {
       return { name: client.name, namespace: client.namespace ?? null };
     }
     return { name: client, namespace: null };
+  }
+
+  /**
+   * Sanitizes the raw `max_page` value into a positive integer or `null`.
+   * Logs a warning when a present value is invalid.
+   * @param {*} value The raw `max_page` value.
+   * @returns {number|null} The sanitized positive integer, or null when unlimited.
+   */
+  #sanitizeMaxPage(value) {
+    if (value === undefined || value === null || value === 0) return null;
+    if (Number.isInteger(value) && value > 0) return value;
+
+    LogRegistry.warn(`Ignoring invalid max_page value: ${JSON.stringify(value)} — treating as unlimited`);
+    return null;
   }
 }
 
