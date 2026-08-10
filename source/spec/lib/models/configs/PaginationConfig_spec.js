@@ -13,21 +13,21 @@ describe('PaginationConfig', () => {
     });
 
     describe('when zero_indexed is not provided', () => {
-      it('defaults to 1-based page numbers', () => {
+      it('defaults zeroIndexed to false', () => {
         const config = PaginationConfig.fromList([
           { pages: 'parsedBody.pages', page_key: 'page' },
         ]);
-        expect(config.pageNumbers(3)).toEqual([1, 2, 3]);
+        expect(config.zeroIndexed).toBeFalse();
       });
     });
 
     describe('when zero_indexed is true', () => {
-      it('returns 0-based page numbers', () => {
+      it('sets zeroIndexed to true', () => {
         const config = PaginationConfig.fromList([
           { pages: 'parsedBody.pages', page_key: 'page' },
           { zero_indexed: true },
         ]);
-        expect(config.pageNumbers(3)).toEqual([0, 1, 2]);
+        expect(config.zeroIndexed).toBeTrue();
       });
     });
   });
@@ -74,42 +74,20 @@ describe('PaginationConfig', () => {
     });
   });
 
-  describe('#pageNumbers', () => {
-    describe('when zero_indexed is false (default)', () => {
-      let config;
-
-      beforeEach(() => {
-        config = PaginationConfig.fromList([
-          { pages: 'parsedBody.pages', page_key: 'page' },
-        ]);
-      });
-
-      it('returns [1] for count 1', () => {
-        expect(config.pageNumbers(1)).toEqual([1]);
-      });
-
-      it('returns [1, 2, 3] for count 3', () => {
-        expect(config.pageNumbers(3)).toEqual([1, 2, 3]);
-      });
+  describe('#zeroIndexed', () => {
+    it('returns false by default', () => {
+      const config = PaginationConfig.fromList([
+        { pages: 'parsedBody.pages', page_key: 'page' },
+      ]);
+      expect(config.zeroIndexed).toBeFalse();
     });
 
-    describe('when zero_indexed is true', () => {
-      let config;
-
-      beforeEach(() => {
-        config = PaginationConfig.fromList([
-          { pages: 'parsedBody.pages', page_key: 'page' },
-          { zero_indexed: true },
-        ]);
-      });
-
-      it('returns [0] for count 1', () => {
-        expect(config.pageNumbers(1)).toEqual([0]);
-      });
-
-      it('returns [0, 1, 2] for count 3', () => {
-        expect(config.pageNumbers(3)).toEqual([0, 1, 2]);
-      });
+    it('returns true when zero_indexed is configured', () => {
+      const config = PaginationConfig.fromList([
+        { pages: 'parsedBody.pages', page_key: 'page' },
+        { zero_indexed: true },
+      ]);
+      expect(config.zeroIndexed).toBeTrue();
     });
   });
 });

@@ -133,6 +133,48 @@ describe('ResourceRequestPaginatedAction', () => {
       );
     });
 
+    it('caps the enqueued pages for a ResourceRequest with maxPage while a sibling without maxPage gets every page', () => {
+      const cappedRequest = ResourceRequestFactory.build({ url: '/products/capped.json', maxPage: 2 });
+      const uncappedRequest = ResourceRequestFactory.build({ url: '/products/uncapped.json' });
+
+      registerProductsResource(cappedRequest, uncappedRequest);
+
+      new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(5);
+      [1, 2].forEach((page) => {
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: cappedRequest, parameters: { page } },
+        );
+      });
+      [1, 2, 3].forEach((page) => {
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: uncappedRequest, parameters: { page } },
+        );
+      });
+    });
+
+    it('composes maxPage with zero_indexed pagination, capping to the first N pages starting at 0', () => {
+      const cappedRequest = ResourceRequestFactory.build({ url: '/products/capped.json', maxPage: 2 });
+
+      registerProductsResource(cappedRequest);
+
+      new ResourceRequestPaginatedAction({
+        resource: 'products',
+        pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }, { zero_indexed: true }],
+      }).execute(responseWrapper);
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+      [0, 1].forEach((page) => {
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: cappedRequest, parameters: { page } },
+        );
+      });
+    });
+
     it('skips disabled ResourceRequests when enqueueing the target resource', () => {
       const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
       const disabledRequest = ResourceRequestFactory.build({ url: '/products/disabled.json', disabled: true });

@@ -2,6 +2,7 @@ import { JobRegistry } from '../../../../lib/background/JobRegistry.js';
 import { AssetRequest } from '../../../../lib/models/request/AssetRequest.js';
 import { ResourceRequest } from '../../../../lib/models/request/ResourceRequest.js';
 import { ResponseWrapper } from '../../../../lib/models/response/ResponseWrapper.js';
+import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { Application } from '../../../../lib/services/Application.js';
 import { AssetRequestFactory } from '../../../support/factories/AssetRequestFactory.js';
 import { ClientRegistryFactory } from '../../../support/factories/ClientRegistryFactory.js';
@@ -139,6 +140,42 @@ describe('ResourceRequest', () => {
     ].forEach(({ description, attrs, expected }) => {
       it(`returns ${expected} ${description}`, () => {
         expect(ResourceRequestFactory.build(attrs).disabled).toBe(expected);
+      });
+    });
+  });
+
+  describe('#maxPage', () => {
+    describe('with valid or omitted values', () => {
+      [
+        { description: 'when max_page is omitted', attrs: {}, expected: null },
+        { description: 'when max_page is null', attrs: { maxPage: null }, expected: null },
+        { description: 'when max_page is 0', attrs: { maxPage: 0 }, expected: null },
+        { description: 'when max_page is a positive integer', attrs: { maxPage: 3 }, expected: 3 },
+        { description: 'when max_page is 1', attrs: { maxPage: 1 }, expected: 1 },
+      ].forEach(({ description, attrs, expected }) => {
+        it(`returns ${expected} ${description}`, () => {
+          LoggerUtils.stubLoggerMethods();
+          expect(ResourceRequestFactory.build(attrs).maxPage).toBe(expected);
+          expect(LogRegistry.warn).not.toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('with invalid values', () => {
+      [
+        { description: 'a negative integer', value: -1 },
+        { description: 'a non-integer float', value: 1.5 },
+        { description: 'NaN', value: NaN },
+        { description: 'a numeric string', value: '3' },
+        { description: 'a boolean', value: true },
+        { description: 'an object', value: { page: 3 } },
+        { description: 'an array', value: [3] },
+      ].forEach(({ description, value }) => {
+        it(`returns null and logs a warning when max_page is ${description}`, () => {
+          LoggerUtils.stubLoggerMethods();
+          expect(ResourceRequestFactory.build({ maxPage: value }).maxPage).toBeNull();
+          expect(LogRegistry.warn).toHaveBeenCalledTimes(1);
+        });
       });
     });
   });

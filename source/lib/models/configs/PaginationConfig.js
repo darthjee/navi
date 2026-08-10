@@ -30,23 +30,19 @@ class PaginationConfig {
   }
 
   /**
+   * @returns {boolean} Whether pages are zero-indexed.
+   */
+  get zeroIndexed() {
+    return this.#zeroIndexed;
+  }
+
+  /**
    * Evaluates the `pages` expression against the response wrapper.
    * @param {ResponseWrapper} responseWrapper The response wrapper to resolve against.
    * @returns {number} Total number of pages.
    */
   resolvePages(responseWrapper) {
     return this.#pagesResolver.resolve(responseWrapper);
-  }
-
-  /**
-   * Returns an array of page numbers to iterate over.
-   * @param {number} count Total number of pages.
-   * @returns {Array<number>} Array of page numbers.
-   */
-  pageNumbers(count) {
-    const start = this.#zeroIndexed ? 0 : 1;
-    const end = this.#zeroIndexed ? count - 1 : count;
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   /**

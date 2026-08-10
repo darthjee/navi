@@ -14,6 +14,8 @@ class ResourceRequestFactory {
    * @param {string} [params.namespace='default'] - The namespace of the owning Resource.
    * @param {boolean} [params.enabled] - Whether the request is enabled.
    * @param {boolean} [params.disabled] - Whether the request is disabled.
+   * @param {number} [params.maxPage] - Caps how many pages of this resource are ever enqueued.
+   * @param {number} [params.max_page] - Alias for `maxPage`, matching the raw YAML key.
    * @returns {ResourceRequest} A new ResourceRequest instance.
    */
   static build({
@@ -24,8 +26,10 @@ class ResourceRequestFactory {
     namespace = 'default',
     enabled = undefined,
     disabled = undefined,
+    maxPage = undefined,
+    max_page = maxPage,
   } = {}) {
-    return new ResourceRequest({ url, status, clientName, actions, namespace, enabled, disabled });
+    return new ResourceRequest({ url, status, clientName, actions, namespace, enabled, disabled, max_page });
   }
 }
 

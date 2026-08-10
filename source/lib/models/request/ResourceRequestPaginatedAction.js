@@ -3,6 +3,7 @@ import { MissingActionResource } from '../../exceptions/registry/MissingActionRe
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { NamespaceMap as DefaultNamespaceMap } from '../../registry/NamespaceMap.js';
 import { Application } from '../../services/Application.js';
+import { PageRange } from '../configs/PageRange.js';
 import { PaginationConfig } from '../configs/PaginationConfig.js';
 import { ParametersMapper } from '../response/ParametersMapper.js';
 
@@ -92,21 +93,24 @@ class ResourceRequestPaginatedAction {
     if (Application.isStopped()) return;
 
     const count = this.#pagination.resolvePages(responseWrapper);
-    const pages = this.#pagination.pageNumbers(count);
     const resource = this.#namespaceMap.getResource(this.#originNamespace, this.#resource, this.#namespace);
     const mappedParameters = this.#mapper.map(responseWrapper);
 
-    for (const page of pages) {
-      const pageParameters = {
-        ...parameters,
-        ...mappedParameters,
-        [this.#pagination.pageKey]: page,
-      };
-      for (const resourceRequest of resource.resourceRequests) {
-        if (resourceRequest.disabled) continue;
+    for (const resourceRequest of resource.resourceRequests) {
+      if (resourceRequest.disabled) continue;
 
+      new PageRange({
+        count,
+        zeroIndexed: this.#pagination.zeroIndexed,
+        maxPage: resourceRequest.maxPage,
+      }).each((page) => {
+        const pageParameters = {
+          ...parameters,
+          ...mappedParameters,
+          [this.#pagination.pageKey]: page,
+        };
         this.#jobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: pageParameters });
-      }
+      });
     }
   }
 

@@ -181,6 +181,7 @@ resources:
 | `status` | Expected HTTP response status code. Navi marks a request as failed if the actual status differs. |
 | `client` | Name of the client to use for this request. Defaults to `default`. |
 | `disabled` / `enabled` | Optional. Set `disabled: true` (or `enabled: false`) on a resource-request entry to keep its YAML definition in place while excluding it from every enqueue path: startup, manual/API trigger by name, and as an `actions`/`paginated_actions` target. `disabled: true` always wins over any `enabled` value. Defaults to enabled. |
+| `max_page` | Optional. When this request is the target of another resource's `paginated_actions`, caps how many of its pages ever get enqueued — a ceiling owned by this resource, applying uniformly to every caller. Counts pages, not page numbers (the first `max_page` pages in iteration order, whether `zero_indexed` or not). Omitted, `null`, `0`, or any other non-positive-integer value means unlimited; a present-but-invalid value also logs a warning. Defaults to unlimited. |
 | `actions` | Optional list of actions to execute after a successful response. Each action names a `resource` and an optional `parameters` map. |
 | `actions[].resource` | Name of the resource to act upon. Required. |
 | `actions[].parameters` | Optional key-value map. Each key is the destination variable name and each value is a path expression resolved against the response wrapper (e.g. `parsedBody.id`, `headers['page']`). When absent, the parsed body item is passed through unchanged. |
@@ -400,6 +401,33 @@ resources:
 ```
 
 If the `/categories.json` response contains `{ "pagination": { "pages": 3 } }` with a `X-Per-Page: 25` response header, Navi enqueues three jobs for `/products/1.json?per_page=25`, `/products/2.json?per_page=25`, and `/products/3.json?per_page=25`.
+
+### Capping pages with `max_page`
+
+Sometimes you don't want to warm every page a `paginated_actions` caller reports — just the first few, most-likely-to-be-hit ones. `max_page` caps this from the **target** resource's side, independent of who calls it:
+
+```yaml
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
+      paginated_actions:
+        - resource: products_page
+          pagination:
+            - pages: parsedBody.pagination.pages
+            - page_key: page
+            - zero_indexed: false
+          parameters:
+            per_page: headers['x-per-page']
+  products_page:
+    - url: /products/{:page}.json?per_page={:per_page}
+      status: 200
+      max_page: 2
+```
+
+Even though `/categories.json` reports 3 pages, `products_page` caps itself at 2 — Navi enqueues only `/products/1.json?per_page=25` and `/products/2.json?per_page=25`. `max_page` is a property of `products_page` itself: **every** caller that fans out into it is capped the same way, not just this one. It counts pages, not page numbers, so it composes the same way regardless of `zero_indexed` (a `zero_indexed: true` caller capped at `max_page: 2` would enqueue pages `0` and `1`, not `1` and `2`).
+
+Omitted, `null`, `0`, or any other non-positive-integer value means unlimited (all pages the caller resolves are enqueued) — the default. A present-but-invalid value (e.g. a negative number or a non-numeric string) also logs a warning.
 
 ---
 
