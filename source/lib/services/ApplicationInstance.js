@@ -1,3 +1,4 @@
+import { ConfigIncluder } from './ConfigIncluder.js';
 import { Engine } from './Engine.js';
 import { EngineEvents } from './EngineEvents.js';
 import { FailureChecker } from './FailureChecker.js';
@@ -12,6 +13,7 @@ import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
 import { Config } from '../models/configs/Config.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
+import { NamespaceMap } from '../registry/NamespaceMap.js';
 import { WebServer } from '../server/WebServer.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
@@ -30,6 +32,7 @@ class ApplicationInstance {
   #aggregator;
   #enginePromise;
   #sleepMs;
+  #configPath;
 
   /**
    * @param {object} [params={}] - Optional parameters for dependency injection.
@@ -51,6 +54,7 @@ class ApplicationInstance {
       throw new ConfigurationFileNotProvided();
     }
 
+    this.#configPath = configPath;
     this.config = Config.fromFile(configPath);
     const logRegistry = LogRegistry.build({ retention: this.config.logConfig.size });
     this.#bufferedLogger = logRegistry.bufferedLogger;
@@ -251,6 +255,19 @@ class ApplicationInstance {
   async restart() {
     if (this.#engineStatus !== 'running') return;
     await this.stop();
+    await this.start();
+  }
+
+  /**
+   * Reloads processing: stops the engine, re-reads the on-disk config file(s) and
+   * merges them into the live `NamespaceMap`, then starts the engine again.
+   * Only valid when status is 'running'.
+   * @returns {Promise<void>}
+   */
+  async reload() {
+    if (this.#engineStatus !== 'running') return;
+    await this.stop();
+    NamespaceMap.include(ConfigIncluder.resolve(this.#configPath));
     await this.start();
   }
 
