@@ -42,6 +42,10 @@ describe('EngineControls', () => {
       expect(findButtonByText(state.container, 'Restart')).not.toBeNull();
     });
 
+    it('renders the Reload button', () => {
+      expect(findButtonByText(state.container, 'Reload')).not.toBeNull();
+    });
+
     it('does not render the Continue button', () => {
       expect(findButtonByText(state.container, 'Continue')).toBeNull();
     });
@@ -74,6 +78,10 @@ describe('EngineControls', () => {
 
     it('renders the Restart button', () => {
       expect(findButtonByText(state.container, 'Restart')).not.toBeNull();
+    });
+
+    it('renders the Reload button', () => {
+      expect(findButtonByText(state.container, 'Reload')).not.toBeNull();
     });
 
     it('renders the Continue button', () => {
@@ -110,6 +118,10 @@ describe('EngineControls', () => {
       expect(findButtonByText(state.container, 'Restart')).toBeNull();
     });
 
+    it('does not render the Reload button', () => {
+      expect(findButtonByText(state.container, 'Reload')).toBeNull();
+    });
+
     it('does not render the Continue button', () => {
       expect(findButtonByText(state.container, 'Continue')).toBeNull();
     });
@@ -141,6 +153,7 @@ describe('EngineControls', () => {
       expect(findButtonByText(state.container, 'Pause')).toBeNull();
       expect(findButtonByText(state.container, 'Stop')).toBeNull();
       expect(findButtonByText(state.container, 'Restart')).toBeNull();
+      expect(findButtonByText(state.container, 'Reload')).toBeNull();
       expect(findButtonByText(state.container, 'Continue')).toBeNull();
       expect(findButtonByText(state.container, 'Start')).toBeNull();
     });

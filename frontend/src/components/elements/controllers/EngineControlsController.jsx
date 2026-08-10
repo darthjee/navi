@@ -2,6 +2,7 @@ import {
   continueEngine,
   getEngineStatus,
   pauseEngine,
+  reloadEngine,
   restartEngine,
   shutdownServer,
   startEngine,
@@ -55,6 +56,7 @@ class EngineControlsController {
   showContinue() { return this.isPaused(); }
   showStart() { return this.isStopped(); }
   showRestart() { return this.isRunning() || this.isPaused(); }
+  showReload() { return this.isRunning() || this.isPaused(); }
 
   handleAction(action) {
     action().then(this.#refreshStatus).catch(noop);
@@ -65,6 +67,7 @@ class EngineControlsController {
   handleContinue() { this.handleAction(continueEngine); }
   handleStart() { this.handleAction(startEngine); }
   handleRestart() { this.handleAction(restartEngine); }
+  handleReload() { this.handleAction(reloadEngine); }
   handleShutdown() { this.handleAction(shutdownServer); }
 
   buildPollingEffect(intervalRef, refreshStatus) {
