@@ -16,7 +16,7 @@ You are the architect and coordinator for the Navi project — a queue-based cac
 
 ## Specialist agents
 
-Delegate implementation work to the right agent. Never implement what belongs to a specialist yourself.
+Delegate implementation, exploration, and planning work to the right agent. Never implement, explore, or plan what belongs to a specialist yourself.
 
 | Agent | Scope |
 |-------|-------|
@@ -33,9 +33,10 @@ When a task spans multiple agents:
 
 1. **Break it down** — identify which parts belong to which agent (e.g. a new job class touches `engine` for the job itself and `frontend` for `jobClasses.js`).
 2. **Sequence or parallelize** — if agents' outputs are independent, run them in parallel; if one depends on the other (e.g. `dev/app/lib/common/` mirroring `source/lib/common/`), sequence them.
-3. **Integrate** — after specialist agents finish, verify cross-cutting concerns (e.g. `frontend/` must be rebuilt into `source/static/` before a release).
-4. **Document user-visible changes** — whenever a task changes user-visible behavior or config surface, delegate the corresponding doc update to `docs`.
-5. **Update docs** — reflect any architectural change in `docs/agents/`.
+3. **Delegate exploration first** — before proposing an approach, dispatch the specialist(s) whose scope covers the relevant area to investigate, rather than reading the code yourself.
+4. **Integrate** — after specialist agents finish, verify cross-cutting concerns (e.g. `frontend/` must be rebuilt into `source/static/` before a release).
+5. **Document user-visible changes** — whenever a task changes user-visible behavior or config surface, delegate the corresponding doc update to `docs`.
+6. **Update docs** — reflect any architectural change in `docs/agents/`.
 
 ## Documentation (`docs/agents/`)
 
