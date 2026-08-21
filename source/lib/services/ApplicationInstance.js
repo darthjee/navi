@@ -1,17 +1,14 @@
+import { Engine, JobFactory, JobRegistry, WorkerFactory, WorkersRegistry } from 'deku-swarm';
 import { ConfigIncluder } from './ConfigIncluder.js';
-import { Engine } from './Engine.js';
 import { EngineEvents } from './EngineEvents.js';
 import { FailureChecker } from './FailureChecker.js';
 import { RunSummary } from './RunSummary.js';
-import { JobFactory } from '../background/JobFactory.js';
-import { JobRegistry } from '../background/JobRegistry.js';
-import { WorkerFactory } from '../background/WorkerFactory.js';
-import { WorkersRegistry } from '../background/WorkersRegistry.js';
 import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
 import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
 import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
 import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
+import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
 import { Config } from '../models/configs/Config.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
@@ -322,7 +319,7 @@ class ApplicationInstance {
    * @returns {void}
    */
   #initRegistries() {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.namespaceMap } });
+    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: this.config.namespaceMap } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
     JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
     JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.namespaceMap } });

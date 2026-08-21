@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 
 /**
  * Test utility for setting up the shared ActionEnqueuer/ActionsEnqueuer spec context.

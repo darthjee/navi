@@ -1,6 +1,4 @@
-import { Job } from '../../../lib/background/Job.js';
-import { JobFactory } from '../../../lib/background/JobFactory.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { Job, JobFactory, JobRegistry } from 'deku-swarm';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 

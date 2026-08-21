@@ -1,4 +1,4 @@
-import { Job } from '../background/Job.js';
+import { Job } from 'deku-swarm';
 import { AssetRequestEnqueuer } from '../enqueuers/AssetRequestEnqueuer.js';
 
 /**

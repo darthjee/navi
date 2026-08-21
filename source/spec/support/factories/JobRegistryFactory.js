@@ -1,6 +1,5 @@
+import { JobFactory, JobRegistry } from 'deku-swarm';
 import { NamespaceMapFactory } from './NamespaceMapFactory.js';
-import { JobFactory } from '../../../lib/background/JobFactory.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 
 /**
  * Factory for creating JobRegistry instances in tests.

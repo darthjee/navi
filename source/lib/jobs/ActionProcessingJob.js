@@ -1,4 +1,4 @@
-import { Job } from '../background/Job.js';
+import { Job } from 'deku-swarm';
 
 /**
  * ActionProcessingJob is a Job that processes a single Action for a given item.

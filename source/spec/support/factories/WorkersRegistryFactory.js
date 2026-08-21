@@ -1,4 +1,4 @@
-import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { WorkersRegistry } from 'deku-swarm';
 
 /**
  * Factory for creating WorkersRegistry instances in tests.

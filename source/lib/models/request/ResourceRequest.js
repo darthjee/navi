@@ -1,7 +1,7 @@
+import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
 import { AssetRequest } from './AssetRequest.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
 import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction.js';
-import { JobRegistry as DefaultJobRegistry } from '../../background/JobRegistry.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
 import { PaginatedActionsEnqueuer } from '../../enqueuers/PaginatedActionsEnqueuer.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';

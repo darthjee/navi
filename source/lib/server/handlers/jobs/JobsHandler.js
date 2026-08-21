@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { JobSerializer } from '../../../serializers/JobSerializer.js';
 import { JobsFilter } from '../JobsFilter.js';

@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { Namespace } from '../../../../../lib/registry/Namespace.js';
 import { NamespaceMap } from '../../../../../lib/registry/NamespaceMap.js';

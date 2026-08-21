@@ -1,4 +1,4 @@
-import { Job } from '../background/Job.js';
+import { Job } from 'deku-swarm';
 
 /**
  * AssetDownloadJob is a Job that fetches a single fully-resolved asset URL and validates

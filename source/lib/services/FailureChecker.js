@@ -1,4 +1,4 @@
-import { JobRegistry } from '../background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { LogRegistry } from '../registry/LogRegistry.js';
 
 /**

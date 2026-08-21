@@ -1,5 +1,5 @@
+import { JobRegistry } from 'deku-swarm';
 import { ResourceRequestCollector } from './ResourceRequestCollector.js';
-import { JobRegistry } from '../background/JobRegistry.js';
 import { NamespaceNotFound } from '../exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../exceptions/registry/ResourceNotFound.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';

@@ -1,5 +1,4 @@
-import { Job } from '../background/Job.js';
-import { JobRegistry } from '../background/JobRegistry.js';
+import { Job, JobRegistry } from 'deku-swarm';
 import { ResponseWrapper } from '../models/response/ResponseWrapper.js';
 
 /**

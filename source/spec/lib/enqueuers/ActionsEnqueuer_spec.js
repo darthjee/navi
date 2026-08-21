@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { ActionsEnqueuer } from '../../../lib/enqueuers/ActionsEnqueuer.js';
 import { NullResponse } from '../../../lib/exceptions/request/NullResponse.js';
 import { ActionEnqueuerUtils } from '../../support/utils/ActionEnqueuerUtils.js';

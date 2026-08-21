@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { AssetRequest } from '../../../../lib/models/request/AssetRequest.js';
 import { ResourceRequest } from '../../../../lib/models/request/ResourceRequest.js';
 import { ResponseWrapper } from '../../../../lib/models/response/ResponseWrapper.js';

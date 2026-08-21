@@ -1,6 +1,5 @@
 import http from 'http';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
