@@ -214,46 +214,28 @@ jobs:
           path: source
 
   jasmine-dev:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
       - run:
           name: Copy common code from source
-          command: |
-            rm -rf dev/app/lib/common dev/app/spec/lib/common
-            cp -r source/lib/common dev/app/lib/common
-            cp -r source/spec/lib/common dev/app/spec/lib/common
-      - run:
-          name: Install dependencies
-          command: cd dev/app; yarn install
-      - run:
-          name: Unit tests (Jasmine + c8 coverage)
-          command: cd dev/app; npm run coverage
-      - run:
-          name: Upload coverage to Codacy (partial)
-          command: cd dev/app; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+          command: scripts/ci.sh setup-dev
+      - install-deps:
+          path: dev/app
+      - run-tests:
+          path: dev/app
 
   checks-dev:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
       - run:
           name: Copy common code from source
-          command: |
-            rm -rf dev/app/lib/common dev/app/spec/lib/common
-            cp -r source/lib/common dev/app/lib/common
-            cp -r source/spec/lib/common dev/app/spec/lib/common
-      - run:
-          name: Install dependencies
-          command: cd dev/app; yarn install
-      - run:
-          name: Lint
-          command: cd dev/app; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd dev/app; npm run report
+          command: scripts/ci.sh setup-dev
+      - install-deps:
+          path: dev/app
+      - lint-and-report:
+          path: dev/app
 
   jasmine-dev-frontend:
     executor: node-ci
@@ -328,12 +310,11 @@ jobs:
           path: worker
 
   coverage-final:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - run:
           name: Finalize coverage on Codacy
-          command: bash <(curl -Ls https://coverage.codacy.com/get.sh) final
+          command: scripts/ci.sh coverage-final
 
   check-version-tag:
     docker:
@@ -368,13 +349,12 @@ jobs:
             fi
 
   npm-publish:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd source; yarn install --frozen-lockfile
+      - install-deps:
+          path: source
+          frozen: true
       - run:
           name: Install frontend dependencies
           command: cd frontend && yarn install
@@ -390,9 +370,7 @@ jobs:
             sed -i 's/"deku-swarm": "file:..\//"deku-swarm": "^/' source/package.json
       - run:
           name: Publish to npm
-          command: |
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-            cd source; npm publish --access public
+          command: scripts/ci.sh publish source
 
   check-client-version-tag:
     docker:
@@ -404,18 +382,15 @@ jobs:
           command: bash scripts/check_client_tag_version.sh
 
   npm-publish-client:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd clients/node; yarn install --frozen-lockfile
+      - install-deps:
+          path: clients/node
+          frozen: true
       - run:
           name: Publish to npm
-          command: |
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-            cd clients/node; npm publish --access public
+          command: scripts/ci.sh publish clients/node
 
   check-worker-version-tag:
     docker:
@@ -427,8 +402,7 @@ jobs:
           command: bash scripts/check_worker_tag_version.sh
 
   npm-publish-worker:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
       - run:
@@ -439,14 +413,12 @@ jobs:
               echo "deku-swarm@$VERSION already exists on npm — skipping publish"
               circleci-agent step halt
             fi
-      - run:
-          name: Install dependencies
-          command: cd worker; yarn install --frozen-lockfile
+      - install-deps:
+          path: worker
+          frozen: true
       - run:
           name: Publish to npm
-          command: |
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-            cd worker; npm publish --access public
+          command: scripts/ci.sh publish worker
 
   build-and-release-client:
     machine: true
