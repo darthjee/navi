@@ -6,6 +6,9 @@
 navi/
 ├── source/           # Navi cache-warmer Node.js application
 ├── frontend/         # Navi web UI (React + Vite)
+├── worker/           # deku-swarm: generic queue-and-pool worker package, consumed by source/
+├── clients/
+│   └── node/         # navi-hey-client: Node.js client for Navi's /api/* namespace
 ├── dev/
 │   ├── app/          # Dev backend: Express JSON API
 │   ├── frontend/     # Dev frontend: React SPA for browsing the dev API
@@ -72,13 +75,7 @@ Subfolders:
 - `models/request/` — request models: `AssetRequest`, `Resource`, `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestPaginatedAction`
 - `models/response/` — response-parsing models: `ParametersMapper`, `PathResolver`, `PathSegmentTraverser`, `ResponseParser`, `ResponseWrapper`
 
-### `background/`
-
-Job/worker infrastructure:
-
-- **`Job`** / **`Worker`** — abstract base classes; `Job` tracks failure count and last exception, `Worker` holds its UUID and registry references.
-- **`JobRegistry`** / **`WorkersRegistry`** — static singleton façades backed by `JobRegistryInstance` / `WorkersRegistryInstance`. `JobRegistry` manages six queues (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`); `WorkersRegistry` manages idle/busy worker pools.
-- **`JobFactory`** / **`WorkerFactory`** — instance creation; `WorkerFactory` assigns UUIDs via `IdGenerator`.
+`Job`/`Worker`, the registries (`JobRegistry`/`WorkersRegistry`), their factories, `Engine`, `WorkersAllocator`, the collection primitives, and the generic `Factory`/`IdGenerator` utilities all live in the separate `worker/` package (`deku-swarm`), not under `source/lib/`. See [Worker Subsystem](../worker.md) for their class-by-class reference; `source/` only consumes them via `import { ... } from 'deku-swarm'`.
 
 ### `enqueuers/`
 
@@ -110,23 +107,19 @@ Shared low-level utilities with no domain knowledge:
 
 - **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*`.
 - **`common/server/`** — shared server base classes consumed by both `source/` and `dev/app/`: `RequestHandler` (abstract base).
-- **`utils/logging/`** — compatibility re-exports to `common/utils/logging/*`.
-- **`utils/collections/`** — `Collection`, `IdentifyableCollection`, `Queue`, `SortedCollection`, plus `SortedArrayMerger` and `SortedArraySearcher`.
-- **`utils/generators/`** — `IdGenerator`, `UUidGenerator`, `IncrementalIdGenerator`.
-- **`utils/`** (flat) — `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing).
+- **`utils/logging/`** — compatibility re-exports to `common/utils/logging/*`, plus `LogContext` (Navi-specific logging, wired into `deku-swarm`'s `Worker` via an injected `loggerFactory`).
+- **`utils/generators/`** — `IncrementalIdGenerator` (`IdGenerator`/`UUidGenerator` moved to `worker/lib/generators/`, part of `deku-swarm`).
+- **`utils/`** (flat) — `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing), `ResourceEnqueuer` (calls `deku-swarm`'s `JobRegistry.enqueue()` from outside the package).
 
 ### `services/`
 
 Business logic and I/O layer:
 
 - **`Application`** — static singleton façade; `loadConfig()` bootstraps registries and factories; `run()` starts engine and web server concurrently. Lifecycle methods (`pause`, `stop`, `continue`, `start`, `restart`) delegate to `ApplicationInstance`.
-- **`Engine`** — allocation loop: each tick promotes cooled-down failed jobs then delegates to `WorkersAllocator`.
+- **`ApplicationInstance`** — orchestrates boot: registers job factories, builds `JobRegistry`/`WorkersRegistry`/`Engine` (all from `deku-swarm`, see [Worker Subsystem](../worker.md)), wires Navi's `LogContext` in as `Worker`'s `loggerFactory`.
 - **`Client`** — Axios-based HTTP executor; `perform()` for URL-template requests, `performUrl()` for absolute URLs; supports per-client headers with env var interpolation.
 - **`ConfigLoader`** / **`ConfigParser`** / **`ArgumentsParser`** — config file I/O and CLI argument parsing.
-
-### `factory/`
-
-- **`Factory`** — generic object-builder: configured with a class and an optional attributes generator; `build(...args)` produces attribute-generator output first (if any), then instantiates the configured class (or returns a plain object if none is set).
+- `Engine`, `WorkersAllocator`, and the generic `Factory` object-builder are no longer under `source/lib/services/`/`source/lib/factory/` — they moved to `worker/` (`deku-swarm`); see [Worker Subsystem](../worker.md).
 
 ### `serializers/`
 

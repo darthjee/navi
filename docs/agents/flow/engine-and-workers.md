@@ -1,6 +1,6 @@
 # Engine and Workers
 
-See [Worker Subsystem](../worker.md) for the class-by-class architectural reference (registries, factories, collections, auxiliary services) and the extraction coupling map. This page covers the loop and per-worker execution at a narrative, step-by-step level.
+See [Worker Subsystem](../worker.md) for the class-by-class architectural reference to the `deku-swarm` package (`worker/`) — registries, factories, collections, `Engine`/`WorkersAllocator` — and for what stayed behind in Navi (job subclasses, `ResourceEnqueuer`, the auxiliary engine services). This page covers the loop and per-worker execution at a narrative, step-by-step level.
 
 ## Engine Loop
 
