@@ -16,7 +16,8 @@
       "docs": "darthjee+architect@gmail.com",
       "engine": "darthjee+backend@gmail.com",
       "frontend": "darthjee+frontend@gmail.com",
-      "navi-client": "darthjee+backend@gmail.com"
+      "navi-client": "darthjee+backend@gmail.com",
+      "worker": "darthjee+infra@gmail.com"
     }
   }
 }
