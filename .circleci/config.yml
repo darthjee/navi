@@ -99,13 +99,7 @@ commands:
     steps:
       - run:
           name: Install dependencies
-          command: |
-            cd <<parameters.path>>
-            if [ "<<parameters.frozen>>" = "true" ]; then
-              yarn install --frozen-lockfile
-            else
-              yarn install
-            fi
+          command: scripts/ci.sh install-deps <<parameters.path>> <<parameters.frozen>>
 
   run-tests:
     parameters:
@@ -125,11 +119,8 @@ commands:
         type: string
     steps:
       - run:
-          name: Lint
-          command: cd <<parameters.path>>; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd <<parameters.path>>; npm run report
+          name: Lint and report
+          command: scripts/ci.sh lint-and-report <<parameters.path>>
 
 jobs:
   jasmine:
@@ -269,21 +260,7 @@ jobs:
       - checkout
       - run:
           name: Check if worker/ changed since last release
-          command: |
-            LAST_TAG=$(git describe --tags --abbrev=0 --match='worker-*' --match='[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "")
-            if [ -z "$LAST_TAG" ]; then
-              echo "No previous release tag found — worker release recommended"
-              exit 0
-            fi
-            if git diff --quiet "$LAST_TAG"..HEAD -- worker/; then
-              echo "No changes in worker/ since $LAST_TAG — skipping"
-              exit 0
-            else
-              echo "WARNING: worker/ has changes since $LAST_TAG"
-              echo "A worker release (worker-x.y.z tag) should be created before or alongside this navi release"
-              echo "Run: scripts/bump_version.sh worker [version]"
-              exit 0
-            fi
+          command: scripts/ci.sh check-worker-changes
 
   npm-publish:
     executor: node-ci
@@ -293,18 +270,8 @@ jobs:
           path: source
           frozen: true
       - run:
-          name: Install frontend dependencies
-          command: cd frontend && yarn install
-      - run:
           name: Build frontend
-          command: cd frontend && yarn build
-      - run:
-          name: Copy frontend build to source/static
-          command: cp -r frontend/dist/. source/static/
-      - run:
-          name: Replace local file dependency with npm version
-          command: |
-            sed -i 's/"deku-swarm": "file:..\//"deku-swarm": "^/' source/package.json
+          command: scripts/ci.sh build-frontend
       - run:
           name: Publish to npm
           command: scripts/ci.sh publish source
@@ -344,12 +311,7 @@ jobs:
       - checkout
       - run:
           name: Check if version already exists on npm
-          command: |
-            VERSION=$(node -p "require('./worker/package.json').version")
-            if npm view deku-swarm@$VERSION version 2>/dev/null; then
-              echo "deku-swarm@$VERSION already exists on npm — skipping publish"
-              circleci-agent step halt
-            fi
+          command: scripts/ci.sh check-npm-version deku-swarm ./worker/package.json
       - install-deps:
           path: worker
           frozen: true
