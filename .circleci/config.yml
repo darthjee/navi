@@ -197,33 +197,21 @@ commands:
 
 jobs:
   jasmine:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd source; yarn install
-      - run:
-          name: Unit tests (Jasmine)
-          command: cd source; npm run coverage
-      - run:
-          name: Upload coverage to Codacy (partial)
-          command: cd source; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+      - install-deps:
+          path: source
+      - run-tests:
+          path: source
   checks:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd source; yarn install
-      - run:
-          name: Lint
-          command: cd source; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd source; npm run report
+      - install-deps:
+          path: source
+      - lint-and-report:
+          path: source
 
   jasmine-dev:
     docker:
@@ -268,124 +256,76 @@ jobs:
           command: cd dev/app; npm run report
 
   jasmine-dev-frontend:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd dev/frontend; yarn install
-      - run:
-          name: Unit tests (Jasmine + c8 coverage)
-          command: cd dev/frontend; npm run coverage
-      - run:
-          name: Upload coverage to Codacy (partial)
-          command: cd dev/frontend; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+      - install-deps:
+          path: dev/frontend
+      - run-tests:
+          path: dev/frontend
 
   checks-dev-frontend:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd dev/frontend; yarn install
-      - run:
-          name: Lint
-          command: cd dev/frontend; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd dev/frontend; npm run report
+      - install-deps:
+          path: dev/frontend
+      - lint-and-report:
+          path: dev/frontend
 
   checks-frontend:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd frontend; yarn install
-      - run:
-          name: Lint
-          command: cd frontend; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd frontend; npm run report
+      - install-deps:
+          path: frontend
+      - lint-and-report:
+          path: frontend
 
   jasmine-frontend:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd frontend; yarn install
-      - run:
-          name: Unit tests (Jasmine + c8 coverage)
-          command: cd frontend; npm run coverage
-      - run:
-          name: Upload coverage to Codacy (partial)
-          command: cd frontend; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+      - install-deps:
+          path: frontend
+      - run-tests:
+          path: frontend
 
   jasmine-client:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd clients/node; yarn install
-      - run:
-          name: Unit tests (Jasmine + c8 coverage)
-          command: cd clients/node; npm run coverage
-      - run:
-          name: Upload coverage to Codacy (partial)
-          command: cd clients/node; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+      - install-deps:
+          path: clients/node
+      - run-tests:
+          path: clients/node
 
   checks-client:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd clients/node; yarn install
-      - run:
-          name: Lint
-          command: cd clients/node; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd clients/node; npm run report
+      - install-deps:
+          path: clients/node
+      - lint-and-report:
+          path: clients/node
 
   jasmine-worker:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd worker; yarn install
-      - run:
-          name: Unit tests (Jasmine + c8 coverage)
-          command: cd worker; npm run coverage
-      - run:
-          name: Upload coverage to Codacy (partial)
-          command: cd worker; bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r coverage/lcov.info
+      - install-deps:
+          path: worker
+      - run-tests:
+          path: worker
 
   checks-worker:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+    executor: node-ci
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: cd worker; yarn install
-      - run:
-          name: Lint
-          command: cd worker; npm run lint
-      - run:
-          name: Duplication report (JSCPD)
-          command: cd worker; npm run report
+      - install-deps:
+          path: worker
+      - lint-and-report:
+          path: worker
 
   coverage-final:
     docker:
