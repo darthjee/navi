@@ -31,7 +31,7 @@ describe('WorkersAllocator', () => {
 
     job = new Job({});
 
-    allocator = new WorkersAllocator();
+    allocator = new WorkersAllocator({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
   });
 
   afterEach(() => {

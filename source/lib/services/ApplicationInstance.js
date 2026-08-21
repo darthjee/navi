@@ -5,6 +5,7 @@ import { FailureChecker } from './FailureChecker.js';
 import { RunSummary } from './RunSummary.js';
 import { JobFactory } from '../background/JobFactory.js';
 import { JobRegistry } from '../background/JobRegistry.js';
+import { WorkerFactory } from '../background/WorkerFactory.js';
 import { WorkersRegistry } from '../background/WorkersRegistry.js';
 import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
 import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
@@ -15,6 +16,7 @@ import { Config } from '../models/configs/Config.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
 import { WebServer } from '../server/WebServer.js';
+import { LogContext } from '../utils/logging/LogContext.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
 
@@ -95,6 +97,8 @@ class ApplicationInstance {
    */
   buildEngine() {
     return new Engine({
+      jobRegistry: JobRegistry,
+      workersRegistry: WorkersRegistry,
       sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
       keepAlive: !!this.config.webConfig,
       idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
@@ -326,10 +330,11 @@ class ApplicationInstance {
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 
+    const loggerFactory = ({ workerId, jobId }) => new LogContext({ workerId, jobId });
+
     WorkersRegistry.build({
       workers: this.#workers,
-      jobRegistry: JobRegistry,
-      workersRegistry: WorkersRegistry,
+      factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory }),
       ...this.config.workersConfig,
     });
     WorkersRegistry.initWorkers();

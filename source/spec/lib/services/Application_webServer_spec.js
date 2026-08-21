@@ -52,7 +52,12 @@ describe('Application web server integration', () => {
           webServerStartResolved = true;
         });
       });
-      spyOn(app, 'buildEngine').and.callFake(() => new Engine({ keepAlive: true, sleepMs: 1 }));
+      spyOn(app, 'buildEngine').and.callFake(() => new Engine({
+        jobRegistry: JobRegistry,
+        workersRegistry: WorkersRegistry,
+        keepAlive: true,
+        sleepMs: 1,
+      }));
 
       const runPromise = app.run().then(() => {
         runResolved = true;

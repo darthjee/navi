@@ -35,7 +35,7 @@ describe('Engine', () => {
     WorkersRegistry.build({ busy, quantity: 2, factory: workerFactory });
     WorkersRegistry.initWorkers();
     DummyJob.setSuccessRate(1);
-    engine = new Engine({ sleepMs });
+    engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, sleepMs });
   };
 
   beforeEach(() => {
@@ -134,7 +134,7 @@ describe('Engine', () => {
 
     describe('when keepAlive is true', () => {
       it('keeps running when the queue becomes empty', async () => {
-        engine = new Engine({ keepAlive: true, sleepMs: -1 });
+        engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1 });
 
         let iterations = 0;
         spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
@@ -148,7 +148,7 @@ describe('Engine', () => {
       });
 
       it('skips allocation while paused', async () => {
-        engine = new Engine({ keepAlive: true, sleepMs: -1 });
+        engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1 });
         engine.pause();
         spyOn(engine.allocator, 'allocate');
         spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
@@ -162,7 +162,7 @@ describe('Engine', () => {
       });
 
       it('resumes allocation after resume()', async () => {
-        engine = new Engine({ keepAlive: true, sleepMs: -1 });
+        engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1 });
         engine.pause();
         engine.resume();
         spyOn(engine.allocator, 'allocate');
@@ -185,7 +185,7 @@ describe('Engine', () => {
 
         it('never fires when idleTimeoutMs is 0 (the default — disabled)', async () => {
           const onIdleTimeout = jasmine.createSpy('onIdleTimeout');
-          engine = new Engine({ keepAlive: true, sleepMs: -1, onIdleTimeout });
+          engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1, onIdleTimeout });
 
           let iterations = 0;
           spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
@@ -200,7 +200,7 @@ describe('Engine', () => {
 
         it('fires once after the queue and workers have been idle for idleTimeoutMs', async () => {
           const onIdleTimeout = jasmine.createSpy('onIdleTimeout').and.callFake(() => engine.stop());
-          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+          engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
 
           let iterations = 0;
           spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
@@ -216,7 +216,7 @@ describe('Engine', () => {
 
         it('fires at most once even while remaining idle across further ticks', async () => {
           const onIdleTimeout = jasmine.createSpy('onIdleTimeout');
-          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+          engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
 
           let iterations = 0;
           spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
@@ -233,7 +233,7 @@ describe('Engine', () => {
         it('does not fire while jobs are queued', async () => {
           const onIdleTimeout = jasmine.createSpy('onIdleTimeout');
           spyOn(JobRegistry, 'hasJob').and.returnValue(true);
-          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+          engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
 
           let iterations = 0;
           spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
@@ -250,7 +250,7 @@ describe('Engine', () => {
           const onIdleTimeout = jasmine.createSpy('onIdleTimeout').and.callFake(() => engine.stop());
           let busy = true;
           spyOn(WorkersRegistry, 'hasBusyWorker').and.callFake(() => busy);
-          engine = new Engine({ keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
+          engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, keepAlive: true, sleepMs: -1, idleTimeoutMs: 1, onIdleTimeout });
 
           let iterations = 0;
           spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {

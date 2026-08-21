@@ -8,6 +8,7 @@ import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js'
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Queue } from '../../../lib/utils/collections/Queue.js';
+import { LogContext } from '../../../lib/utils/logging/LogContext.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
@@ -33,6 +34,7 @@ describe('Worker', () => {
   const url = '/categories.json';
   const fullUrl = 'http://example.com/categories.json';
   const status = 200;
+  const loggerFactory = (attrs) => new LogContext(attrs);
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
@@ -45,7 +47,7 @@ describe('Worker', () => {
     idle = new IdentifyableCollection();
     WorkersRegistry.build({ quantity: 0, idle });
 
-    worker = new Worker({ id: 1, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
+    worker = new Worker({ id: 1, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory });
   });
 
   afterEach(() => {
@@ -83,7 +85,7 @@ describe('Worker', () => {
 
     describe('when no job is assigned', () => {
       it('throws an error', async () => {
-        const unassignedWorker = new Worker({ id: 2, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
+        const unassignedWorker = new Worker({ id: 2, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory });
         expectedError = new Error('No job assigned to worker');
         await expectAsync(unassignedWorker.perform()).toBeRejectedWith(expectedError);
       });

@@ -1,6 +1,4 @@
 import { WorkersAllocator } from './WorkersAllocator.js';
-import { JobRegistry } from '../background/JobRegistry.js';
-import { WorkersRegistry } from '../background/WorkersRegistry.js';
 import { Logger } from '../utils/logging/Logger.js';
 
 /**
@@ -24,23 +22,29 @@ class Engine {
   #onIdleTimeout;
   #idleSince = null;
   #idleTimeoutFired = false;
+  #jobRegistry;
+  #workersRegistry;
 
   /**
    * Creates an instance of Engine.
    * @param {object} param0 - The parameters for creating an Engine instance.
-   * @param {WorkersAllocator} param0.allocator - The workers allocator to manage job allocation.
+   * @param {WorkersAllocator} [param0.allocator] - The workers allocator to manage job allocation. Defaults to a new `WorkersAllocator` built from `jobRegistry`/`workersRegistry`.
+   * @param {JobRegistry} param0.jobRegistry - The job registry to check and promote jobs on.
+   * @param {WorkersRegistry} param0.workersRegistry - The workers registry to check busy workers on.
    * @param {number} [param0.sleepMs=500] - Milliseconds to wait when all jobs are in cooldown. Use a negative value to disable sleeping (e.g. in tests).
    * @param {boolean} [param0.keepAlive=false] - When true, the loop runs indefinitely until `stop()` is called (web UI mode).
    * @param {number} [param0.idleTimeoutMs=0] - Milliseconds of inactivity before `onIdleTimeout` fires. `0` disables idle-timeout tracking.
    * @param {Function} [param0.onIdleTimeout] - Callback invoked (without being awaited) once the idle threshold is reached. Fires at most once per idle window.
    */
-  constructor({ allocator, sleepMs = 500, keepAlive = false, idleTimeoutMs = 0, onIdleTimeout = () => {} } = {}) {
+  constructor({ allocator, jobRegistry, workersRegistry, sleepMs = 500, keepAlive = false, idleTimeoutMs = 0, onIdleTimeout = () => {} } = {}) {
     this.#sleepMs = sleepMs;
     this.#keepAlive = keepAlive;
     this.#idleTimeoutMs = idleTimeoutMs;
     this.#onIdleTimeout = onIdleTimeout;
+    this.#jobRegistry = jobRegistry;
+    this.#workersRegistry = workersRegistry;
 
-    this.allocator = allocator || new WorkersAllocator();
+    this.allocator = allocator || new WorkersAllocator({ jobRegistry, workersRegistry });
   }
 
   /**
@@ -81,9 +85,9 @@ class Engine {
   async start() {
     while (!this.#stopped && this.#shouldContinue()) {
       Logger.debug('Promoting ready jobs and allocating to idle workers if available...');
-      JobRegistry.promoteReadyJobs();
+      this.#jobRegistry.promoteReadyJobs();
 
-      if (!this.#paused && JobRegistry.hasReadyJob()) {
+      if (!this.#paused && this.#jobRegistry.hasReadyJob()) {
         this.allocator.allocate();
       }
 
@@ -109,7 +113,7 @@ class Engine {
    * @returns {boolean} True if there are jobs to process or busy workers, false otherwise.
    */
   #continueAllocating() {
-    return JobRegistry.hasJob() || WorkersRegistry.hasBusyWorker();
+    return this.#jobRegistry.hasJob() || this.#workersRegistry.hasBusyWorker();
   }
 
   /**

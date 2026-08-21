@@ -51,7 +51,12 @@ describe('Engine asynchronous job handling', () => {
       factory: workerFactory,
     });
     WorkersRegistry.initWorkers();
-    engine = new Engine({ allocator: new DummyWorkersAllocator(), sleepMs: -1 });
+    engine = new Engine({
+      allocator: new DummyWorkersAllocator({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry }),
+      jobRegistry: JobRegistry,
+      workersRegistry: WorkersRegistry,
+      sleepMs: -1,
+    });
   });
 
   afterEach(() => {

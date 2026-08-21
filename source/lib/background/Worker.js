@@ -1,5 +1,3 @@
-import { LogContext } from '../utils/logging/LogContext.js';
-
 /**
  * Worker processes jobs pulled from a JobRegistry.
  * @author darthjee
@@ -7,6 +5,7 @@ import { LogContext } from '../utils/logging/LogContext.js';
 class Worker {
   #jobRegistry;
   #workersRegistry;
+  #loggerFactory;
 
   /**
    * Creates a new Worker instance.
@@ -14,11 +13,13 @@ class Worker {
    * @param {string|number} params.id - The unique identifier for this worker.
    * @param {JobRegistry} params.jobRegistry - The job registry to report job outcomes to.
    * @param {WorkersRegistry} params.workersRegistry - The workers registry to report idle status to.
+   * @param {Function} params.loggerFactory - Function that, given `{ workerId, jobId }`, returns a logger-like object exposing `debug/info/warn/error`.
    */
-  constructor({ id, jobRegistry, workersRegistry }) {
+  constructor({ id, jobRegistry, workersRegistry, loggerFactory }) {
     this.id = id;
     this.#jobRegistry = jobRegistry;
     this.#workersRegistry = workersRegistry;
+    this.#loggerFactory = loggerFactory;
   }
 
   /**
@@ -41,7 +42,7 @@ class Worker {
       throw new Error('No job assigned to worker');
     }
 
-    const logContext = new LogContext({ workerId: this.id, jobId: this.job.id });
+    const logContext = this.#loggerFactory({ workerId: this.id, jobId: this.job.id });
 
     try {
       await this.job.perform(logContext);

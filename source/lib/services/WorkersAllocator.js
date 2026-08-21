@@ -1,6 +1,3 @@
-import { JobRegistry } from '../background/JobRegistry.js';
-import { WorkersRegistry } from '../background/WorkersRegistry.js';
-
 /**
  * WorkersAllocator is responsible for allocating jobs to idle workers.
  *
@@ -8,10 +5,19 @@ import { WorkersRegistry } from '../background/WorkersRegistry.js';
  * jobs to workers until there are no more jobs or no more idle workers.
  */
 class WorkersAllocator {
+  #jobRegistry;
+  #workersRegistry;
+
   /**
    * Creates an instance of WorkersAllocator.
+   * @param {object} [param0={}] - The parameters for creating a WorkersAllocator instance.
+   * @param {JobRegistry} param0.jobRegistry - The job registry to pick and requeue jobs from.
+   * @param {WorkersRegistry} param0.workersRegistry - The workers registry to pick idle workers from.
    */
-  constructor() {}
+  constructor({ jobRegistry, workersRegistry } = {}) {
+    this.#jobRegistry = jobRegistry;
+    this.#workersRegistry = workersRegistry;
+  }
 
   /**
    * Allocates jobs to idle workers.
@@ -35,12 +41,12 @@ class WorkersAllocator {
    * @returns {void}
    */
   _allocateNext() {
-    const job = JobRegistry.pick();
+    const job = this.#jobRegistry.pick();
     if (!job) return;
 
-    const worker = WorkersRegistry.getIdleWorker();
+    const worker = this.#workersRegistry.getIdleWorker();
     if (!worker) {
-      JobRegistry.requeue(job);
+      this.#jobRegistry.requeue(job);
       return;
     }
 
@@ -67,7 +73,7 @@ class WorkersAllocator {
    * @returns {boolean} True if there are available jobs and idle workers, false otherwise.
    */
   _canAllocate() {
-    return WorkersRegistry.hasIdleWorker() && JobRegistry.hasReadyJob();
+    return this.#workersRegistry.hasIdleWorker() && this.#jobRegistry.hasReadyJob();
   }
 }
 

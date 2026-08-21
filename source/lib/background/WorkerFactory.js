@@ -17,10 +17,11 @@ class WorkerFactory extends Factory {
    * @param {object} options.attributesGenerator - The generator for unique attributes (default is IdGenerator).
    * @param {object} [options.jobRegistry] - The job registry to inject into each Worker.
    * @param {object} [options.workersRegistry] - The workers registry to inject into each Worker.
+   * @param {Function} [options.loggerFactory] - The logger factory to inject into each Worker.
    */
-  constructor({ klass = Worker, attributesGenerator = new IdGenerator(), jobRegistry, workersRegistry } = {}) {
+  constructor({ klass = Worker, attributesGenerator = new IdGenerator(), jobRegistry, workersRegistry, loggerFactory } = {}) {
     super({ klass, attributesGenerator });
-    this.#registries = { jobRegistry, workersRegistry };
+    this.#registries = { jobRegistry, workersRegistry, loggerFactory };
   }
 
   /**
