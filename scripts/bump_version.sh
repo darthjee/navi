@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 [app|client] [version]" >&2
+  echo "Usage: $0 [app|client|worker] [version]" >&2
   exit 1
 }
 
@@ -12,6 +12,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 README="$ROOT_DIR/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
+WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
 DEMO_DOCKERFILE="$ROOT_DIR/dockerfiles/demo_navi_hey/Dockerfile"
 
 if [[ $# -gt 2 ]]; then
@@ -22,13 +23,13 @@ TARGET="app"
 VERSION=""
 
 if [[ $# -eq 1 ]]; then
-  if [[ "$1" =~ ^(app|client)$ ]]; then
+  if [[ "$1" =~ ^(app|client|worker)$ ]]; then
     TARGET="$1"
   else
     VERSION="$1"
   fi
 elif [[ $# -eq 2 ]]; then
-  [[ "$1" =~ ^(app|client)$ ]] || usage
+  [[ "$1" =~ ^(app|client|worker)$ ]] || usage
   TARGET="$1"
   VERSION="$2"
 fi
@@ -37,6 +38,7 @@ package_json_for() {
   case "$1" in
     app) echo "$APP_PACKAGE_JSON" ;;
     client) echo "$CLIENT_PACKAGE_JSON" ;;
+    worker) echo "$WORKER_PACKAGE_JSON" ;;
   esac
 }
 
@@ -120,9 +122,40 @@ bump_client() {
   fi
 }
 
+bump_worker() {
+  sed -i '' \
+    "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
+    "$WORKER_PACKAGE_JSON"
+
+  if grep -q '\*\*Worker Current Version:\*\*' "$README"; then
+    sed -i '' \
+      "s|\*\*Worker Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/worker-.*)|**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/worker-$VERSION)|" \
+      "$README"
+  else
+    sed -i '' \
+      "/\*\*Client Next Version:\*\*/a\\
+\\
+**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/worker-$VERSION)" \
+      "$README"
+  fi
+
+  if grep -q '\*\*Worker Next Version:\*\*' "$README"; then
+    sed -i '' \
+      "s|\*\*Worker Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/worker-.*)|**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/worker-$VERSION...main)|" \
+      "$README"
+  else
+    sed -i '' \
+      "/\*\*Worker Current Version:\*\*/a\\
+\\
+**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/worker-$VERSION...main)" \
+      "$README"
+  fi
+}
+
 case "$TARGET" in
   app) bump_app ;;
   client) bump_client ;;
+  worker) bump_worker ;;
 esac
 
 echo "Bumped $TARGET to $VERSION (next release: $NEXT_VERSION)"
