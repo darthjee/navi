@@ -11,7 +11,7 @@
   "scripts": {
     "spec": "npx jasmine --config=spec/support/jasmine.json",
     "test": "npx c8 jasmine --config=spec/support/jasmine.json",
-    "coverage": "npm run test",
+    "coverage": "npx c8 --reporter=lcov jasmine --config=spec/support/jasmine.json",
     "lint": "npx eslint lib spec",
     "lint_fix": "npx eslint lib spec --fix",
     "lint_report": "npx eslint . --format html --output-file report/eslint-report.html",
