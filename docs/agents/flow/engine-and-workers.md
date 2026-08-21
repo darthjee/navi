@@ -1,5 +1,7 @@
 # Engine and Workers
 
+See [Worker Subsystem](../worker.md) for the class-by-class architectural reference (registries, factories, collections, auxiliary services) and the extraction coupling map. This page covers the loop and per-worker execution at a narrative, step-by-step level.
+
 ## Engine Loop
 
 `ResourceRequestCollector.requestsNeedingNoParams()` finds all `ResourceRequest` entries with no `{:placeholder}` tokens and pushes them as `ResourceRequestJob`s to start the chain.
