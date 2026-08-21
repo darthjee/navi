@@ -4,6 +4,7 @@ services:
     env_file: .env
     volumes:
       - ./source:/home/node/app
+      - ./worker:/home/node/worker
       - ./docker_volumes/config:/home/node/app/config
       - ./docker_volumes/node_modules:/home/node/app/node_modules
 
