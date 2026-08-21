@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { NotFoundError } from '../../../../../lib/exceptions/http/NotFoundError.js';

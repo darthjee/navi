@@ -1,9 +1,6 @@
-import { JobFactory } from '../../../lib/background/JobFactory.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { JobFactory, JobRegistry, WorkersRegistry, Engine } from 'deku-swarm';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Application } from '../../../lib/services/Application.js';
-import { Engine } from '../../../lib/services/Engine.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../support/dummies/factories/DummyWorkerFactory.js';
@@ -52,7 +49,12 @@ describe('Application web server integration', () => {
           webServerStartResolved = true;
         });
       });
-      spyOn(app, 'buildEngine').and.callFake(() => new Engine({ keepAlive: true, sleepMs: 1 }));
+      spyOn(app, 'buildEngine').and.callFake(() => new Engine({
+        jobRegistry: JobRegistry,
+        workersRegistry: WorkersRegistry,
+        keepAlive: true,
+        sleepMs: 1,
+      }));
 
       const runPromise = app.run().then(() => {
         runResolved = true;

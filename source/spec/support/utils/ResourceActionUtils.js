@@ -1,5 +1,5 @@
+import { JobRegistry } from 'deku-swarm';
 import { LoggerUtils } from './LoggerUtils.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
 import { Namespace } from '../../../lib/registry/Namespace.js';
 import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ResourceFactory } from '../factories/ResourceFactory.js';

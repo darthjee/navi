@@ -1,11 +1,9 @@
-import { JobFactory } from '../../../lib/background/JobFactory.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { JobFactory, JobRegistry, IdentifyableCollection, Queue } from 'deku-swarm';
+import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 import { FailureConfig } from '../../../lib/models/configs/FailureConfig.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../lib/services/FailureChecker.js';
-import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
-import { Queue } from '../../../lib/utils/collections/Queue.js';
 
 describe('FailureChecker', () => {
   let clients;
@@ -14,7 +12,7 @@ describe('FailureChecker', () => {
 
   beforeEach(() => {
     clients = new ClientRegistry();
-    JobFactory.build('ResourceRequestJob', { attributes: { clients } });
+    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients } });
 
     deadCollection = new IdentifyableCollection();
     finishedCollection = new IdentifyableCollection();

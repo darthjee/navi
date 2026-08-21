@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { MissingActionResource } from '../../../../lib/exceptions/registry/MissingActionResource.js';
 import { MissingMappingVariable } from '../../../../lib/exceptions/registry/MissingMappingVariable.js';
 import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';

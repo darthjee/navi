@@ -1,11 +1,8 @@
-import { JobFactory } from '../../../lib/background/JobFactory.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { JobFactory, JobRegistry, WorkersRegistry, IdentifyableCollection } from 'deku-swarm';
 import { ConfigurationFileNotFound } from '../../../lib/exceptions/config/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
 import { Config } from '../../../lib/models/configs/Config.js';
 import { Application } from '../../../lib/services/Application.js';
-import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../support/dummies/factories/DummyWorkerFactory.js';

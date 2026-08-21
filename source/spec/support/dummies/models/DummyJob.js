@@ -1,4 +1,4 @@
-import { Job } from '../../../../lib/background/Job.js';
+import { Job } from 'deku-swarm';
 
 class DummyJob extends Job {
 

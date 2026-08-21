@@ -1,4 +1,4 @@
-import { Job } from '../background/Job.js';
+import { Job } from 'deku-swarm';
 
 /**
  * Processes a single paginated action for a given response wrapper.

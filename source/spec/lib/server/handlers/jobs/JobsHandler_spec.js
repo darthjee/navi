@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { JobsHandler } from '../../../../../lib/server/handlers/jobs/JobsHandler.js';
 

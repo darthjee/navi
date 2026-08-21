@@ -1,4 +1,4 @@
-import { WorkerFactory } from '../../../../lib/background/WorkerFactory.js';
+import { WorkerFactory } from 'deku-swarm';
 import { DummyWorker } from '../models/DummyWorker.js';
 
 class DummyWorkerFactory extends WorkerFactory {

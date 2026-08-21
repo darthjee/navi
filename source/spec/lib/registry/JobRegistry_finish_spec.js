@@ -1,4 +1,4 @@
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
+import { JobRegistry } from 'deku-swarm';
 import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {

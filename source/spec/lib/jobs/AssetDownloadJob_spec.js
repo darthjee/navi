@@ -1,4 +1,4 @@
-import { Job } from '../../../lib/background/Job.js';
+import { Job } from 'deku-swarm';
 import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
 import { AssetDownloadJob } from '../../../lib/jobs/AssetDownloadJob.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';

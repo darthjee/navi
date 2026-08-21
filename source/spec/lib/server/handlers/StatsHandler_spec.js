@@ -1,8 +1,6 @@
-import { JobRegistry } from '../../../../lib/background/JobRegistry.js';
-import { WorkersRegistry } from '../../../../lib/background/WorkersRegistry.js';
+import { JobRegistry, WorkersRegistry, IdentifyableCollection } from 'deku-swarm';
 import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { StatsHandler } from '../../../../lib/server/handlers/StatsHandler.js';
-import { IdentifyableCollection } from '../../../../lib/utils/collections/IdentifyableCollection.js';
 
 describe("describe('StatsHandler'", () => {
   let res;

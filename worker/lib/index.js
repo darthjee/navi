@@ -1,0 +1,11 @@
+export { Worker } from './background/Worker.js';
+export { WorkerFactory } from './background/WorkerFactory.js';
+export { WorkersRegistry } from './background/WorkersRegistry.js';
+export { Job } from './background/Job.js';
+export { JobFactory } from './background/JobFactory.js';
+export { JobRegistry } from './background/JobRegistry.js';
+export { Engine } from './services/Engine.js';
+export { WorkersAllocator } from './services/WorkersAllocator.js';
+export { IdentifyableCollection } from './collections/IdentifyableCollection.js';
+export { Queue } from './collections/Queue.js';
+export { SortedCollection } from './collections/SortedCollection.js';

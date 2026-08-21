@@ -1,5 +1,4 @@
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { WorkersRegistry } from '../../../lib/background/WorkersRegistry.js';
+import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ApplicationInstance } from '../../../lib/services/ApplicationInstance.js';

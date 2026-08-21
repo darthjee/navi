@@ -17,7 +17,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Architecture](docs/agents/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
 | [Folder Structure](docs/agents/folder-structure.md) | Top-level directory layout and the role of each folder. |
 | [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, YAML structure, initial enqueueing, Engine loop, worker execution, failure handling, web UI routes. |
-| [Worker Subsystem](docs/agents/worker.md) | Class-by-class reference for the worker/job/engine subsystem — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — plus the generic-vs-Navi-specific coupling map for a future standalone-package extraction. |
+| [Worker Subsystem](docs/agents/worker.md) | Class-by-class reference for `deku-swarm` (`worker/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
 | [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
 | [Dangers](docs/agents/dangers.md) | Async pitfalls, synchronous test dummies, and rules for planning cooldowns, sleeps, and waits. |
 | [Dev Application](docs/agents/dev-app.md) | The sample backend used to test Navi: a dynamic Express (`dev/`) application, endpoints, classes, testing, CI jobs, and Docker Compose services. |

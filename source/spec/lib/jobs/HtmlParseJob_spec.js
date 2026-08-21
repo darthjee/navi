@@ -1,4 +1,4 @@
-import { Job } from '../../../lib/background/Job.js';
+import { Job } from 'deku-swarm';
 import { HtmlParseJob } from '../../../lib/jobs/HtmlParseJob.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';

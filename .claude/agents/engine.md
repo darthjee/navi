@@ -12,19 +12,19 @@ You own everything inside `source/`:
 
 - `lib/exceptions/` — custom error hierarchy, all extending `AppError`
 - `lib/models/` — config, request, and response models (YAML → typed instances)
-- `lib/background/` — `Job`/`Worker` base classes, `JobRegistry`/`WorkersRegistry`
 - `lib/enqueuers/` — push jobs into `JobRegistry`
-- `lib/jobs/` — concrete `Job` subclasses (`ResourceRequestJob`, etc.)
+- `lib/jobs/` — concrete `Job` subclasses (`ResourceRequestJob`, etc.) — Navi domain implementations, not generic worker code
 - `lib/registry/` — `NamedRegistry` base and its subclasses
-- `lib/factory/` — generic `Factory` object-builder
 - `lib/serializers/` — plain-object views used by the web server's JSON responses
-- `lib/utils/` — low-level shared utilities, plus `common/` (shared with `dev/app/`)
-- `lib/services/` — `Application`, `Engine`, `Client`, config loading/parsing
+- `lib/utils/` — low-level shared utilities (except the collections/id-generator utilities that moved to `worker`, see below), plus `common/` (shared with `dev/app/`)
+- `lib/services/` — `Application`, `ApplicationInstance`, `Client`, config loading/parsing, `EngineEvents`, `EngineStopService`, `FailureChecker`, `RunSummary`
 - `lib/server/` — Express routing, request handlers
 - `bin/navi.js` — the only entrypoint allowed to execute logic directly
 - `spec/` — Jasmine specs mirroring `lib/`
 
-Do NOT touch `frontend/` or `dev/` or any file outside `source/`.
+`engine` now consumes `Worker`, `Job` (base class), `JobFactory`, `JobRegistry`, `WorkersRegistry`, `Engine`, and `WorkersAllocator` from the `deku-swarm` npm package (`worker/`, owned by the new `worker` agent) via `import { ... } from 'deku-swarm'`, instead of owning them directly. `lib/background/`, the `Engine.js`/`WorkersAllocator.js` classes previously under `lib/services/`, `lib/factory/`, and the `lib/utils/collections/` + `lib/utils/generators/IdGenerator.js`/`UUidGenerator.js` utilities all moved to `worker/` — do not edit them here; that's `worker`'s scope now. `lib/utils/generators/IncrementalIdGenerator.js` and `lib/utils/logging/` stay in `engine`.
+
+Do NOT touch `frontend/`, `dev/`, `worker/`, or any file outside `source/`.
 
 ## Stack
 

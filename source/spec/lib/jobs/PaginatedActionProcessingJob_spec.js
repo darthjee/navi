@@ -1,4 +1,4 @@
-import { Job } from '../../../lib/background/Job.js';
+import { Job } from 'deku-swarm';
 import { PaginatedActionProcessingJob } from '../../../lib/jobs/PaginatedActionProcessingJob.js';
 
 describe('PaginatedActionProcessingJob', () => {

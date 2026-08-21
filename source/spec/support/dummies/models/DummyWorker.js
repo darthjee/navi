@@ -1,4 +1,4 @@
-import { Worker } from '../../../../lib/background/Worker.js';
+import { Worker } from 'deku-swarm';
 
 class DummyWorker extends Worker {
   #jobRegistry;

@@ -1,7 +1,5 @@
-import { JobFactory } from '../../../lib/background/JobFactory.js';
-import { JobRegistry } from '../../../lib/background/JobRegistry.js';
-import { IdentifyableCollection } from '../../../lib/utils/collections/IdentifyableCollection.js';
-import { Queue } from '../../../lib/utils/collections/Queue.js';
+import { JobFactory, JobRegistry, IdentifyableCollection, Queue } from 'deku-swarm';
+import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 
 /**
  * Test utility for setting up a JobRegistry with standard collections.
@@ -17,7 +15,7 @@ class JobRegistryUtils {
     const ctx = {};
 
     beforeEach(() => {
-      JobFactory.build('ResourceRequestJob', { attributes: {} });
+      JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: {} });
       ctx.jobs = new Queue();
       ctx.retryQueue = new Queue();
       ctx.finished = new Queue();

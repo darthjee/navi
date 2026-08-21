@@ -1,20 +1,19 @@
+import { Engine, JobFactory, JobRegistry, WorkerFactory, WorkersRegistry } from 'deku-swarm';
 import { ConfigIncluder } from './ConfigIncluder.js';
-import { Engine } from './Engine.js';
 import { EngineEvents } from './EngineEvents.js';
 import { FailureChecker } from './FailureChecker.js';
 import { RunSummary } from './RunSummary.js';
-import { JobFactory } from '../background/JobFactory.js';
-import { JobRegistry } from '../background/JobRegistry.js';
-import { WorkersRegistry } from '../background/WorkersRegistry.js';
 import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
 import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
 import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
 import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
+import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
 import { Config } from '../models/configs/Config.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
 import { WebServer } from '../server/WebServer.js';
+import { LogContext } from '../utils/logging/LogContext.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
 
@@ -95,6 +94,8 @@ class ApplicationInstance {
    */
   buildEngine() {
     return new Engine({
+      jobRegistry: JobRegistry,
+      workersRegistry: WorkersRegistry,
       sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
       keepAlive: !!this.config.webConfig,
       idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
@@ -318,7 +319,7 @@ class ApplicationInstance {
    * @returns {void}
    */
   #initRegistries() {
-    JobFactory.build('ResourceRequestJob', { attributes: { clients: this.config.namespaceMap } });
+    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: this.config.namespaceMap } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
     JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
     JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.namespaceMap } });
@@ -326,10 +327,11 @@ class ApplicationInstance {
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 
+    const loggerFactory = ({ workerId, jobId }) => new LogContext({ workerId, jobId });
+
     WorkersRegistry.build({
       workers: this.#workers,
-      jobRegistry: JobRegistry,
-      workersRegistry: WorkersRegistry,
+      factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory }),
       ...this.config.workersConfig,
     });
     WorkersRegistry.initWorkers();

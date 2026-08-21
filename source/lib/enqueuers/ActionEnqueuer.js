@@ -1,4 +1,4 @@
-import { JobRegistry as DefaultJobRegistry } from '../background/JobRegistry.js';
+import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
 import { Application } from '../services/Application.js';
 
 /**
