@@ -312,6 +312,7 @@ jobs:
   coverage-final:
     executor: node-ci
     steps:
+      - checkout
       - run:
           name: Finalize coverage on Codacy
           command: scripts/ci.sh coverage-final
