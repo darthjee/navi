@@ -8,17 +8,17 @@
 
 Cache Warmer Tool
 
-**Current Version:** [1.6.2](https://github.com/darthjee/navi/releases/tag/1.6.2)
+**Current Version:** [1.6.3](https://github.com/darthjee/navi/releases/tag/1.6.3)
 
-**Next Release:** [1.6.3](https://github.com/darthjee/navi/compare/1.6.2...main)
+**Next Release:** [1.6.4](https://github.com/darthjee/navi/compare/1.6.3...main)
 
 **Client Current Version:** [0.1.2](https://github.com/darthjee/navi/releases/tag/client-0.1.2)
 
 **Client Next Version:** [0.1.3](https://github.com/darthjee/navi/compare/client-0.1.2...main)
 
-**Worker Current Version:** [1.6.2](https://github.com/darthjee/navi/releases/tag/worker-1.6.2)
+**Worker Current Version:** [1.6.3](https://github.com/darthjee/navi/releases/tag/worker-1.6.3)
 
-**Worker Next Version:** [1.6.3](https://github.com/darthjee/navi/compare/worker-1.6.2...main)
+**Worker Next Version:** [1.6.4](https://github.com/darthjee/navi/compare/worker-1.6.3...main)
 
 ---
 
