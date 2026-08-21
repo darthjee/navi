@@ -144,6 +144,57 @@ workflows:
             branches:
               ignore: /.*/
 
+executors:
+  node-ci:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+  scripts-ci:
+    docker:
+      - image: darthjee/scripts:0.6.0
+
+commands:
+  install-deps:
+    parameters:
+      path:
+        type: string
+      frozen:
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            cd <<parameters.path>>
+            if [ "<<parameters.frozen>>" = "true" ]; then
+              yarn install --frozen-lockfile
+            else
+              yarn install
+            fi
+
+  run-tests:
+    parameters:
+      path:
+        type: string
+    steps:
+      - run:
+          name: Unit tests (Jasmine)
+          command: cd <<parameters.path>>; npm run coverage
+      - run:
+          name: Upload coverage to Codacy (partial)
+          command: scripts/ci.sh coverage <<parameters.path>>
+
+  lint-and-report:
+    parameters:
+      path:
+        type: string
+    steps:
+      - run:
+          name: Lint
+          command: cd <<parameters.path>>; npm run lint
+      - run:
+          name: Duplication report (JSCPD)
+          command: cd <<parameters.path>>; npm run report
+
 jobs:
   jasmine:
     docker:
