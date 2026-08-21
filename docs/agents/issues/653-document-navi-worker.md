@@ -46,9 +46,9 @@ These services are currently coupled to the Engine inside Navi. The document sho
 | `FailureChecker` | `source/lib/services/FailureChecker.js` | Checks if dead-job ratio exceeds `failure.threshold` → exits non-zero | Should become an injectable listener |
 | `RunSummary` | `source/lib/services/RunSummary.js` | Generates final execution report (finished/dead counts) | Should become an injectable listener |
 
-#### `enqueueFirstJobs()` — document with extraction note
+#### `ResourceEnqueuer` — document as already-extracted
 
-Today, `ApplicationInstance.enqueueFirstJobs()` discovers parameter-free `ResourceRequest`s from `ResourceRegistry` and enqueues them via `JobRegistry.enqueue()`. The document should note that **this logic should be extracted into a dedicated class belonging to Navi** (not the worker package) that calls `JobRegistry.enqueue()` from outside.
+This extraction has already happened: `ApplicationInstance.enqueueFirstJobs()` now just delegates to `new ResourceEnqueuer().enqueueAll()` (`source/lib/utils/ResourceEnqueuer.js`), which discovers parameter-free, enabled `ResourceRequest`s via `ResourceRequestCollector` and enqueues them with `JobRegistry.enqueue('ResourceRequestJob', ...)` from outside the worker subsystem — `ResourceEnqueuer` also backs the by-name `enqueue(names)` path used by the web API. The document should describe `ResourceEnqueuer` as the dedicated Navi-specific class that owns first-job enqueueing, with no further extraction work needed for this piece.
 
 #### Job subclasses — list only, in a special section
 
@@ -83,7 +83,7 @@ The document should include a section mapping what is generic (goes with the wor
 
 **Navi-specific (stays in Navi):**
 - 5 Job subclasses (`ResourceRequestJob`, `ActionProcessingJob`, `PaginatedActionProcessingJob`, `HtmlParseJob`, `AssetDownloadJob`)
-- `enqueueFirstJobs()` — should become a dedicated Navi class
+- `ResourceEnqueuer` — already the dedicated Navi class that calls `JobRegistry.enqueue()` from outside the worker package
 - `EngineEvents`, `EngineStopService`, `FailureChecker`, `RunSummary` — should become injectable listeners
 - `ApplicationInstance` — orchestrates boot, registers factories
 
