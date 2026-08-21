@@ -4,145 +4,81 @@ workflows:
   test-and-release:
     jobs:
       - jasmine:
-          filters:
+          filters: &all-tags
             tags:
               only: /.*/
       - checks:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - jasmine-dev:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - checks-dev:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - jasmine-dev-frontend:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - checks-dev-frontend:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - checks-frontend:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - jasmine-frontend:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - jasmine-client:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - checks-client:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - jasmine-worker:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - checks-worker:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - coverage-final:
           requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker]
-          filters:
-            tags:
-              only: /.*/
+          filters: *all-tags
       - check-version-tag:
-          filters:
+          filters: &version-tag-filters
             tags:
               only: /\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
       - check-worker-changes:
-          filters:
-            tags:
-              only: /\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *version-tag-filters
       - npm-publish:
           requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-worker-changes]
-          filters:
-            tags:
-              only: /\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *version-tag-filters
       - check-client-version-tag:
-          filters:
+          filters: &client-tag-filters
             tags:
               only: /client-\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
       - npm-publish-client:
           requires: [check-client-version-tag, jasmine-client, checks-client]
-          filters:
-            tags:
-              only: /client-\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *client-tag-filters
       - build-and-release:
           requires: [npm-publish]
-          filters:
-            tags:
-              only: /\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *version-tag-filters
       - update-description:
           requires: [build-and-release]
-          filters:
-            tags:
-              only: /\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *version-tag-filters
       - build-and-release-client:
           requires: [npm-publish-client]
-          filters:
-            tags:
-              only: /client-\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *client-tag-filters
       - update-description-client:
           requires: [build-and-release-client]
-          filters:
-            tags:
-              only: /client-\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *client-tag-filters
       - build-and-release-demo:
           requires: [build-and-release]
-          filters:
-            tags:
-              only: /\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *version-tag-filters
       - build-and-release-demo-app:
           requires: [build-and-release]
-          filters:
-            tags:
-              only: /\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *version-tag-filters
       - check-worker-version-tag:
-          filters:
+          filters: &worker-tag-filters
             tags:
               only: /worker-\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
       - npm-publish-worker:
           requires: [check-worker-version-tag, jasmine-worker, checks-worker]
-          filters:
-            tags:
-              only: /worker-\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
+          filters: *worker-tag-filters
 
 executors:
   node-ci:
