@@ -181,6 +181,74 @@ describe('Client', () => {
     });
   });
 
+  describe('#emit', () => {
+    const resourceUrl = '/items';
+    const fullEmitUrl = 'http://example.com/items';
+    const body = { name: 'item' };
+
+    const axiosMethodByVerb = { POST: 'post', PUT: 'put', PATCH: 'patch' };
+    const stubByVerb = { POST: 'stubPost', PUT: 'stubPut', PATCH: 'stubPatch' };
+
+    ['POST', 'PUT', 'PATCH'].forEach((method) => {
+      describe(`when method is ${method}`, () => {
+        it('sends the body as the JSON payload, reusing baseUrl/headers/timeout', async () => {
+          const response = AxiosUtils[stubByVerb[method]](200);
+
+          await expectAsync(client.emit(method, resourceUrl, body, 200, logContext)).toBeResolvedTo(response);
+          expect(axios[axiosMethodByVerb[method]]).toHaveBeenCalledWith(fullEmitUrl, body, {
+            timeout: 5000,
+            headers: {},
+            validateStatus: jasmine.any(Function),
+          });
+        });
+      });
+    });
+
+    describe('when no expectedStatus is given', () => {
+      [200, 201, 204].forEach((statusCode) => {
+        it(`treats ${statusCode} as a success`, async () => {
+          const response = AxiosUtils.stubPost(statusCode);
+
+          await expectAsync(client.emit('POST', resourceUrl, body, undefined, logContext)).toBeResolvedTo(response);
+        });
+      });
+
+      it('throws RequestFailed for a non-2xx response', async () => {
+        AxiosUtils.stubPost(404);
+
+        await expectAsync(client.emit('POST', resourceUrl, body, undefined, logContext)).toBeRejectedWith(
+          jasmine.objectContaining({ name: 'RequestFailed', statusCode: 404, url: fullEmitUrl }),
+        );
+      });
+    });
+
+    describe('when an explicit expectedStatus is given', () => {
+      it('succeeds only on an exact match', async () => {
+        const response = AxiosUtils.stubPost(201);
+
+        await expectAsync(client.emit('POST', resourceUrl, body, 201, logContext)).toBeResolvedTo(response);
+      });
+
+      it('throws RequestFailed for a different status, even a different 2xx one', async () => {
+        AxiosUtils.stubPost(200);
+
+        await expectAsync(client.emit('POST', resourceUrl, body, 201, logContext)).toBeRejectedWith(
+          jasmine.objectContaining({ name: 'RequestFailed', statusCode: 200, url: fullEmitUrl }),
+        );
+      });
+    });
+
+    describe('when the request fails with a network error', () => {
+      it('propagates the error and logs it', async () => {
+        const error = new Error('network down');
+        AxiosUtils.stubPostRejection(error);
+
+        await expectAsync(client.emit('POST', resourceUrl, body, 200, logContext)).toBeRejectedWith(error);
+        expect(logContext.error).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('.fromObject', () => {
     describe('when headers are provided', () => {
       it('creates a client with the configured headers', () => {
