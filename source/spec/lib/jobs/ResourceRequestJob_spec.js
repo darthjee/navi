@@ -232,6 +232,52 @@ describe('ResourceRequestJob', () => {
       });
     });
 
+    describe('when the resource request has a parser', () => {
+      const rawBody = '{"value":42}';
+
+      beforeEach(() => {
+        rebuildJob();
+        spyOn(resourceRequest, 'hasParser').and.returnValue(true);
+        spyOn(resourceRequest, 'enqueueExtraction').and.stub();
+        spyOn(resourceRequest, 'enqueueActions').and.stub();
+        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
+        response = AxiosUtils.stubGet(200, rawBody);
+      });
+
+      it('calls enqueueExtraction with the raw response body and originUrl', async () => {
+        await job.perform(logContext);
+
+        expect(resourceRequest.enqueueExtraction).toHaveBeenCalledOnceWith(
+          rawBody,
+          jasmine.anything(),
+          url,
+        );
+      });
+
+      it('still calls enqueueActions after enqueueing extraction', async () => {
+        await job.perform(logContext);
+
+        expect(resourceRequest.enqueueExtraction).toHaveBeenCalledTimes(1);
+        expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('when the resource request has no parser', () => {
+      beforeEach(() => {
+        rebuildJob();
+        spyOn(resourceRequest, 'hasParser').and.returnValue(false);
+        spyOn(resourceRequest, 'enqueueExtraction').and.stub();
+        stubEnqueueMethods();
+        response = AxiosUtils.stubGet(200, '[]');
+      });
+
+      it('does not call enqueueExtraction', async () => {
+        await job.perform(logContext);
+
+        expect(resourceRequest.enqueueExtraction).not.toHaveBeenCalled();
+      });
+    });
+
     describe('namespace-aware client resolution', () => {
       let otherClient;
 

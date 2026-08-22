@@ -409,6 +409,69 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#hasParser', () => {
+    it('returns false when no parser is configured', () => {
+      expect(ResourceRequestFactory.build().hasParser()).toBeFalse();
+    });
+
+    it('returns true when a parser is configured', () => {
+      const request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        parser: { type: 'regex', match: '\\d+', field: 'value' },
+      });
+
+      expect(request.hasParser()).toBeTrue();
+    });
+  });
+
+  describe('#enqueueExtraction', () => {
+    let request;
+    let jobRegistry;
+
+    beforeEach(() => {
+      LoggerUtils.stubLoggerMethods();
+      jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
+      request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        parser: { type: 'regex', match: '\\d+', field: 'value' },
+      });
+    });
+
+    it('enqueues one Extraction job with the rawBody and parser', () => {
+      const rawBody = 'value: 42';
+      request.enqueueExtraction(rawBody, jobRegistry);
+
+      expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Extraction', jasmine.objectContaining({
+        rawBody,
+        parser: request.parser,
+      }));
+    });
+
+    it('includes originUrl when given', () => {
+      const originUrl = 'https://example.com/page.json';
+      request.enqueueExtraction('value: 42', jobRegistry, originUrl);
+
+      expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Extraction', jasmine.objectContaining({
+        originUrl,
+      }));
+    });
+
+    it('does not include originUrl when not given', () => {
+      request.enqueueExtraction('value: 42', jobRegistry);
+
+      const [, params] = jobRegistry.enqueue.calls.mostRecent().args;
+      expect(params.originUrl).toBeUndefined();
+    });
+
+    it('does not enqueue jobs when the application is stopped', () => {
+      spyOn(Application, 'isStopped').and.returnValue(true);
+      request.enqueueExtraction('value: 42', jobRegistry);
+      expect(jobRegistry.enqueue).not.toHaveBeenCalled();
+    });
+  });
+
   describe('#enqueuePaginatedActions', () => {
     let paginatedAction;
     let request;

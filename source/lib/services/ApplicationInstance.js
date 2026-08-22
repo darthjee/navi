@@ -6,12 +6,15 @@ import { RunSummary } from './RunSummary.js';
 import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
 import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
 import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
+import { ExtractionJob } from '../jobs/ExtractionJob.js';
 import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
 import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
 import { Config } from '../models/configs/Config.js';
+import { RegexParser } from '../parsers/RegexParser.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
+import { ParserRegistry } from '../registry/ParserRegistry.js';
 import { WebServer } from '../server/WebServer.js';
 import { LogContext } from '../utils/logging/LogContext.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
@@ -324,6 +327,9 @@ class ApplicationInstance {
     JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
     JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.namespaceMap } });
     JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.namespaceMap } });
+
+    const parserRegistry = new ParserRegistry({ regex: new RegexParser() });
+    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry } });
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 

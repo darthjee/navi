@@ -10,6 +10,7 @@ const JOB_CLASSES = [
   'ActionProcessingJob',
   'HtmlParseJob',
   'AssetDownloadJob',
+  'ExtractionJob',
 ];
 
 export { JOB_CLASSES };
