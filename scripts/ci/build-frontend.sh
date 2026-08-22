@@ -5,4 +5,5 @@ cd frontend && yarn install
 yarn build
 cd - > /dev/null
 cp -r frontend/dist/. source/static/
-sed -i 's/"deku-swarm": "file:..\//"deku-swarm": "^/' source/package.json
+WORKER_VERSION=$(node -p "require('./worker/package.json').version")
+sed -i "s/\"deku-swarm\": \"file:[^\"]*\"/\"deku-swarm\": \"$WORKER_VERSION\"/" source/package.json
