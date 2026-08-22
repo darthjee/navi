@@ -44,7 +44,7 @@ describe('RegexParser', () => {
 
         expect(() => parser.extract(rawBody, attributes)).toThrowError(
           MissingParserMatch,
-          'Regex parser is missing the required "match" field',
+          'Parser is missing the required "match" field',
         );
       });
     });
