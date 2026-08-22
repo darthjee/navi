@@ -1,7 +1,7 @@
 {
   "name": "deku-swarm",
   "type": "module",
-  "version": "1.6.4",
+  "version": "1.7.0",
   "description": "Queue-based worker pool with retry, cooldown, and job chaining support",
   "readme": "README.md",
   "main": "lib/index.js",
