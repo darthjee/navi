@@ -138,8 +138,8 @@ class NamespaceMapBuilder {
 
   /**
    * Walks every resource in every namespace and validates that its declared client
-   * reference, action targets, and paginated_action targets all resolve via the
-   * namespace map, raising immediately on the first unresolvable reference.
+   * reference, emit.client reference, action targets, and paginated_action targets
+   * all resolve via the namespace map, raising immediately on the first unresolvable reference.
    * @param {Record<string, Namespace>} namespaces A map of namespace name to Namespace instance.
    * @returns {void}
    * @private
@@ -151,6 +151,7 @@ class NamespaceMapBuilder {
       namespace.resourceRegistry.filter(() => true).forEach((resource) => {
         resource.resourceRequests.forEach((resourceRequest) => {
           this.#validateClient(resourceRequest, namespaceMap);
+          this.#validateEmitClient(resourceRequest, namespaceMap);
           this.#validateActions(resourceRequest, namespaceMap);
         });
       });
@@ -168,6 +169,19 @@ class NamespaceMapBuilder {
     if (!resourceRequest.clientName) return;
 
     namespaceMap.getClient(resourceRequest.namespace, resourceRequest.clientName, resourceRequest.clientNamespace);
+  }
+
+  /**
+   * Validates a ResourceRequest's declared `emit.client` reference, when `emit` is present.
+   * @param {ResourceRequest} resourceRequest The resource request to validate.
+   * @param {NamespaceMap} namespaceMap The namespace map used to resolve the reference.
+   * @returns {void}
+   * @private
+   */
+  #validateEmitClient(resourceRequest, namespaceMap) {
+    if (!resourceRequest.emit) return;
+
+    namespaceMap.getClient(resourceRequest.namespace, resourceRequest.emit.clientName, resourceRequest.emit.clientNamespace);
   }
 
   /**
