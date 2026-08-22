@@ -1,6 +1,6 @@
+import { InvalidParserMatch } from '../exceptions/config/InvalidParserMatch.js';
 import { MissingParserFields } from '../exceptions/config/MissingParserFields.js';
 import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
-import { InvalidParserMatch } from '../exceptions/config/InvalidParserMatch.js';
 
 /**
  * JsonPathParser extracts a list of mapped items from a raw JSON response body,
