@@ -97,6 +97,27 @@ class Client {
   }
 
   /**
+   * Performs a POST/PUT/PATCH request with a JSON body and validates the response status.
+   * @param {string} method The HTTP method to use. Must be one of "POST", "PUT", "PATCH".
+   * @param {string} resourceUrl URL path from the resource request, appended to `baseUrl`.
+   * @param {object} body The JSON body to send with the request.
+   * @param {number} [expectedStatus] The expected HTTP response status code. When omitted,
+   * any 2xx status is treated as success.
+   * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
+   * @returns {Promise<object>} The Axios response object.
+   * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
+   */
+  async emit(method, resourceUrl, body, expectedStatus, logContext) {
+    const requestUrl = this.#buildUrl(resourceUrl);
+    logContext.info(`[Client:${this.name}] Emitting ${method} ${requestUrl}`);
+    try {
+      return await this.#emitRequest(method, requestUrl, body, expectedStatus, logContext);
+    } catch (error) {
+      this.#handleError(error, requestUrl, logContext);
+    }
+  }
+
+  /**
    * Performs the HTTP request and checks the response status.
    * @param {ResourceRequest} resourceRequest Information about the URL path to request
    * and the expected status code.
@@ -128,12 +149,64 @@ class Client {
 
     logContext.info(`[Client:${this.name}] Response ${requestUrl} → ${response.status}`);
 
-    if (response.status !== expectedStatus) {
-      logContext.info(`[Client:${this.name}] ${requestUrl} did not match (got ${response.status}, expected ${expectedStatus})`);
+    return this.#handleResponse(response, expectedStatus, requestUrl, logContext);
+  }
+
+  /**
+   * Dispatches a POST/PUT/PATCH request with a JSON body to the given URL and validates
+   * the response status.
+   * @param {string} method The HTTP method to use. Must be one of "POST", "PUT", "PATCH".
+   * @param {string} requestUrl The full URL to request.
+   * @param {object} body The JSON body to send with the request.
+   * @param {number} [expectedStatus] The expected HTTP response status code. When omitted,
+   * any 2xx status is treated as success.
+   * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
+   * @returns {Promise<object>} The Axios response object.
+   * @throws {RequestFailed} Throws an error if the response status does not match.
+   */
+  async #emitRequest(method, requestUrl, body, expectedStatus, logContext) {
+    const options = { timeout: this.timeout, headers: this.headers, validateStatus: () => true };
+
+    let response;
+    switch (method) {
+      case 'POST':
+        response = await axios.post(requestUrl, body, options);
+        break;
+      case 'PUT':
+        response = await axios.put(requestUrl, body, options);
+        break;
+      case 'PATCH':
+        response = await axios.patch(requestUrl, body, options);
+        break;
+    }
+
+    logContext.info(`[Client:${this.name}] Response ${requestUrl} → ${response.status}`);
+
+    return this.#handleResponse(response, expectedStatus, requestUrl, logContext);
+  }
+
+  /**
+   * Validates a response's status against the expected status, throwing when it does not match.
+   * When `expectedStatus` is `undefined`/`null`, any 2xx status is treated as success; otherwise
+   * the response status must exactly match `expectedStatus`.
+   * @param {object} response The Axios response object.
+   * @param {number} [expectedStatus] The expected HTTP response status code.
+   * @param {string} requestUrl The full URL that was requested.
+   * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
+   * @returns {object} The given response, when it matches.
+   * @throws {RequestFailed} Throws an error if the response status does not match.
+   */
+  #handleResponse(response, expectedStatus, requestUrl, logContext) {
+    const matches = expectedStatus === undefined || expectedStatus === null
+      ? response.status >= 200 && response.status < 300
+      : response.status === expectedStatus;
+
+    if (!matches) {
+      logContext.info(`[Client:${this.name}] ${requestUrl} did not match (got ${response.status}, expected ${expectedStatus ?? '2xx'})`);
       throw new RequestFailed(response.status, requestUrl);
     }
 
-    logContext.info(`[Client:${this.name}] ${requestUrl} matched (expected ${expectedStatus})`);
+    logContext.info(`[Client:${this.name}] ${requestUrl} matched (expected ${expectedStatus ?? '2xx'})`);
     return response;
   }
 

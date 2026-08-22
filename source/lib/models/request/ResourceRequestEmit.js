@@ -26,8 +26,9 @@ class ResourceRequestEmit {
    * @param {string} attributes.method The HTTP method used for the emit request. Must be
    * one of "POST", "PUT", "PATCH".
    * @param {string} attributes.url The URL to emit the request to.
+   * @param {number} [attributes.status] The expected status code of the emit response.
    */
-  constructor({ client, method, url }) {
+  constructor({ client, method, url, status }) {
     if (!EMIT_METHODS.includes(method)) throw new InvalidEmitMethod(method);
     if (!url) throw new MissingEmitUrl();
 
@@ -37,6 +38,7 @@ class ResourceRequestEmit {
 
     this.method = method;
     this.url = url;
+    this.status = status;
   }
 
   /**
@@ -54,6 +56,17 @@ class ResourceRequestEmit {
    */
   get clientNamespace() {
     return this.#clientNamespace;
+  }
+
+  /**
+   * Returns the URL with every {:placeholder} token replaced by the
+   * corresponding value from the parameters object.
+   * Tokens with no matching key are left unchanged.
+   * @param {object} [parameters={}] Key-value map of URL parameters.
+   * @returns {string} The resolved URL.
+   */
+  resolveUrl(parameters = {}) {
+    return this.url.replace(/\{:(\w+)\}/g, (_, key) => parameters[key] ?? `{:${key}}`);
   }
 
   /**
