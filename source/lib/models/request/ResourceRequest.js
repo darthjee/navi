@@ -1,7 +1,10 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
 import { AssetRequest } from './AssetRequest.js';
+import { ClientReference } from './ClientReference.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
+import { ResourceRequestEmit } from './ResourceRequestEmit.js';
 import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction.js';
+import { ResourceRequestParser } from './ResourceRequestParser.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
 import { PaginatedActionsEnqueuer } from '../../enqueuers/PaginatedActionsEnqueuer.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
@@ -28,6 +31,8 @@ class ResourceRequest {
    * @param {Array} [attributes.actions=[]] List of raw action config objects.
    * @param {Array} [attributes.assets=[]] List of raw asset extraction rule objects.
    * @param {Array} [attributes.paginated_actions=[]] List of raw paginated action config objects.
+   * @param {object} [attributes.parser] Raw response-parsing rule config object.
+   * @param {object} [attributes.emit] Raw follow-up emit request config object.
    * @param {boolean} [attributes.enabled] Whether this request is enabled. Defaults to enabled
    * when omitted. Ignored when `disabled` is `true`.
    * @param {boolean} [attributes.disabled] Whether this request is disabled. Takes precedence
@@ -44,6 +49,8 @@ class ResourceRequest {
     actions = [],
     assets = [],
     paginated_actions = [],
+    parser,
+    emit,
     enabled,
     disabled,
     max_page,
@@ -54,13 +61,15 @@ class ResourceRequest {
     this.#disabled = disabled === true || enabled === false;
     this.#maxPage = this.#sanitizeMaxPage(max_page);
 
-    const parsedClient = ResourceRequest.#parseClient(clientName);
+    const parsedClient = ClientReference.parse(clientName);
     this.#clientName = parsedClient.name;
     this.#clientNamespace = parsedClient.namespace;
 
     this.actions = ResourceRequestAction.fromList(actions, { originNamespace: namespace });
     this.assets = AssetRequest.fromListObject(assets);
     this.paginatedActions = ResourceRequestPaginatedAction.fromList(paginated_actions, { originNamespace: namespace });
+    this.parser = parser ? ResourceRequestParser.fromObject(parser) : parser;
+    this.emit = emit ? ResourceRequestEmit.fromObject(emit) : emit;
   }
 
   /**
@@ -192,20 +201,6 @@ class ResourceRequest {
    */
   static fromList(array, { clientName, namespace = 'default' } = {}) {
     return array.map((attrs) => new ResourceRequest({ ...attrs, clientName, namespace }));
-  }
-
-  /**
-   * Parses a raw client reference into a name/namespace pair.
-   * Accepts either a bare string (shorthand, resolved in the requester's own namespace)
-   * or an object with an explicit target `namespace`.
-   * @param {string|{name: string, namespace: string}} [client] The raw client reference.
-   * @returns {{name: string|undefined, namespace: string|null}} The parsed client name and target namespace.
-   */
-  static #parseClient(client) {
-    if (client && typeof client === 'object') {
-      return { name: client.name, namespace: client.namespace ?? null };
-    }
-    return { name: client, namespace: null };
   }
 
   /**
