@@ -23,6 +23,7 @@ function StatsDisplay({ stats }) {
       </div>
       <div className="vr mx-1" />
       <StatItem label="Logs" variant="info" to="/logs" />
+      <StatItem label="Memory" variant="info" to="/memory/status" />
     </div>
   );
 }

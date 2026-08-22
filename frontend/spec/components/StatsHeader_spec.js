@@ -99,6 +99,16 @@ describe('StatsHeader', () => {
       const hrefs = links.map((a) => a.getAttribute('href'));
       expect(hrefs).toContain('/logs');
     });
+
+    it('renders the Memory button', () => {
+      expect(state.container.textContent).toContain('Memory');
+    });
+
+    it('links the Memory button to /memory/status', () => {
+      const links = Array.from(state.container.querySelectorAll('a'));
+      const hrefs = links.map((a) => a.getAttribute('href'));
+      expect(hrefs).toContain('/memory/status');
+    });
   });
 
   describe('when the fetch fails', () => {
