@@ -13,3 +13,5 @@
 | 9 | `EmitJob` retry policy follows **`ResourceRequestJob` pattern** | Retries via `max-retries` and `retry_cooldown`; consistent with existing HTTP job behavior |
 | 10 | `ExtractionJob` has **no retry rights** | Exhausted on first failure; same as `ActionProcessingJob` and `HtmlParseJob` — parser failures are configuration errors, not transient |
 | 11 | `EmitJob` supports **POST, PUT, and PATCH** methods | Covers create, upsert, and partial update scenarios |
+| 12 | `json_path` `filter` conditions support **field-to-field comparison** via `equals_field` (in addition to the existing `equals` literal comparison), all conditions AND'ed | Covers cases like `bnd_inid == bundle_inid` where both sides come from the same item, without inventing a join mechanism |
+| 13 | `json_path` `match` supports **dot-notation nested paths** (e.g. `data.items`), not just a flat top-level key | Real-world APIs commonly nest the target array; matches the existing dot-notation convention used elsewhere in the config |
