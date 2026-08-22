@@ -171,6 +171,29 @@ class ResourceRequest {
   }
 
   /**
+   * Enqueues one ExtractionJob for this resource request's declared parser.
+   * Does nothing if the application is in 'stopped' status.
+   * @param {string} rawBody The raw HTTP response body.
+   * @param {object} [jobRegistry=JobRegistry] The job registry used to enqueue the ExtractionJob.
+   * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
+   * @returns {void}
+   */
+  enqueueExtraction(rawBody, jobRegistry = DefaultJobRegistry, originUrl = null) {
+    if (Application.isStopped()) return;
+    const params = { rawBody, parser: this.parser };
+    if (originUrl !== null) params.originUrl = originUrl;
+    jobRegistry.enqueue('Extraction', params);
+  }
+
+  /**
+   * Returns true when the resource request declares a response-parsing rule.
+   * @returns {boolean} True if a parser is configured.
+   */
+  hasParser() {
+    return !!this.parser;
+  }
+
+  /**
    * Returns the URL with every {:placeholder} token replaced by the
    * corresponding value from the parameters object.
    * Tokens with no matching key are left unchanged.

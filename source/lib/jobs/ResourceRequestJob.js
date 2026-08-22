@@ -61,6 +61,7 @@ class ResourceRequestJob extends Job {
   #handleResponse(response) {
     const originUrl = this.#resourceRequest.resolveUrl(this.#parameters);
     this.#enqueueAssets(response, originUrl);
+    this.#enqueueExtraction(response, originUrl);
     const wrapper = new ResponseWrapper(response, this.#parameters);
     this.#resourceRequest.enqueueActions(wrapper, originUrl);
     this.#resourceRequest.enqueuePaginatedActions(wrapper, this.#parameters, originUrl);
@@ -76,6 +77,18 @@ class ResourceRequestJob extends Job {
   #enqueueAssets(response, originUrl) {
     if (this.#resourceRequest.hasAssets()) {
       this.#resourceRequest.enqueueAssets(response.data, JobRegistry, this.#clients, originUrl);
+    }
+  }
+
+  /**
+   * Enqueues an extraction job when the resource request declares a response-parsing rule.
+   * @param {object} response The HTTP response object.
+   * @param {string} originUrl The resolved URL of this job, forwarded as origin to child jobs.
+   * @private
+   */
+  #enqueueExtraction(response, originUrl) {
+    if (this.#resourceRequest.hasParser()) {
+      this.#resourceRequest.enqueueExtraction(response.data, JobRegistry, originUrl);
     }
   }
 
