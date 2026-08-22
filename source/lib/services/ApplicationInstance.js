@@ -6,6 +6,7 @@ import { RunSummary } from './RunSummary.js';
 import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
 import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
 import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
+import { EmitJob } from '../jobs/EmitJob.js';
 import { ExtractionJob } from '../jobs/ExtractionJob.js';
 import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
@@ -331,6 +332,7 @@ class ApplicationInstance {
 
     const parserRegistry = new ParserRegistry({ regex: new RegexParser(), json_path: new JsonPathParser() });
     JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry } });
+    JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: this.config.namespaceMap } });
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
 
