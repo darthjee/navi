@@ -1,5 +1,5 @@
-import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
 import { MissingParserField } from '../exceptions/config/MissingParserField.js';
+import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
 
 /**
  * RegexParser extracts a single field from a raw response body using a regular

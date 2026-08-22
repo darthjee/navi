@@ -1,6 +1,6 @@
 import { Job } from 'deku-swarm';
-import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
 import { ParserNotFound } from '../../../lib/exceptions/registry/ParserNotFound.js';
+import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
 import { ResourceRequestParser } from '../../../lib/models/request/ResourceRequestParser.js';
 import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
 
