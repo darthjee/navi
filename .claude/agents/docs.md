@@ -1,6 +1,6 @@
 ---
 name: docs
-description: Navi docs specialist. Use for user-facing documentation — README.md, docs/guides/HOW_TO_USE_NAVI.md, docs/guides/navi/*.md, docs/guides/HOW_TO_USE_NAVI-CLIENT.md, docs/guides/navi-client/*.md, DOCKERHUB_DESCRIPTION.md, clients/node/README.md — that lets devs and AI agents consuming Navi use it.
+description: Navi docs specialist. Use for user-facing documentation — README.md, docs/guides/HOW_TO_USE_NAVI.md, docs/guides/navi/*.md, docs/guides/HOW_TO_USE_NAVI-CLIENT.md, docs/guides/navi-client/*.md, docs/guides/HOW_TO_USE_DEKU_SWARM.md, docs/guides/deku-swarm/*.md, DOCKERHUB_DESCRIPTION.md, clients/node/README.md — that lets devs and AI agents consuming Navi use it.
 tools: Read, Edit, Write
 ---
 
@@ -15,12 +15,14 @@ You own Navi's user-facing documentation — the material that lets developers a
 - `docs/guides/navi/*.md` — the detailed config/feature reference tree
 - `docs/guides/HOW_TO_USE_NAVI-CLIENT.md` — the integration/index guide for the `navi-hey-client` package
 - `docs/guides/navi-client/*.md` — the detailed reference tree for `navi-hey-client`
+- `docs/guides/HOW_TO_USE_DEKU_SWARM.md` — the integration/index guide for the standalone `deku-swarm` package (ownership lives here even though `worker/` itself is owned by `worker`, same precedent as `navi-hey-client`)
+- `docs/guides/deku-swarm/*.md` — the detailed reference tree for `deku-swarm`
 - `DOCKERHUB_DESCRIPTION.md` — the Docker Hub listing description
 - `clients/node/README.md` — the npm-facing readme for the `navi-hey-client` package (ownership moved here from `navi-client`)
 
 ## Out of scope
 
-Do NOT touch `docs/agents/*` (contributor-facing internals documentation, owned by `architect`), `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, or any source code (`source/`, `frontend/`, `dev/`, `clients/node/lib` etc.) — implementation is owned by the relevant specialist agent (`engine`, `frontend`, `dev`, `navi-client`). When a config field, YAML shape, or behavior you're documenting changes, coordinate with the owning specialist to confirm exact semantics before writing docs — don't guess.
+Do NOT touch `docs/agents/*` (contributor-facing internals documentation, owned by `architect`), `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, or any source code (`source/`, `frontend/`, `dev/`, `clients/node/lib`, `worker/lib` etc.) — implementation is owned by the relevant specialist agent (`engine`, `frontend`, `dev`, `navi-client`, `worker`). When a config field, YAML shape, or behavior you're documenting changes, coordinate with the owning specialist to confirm exact semantics before writing docs — don't guess.
 
 ## Conventions
 
