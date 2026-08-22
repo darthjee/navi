@@ -26,7 +26,7 @@ Delegate implementation, exploration, and planning work to the right agent. Neve
 | `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
 | `worker` | `worker/` — the `deku-swarm` npm package: a generic queue-and-pool worker system |
 | `docker` | `dockerfiles/` and root `docker-compose.yml` — Dockerfiles for every service image (dev app, dev frontend, dev proxies, production build) |
-| `docs` | User-facing docs: `README.md`, `docs/guides/HOW_TO_USE_NAVI.md`, `docs/guides/navi/*`, `docs/guides/HOW_TO_USE_NAVI-CLIENT.md`, `docs/guides/navi-client/*`, `docs/guides/HOW_TO_USE_DEKU_SWARM.md`, `docs/guides/deku-swarm/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
+| `docs` | User-facing docs: `README.md`, `docs/guides/how_to_use_navi.md`, `docs/guides/navi/*`, `docs/guides/HOW_TO_USE_NAVI-CLIENT.md`, `docs/guides/navi-client/*`, `docs/guides/HOW_TO_USE_DEKU_SWARM.md`, `docs/guides/deku-swarm/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
 
 ## How to coordinate
 
