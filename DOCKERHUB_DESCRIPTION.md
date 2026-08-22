@@ -139,6 +139,7 @@ resources:
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. The web UI frontend is bundled directly with the Navi package and served from `source/static/`. |
+| `web.memory` | Optional. Configures the memory ceiling (`web.memory.maximum`, bytes) and status thresholds (`web.memory.thresholds`, percentages) used by the `GET /memory/status.json` endpoint and the Memory status screen. |
 
 When the web server is enabled, the following screens are available:
 
@@ -147,6 +148,7 @@ When the web server is enabled, the following screens are available:
 | Dashboard | `/#/` | Real-time job queue stats (counts per status). |
 | Jobs list | `/#/jobs` | Table of all jobs across every status, with links to individual job pages. |
 | Job detail | `/#/job/:id` | Full details for a specific job (ID, status, attempt count). |
+| Memory status | `/#/memory/status` | Current process memory usage vs. the resolved maximum, with a color-coded status. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `resources.<name>` | A named group of URL requests to warm. |
@@ -188,4 +190,4 @@ For example, requesting `/categories.json` might return `[{ "id": 1 }, { "id": 2
 
 GitHub repository: [darthjee/navi](https://github.com/darthjee/navi)
 
-Integration guide for developers and AI agents: [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/guides/HOW_TO_USE_NAVI.md)
+Integration guide for developers and AI agents: [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/guides/how_to_use_navi.md)
