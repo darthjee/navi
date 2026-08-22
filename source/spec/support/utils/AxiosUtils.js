@@ -23,6 +23,66 @@ class AxiosUtils {
   static stubGetRejection(error) {
     spyOn(axios, 'get').and.returnValue(Promise.reject(error));
   }
+
+  /**
+   * Stubs axios.post to resolve with the given status and optional data.
+   * @param {number} status - The HTTP status code.
+   * @param {string} [data] - Optional response body string.
+   * @returns {object} The response object, for use in assertions.
+   */
+  static stubPost(status, data = undefined) {
+    const response = { status, ...(data !== undefined && { data }) };
+    spyOn(axios, 'post').and.returnValue(Promise.resolve(response));
+    return response;
+  }
+
+  /**
+   * Stubs axios.post to reject with the given error.
+   * @param {*} error - The rejection value.
+   */
+  static stubPostRejection(error) {
+    spyOn(axios, 'post').and.returnValue(Promise.reject(error));
+  }
+
+  /**
+   * Stubs axios.put to resolve with the given status and optional data.
+   * @param {number} status - The HTTP status code.
+   * @param {string} [data] - Optional response body string.
+   * @returns {object} The response object, for use in assertions.
+   */
+  static stubPut(status, data = undefined) {
+    const response = { status, ...(data !== undefined && { data }) };
+    spyOn(axios, 'put').and.returnValue(Promise.resolve(response));
+    return response;
+  }
+
+  /**
+   * Stubs axios.put to reject with the given error.
+   * @param {*} error - The rejection value.
+   */
+  static stubPutRejection(error) {
+    spyOn(axios, 'put').and.returnValue(Promise.reject(error));
+  }
+
+  /**
+   * Stubs axios.patch to resolve with the given status and optional data.
+   * @param {number} status - The HTTP status code.
+   * @param {string} [data] - Optional response body string.
+   * @returns {object} The response object, for use in assertions.
+   */
+  static stubPatch(status, data = undefined) {
+    const response = { status, ...(data !== undefined && { data }) };
+    spyOn(axios, 'patch').and.returnValue(Promise.resolve(response));
+    return response;
+  }
+
+  /**
+   * Stubs axios.patch to reject with the given error.
+   * @param {*} error - The rejection value.
+   */
+  static stubPatchRejection(error) {
+    spyOn(axios, 'patch').and.returnValue(Promise.reject(error));
+  }
 }
 
 export { AxiosUtils };
