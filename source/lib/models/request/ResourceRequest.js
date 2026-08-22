@@ -2,7 +2,9 @@ import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
 import { AssetRequest } from './AssetRequest.js';
 import { ClientReference } from './ClientReference.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
+import { ResourceRequestEmit } from './ResourceRequestEmit.js';
 import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction.js';
+import { ResourceRequestParser } from './ResourceRequestParser.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
 import { PaginatedActionsEnqueuer } from '../../enqueuers/PaginatedActionsEnqueuer.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
@@ -29,6 +31,8 @@ class ResourceRequest {
    * @param {Array} [attributes.actions=[]] List of raw action config objects.
    * @param {Array} [attributes.assets=[]] List of raw asset extraction rule objects.
    * @param {Array} [attributes.paginated_actions=[]] List of raw paginated action config objects.
+   * @param {object} [attributes.parser] Raw response-parsing rule config object.
+   * @param {object} [attributes.emit] Raw follow-up emit request config object.
    * @param {boolean} [attributes.enabled] Whether this request is enabled. Defaults to enabled
    * when omitted. Ignored when `disabled` is `true`.
    * @param {boolean} [attributes.disabled] Whether this request is disabled. Takes precedence
@@ -45,6 +49,8 @@ class ResourceRequest {
     actions = [],
     assets = [],
     paginated_actions = [],
+    parser,
+    emit,
     enabled,
     disabled,
     max_page,
@@ -62,6 +68,8 @@ class ResourceRequest {
     this.actions = ResourceRequestAction.fromList(actions, { originNamespace: namespace });
     this.assets = AssetRequest.fromListObject(assets);
     this.paginatedActions = ResourceRequestPaginatedAction.fromList(paginated_actions, { originNamespace: namespace });
+    this.parser = parser ? ResourceRequestParser.fromObject(parser) : parser;
+    this.emit = emit ? ResourceRequestEmit.fromObject(emit) : emit;
   }
 
   /**
