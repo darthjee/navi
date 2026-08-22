@@ -1,6 +1,8 @@
 import { JobRegistry } from 'deku-swarm';
 import { AssetRequest } from '../../../../lib/models/request/AssetRequest.js';
 import { ResourceRequest } from '../../../../lib/models/request/ResourceRequest.js';
+import { ResourceRequestEmit } from '../../../../lib/models/request/ResourceRequestEmit.js';
+import { ResourceRequestParser } from '../../../../lib/models/request/ResourceRequestParser.js';
 import { ResponseWrapper } from '../../../../lib/models/response/ResponseWrapper.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { Application } from '../../../../lib/services/Application.js';
@@ -77,6 +79,57 @@ describe('ResourceRequest', () => {
         expect(resourceRequest.assets).toEqual([]);
         expect(resourceRequest.hasAssets()).toBeFalse();
       });
+    });
+  });
+
+  describe('#parser and #emit', () => {
+    it('leaves parser and emit undefined when both are absent', () => {
+      const request = new ResourceRequest({ url: '/categories.json', status: 200 });
+
+      expect(request.parser).toBeUndefined();
+      expect(request.emit).toBeUndefined();
+      expect(request.actions).toEqual([]);
+      expect(request.assets).toEqual([]);
+    });
+
+    it('builds a ResourceRequestParser when parser is present and leaves emit undefined', () => {
+      const request = new ResourceRequest({
+        url: '/categories.json',
+        status: 200,
+        parser: { type: 'regex', match: '\\d+' },
+      });
+
+      expect(request.parser).toBeInstanceOf(ResourceRequestParser);
+      expect(request.parser.type).toBe('regex');
+      expect(request.emit).toBeUndefined();
+    });
+
+    it('builds a ResourceRequestEmit when emit is present and leaves parser undefined', () => {
+      const request = new ResourceRequest({
+        url: '/categories.json',
+        status: 200,
+        emit: { client: 'myClient', method: 'POST', url: '/emit' },
+      });
+
+      expect(request.emit).toBeInstanceOf(ResourceRequestEmit);
+      expect(request.emit.clientName).toBe('myClient');
+      expect(request.parser).toBeUndefined();
+    });
+
+    it('builds both parser and emit when present together, alongside actions/assets', () => {
+      const request = new ResourceRequest({
+        url: '/categories.json',
+        status: 200,
+        parser: { type: 'json_path', fields: { id: 'id' } },
+        emit: { client: 'myClient', method: 'PUT', url: '/emit' },
+        actions: [{ resource: 'products' }],
+        assets: [{ selector: 'link[rel="stylesheet"]', attribute: 'href' }],
+      });
+
+      expect(request.parser).toBeInstanceOf(ResourceRequestParser);
+      expect(request.emit).toBeInstanceOf(ResourceRequestEmit);
+      expect(request.actions.length).toBe(1);
+      expect(request.assets.length).toBe(1);
     });
   });
 

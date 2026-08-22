@@ -1,5 +1,6 @@
 import { MissingClientsConfig } from '../../../lib/exceptions/config/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../../lib/exceptions/config/MissingResourceConfig.js';
+import { ClientNotFound } from '../../../lib/exceptions/registry/ClientNotFound.js';
 import { NamespaceNotFound } from '../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../../../lib/exceptions/registry/ResourceNotFound.js';
 import { Namespace } from '../../../lib/registry/Namespace.js';
@@ -159,6 +160,59 @@ describe('NamespaceMapBuilder', () => {
         ];
 
         expect(() => NamespaceMapBuilder.build(files)).toThrowError(NamespaceNotFound);
+      });
+
+      it('resolves emit.client successfully against a declared client', () => {
+        const files = [
+          {
+            namespace: 'default',
+            resources: {
+              categories: [{
+                url: '/categories.json',
+                status: 200,
+                emit: { client: 'default', method: 'POST', url: '/emit' },
+              }],
+            },
+            clients: { default: { base_url: 'https://example.com' } },
+            filePath: 'config.yml',
+          },
+        ];
+
+        expect(() => NamespaceMapBuilder.build(files)).not.toThrow();
+      });
+
+      it('raises ClientNotFound when emit.client references an undeclared client', () => {
+        const files = [
+          {
+            namespace: 'default',
+            resources: {
+              categories: [{
+                url: '/categories.json',
+                status: 200,
+                emit: { client: 'missing', method: 'POST', url: '/emit' },
+              }],
+            },
+            clients: {},
+            filePath: 'config.yml',
+          },
+        ];
+
+        expect(() => NamespaceMapBuilder.build(files)).toThrowError(ClientNotFound);
+      });
+
+      it('is unaffected by the new validation path when emit is absent', () => {
+        const files = [
+          {
+            namespace: 'default',
+            resources: {
+              categories: [{ url: '/categories.json', status: 200 }],
+            },
+            clients: {},
+            filePath: 'config.yml',
+          },
+        ];
+
+        expect(() => NamespaceMapBuilder.build(files)).not.toThrow();
       });
     });
 
