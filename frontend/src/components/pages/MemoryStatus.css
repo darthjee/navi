@@ -1,0 +1,19 @@
+.text-memory-low {
+  color: #495057;
+}
+
+.text-memory-medium {
+  color: #198754;
+}
+
+.text-memory-high {
+  color: #ffc107;
+}
+
+.text-memory-over {
+  color: #dc3545;
+}
+
+.text-memory-over-limit {
+  color: #6f42c1;
+}
