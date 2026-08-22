@@ -1,6 +1,6 @@
+import { ClientReference } from './ClientReference.js';
 import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
 import { MissingEmitUrl } from '../../exceptions/config/MissingEmitUrl.js';
-import { ClientReference } from './ClientReference.js';
 
 /**
  * The set of supported `emit.method` values.

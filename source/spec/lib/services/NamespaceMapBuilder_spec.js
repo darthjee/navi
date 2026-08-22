@@ -163,54 +163,23 @@ describe('NamespaceMapBuilder', () => {
       });
 
       it('resolves emit.client successfully against a declared client', () => {
+        const emit = { client: 'default', method: 'POST', url: '/emit' };
         const files = [
-          {
-            namespace: 'default',
-            resources: {
-              categories: [{
-                url: '/categories.json',
-                status: 200,
-                emit: { client: 'default', method: 'POST', url: '/emit' },
-              }],
-            },
-            clients: { default: { base_url: 'https://example.com' } },
-            filePath: 'config.yml',
-          },
+          { ...resourceEntry('categories', [{ url: '/categories.json', status: 200, emit }]), clients: { default: { base_url: 'https://example.com' } } },
         ];
 
         expect(() => NamespaceMapBuilder.build(files)).not.toThrow();
       });
 
       it('raises ClientNotFound when emit.client references an undeclared client', () => {
-        const files = [
-          {
-            namespace: 'default',
-            resources: {
-              categories: [{
-                url: '/categories.json',
-                status: 200,
-                emit: { client: 'missing', method: 'POST', url: '/emit' },
-              }],
-            },
-            clients: {},
-            filePath: 'config.yml',
-          },
-        ];
+        const emit = { client: 'missing', method: 'POST', url: '/emit' };
+        const files = [resourceEntry('categories', [{ url: '/categories.json', status: 200, emit }])];
 
         expect(() => NamespaceMapBuilder.build(files)).toThrowError(ClientNotFound);
       });
 
       it('is unaffected by the new validation path when emit is absent', () => {
-        const files = [
-          {
-            namespace: 'default',
-            resources: {
-              categories: [{ url: '/categories.json', status: 200 }],
-            },
-            clients: {},
-            filePath: 'config.yml',
-          },
-        ];
+        const files = [resourceEntry('categories', [{ url: '/categories.json', status: 200 }])];
 
         expect(() => NamespaceMapBuilder.build(files)).not.toThrow();
       });
