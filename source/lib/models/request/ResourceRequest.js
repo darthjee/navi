@@ -1,5 +1,6 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
 import { AssetRequest } from './AssetRequest.js';
+import { ClientReference } from './ClientReference.js';
 import { ResourceRequestAction } from './ResourceRequestAction.js';
 import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
@@ -54,7 +55,7 @@ class ResourceRequest {
     this.#disabled = disabled === true || enabled === false;
     this.#maxPage = this.#sanitizeMaxPage(max_page);
 
-    const parsedClient = ResourceRequest.#parseClient(clientName);
+    const parsedClient = ClientReference.parse(clientName);
     this.#clientName = parsedClient.name;
     this.#clientNamespace = parsedClient.namespace;
 
@@ -192,20 +193,6 @@ class ResourceRequest {
    */
   static fromList(array, { clientName, namespace = 'default' } = {}) {
     return array.map((attrs) => new ResourceRequest({ ...attrs, clientName, namespace }));
-  }
-
-  /**
-   * Parses a raw client reference into a name/namespace pair.
-   * Accepts either a bare string (shorthand, resolved in the requester's own namespace)
-   * or an object with an explicit target `namespace`.
-   * @param {string|{name: string, namespace: string}} [client] The raw client reference.
-   * @returns {{name: string|undefined, namespace: string|null}} The parsed client name and target namespace.
-   */
-  static #parseClient(client) {
-    if (client && typeof client === 'object') {
-      return { name: client.name, namespace: client.namespace ?? null };
-    }
-    return { name: client, namespace: null };
   }
 
   /**
