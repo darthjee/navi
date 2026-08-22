@@ -16,9 +16,9 @@ Cache Warmer Tool
 
 **Client Next Version:** [0.1.3](https://github.com/darthjee/navi/compare/client-0.1.2...main)
 
-**Worker Current Version:** [1.6.3](https://github.com/darthjee/navi/releases/tag/worker-1.6.3)
+**Worker Current Version:** [1.7.0](https://github.com/darthjee/navi/releases/tag/worker-1.7.0)
 
-**Worker Next Version:** [1.6.4](https://github.com/darthjee/navi/compare/worker-1.6.3...main)
+**Worker Next Version:** [1.7.1](https://github.com/darthjee/navi/compare/worker-1.7.0...main)
 
 ---
 
