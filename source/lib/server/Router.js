@@ -21,6 +21,7 @@ import { JobRetryHandler } from './handlers/jobs/JobRetryHandler.js';
 import { JobsHandler } from './handlers/jobs/JobsHandler.js';
 import { LinksHandler } from './handlers/LinksHandler.js';
 import { LogsHandler } from './handlers/LogsHandler.js';
+import { MemoryStatusHandler } from './handlers/memory/MemoryStatusHandler.js';
 import { SettingsHandler } from './handlers/SettingsHandler.js';
 import { StatsHandler } from './handlers/StatsHandler.js';
 import { PathValidator } from './PathValidator.js';
@@ -65,6 +66,7 @@ class Router {
       '/jobs/:job_id/logs.json':  new HandlerConfig(JobLogsHandler, this.#webConfig.logsPageSize),
       '/job/:id.json':            new HandlerConfig(JobHandler),
       '/engine/status':           new HandlerConfig(EngineStatusHandler),
+      '/memory/status.json':      new HandlerConfig(MemoryStatusHandler, [this.#webConfig.memory]),
       '/logs.json':               new HandlerConfig(LogsHandler, this.#webConfig.logsPageSize),
       '/links.json':              new HandlerConfig(LinksHandler, [this.#webConfig.links]),
       '/':                        new HandlerConfig(IndexHandler),

@@ -28,5 +28,13 @@ describe('Router', () => {
       const expressRouter = router.build();
       expect(typeof expressRouter).toEqual('function');
     });
+
+    it('registers GET /memory/status.json', () => {
+      const expressRouter = router.build();
+      const layer = expressRouter.stack.find((entry) => entry.route?.path === '/memory/status.json');
+
+      expect(layer).toBeDefined();
+      expect(layer.route.methods.get).toBeTrue();
+    });
   });
 });
