@@ -27,6 +27,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Client (Node)](docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`): package layout, the `/api/*` surface it wraps, CLI usage, testing, and CI jobs. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
+| [Future](docs/agents/future/) | Speculative or not-yet-implemented feature designs. |
 
 ### Issues (`docs/agents/issues/`)
 
@@ -47,6 +48,18 @@ docs/agents/plans/<github_issue_id>_<topic>/<related_files>.md
 ```
 
 Example: `docs/agents/plans/66_remove-spec-duplications/plan.md` for issue #66.
+
+### Future (`docs/agents/future/`)
+
+Each planned-but-not-yet-implemented feature gets one file:
+
+```
+docs/agents/future/<topic>.md
+```
+
+If the file grows too large, split it into a hub + subfolder (see `docs/agents/future/crawler.md`
+and `docs/agents/future/crawler/` for an example), the same pattern used by `architecture.md`,
+`flow.md`, and `contributing.md`.
 
 ## Engineering Standards
 
