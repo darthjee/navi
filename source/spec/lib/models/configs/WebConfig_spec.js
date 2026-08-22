@@ -62,6 +62,22 @@ describe('WebConfig', () => {
       expect(config.apiToken).toEqual('secret');
     });
 
+    it('defaults memory to a MemoryConfig with default thresholds', () => {
+      const config = new WebConfig({ port: 3000 });
+
+      expect(config.memory.thresholds).toEqual({ low: 25.0, medium: 50.0, high: 75.0, over: 100.0 });
+    });
+
+    it('builds memory from a custom web.memory block', () => {
+      const config = new WebConfig({
+        port:   3000,
+        memory: { maximum: 2048, thresholds: { medium: 40.0 } },
+      });
+
+      expect(config.memory.maximum).toEqual(2048);
+      expect(config.memory.thresholds).toEqual({ low: 25.0, medium: 40.0, high: 75.0, over: 100.0 });
+    });
+
     it('maps links from string and object entries', () => {
       const config = new WebConfig({
         port: 3000,

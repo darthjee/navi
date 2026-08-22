@@ -35,6 +35,8 @@ source/lib/server/
     │   ├── EngineStartHandler.js
     │   ├── EngineStatusHandler.js
     │   └── EngineStopHandler.js
+    ├── memory/
+    │   └── MemoryStatusHandler.js
     └── jobs/
         ├── JobHandler.js
         ├── JobLogsHandler.js
@@ -56,6 +58,7 @@ constructs the executor as `(req, res, ...parameters)` only when a matching requ
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
 | `GET` | `/engine/status` | Returns `{ status }` with the current engine status. |
+| `GET` | `/memory/status.json` | Current process RSS against the resolved `web.memory` maximum, plus a derived `status`. |
 | `PATCH` | `/engine/pause` | Sets status → `pausing`. Returns 409 if not `running`. |
 | `PATCH` | `/engine/stop` | Sets status → `stopping`, clears queues when workers idle. Returns 409 if not `running`. |
 | `PATCH` | `/engine/continue` | Resumes from `paused`. Returns 409 if not `paused`. |
@@ -94,6 +97,23 @@ Names refer to entries in the config's top-level `resources:` map. If the body i
 ```
 
 A resource is skipped (never partially enqueued) when its name isn't found in the registry (`not_found`), when any of its requests needs parameters that weren't supplied (`needs_params`), or when any of its requests is marked `disabled: true` / `enabled: false` (`disabled`). When the body is empty/omitted, `enqueued` and `skippedResources` are always empty — the default bulk enqueue works at the request level, not by resource name.
+
+### `GET /memory/status.json`
+
+Returns the current process's RSS memory usage against the resolved maximum:
+
+```json
+{
+  "current": 104857600,
+  "maximum": 2147483648,
+  "percentage": 4.88,
+  "status": "low"
+}
+```
+
+`current` is the process's current RSS, in bytes. `maximum` is the resolved `web.memory.maximum` (see below). `percentage` is `current / maximum * 100`. `status` is derived from `percentage` against `web.memory.thresholds` (`low`, `medium`, `high`, `over`) using **inclusive** (`>=`) boundaries checked from the top down — e.g. `percentage == 50.0` with `medium: 50.0` is already `"medium"`; percentages below `low` still resolve to `"low"`, since it's the floor status and there is no band beneath it.
+
+`maximum` is resolved via a fallback chain, the first source that yields a value wins: **`web.memory.maximum` (config) → cgroup v2 limit (`memory.max`) → cgroup v1 limit (`memory.limit_in_bytes`) → OS total memory (`os.totalmem()`)**. Cgroup v2 reports the literal string `"max"`, and cgroup v1 reports a very large sentinel number, when unbounded — both are treated as "no limit" and fall through to the next source in the chain. `os.totalmem()` never fails, so the chain always resolves to some maximum.
 
 ## `/api` namespace
 
@@ -191,6 +211,13 @@ web:
   idle_timeout: 900       # optional, seconds; 0/unset disables auto-shutdown (default)
   api:
     token: $NAVI_API_TOKEN  # optional; env-resolved like any other config value
+  memory:
+    maximum: 2147483648  # optional, in bytes; falls back to cgroup v2 → cgroup v1 → OS total memory when unset
+    thresholds:           # optional; defaults shown below
+      low: 25.0
+      medium: 50.0
+      high: 75.0
+      over: 100.0
 ```
 
 When `enable_shutdown` is `false`, `GET /settings.json` returns 403 and the frontend hides the shutdown button.
@@ -200,3 +227,5 @@ When `autostart` is `false`, the application boots with the web server running b
 When `idle_timeout` is set to a positive number of seconds, the application auto-shuts-down (web server included, same as `PATCH /engine/shutdown`) once it has gone that long with no busy workers and no jobs in any queue. The countdown starts as soon as the application goes idle and resets any time a job exists or a worker becomes busy again — it is re-evaluated on every `Engine` loop tick rather than tracked by a separate timer. This applies independently of `enable_shutdown`: disabling the manual shutdown button/endpoint does not disable `idle_timeout`. Leaving `idle_timeout` unset (or `0`) preserves the default behavior — the web server lingers indefinitely.
 
 `web.api.token` is the shared bearer token required by every `/api/*` endpoint (see [`/api` namespace](#api-namespace)). It is loaded the same way every other config value is — including via the env-variable resolver (e.g. `$NAVI_API_TOKEN`). Leaving it unset means every `/api/*` request is rejected with 403, since no provided token can ever match — this is the intended safe default, not a bug.
+
+`web.memory.thresholds` must be in strictly ascending order (`low < medium < high < over`); boot fails fast with `InvalidMemoryThresholds` when this doesn't hold. `web.memory` (like the rest of `web:`) is only ever parsed when `web.port` is set — without a running web server there's no route to serve it from.
