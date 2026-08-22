@@ -73,4 +73,4 @@ A resource may declare both `assets` and `actions`. Both are processed independe
 a successful response — `assets` for HTML asset extraction and `actions` for JSON response
 chaining. In practice, a resource would typically declare one or the other.
 
-[← Back to How to Use Navi](../HOW_TO_USE_NAVI.md)
+[← Back to How to Use Navi](../how_to_use_navi.md)

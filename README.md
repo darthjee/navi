@@ -32,7 +32,7 @@ Cache Warmer Tool
 - [Running Tests](#running-tests)
 - [Roadmap](#roadmap)
 - [Installation](#installation)
-- [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/guides/HOW_TO_USE_NAVI.md)
+- [How to Use Navi in Your Project](https://github.com/darthjee/navi/blob/main/docs/guides/how_to_use_navi.md)
 
 ---
 
@@ -109,6 +109,13 @@ web:
   port: 3000           # port for the monitoring web UI (omit to disable)
   autostart: true       # whether the engine starts processing immediately at boot (default: true)
   idle_timeout: 900     # seconds of inactivity before auto-shutdown (default: 0, disabled)
+  memory:
+    maximum: 2147483648        # optional: memory ceiling in bytes (default: resolved automatically)
+    thresholds:                # optional: percentage-of-maximum boundaries for the reported status
+      low: 25.0
+      medium: 50.0
+      high: 75.0
+      over: 100.0
 
 clients:
   default:
@@ -177,6 +184,8 @@ resources:
 | `web.port` | Port for the local monitoring web UI. Omit the `web` key entirely to run Navi without the web server. |
 | `web.autostart` | Optional. Whether the engine starts processing immediately at boot. Defaults to `true`; set to `false` to boot with the web server up but the engine paused until `PATCH /engine/start` is called. |
 | `web.idle_timeout` | Optional. Seconds of sustained idleness (no busy workers, no jobs in any queue) before the application auto-shuts-down, same as `PATCH /engine/shutdown`. The countdown resets whenever a job exists or a worker becomes busy. Defaults to `0` (disabled — the web server lingers indefinitely). Independent of `web.enable_shutdown`. |
+| `web.memory.maximum` | Optional. Memory ceiling in bytes used to compute the usage percentage exposed by `GET /memory/status.json`. When omitted, resolved automatically via a fallback chain: configured value → cgroup v2 limit → cgroup v1 limit → OS total memory. |
+| `web.memory.thresholds.low` / `.medium` / `.high` / `.over` | Optional. Percentage-of-maximum boundaries used to derive the reported `status` (`low`/`medium`/`high`/`over`), checked from the top down with inclusive (`>=`) boundaries. Default `{low: 25, medium: 50, high: 75, over: 100}`. Must be strictly ascending (`low < medium < high < over`) or the config is rejected at startup. |
 | `clients.<name>.base_url` | Base URL for the named HTTP client. Supports environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
@@ -201,6 +210,14 @@ resources:
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
 | `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
 | `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
+
+`GET /memory/status.json` — unauthenticated, like the other `GET` monitoring endpoints (no `web.api.token` involved). Responds with:
+
+```json
+{ "current": 134217728, "maximum": 2147483648, "percentage": 6.25, "status": "low" }
+```
+
+`current`/`maximum` are byte counts (`current` is the process RSS); `percentage` is `current / maximum * 100`; `status` is one of `low`/`medium`/`high`/`over`, derived from `percentage` against `web.memory.thresholds`.
 
 ### Custom Configuration
 
@@ -467,3 +484,9 @@ When enabled, the UI is accessible at `http://localhost:<port>` and includes the
 **Jobs list (`/#/jobs`)** — shows a table of all jobs across every status, with links to each job's detail page.
 
 **Job detail (`/#/job/:id`)** — shows the full details of a specific job (ID, status, and attempt count).
+
+**Memory status (`/#/memory/status`)** — shows current process memory usage against the resolved maximum, color-coded by status:
+
+- Current vs. maximum usage, formatted (e.g. `512 MB / 2 GB`).
+- Usage percentage.
+- Status label (`low`/`medium`/`high`/`over`), colored per status — a distinct color when usage exceeds 100% of the maximum.
