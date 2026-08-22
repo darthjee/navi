@@ -12,6 +12,6 @@ The following points are **not fully defined** in this feature and are left open
 
 5. **Deduplication / visit tracking** — if the same resource is processed multiple times (e.g., multiple Navi runs), the same items will be emitted repeatedly. No idempotency control. **Status: future. To be determined whether this is Navi's responsibility or the receiving endpoint's.**
 
-6. **Multi-condition filter syntax** — the Loot Studios use case requires filtering `obj_type == "miniature"` AND `bnd_inid == bundle_inid`. The filter syntax for multiple conditions is not fully defined. **Status: to be defined.**
+6. **Multi-condition filter syntax** — the Loot Studios use case requires filtering `obj_type == "miniature"` AND `bnd_inid == bundle_inid`. **Status: resolved in #675.** `filter` is a list of AND'ed conditions: `{ field, equals }` for a field-vs-literal comparison, `{ field, equals_field }` for a field-vs-field comparison (both fields read from the same item). `match` additionally supports dot-notation nested paths (e.g. `data.items`).
 
 7. **Custom headers per `emit`** — the `client` already provides base headers. It may be necessary to add specific headers per `emit` (e.g., explicit `Content-Type: application/json`). **Status: to be defined.**
