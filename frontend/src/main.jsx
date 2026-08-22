@@ -6,6 +6,7 @@ import Job from './components/pages/Job.jsx';
 import Jobs from './components/pages/Jobs.jsx';
 import Layout from './components/pages/Layout.jsx';
 import LogsPage from './components/pages/LogsPage.jsx';
+import MemoryStatus from './components/pages/MemoryStatus.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:status" element={<Jobs />} />
           <Route path="job/:id" element={<Job />} />
+          <Route path="memory/status" element={<MemoryStatus />} />
         </Route>
       </Routes>
     </HashRouter>
