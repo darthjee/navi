@@ -244,12 +244,13 @@ describe('ResourceRequestJob', () => {
         response = AxiosUtils.stubGet(200, rawBody);
       });
 
-      it('calls enqueueExtraction with the raw response body and originUrl', async () => {
+      it('calls enqueueExtraction with the raw response body, parameters and originUrl', async () => {
         await job.perform(logContext);
 
         expect(resourceRequest.enqueueExtraction).toHaveBeenCalledOnceWith(
           rawBody,
           jasmine.anything(),
+          parameters,
           url,
         );
       });

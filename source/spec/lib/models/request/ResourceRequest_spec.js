@@ -425,6 +425,22 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#hasEmit', () => {
+    it('returns false when no emit is configured', () => {
+      expect(ResourceRequestFactory.build().hasEmit()).toBeFalse();
+    });
+
+    it('returns true when an emit is configured', () => {
+      const request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        emit: { method: 'POST', url: 'https://example.com/items' },
+      });
+
+      expect(request.hasEmit()).toBeTrue();
+    });
+  });
+
   describe('#enqueueExtraction', () => {
     let request;
     let jobRegistry;
@@ -449,9 +465,18 @@ describe('ResourceRequest', () => {
       }));
     });
 
+    it('includes the given parameters', () => {
+      const parameters = { id: '42' };
+      request.enqueueExtraction('value: 42', jobRegistry, parameters);
+
+      expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Extraction', jasmine.objectContaining({
+        parameters,
+      }));
+    });
+
     it('includes originUrl when given', () => {
       const originUrl = 'https://example.com/page.json';
-      request.enqueueExtraction('value: 42', jobRegistry, originUrl);
+      request.enqueueExtraction('value: 42', jobRegistry, {}, originUrl);
 
       expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Extraction', jasmine.objectContaining({
         originUrl,
@@ -469,6 +494,34 @@ describe('ResourceRequest', () => {
       spyOn(Application, 'isStopped').and.returnValue(true);
       request.enqueueExtraction('value: 42', jobRegistry);
       expect(jobRegistry.enqueue).not.toHaveBeenCalled();
+    });
+
+    describe('when an emit is configured', () => {
+      beforeEach(() => {
+        request = new ResourceRequest({
+          url: '/',
+          status: 200,
+          parser: { type: 'regex', match: '\\d+', field: 'value' },
+          emit: { method: 'POST', url: 'https://example.com/items' },
+        });
+      });
+
+      it('includes the emit configuration', () => {
+        request.enqueueExtraction('value: 42', jobRegistry);
+
+        expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('Extraction', jasmine.objectContaining({
+          emit: request.emit,
+        }));
+      });
+    });
+
+    describe('when no emit is configured', () => {
+      it('does not include an emit key', () => {
+        request.enqueueExtraction('value: 42', jobRegistry);
+
+        const [, params] = jobRegistry.enqueue.calls.mostRecent().args;
+        expect(params.emit).toBeUndefined();
+      });
     });
   });
 

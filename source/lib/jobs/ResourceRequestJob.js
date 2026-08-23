@@ -88,7 +88,7 @@ class ResourceRequestJob extends Job {
    */
   #enqueueExtraction(response, originUrl) {
     if (this.#resourceRequest.hasParser()) {
-      this.#resourceRequest.enqueueExtraction(response.data, JobRegistry, originUrl);
+      this.#resourceRequest.enqueueExtraction(response.data, JobRegistry, this.#parameters, originUrl);
     }
   }
 

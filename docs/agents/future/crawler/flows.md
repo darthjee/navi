@@ -27,10 +27,10 @@ resources:
           - field: obj_type
             equals: miniature
         fields:
-          inid: obj_inid
-          name: obj_title
-          post_id: obj_post_id
-          bundle: bnd_title
+          obj_inid: inid
+          obj_title: name
+          obj_post_id: post_id
+          bnd_title: bundle
       emit:
         client: majora_api
         method: POST

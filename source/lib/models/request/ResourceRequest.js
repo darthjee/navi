@@ -175,12 +175,15 @@ class ResourceRequest {
    * Does nothing if the application is in 'stopped' status.
    * @param {string} rawBody The raw HTTP response body.
    * @param {object} [jobRegistry=JobRegistry] The job registry used to enqueue the ExtractionJob.
+   * @param {object} [parameters] The original request parameters, forwarded to the ExtractionJob
+   * for downstream {:placeholder} resolution in any emitted EmitJobs.
    * @param {string|null} [originUrl=null] The URL of the ResourceRequestJob that triggered this enqueue.
    * @returns {void}
    */
-  enqueueExtraction(rawBody, jobRegistry = DefaultJobRegistry, originUrl = null) {
+  enqueueExtraction(rawBody, jobRegistry = DefaultJobRegistry, parameters, originUrl = null) {
     if (Application.isStopped()) return;
-    const params = { rawBody, parser: this.parser };
+    const params = { rawBody, parser: this.parser, parameters };
+    if (this.hasEmit()) params.emit = this.emit;
     if (originUrl !== null) params.originUrl = originUrl;
     jobRegistry.enqueue('Extraction', params);
   }
@@ -191,6 +194,14 @@ class ResourceRequest {
    */
   hasParser() {
     return !!this.parser;
+  }
+
+  /**
+   * Returns true when the resource request declares a follow-up emit configuration.
+   * @returns {boolean} True if emit is configured.
+   */
+  hasEmit() {
+    return !!this.emit;
   }
 
   /**
