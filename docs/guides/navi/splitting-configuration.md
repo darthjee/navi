@@ -137,4 +137,4 @@ resources:
             id: parsedBody.id
 ```
 
-[← Back to How to Use Navi](../HOW_TO_USE_NAVI.md)
+[← Back to How to Use Navi](../how_to_use_navi.md)

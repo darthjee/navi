@@ -12,7 +12,7 @@
 
 For the full request/response shape of each route, see the [`/api` namespace documentation](https://github.com/darthjee/navi/blob/main/docs/agents/web-server.md#api-namespace) in Navi's own repository.
 
-`web.api.token` — the bearer token every `/api/*` request must present — is a Navi-side config value on the target instance; see [How to Use Navi](../HOW_TO_USE_NAVI.md) for how to configure it.
+`web.api.token` — the bearer token every `/api/*` request must present — is a Navi-side config value on the target instance; see [How to Use Navi](../how_to_use_navi.md) for how to configure it.
 
 ## Env var resolution
 
