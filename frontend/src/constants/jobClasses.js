@@ -11,6 +11,7 @@ const JOB_CLASSES = [
   'HtmlParseJob',
   'AssetDownloadJob',
   'ExtractionJob',
+  'EmitJob',
 ];
 
 export { JOB_CLASSES };
