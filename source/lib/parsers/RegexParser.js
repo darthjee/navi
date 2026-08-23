@@ -13,8 +13,8 @@ class RegexParser {
    * @param {object} attributes The parser attributes.
    * @param {string} attributes.match The regular expression pattern to match against `rawBody`.
    * @param {string} attributes.field The name of the field to populate with the captured value.
-   * @returns {Array<object>} An array with a single `{ [field]: value }` item when the pattern
-   * matches, or an empty array when it does not.
+   * @returns {Array<ExtractedItem>} An array with a single `{ [field]: value }` item when the
+   * pattern matches, or an empty array when it does not.
    * @throws {MissingParserMatch} If `attributes.match` is absent.
    * @throws {MissingParserField} If `attributes.field` is absent.
    */

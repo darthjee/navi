@@ -15,7 +15,7 @@ class EmitJob extends Job {
    * Creates a new EmitJob instance.
    * @param {object} params - The parameters for creating an EmitJob instance.
    * @param {string} params.id - The unique identifier for this job.
-   * @param {object} params.item - The extracted item to send, a single element of a
+   * @param {ExtractedItem} params.item - The extracted item to send, a single element of a
    * parser's `extract()` output array.
    * @param {ResourceRequestEmit} params.emit - The resource request's declared emit configuration.
    * @param {object} [params.parameters] - Key-value map used to resolve {:placeholder} tokens

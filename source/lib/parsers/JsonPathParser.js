@@ -3,6 +3,16 @@ import { MissingParserFields } from '../exceptions/config/MissingParserFields.js
 import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
 
 /**
+ * @typedef {object} ExtractedItem
+ * A flat plain object produced by a parser's `extract()` method, mapping output field
+ * names to their extracted values. Both {@link JsonPathParser#extract} and
+ * {@link RegexParser#extract} produce arrays of this shape; the concrete keys present
+ * are declared by the resource request's `parser` config (e.g. JsonPathParser's
+ * `fields`, RegexParser's `field`) rather than fixed by this type itself. This is the
+ * shape consumed by `EmitJob`'s `item` param.
+ */
+
+/**
  * JsonPathParser extracts a list of mapped items from a raw JSON response body,
  * navigating to an array via a dot-notation `match` path, optionally filtering
  * items, and remapping each item's keys according to a `fields` declaration in
@@ -24,9 +34,9 @@ class JsonPathParser {
    * from the same item).
    * @param {object} attributes.fields A `{ sourceKey: outputKey }` mapping used to build
    * each output item from the matched item's keys.
-   * @returns {Array<object>} An array of `{ [outputKey]: value, ... }` items, one per matched
-   * item that passes `filter` (or all matched items when `filter` is absent). An empty array
-   * when no items match or none pass the filter.
+   * @returns {Array<ExtractedItem>} An array of `{ [outputKey]: value, ... }` items, one per
+   * matched item that passes `filter` (or all matched items when `filter` is absent). An empty
+   * array when no items match or none pass the filter.
    * @throws {MissingParserMatch} If `attributes.match` is absent.
    * @throws {MissingParserFields} If `attributes.fields` is absent.
    * @throws {InvalidParserMatch} If `attributes.match` does not resolve to an array within
