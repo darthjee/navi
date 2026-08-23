@@ -331,7 +331,7 @@ class ApplicationInstance {
     JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.namespaceMap } });
 
     const parserRegistry = new ParserRegistry({ regex: new RegexParser(), json_path: new JsonPathParser() });
-    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry } });
+    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: this.config.namespaceMap } });
 
     JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });

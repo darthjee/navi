@@ -1,8 +1,10 @@
 import { Job } from 'deku-swarm';
+import { EmitEnqueuer } from '../enqueuers/EmitEnqueuer.js';
 
 /**
  * ExtractionJob is a Job that extracts structured items from a raw response body
- * using a parser implementation resolved from a ParserRegistry.
+ * using a parser implementation resolved from a ParserRegistry, and, when the
+ * resource declares an `emit`, enqueues one EmitJob per extracted item.
  *
  * Unlike ResourceRequestJob, this job is exhausted after the first failure — it has no
  * retry rights, analogous to ActionProcessingJob/HtmlParseJob.
@@ -12,6 +14,9 @@ class ExtractionJob extends Job {
   #rawBody;
   #parser;
   #parserRegistry;
+  #jobRegistry;
+  #emit;
+  #parameters;
   #originUrl;
 
   /**
@@ -21,13 +26,21 @@ class ExtractionJob extends Job {
    * @param {string} params.rawBody - The raw HTTP response body to extract data from.
    * @param {ResourceRequestParser} params.parser - The resource's declared parser rule.
    * @param {object} params.parserRegistry - The registry used to resolve the parser implementation.
+   * @param {object} params.jobRegistry - The job registry used to enqueue EmitJobs.
+   * @param {ResourceRequestEmit} [params.emit] - The resource request's declared emit
+   * configuration. When absent, extracted items are logged but not emitted.
+   * @param {object} [params.parameters] - The original resource-request parameters, forwarded
+   * to each EmitJob for URL placeholder resolution.
    * @param {string|null} [params.originUrl=null] - The URL of the ResourceRequestJob that triggered this job.
    */
-  constructor({ id, rawBody, parser, parserRegistry, originUrl = null }) {
+  constructor({ id, rawBody, parser, parserRegistry, jobRegistry, emit, parameters, originUrl = null }) {
     super({ id });
     this.#rawBody = rawBody;
     this.#parser = parser;
     this.#parserRegistry = parserRegistry;
+    this.#jobRegistry = jobRegistry;
+    this.#emit = emit;
+    this.#parameters = parameters;
     this.#originUrl = originUrl;
   }
 
@@ -51,7 +64,8 @@ class ExtractionJob extends Job {
 
   /**
    * Resolves the parser implementation and extracts items from the raw body, logging
-   * the resulting items via `logContext.debug`.
+   * the resulting items via `logContext.debug`. When an `emit` configuration is present,
+   * delegates to EmitEnqueuer to enqueue one EmitJob per extracted item.
    * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<void>}
    */
@@ -62,6 +76,10 @@ class ExtractionJob extends Job {
       const parserImpl = this.#parserRegistry.getItem(this.#parser.type);
       const items = parserImpl.extract(this.#rawBody, this.#parser.attributes);
       logContext.debug(`ExtractionJob #${this.id} extracted ${items.length} item(s)`, { items });
+
+      if (this.#emit) {
+        new EmitEnqueuer(items, this.#emit, this.#parameters, this.#jobRegistry).enqueue();
+      }
     } catch (error) {
       this._fail(error);
     }

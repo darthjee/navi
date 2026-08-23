@@ -1,6 +1,7 @@
 import { Job } from 'deku-swarm';
 import { ParserNotFound } from '../../../lib/exceptions/registry/ParserNotFound.js';
 import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
+import { ResourceRequestEmit } from '../../../lib/models/request/ResourceRequestEmit.js';
 import { ResourceRequestParser } from '../../../lib/models/request/ResourceRequestParser.js';
 import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
 
@@ -10,6 +11,7 @@ describe('ExtractionJob', () => {
   let parser;
   let parserRegistry;
   let parserImpl;
+  let jobRegistry;
   let logContext;
 
   beforeEach(() => {
@@ -18,6 +20,7 @@ describe('ExtractionJob', () => {
     parser = new ResourceRequestParser({ type: 'regex', match: '\\$(\\d+\\.\\d+)', field: 'price' });
     parserImpl = jasmine.createSpyObj('parserImpl', ['extract']);
     parserRegistry = new ParserRegistry({ regex: parserImpl });
+    jobRegistry = jasmine.createSpyObj('jobRegistry', ['enqueue']);
   });
 
   describe('#constructor', () => {
@@ -85,6 +88,42 @@ describe('ExtractionJob', () => {
         parserImpl.extract.and.returnValue([{ price: '42.50' }]);
         await job.perform(logContext);
         expect(job.exhausted()).toBeFalse();
+      });
+    });
+
+    describe('when emit is present', () => {
+      const emit = new ResourceRequestEmit({ method: 'POST', url: 'https://example.com/items/{:id}' });
+      const parameters = { id: '42' };
+
+      beforeEach(() => {
+        job = new ExtractionJob({ id: 'test-id', rawBody, parser, parserRegistry, jobRegistry, emit, parameters });
+      });
+
+      it('enqueues one Emit job per extracted item', async () => {
+        const items = [{ price: '42.50' }, { price: '10.00' }];
+        parserImpl.extract.and.returnValue(items);
+        await job.perform(logContext);
+        expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Emit', { item: items[0], emit, parameters });
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Emit', { item: items[1], emit, parameters });
+      });
+
+      it('does not enqueue when there are no extracted items', async () => {
+        parserImpl.extract.and.returnValue([]);
+        await job.perform(logContext);
+        expect(jobRegistry.enqueue).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when emit is absent', () => {
+      beforeEach(() => {
+        job = new ExtractionJob({ id: 'test-id', rawBody, parser, parserRegistry, jobRegistry });
+      });
+
+      it('does not enqueue any Emit job', async () => {
+        parserImpl.extract.and.returnValue([{ price: '42.50' }]);
+        await job.perform(logContext);
+        expect(jobRegistry.enqueue).not.toHaveBeenCalled();
       });
     });
 
