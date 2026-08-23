@@ -63,12 +63,24 @@ describe('MemoryStatusHelper', () => {
         expect(container.textContent).toContain('100.0 MB');
       });
 
-      it('shows the percentage', () => {
-        expect(container.textContent).toContain('85%');
+      it('shows the formatted percentage', () => {
+        expect(container.textContent).toContain('85.0%');
       });
 
       it('applies the color class matching the status', () => {
         expect(container.querySelector('.text-memory-high')).not.toBeNull();
+      });
+    });
+
+    describe('when the percentage has floating point precision', () => {
+      const data = { current: 89128960, maximum: 104857600, percentage: 16.326141357421875, status: 'high' };
+
+      beforeEach(async () => {
+        await act(async () => { root.render(MemoryStatusHelper.render(data)); });
+      });
+
+      it('shows the percentage rounded to one decimal place', () => {
+        expect(container.textContent).toContain('16.3%');
       });
     });
 

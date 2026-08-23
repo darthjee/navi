@@ -1,5 +1,6 @@
 import { colorForMemoryStatus } from '../../../constants/memoryStatus.js';
 import formatBytes from '../../../utils/formatBytes.js';
+import formatPercentage from '../../../utils/formatPercentage.js';
 import ErrorAlert from '../../elements/ErrorAlert.jsx';
 import LoadingSpinner from '../../elements/LoadingSpinner.jsx';
 
@@ -20,7 +21,7 @@ class MemoryStatusHelper {
         <div className="card-body">
           <h5 className={`card-title ${color}`}>Status: {status}</h5>
           <p className="card-text mb-0">
-            {formatBytes(current)} / {formatBytes(maximum)} ({percentage}%)
+            {formatBytes(current)} / {formatBytes(maximum)} ({formatPercentage(percentage)}%)
           </p>
         </div>
       </div>
