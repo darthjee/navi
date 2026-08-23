@@ -25,7 +25,8 @@ frontend/
 │   │   ├── StatsClient.js        # GET /stats.json
 │   │   ├── JobsClient.js         # GET /jobs/:status.json
 │   │   ├── JobClient.js          # GET /job/:id.json
-│   │   └── EngineClient.js       # GET /engine/status + PATCH /engine/*
+│   │   ├── EngineClient.js       # GET /engine/status + PATCH /engine/*
+│   │   └── MemoryStatusClient.js # GET /memory/status.json
 │   ├── constants/
 │   │   └── jobStatus.js          # Status → Bootstrap color variant mapping
 │   └── components/
@@ -34,8 +35,12 @@ frontend/
 │       │   ├── Jobs.jsx
 │       │   ├── Job.jsx
 │       │   ├── LogsPage.jsx
+│       │   ├── MemoryStatus.jsx
+│       │   ├── MemoryStatus.css
 │       │   ├── controllers/      # Data/logic controller classes
+│       │   │   └── MemoryStatusController.jsx
 │       │   └── helpers/          # HTML rendering helpers
+│       │       └── MemoryStatusHelper.jsx
 │       └── elements/             # Reusable UI widgets
 │           ├── EngineControls.jsx
 │           ├── StatsHeader.jsx
@@ -71,6 +76,7 @@ Components live in either `components/pages/` (full page views registered as rou
 | `/jobs` | `Jobs` | All jobs across every status. |
 | `/jobs/:status` | `Jobs` | Jobs filtered to one status. |
 | `/job/:id` | `Job` | Full detail for a single job. |
+| `/memory/status` | `MemoryStatus` | Memory usage and status |
 
 ## Component hierarchy
 
@@ -82,10 +88,11 @@ Layout
 ├── EngineControls (auto-refresh every 2 s)
 └── <Outlet>
     ├── Jobs             (route: /jobs or /jobs/:status)
-    └── Job              (route: /job/:id)
-        ├── CollapsibleSection  (Arguments)
-        ├── ReadyCountdown      (failed only)
-        └── CollapsibleSection  (Last Error — failed/dead only)
+    ├── Job              (route: /job/:id)
+    │   ├── CollapsibleSection  (Arguments)
+    │   ├── ReadyCountdown      (failed only)
+    │   └── CollapsibleSection  (Last Error — failed/dead only)
+    └── MemoryStatus     (route: /memory/status)
 ```
 
 ## Job status → colour mapping
