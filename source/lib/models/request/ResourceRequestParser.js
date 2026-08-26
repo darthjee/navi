@@ -4,19 +4,19 @@ import { InvalidParserType } from '../../exceptions/config/InvalidParserType.js'
  * The set of supported `parser.type` values.
  * @type {Array<string>}
  */
-const PARSER_TYPES = ['regex', 'json_path'];
+const PARSER_TYPES = ['regex', 'json_path', 'css'];
 
 /**
  * ResourceRequestParser represents a resource request's declared response-parsing rule.
  * `type` is validated eagerly at construction time; every other key present (e.g. `match`,
  * `filter`, `fields`, `field`) is stored as-is, unvalidated, since interpreting them belongs
- * to the parser-specific implementations (`regex`, `json_path`).
+ * to the parser-specific implementations (`regex`, `json_path`, `css`).
  * @author darthjee
  */
 class ResourceRequestParser {
   /**
    * @param {object} attributes ResourceRequestParser attributes.
-   * @param {string} attributes.type The parser type. Must be one of "regex", "json_path".
+   * @param {string} attributes.type The parser type. Must be one of "regex", "json_path", "css".
    * @param {*} [attributes.rest] Any other parser-type-specific keys (e.g. `match`, `filter`,
    * `fields`, `field`), stored as-is and interpreted by the parser-specific implementations.
    */

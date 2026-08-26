@@ -29,6 +29,19 @@ describe('ResourceRequestParser', () => {
       });
     });
 
+    describe('with type "css"', () => {
+      it('sets type and stores the extra keys as attributes', () => {
+        const parser = new ResourceRequestParser({
+          type: 'css',
+          match: '.product',
+          fields: { title: { selector: 'h2' } },
+        });
+
+        expect(parser.type).toBe('css');
+        expect(parser.attributes).toEqual({ match: '.product', fields: { title: { selector: 'h2' } } });
+      });
+    });
+
     describe('with no extra keys', () => {
       it('stores an empty attributes object', () => {
         const parser = new ResourceRequestParser({ type: 'regex' });
