@@ -15,7 +15,7 @@ class WebConfig {
    * @param {number} [config.idle_timeout=0] - Seconds of inactivity (no busy workers, no queued jobs) before the application auto-shuts-down. `0` disables auto-shutdown.
    * @param {Array<string|object>} [config.links=[]] - Links shown in the web UI.
    * @param {object} [config.api={}] - Configuration for the token-secured `/api` namespace (`{ token }`).
-   * @param {object} [config.memory={}] - Configuration for memory monitoring (`{ maximum, thresholds }`).
+   * @param {object} [config.memory={}] - Configuration for memory monitoring (`{ maximum, thresholds, data_store }`).
    */
   constructor({ port, logs_page_size: logsPageSize = 20, enable_shutdown: enableShutdown = true, autostart = true, idle_timeout: idleTimeout = 0, links = [], api = {}, memory = {} }) {
     this.port = port;
