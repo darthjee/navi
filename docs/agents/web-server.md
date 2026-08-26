@@ -218,6 +218,8 @@ web:
       medium: 50.0
       high: 75.0
       over: 100.0
+    data_store:
+      size: 100            # optional; maximum number of memory readings retained in-memory
 ```
 
 When `enable_shutdown` is `false`, `GET /settings.json` returns 403 and the frontend hides the shutdown button.
@@ -229,3 +231,5 @@ When `idle_timeout` is set to a positive number of seconds, the application auto
 `web.api.token` is the shared bearer token required by every `/api/*` endpoint (see [`/api` namespace](#api-namespace)). It is loaded the same way every other config value is — including via the env-variable resolver (e.g. `$NAVI_API_TOKEN`). Leaving it unset means every `/api/*` request is rejected with 403, since no provided token can ever match — this is the intended safe default, not a bug.
 
 `web.memory.thresholds` must be in strictly ascending order (`low < medium < high < over`); boot fails fast with `InvalidMemoryThresholds` when this doesn't hold. `web.memory` (like the rest of `web:`) is only ever parsed when `web.port` is set — without a running web server there's no route to serve it from.
+
+`web.memory.data_store.size` (default `100`) configures the retention limit of an in-memory ring buffer of memory readings, mirroring the log buffer's `size`. As of this writing, nothing populates this store yet — there is no periodic RSS-polling loop and no read endpoint for it — this config key only sizes the buffer for a future issue to wire up.
