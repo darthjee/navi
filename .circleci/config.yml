@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  force_worker_build:
+    type: boolean
+    default: false
+
 workflows:
   test-and-release:
     jobs:
@@ -38,10 +43,10 @@ workflows:
               only: /\d+\.\d+\.\d+/
             branches:
               ignore: /.*/
-      - check-worker-changes:
+      - check-and-publish-worker:
           filters: *version-tag-filters
       - npm-publish:
-          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-worker-changes]
+          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-and-publish-worker]
           filters: *version-tag-filters
       - check-client-version-tag:
           filters: &client-tag-filters
@@ -70,15 +75,6 @@ workflows:
       - build-and-release-demo-app:
           requires: [build-and-release]
           filters: *version-tag-filters
-      - check-worker-version-tag:
-          filters: &worker-tag-filters
-            tags:
-              only: /worker-\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
-      - npm-publish-worker:
-          requires: [check-worker-version-tag, jasmine-worker, checks-worker]
-          filters: *worker-tag-filters
 
 executors:
   node-ci:
@@ -253,14 +249,14 @@ jobs:
           name: Check tag matches package.json and README versions
           command: bash scripts/check_tag_version.sh
 
-  check-worker-changes:
+  check-and-publish-worker:
     docker:
       - image: darthjee/circleci_node:0.2.1
     steps:
       - checkout
       - run:
-          name: Check if worker/ changed since last release
-          command: scripts/ci.sh check-worker-changes
+          name: Check worker/ changes and publish if needed
+          command: FORCE_WORKER_BUILD=<< pipeline.parameters.force_worker_build >> scripts/ci.sh check-and-publish-worker
 
   npm-publish:
     executor: node-ci
@@ -295,29 +291,6 @@ jobs:
       - run:
           name: Publish to npm
           command: scripts/ci.sh publish clients/node
-
-  check-worker-version-tag:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
-    steps:
-      - checkout
-      - run:
-          name: Check tag matches worker/package.json and README versions
-          command: bash scripts/check_worker_tag_version.sh
-
-  npm-publish-worker:
-    executor: node-ci
-    steps:
-      - checkout
-      - run:
-          name: Check if version already exists on npm
-          command: scripts/ci.sh check-npm-version deku-swarm ./worker/package.json
-      - install-deps:
-          path: worker
-          frozen: true
-      - run:
-          name: Publish to npm
-          command: scripts/ci.sh publish worker
 
   build-and-release-client:
     machine: true
