@@ -12,6 +12,7 @@ import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
 import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
 import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
 import { Config } from '../models/configs/Config.js';
+import { CssSelectorParser } from '../parsers/CssSelectorParser.js';
 import { JsonPathParser } from '../parsers/JsonPathParser.js';
 import { RegexParser } from '../parsers/RegexParser.js';
 import { LogRegistry } from '../registry/LogRegistry.js';
@@ -330,7 +331,11 @@ class ApplicationInstance {
     JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.namespaceMap } });
     JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.namespaceMap } });
 
-    const parserRegistry = new ParserRegistry({ regex: new RegexParser(), json_path: new JsonPathParser() });
+    const parserRegistry = new ParserRegistry({
+      regex: new RegexParser(),
+      json_path: new JsonPathParser(),
+      css: new CssSelectorParser()
+    });
     JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: this.config.namespaceMap } });
 
