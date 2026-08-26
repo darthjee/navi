@@ -11,21 +11,24 @@ const THRESHOLD_KEYS = ['low', 'medium', 'high', 'over'];
  */
 class MemoryConfig {
   #thresholds;
+  #dataStoreSize;
 
   /**
    * @param {object} [config={}] - Raw `web.memory` configuration object.
    * @param {number} [config.maximum] - Configured memory maximum, in bytes.
    * @param {object} [config.thresholds={}] - Percentage thresholds (`low`, `medium`, `high`, `over`).
+   * @param {object} [config.data_store={}] - Configuration for the memory readings store (`{ size }`).
    * @param {object} [options={}] - Additional options.
    * @param {{resolve: Function}} [options.resolver] - Resolver used to compute the memory maximum,
    * defaulting to {@link MemoryMaximumResolver}.
    * @throws {InvalidMemoryThresholds} When thresholds are not in strictly ascending order.
    */
-  constructor({ maximum, thresholds = {} } = {}, { resolver = MemoryMaximumResolver } = {}) {
+  constructor({ maximum, thresholds = {}, data_store: dataStore = {} } = {}, { resolver = MemoryMaximumResolver } = {}) {
     this.#thresholds = { ...DEFAULT_THRESHOLDS, ...thresholds };
     this.#validateThresholds();
 
     this.maximum = resolver.resolve(maximum);
+    this.#dataStoreSize = { size: 100, ...dataStore }.size;
   }
 
   /**
@@ -33,6 +36,13 @@ class MemoryConfig {
    */
   get thresholds() {
     return this.#thresholds;
+  }
+
+  /**
+   * @returns {number} The maximum number of memory readings to retain in the data store.
+   */
+  get dataStoreSize() {
+    return this.#dataStoreSize;
   }
 
   /**

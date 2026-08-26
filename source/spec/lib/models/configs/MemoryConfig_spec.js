@@ -56,6 +56,31 @@ describe('MemoryConfig', () => {
         expect(config.maximum).toEqual(8192);
       });
     });
+
+    describe('data_store', () => {
+      it('defaults dataStoreSize to 100 when none is given', () => {
+        const config = new MemoryConfig();
+
+        expect(config.dataStoreSize).toBe(100);
+      });
+
+      it('applies a custom data_store.size', () => {
+        const config = new MemoryConfig({ data_store: { size: 250 } });
+
+        expect(config.dataStoreSize).toBe(250);
+      });
+
+      it('does not interfere with maximum/thresholds behavior', () => {
+        const config = new MemoryConfig(
+          { data_store: { size: 250 }, thresholds: { medium: 40.0 } },
+          { resolver: dummyResolver(4096) }
+        );
+
+        expect(config.dataStoreSize).toBe(250);
+        expect(config.maximum).toEqual(4096);
+        expect(config.thresholds).toEqual({ low: 25.0, medium: 40.0, high: 75.0, over: 100.0 });
+      });
+    });
   });
 
   describe('#statusFor', () => {
