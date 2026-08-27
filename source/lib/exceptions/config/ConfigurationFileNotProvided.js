@@ -1,4 +1,4 @@
-import { AppError } from '../AppError.js';
+import { AppError } from '../../common/exceptions/AppError.js';
 
 class ConfigurationFileNotProvided extends AppError {
   constructor() {

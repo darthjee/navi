@@ -1,6 +1,6 @@
+import { InvalidHtmlResponseBody } from '../../../lib/common/exceptions/request/InvalidHtmlResponseBody.js';
 import { MissingParserField } from '../../../lib/exceptions/config/MissingParserField.js';
 import { MissingParserMatch } from '../../../lib/exceptions/config/MissingParserMatch.js';
-import { InvalidHtmlResponseBody } from '../../../lib/exceptions/request/InvalidHtmlResponseBody.js';
 import { CssSelectorParser } from '../../../lib/parsers/CssSelectorParser.js';
 
 describe('CssSelectorParser', () => {

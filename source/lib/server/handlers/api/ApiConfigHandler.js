@@ -1,4 +1,4 @@
-import { AppError } from '../../../exceptions/AppError.js';
+import { AppError } from '../../../common/exceptions/AppError.js';
 import { NamespaceMap } from '../../../registry/NamespaceMap.js';
 import { Application } from '../../../services/Application.js';
 import { ResourceEnqueuer } from '../../../utils/ResourceEnqueuer.js';
