@@ -5,7 +5,7 @@ import { ResourceRequestEmit } from '../../../../lib/models/request/ResourceRequ
 import { ResourceRequestParser } from '../../../../lib/models/request/ResourceRequestParser.js';
 import { ResponseWrapper } from '../../../../lib/models/response/ResponseWrapper.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { Application } from '../../../../lib/services/Application.js';
+import { Application } from '../../../../lib/services/application/Application.js';
 import { AssetRequestFactory } from '../../../support/factories/AssetRequestFactory.js';
 import { ClientRegistryFactory } from '../../../support/factories/ClientRegistryFactory.js';
 import { ResourceRequestActionFactory } from '../../../support/factories/ResourceRequestActionFactory.js';

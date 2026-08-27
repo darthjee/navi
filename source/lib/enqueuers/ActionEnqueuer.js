@@ -1,5 +1,5 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
-import { Application } from '../services/Application.js';
+import { Application } from '../services/application/Application.js';
 
 /**
  * ActionEnqueuer enqueues one ActionProcessingJob per item for a single Action.

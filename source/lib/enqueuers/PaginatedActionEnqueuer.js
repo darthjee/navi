@@ -1,5 +1,5 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
-import { Application } from '../services/Application.js';
+import { Application } from '../services/application/Application.js';
 
 /**
  * Enqueues one PaginatedActionProcessingJob for a single paginated action.

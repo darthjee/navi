@@ -1,6 +1,6 @@
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { EngineShutdownHandler } from '../../../../../lib/server/handlers/engine/EngineShutdownHandler.js';
-import { Application } from '../../../../../lib/services/Application.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
 
 describe("describe('EngineShutdownHandler'", () => {
   let res;

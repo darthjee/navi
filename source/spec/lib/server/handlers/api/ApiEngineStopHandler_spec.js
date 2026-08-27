@@ -1,7 +1,7 @@
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { ApiEngineStopHandler } from '../../../../../lib/server/handlers/api/ApiEngineStopHandler.js';
 import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
-import { Application } from '../../../../../lib/services/Application.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
 
 describe('ApiEngineStopHandler', () => {
   let res;

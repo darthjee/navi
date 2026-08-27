@@ -1,6 +1,6 @@
+import { Client } from '../../../lib/client/Client.js';
 import { ClientNotFound } from '../../../lib/exceptions/registry/ClientNotFound.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
-import { Client } from '../../../lib/services/Client.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 
 describe('ClientRegistry', () => {

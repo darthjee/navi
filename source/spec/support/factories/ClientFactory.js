@@ -1,4 +1,4 @@
-import { Client } from '../../../lib/services/Client.js';
+import { Client } from '../../../lib/client/Client.js';
 
 /**
  * Factory for creating Client instances in tests.

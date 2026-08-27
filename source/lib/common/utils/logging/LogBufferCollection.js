@@ -1,5 +1,5 @@
 import { LogBuffer } from './LogBuffer.js';
-import { EngineEvents } from '../../../services/EngineEvents.js';
+import { EngineEvents } from '../../../services/engine/EngineEvents.js';
 
 /**
  * LogBufferCollection manages a keyed map of LogBuffer instances.

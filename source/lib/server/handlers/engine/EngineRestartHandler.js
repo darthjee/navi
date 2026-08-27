@@ -1,6 +1,6 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
 import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
+import { Application } from '../../../services/application/Application.js';
 
 /**
  * Executes request-handling behaviour for PATCH /engine/restart.

@@ -1,5 +1,5 @@
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { EngineEvents } from '../../../lib/services/EngineEvents.js';
+import { EngineEvents } from '../../../lib/services/engine/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('LogRegistry', () => {

@@ -1,10 +1,10 @@
+import { Client } from '../../../../lib/client/Client.js';
 import { HandlerConfig } from '../../../../lib/common/server/HandlerConfig.js';
 import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { Link } from '../../../../lib/models/configs/Link.js';
 import { Namespace } from '../../../../lib/registry/Namespace.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { LinksHandler } from '../../../../lib/server/handlers/LinksHandler.js';
-import { Client } from '../../../../lib/services/Client.js';
 
 describe("describe('LinksHandler'", () => {
   let res;

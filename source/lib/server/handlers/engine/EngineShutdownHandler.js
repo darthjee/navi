@@ -1,5 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { Application } from '../../../services/Application.js';
+import { Application } from '../../../services/application/Application.js';
 
 /**
  * Executes request-handling behaviour for PATCH /engine/shutdown.

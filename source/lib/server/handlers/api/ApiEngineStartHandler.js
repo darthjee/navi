@@ -1,5 +1,5 @@
 import { ConflictError } from '../../../exceptions/http/ConflictError.js';
-import { Application } from '../../../services/Application.js';
+import { Application } from '../../../services/application/Application.js';
 import { ResourceEnqueuer } from '../../../utils/ResourceEnqueuer.js';
 import { SecuredRequestHandler } from '../../SecuredRequestHandler.js';
 

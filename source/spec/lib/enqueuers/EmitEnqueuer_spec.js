@@ -1,6 +1,6 @@
 import { JobRegistry } from 'deku-swarm';
 import { EmitEnqueuer } from '../../../lib/enqueuers/EmitEnqueuer.js';
-import { Application } from '../../../lib/services/Application.js';
+import { Application } from '../../../lib/services/application/Application.js';
 
 describe('EmitEnqueuer', () => {
   const emit = { url: 'https://example.com/items/{:id}', method: 'POST' };

@@ -3,7 +3,7 @@ import { ResourceNotFound } from '../../../../../lib/exceptions/registry/Resourc
 import { NamespaceMap } from '../../../../../lib/registry/NamespaceMap.js';
 import { ApiConfigHandler } from '../../../../../lib/server/handlers/api/ApiConfigHandler.js';
 import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
-import { Application } from '../../../../../lib/services/Application.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
 import { ResourceEnqueuer } from '../../../../../lib/utils/ResourceEnqueuer.js';
 
 describe('ApiConfigHandler', () => {

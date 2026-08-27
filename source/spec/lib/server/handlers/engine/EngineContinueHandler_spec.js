@@ -1,7 +1,7 @@
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { EngineContinueHandler } from '../../../../../lib/server/handlers/engine/EngineContinueHandler.js';
-import { Application } from '../../../../../lib/services/Application.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
 
 describe("describe('EngineContinueHandler'", () => {
   let res;

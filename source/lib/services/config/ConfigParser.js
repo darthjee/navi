@@ -1,0 +1,171 @@
+import { Client } from '../../client/Client.js';
+import { MissingClientsConfig } from '../../exceptions/config/MissingClientsConfig.js';
+import { MissingResourceConfig } from '../../exceptions/config/MissingResourceConfig.js';
+import { FailureConfig } from '../../models/configs/FailureConfig.js';
+import { LogConfig } from '../../models/configs/LogConfig.js';
+import { WebConfig } from '../../models/configs/WebConfig.js';
+import { WorkersConfig } from '../../models/configs/WorkersConfig.js';
+import { Resource } from '../../models/request/Resource.js';
+
+/**
+ * ConfigParser receives a parsed YAML configuration object and maps it to
+ * Resource and Client model instances.
+ * @author darthjee
+ */
+class ConfigParser {
+  #namespace;
+  #strict;
+
+  /**
+   * @param {object} config Parsed configuration object from a YAML file.
+   * @param {object} [options={}] Additional options.
+   * @param {string} [options.namespace='default'] The namespace `resources`/`clients` in this
+   * file were declared under.
+   * @param {boolean} [options.strict=true] When true, missing top-level `resources`/`clients`
+   * keys raise. When false (used for files parsed as part of an `include:` chain), missing
+   * keys default to an empty map instead of raising.
+   */
+  constructor(config, { namespace = 'default', strict = true } = {}) {
+    this.config = config;
+    this.#namespace = namespace;
+    this.#strict = strict;
+  }
+
+  /**
+   * Creates a mapped configuration from a plain parsed YAML object.
+   *
+   * @param {object} config Parsed configuration object from a YAML file.
+   * @param {object} [options={}] Additional options, forwarded to the constructor.
+   * @returns {{
+   * resources: Record<string, Resource>,
+   * clients: Record<string, Client>,
+   * workersConfig: WorkersConfig
+   * }} Mapped resources and clients by name. and workers configuration.
+   * @throws {Error} Throws when the config is invalid or missing required keys.
+   */
+  static fromObject(config, options = {}) {
+    return new ConfigParser(config, options).parse();
+  }
+
+  /**
+   * Parses the config object into a structured configuration.
+   * @returns {{
+   * resources: Record<string, Resource>,
+   * clients: Record<string, Client>,
+   * workersConfig: WorkersConfig,
+   * webConfig: WebConfig|null,
+   * logConfig: LogConfig,
+   * failureConfig: FailureConfig|null
+   * }} Parsed configuration with resources, clients, workersConfig, webConfig, logConfig, and failureConfig.
+   */
+  parse() {
+    const mappedResources = Object.fromEntries(
+      this.#resourcesEntries()
+    );
+
+    const mappedClients = Object.fromEntries(
+      this.#clientsEntries()
+    );
+
+    return {
+      resources:     mappedResources,
+      clients:       mappedClients,
+      workersConfig: this.#workersConfig(),
+      webConfig:     this.#webConfig(),
+      logConfig:     this.#logConfig(),
+      failureConfig: this.#failureConfig(),
+    };
+  }
+
+  /**
+   * Creates a WorkersConfig from the parsed YAML workers section.
+   * @returns {WorkersConfig} The workers configuration instance.
+   */
+  #workersConfig() {
+    return new WorkersConfig(this.config.workers);
+  }
+
+  /**
+   * Creates a WebConfig from the parsed YAML web section, or null if absent or port is falsy.
+   * @returns {WebConfig|null} The web configuration instance or null.
+   */
+  #webConfig() {
+    if (!this.config.web) return null;
+    const { port } = this.config.web;
+    if (!port || port === 'false') return null;
+    return new WebConfig(this.config.web);
+  }
+
+  /**
+   * Creates a LogConfig from the parsed YAML log section.
+   * @returns {LogConfig} The log configuration instance.
+   */
+  #logConfig() {
+    return LogConfig.fromObject(this.config.log);
+  }
+
+  /**
+   * Creates a FailureConfig from the parsed YAML failure section, or null if absent.
+   * @returns {FailureConfig|null} The failure configuration instance or null.
+   */
+  #failureConfig() {
+    return FailureConfig.fromObject(this.config.failure);
+  }
+
+  /**
+   * Maps the resources to entries suitable for Object.fromEntries.
+   * @returns {Array<Array>} Entries of resource name and Resource instance.
+   */
+  #resourcesEntries() {
+    return this.#loadResources().map((resource) => { return [resource.name, resource]; });
+  }
+
+  /**
+   * Maps the clients to entries suitable for Object.fromEntries.
+   * @returns {Array<Array>} Entries of client name and Client instance.
+   */
+  #clientsEntries() {
+    return this.#loadClients().map((client) => { return [client.name, client]; });
+  }
+
+  /**
+   * Validates and loads resources from the config object.
+   * @returns {Array<Resource>} List of Resource instances.
+   * @throws {MissingResourceConfig} Throws when the config does not contain a `resources` key.
+   */
+  #loadResources() {
+    this.#requireKey('resources', MissingResourceConfig);
+
+    return Resource.fromListObject(this.config?.resources ?? {}, { namespace: this.#namespace });
+  }
+
+  /**
+   * Validates and loads clients from the config object.
+   * @returns {Array<Client>} List of Client instances.
+   * @throws {MissingClientsConfig} Throws when the config does not contain a `clients` key.
+   */
+  #loadClients() {
+    this.#requireKey('clients', MissingClientsConfig);
+
+    return Client.fromListObject(this.config?.clients ?? {}, { namespace: this.#namespace });
+  }
+
+  /**
+   * Validates that the config object contains the specified key.
+   * Skipped entirely (no error, missing key defaults to an empty map by the caller)
+   * when this parser was built in non-strict mode (see the constructor `strict` option).
+   * @param {string} key - The key to check for.
+   * @param {Function} ExceptionClass - The exception class to throw if the key is missing.
+   * @returns {void}
+   * @throws {Error} Throws if the config is invalid or missing the key (strict mode only).
+   */
+  #requireKey(key, ExceptionClass) {
+    if (!this.#strict) return;
+
+    if (!this.config || typeof this.config !== 'object' || !(key in this.config)) {
+      throw new ExceptionClass();
+    }
+  }
+}
+
+export { ConfigParser };
