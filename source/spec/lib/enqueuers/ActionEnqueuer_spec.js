@@ -1,6 +1,6 @@
 import { JobRegistry } from 'deku-swarm';
 import { ActionEnqueuer } from '../../../lib/enqueuers/ActionEnqueuer.js';
-import { Application } from '../../../lib/services/Application.js';
+import { Application } from '../../../lib/services/application/Application.js';
 import { ActionEnqueuerUtils } from '../../support/utils/ActionEnqueuerUtils.js';
 
 describe('ActionEnqueuer', () => {

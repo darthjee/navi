@@ -1,6 +1,6 @@
-import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
-import { Config } from '../models/configs/Config.js';
-import { LogRegistry } from '../registry/LogRegistry.js';
+import { ConfigurationFileNotProvided } from '../../exceptions/config/ConfigurationFileNotProvided.js';
+import { Config } from '../../models/configs/Config.js';
+import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
  * ApplicationConfigurator loads the application configuration from disk and

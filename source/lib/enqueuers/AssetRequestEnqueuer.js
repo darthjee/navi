@@ -1,4 +1,4 @@
-import { Application } from '../services/Application.js';
+import { Application } from '../services/application/Application.js';
 import { HtmlParser } from '../utils/HtmlParser.js';
 
 /**

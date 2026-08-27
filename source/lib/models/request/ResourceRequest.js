@@ -8,7 +8,7 @@ import { ResourceRequestParser } from './ResourceRequestParser.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
 import { PaginatedActionsEnqueuer } from '../../enqueuers/PaginatedActionsEnqueuer.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
-import { Application } from '../../services/Application.js';
+import { Application } from '../../services/application/Application.js';
 
 /**
  * ResourceRequest represents a request to a specific URL with an expected status code.

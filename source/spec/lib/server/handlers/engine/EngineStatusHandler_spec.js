@@ -1,6 +1,6 @@
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { EngineStatusHandler } from '../../../../../lib/server/handlers/engine/EngineStatusHandler.js';
-import { Application } from '../../../../../lib/services/Application.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
 
 describe("describe('EngineStatusHandler'", () => {
   let res;

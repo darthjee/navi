@@ -1,5 +1,5 @@
 import { AssetRequestEnqueuer } from '../../../lib/enqueuers/AssetRequestEnqueuer.js';
-import { Application } from '../../../lib/services/Application.js';
+import { Application } from '../../../lib/services/application/Application.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';

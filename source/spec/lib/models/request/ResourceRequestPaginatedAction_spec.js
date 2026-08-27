@@ -4,7 +4,7 @@ import { MissingMappingVariable } from '../../../../lib/exceptions/registry/Miss
 import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
 import { ResourceRequestPaginatedAction } from '../../../../lib/models/request/ResourceRequestPaginatedAction.js';
-import { Application } from '../../../../lib/services/Application.js';
+import { Application } from '../../../../lib/services/application/Application.js';
 import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
 import { ResourceActionUtils } from '../../../support/utils/ResourceActionUtils.js';
 

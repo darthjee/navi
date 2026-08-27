@@ -1,5 +1,5 @@
 import { RequestHandler } from '../../../common/server/RequestHandler.js';
-import { EngineStopService } from '../../../services/EngineStopService.js';
+import { EngineStopService } from '../../../services/engine/EngineStopService.js';
 
 /**
  * Executes request-handling behaviour for PATCH /engine/stop.

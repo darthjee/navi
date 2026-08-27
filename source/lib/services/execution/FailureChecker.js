@@ -1,5 +1,5 @@
 import { JobRegistry } from 'deku-swarm';
-import { LogRegistry } from '../registry/LogRegistry.js';
+import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
  * FailureChecker evaluates the dead-job ratio after a run and exits with a non-zero

@@ -1,6 +1,6 @@
 import { JobRegistry } from 'deku-swarm';
 import { PaginatedActionEnqueuer } from '../../../lib/enqueuers/PaginatedActionEnqueuer.js';
-import { Application } from '../../../lib/services/Application.js';
+import { Application } from '../../../lib/services/application/Application.js';
 import { PaginatedActionEnqueuerUtils } from '../../support/utils/PaginatedActionEnqueuerUtils.js';
 
 describe('PaginatedActionEnqueuer', () => {

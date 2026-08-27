@@ -1,14 +1,14 @@
 import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
+import { NamespaceMap } from '../../registry/NamespaceMap.js';
+import { WebServer } from '../../server/WebServer.js';
+import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
+import { ResourceEnqueuer } from '../../utils/ResourceEnqueuer.js';
+import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { ConfigIncluder } from '../config/ConfigIncluder.js';
 import { EngineEvents } from '../engine/EngineEvents.js';
 import { EngineState } from '../engine/EngineState.js';
-import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { RunReporter } from '../execution/RunReporter.js';
-import { NamespaceMap } from '../registry/NamespaceMap.js';
-import { WebServer } from '../server/WebServer.js';
-import { PromiseAggregator } from '../utils/PromiseAggregator.js';
-import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
 

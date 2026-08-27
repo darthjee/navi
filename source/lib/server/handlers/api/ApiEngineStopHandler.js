@@ -1,4 +1,4 @@
-import { EngineStopService } from '../../../services/EngineStopService.js';
+import { EngineStopService } from '../../../services/engine/EngineStopService.js';
 import { SecuredRequestHandler } from '../../SecuredRequestHandler.js';
 
 /**

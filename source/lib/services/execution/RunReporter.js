@@ -1,7 +1,7 @@
 import { JobRegistry } from 'deku-swarm';
 import { FailureChecker } from './FailureChecker.js';
 import { RunSummary } from './RunSummary.js';
-import { LogRegistry } from '../registry/LogRegistry.js';
+import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
  * RunReporter builds and logs the final run summary, then evaluates the

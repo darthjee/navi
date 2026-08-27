@@ -2,7 +2,7 @@ import { NamedRegistry } from './NamedRegistry.js';
 import { ClientNotFound } from '../exceptions/registry/ClientNotFound.js';
 import { NamespaceNotFound } from '../exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../exceptions/registry/ResourceNotFound.js';
-import { NamespaceMapBuilder } from '../services/NamespaceMapBuilder.js';
+import { NamespaceMapBuilder } from '../services/builders/NamespaceMapBuilder.js';
 
 const DEFAULT_NAMESPACE = 'default';
 

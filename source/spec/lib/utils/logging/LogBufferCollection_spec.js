@@ -1,4 +1,4 @@
-import { EngineEvents } from '../../../../lib/services/EngineEvents.js';
+import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
 import { LogBuffer } from '../../../../lib/utils/logging/LogBuffer.js';
 import { LogBufferCollection } from '../../../../lib/utils/logging/LogBufferCollection.js';
 

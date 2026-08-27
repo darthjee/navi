@@ -2,7 +2,7 @@ import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
 import { MissingActionResource } from '../../exceptions/registry/MissingActionResource.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { NamespaceMap as DefaultNamespaceMap } from '../../registry/NamespaceMap.js';
-import { Application } from '../../services/Application.js';
+import { Application } from '../../services/application/Application.js';
 import { ParametersMapper } from '../response/ParametersMapper.js';
 
 /**

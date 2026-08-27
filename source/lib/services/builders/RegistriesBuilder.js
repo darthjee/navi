@@ -1,16 +1,16 @@
 import { JobFactory, JobRegistry, WorkerFactory, WorkersRegistry } from 'deku-swarm';
-import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
-import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
-import { EmitJob } from '../jobs/EmitJob.js';
-import { ExtractionJob } from '../jobs/ExtractionJob.js';
-import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
-import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
-import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
-import { CssSelectorParser } from '../parsers/CssSelectorParser.js';
-import { JsonPathParser } from '../parsers/JsonPathParser.js';
-import { RegexParser } from '../parsers/RegexParser.js';
-import { ParserRegistry } from '../registry/ParserRegistry.js';
-import { LogContext } from '../utils/logging/LogContext.js';
+import { ActionProcessingJob } from '../../jobs/ActionProcessingJob.js';
+import { AssetDownloadJob } from '../../jobs/AssetDownloadJob.js';
+import { EmitJob } from '../../jobs/EmitJob.js';
+import { ExtractionJob } from '../../jobs/ExtractionJob.js';
+import { HtmlParseJob } from '../../jobs/HtmlParseJob.js';
+import { PaginatedActionProcessingJob } from '../../jobs/PaginatedActionProcessingJob.js';
+import { ResourceRequestJob } from '../../jobs/ResourceRequestJob.js';
+import { CssSelectorParser } from '../../parsers/CssSelectorParser.js';
+import { JsonPathParser } from '../../parsers/JsonPathParser.js';
+import { RegexParser } from '../../parsers/RegexParser.js';
+import { ParserRegistry } from '../../registry/ParserRegistry.js';
+import { LogContext } from '../../utils/logging/LogContext.js';
 
 /**
  * RegistriesBuilder bootstraps the job factory, job registry, and workers

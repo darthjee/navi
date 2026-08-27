@@ -1,6 +1,6 @@
+import { Namespace } from '../../registry/Namespace.js';
+import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { ConfigParser } from '../config/ConfigParser.js';
-import { Namespace } from '../registry/Namespace.js';
-import { NamespaceMap } from '../registry/NamespaceMap.js';
 
 /**
  * NamespaceMapBuilder groups the per-file `{ namespace, resources, clients }` entries

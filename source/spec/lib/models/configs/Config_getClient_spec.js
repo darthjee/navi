@@ -1,8 +1,8 @@
+import { Client } from '../../../../lib/client/Client.js';
 import { ClientNotFound } from '../../../../lib/exceptions/registry/ClientNotFound.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { Namespace } from '../../../../lib/registry/Namespace.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
-import { Client } from '../../../../lib/services/Client.js';
 import { ClientFactory } from '../../../support/factories/ClientFactory.js';
 
 describe('Config', () => {

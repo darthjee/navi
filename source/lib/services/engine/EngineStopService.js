@@ -1,5 +1,5 @@
+import { ConflictError } from '../../exceptions/http/ConflictError.js';
 import { Application } from '../application/Application.js';
-import { ConflictError } from '../exceptions/http/ConflictError.js';
 
 /**
  * Shared engine-stop logic used by both `PATCH /engine/stop` and

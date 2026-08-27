@@ -5,7 +5,7 @@ import { NamespaceNotFound } from '../../../../lib/exceptions/registry/Namespace
 import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
 import { ResourceRequestAction } from '../../../../lib/models/request/ResourceRequestAction.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { Application } from '../../../../lib/services/Application.js';
+import { Application } from '../../../../lib/services/application/Application.js';
 import { ResourceRequestActionFactory } from '../../../support/factories/ResourceRequestActionFactory.js';
 import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
 import { ResourceActionUtils } from '../../../support/utils/ResourceActionUtils.js';

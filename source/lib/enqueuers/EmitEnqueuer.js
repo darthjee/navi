@@ -1,5 +1,5 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
-import { Application } from '../services/Application.js';
+import { Application } from '../services/application/Application.js';
 
 /**
  * EmitEnqueuer enqueues one EmitJob per extracted item, forwarding the resource
