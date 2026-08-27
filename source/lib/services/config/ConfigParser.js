@@ -1,4 +1,4 @@
-import { Client } from './Client.js';
+import { Client } from '../../client/Client.js';
 import { MissingClientsConfig } from '../exceptions/config/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../exceptions/config/MissingResourceConfig.js';
 import { FailureConfig } from '../models/configs/FailureConfig.js';
