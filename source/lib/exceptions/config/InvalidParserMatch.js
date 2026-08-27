@@ -1,4 +1,4 @@
-import { AppError } from '../AppError.js';
+import { AppError } from '../../common/exceptions/AppError.js';
 
 /**
  * Thrown when a parser's `match` attribute is present but resolving it against

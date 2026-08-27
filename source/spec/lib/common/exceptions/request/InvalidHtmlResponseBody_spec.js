@@ -1,5 +1,5 @@
-import { AppError } from '../../../../lib/exceptions/AppError.js';
-import { InvalidHtmlResponseBody } from '../../../../lib/exceptions/request/InvalidHtmlResponseBody.js';
+import { AppError } from '../../../../../lib/common/exceptions/AppError.js';
+import { InvalidHtmlResponseBody } from '../../../../../lib/common/exceptions/request/InvalidHtmlResponseBody.js';
 
 describe('InvalidHtmlResponseBody', () => {
   const raw = '<not valid html';

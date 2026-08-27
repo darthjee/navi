@@ -1,5 +1,5 @@
 import { parse } from 'node-html-parser';
-import { InvalidHtmlResponseBody } from '../../../exceptions/request/InvalidHtmlResponseBody.js';
+import { InvalidHtmlResponseBody } from '../../exceptions/request/InvalidHtmlResponseBody.js';
 
 /**
  * HtmlRootParser parses a raw HTML string into a DOM root while normalizing

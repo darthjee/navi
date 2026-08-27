@@ -1,4 +1,4 @@
-import { AppError } from '../AppError.js';
+import { AppError } from '../../common/exceptions/AppError.js';
 
 /**
  * Thrown when an `emit` config entry is missing the required "url" field.

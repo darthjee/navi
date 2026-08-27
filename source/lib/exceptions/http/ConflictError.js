@@ -1,4 +1,4 @@
-import { AppError } from '../AppError.js';
+import { AppError } from '../../common/exceptions/AppError.js';
 
 /**
  * ConflictError is thrown when a requested state transition is not valid

@@ -1,4 +1,4 @@
-import { AppError } from '../AppError.js';
+import { AppError } from '../../common/exceptions/AppError.js';
 
 /**
  * RequestFailed is a custom error class that represents a failed HTTP request.

@@ -1,5 +1,5 @@
+import { InvalidHtmlResponseBody } from '../../../../../lib/common/exceptions/request/InvalidHtmlResponseBody.js';
 import { HtmlRootParser } from '../../../../../lib/common/utils/parser/HtmlRootParser.js';
-import { InvalidHtmlResponseBody } from '../../../../../lib/exceptions/request/InvalidHtmlResponseBody.js';
 
 describe('HtmlRootParser', () => {
   let parser;
