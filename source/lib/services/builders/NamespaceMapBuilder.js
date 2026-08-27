@@ -1,4 +1,4 @@
-import { ConfigParser } from './ConfigParser.js';
+import { ConfigParser } from '../config/ConfigParser.js';
 import { Namespace } from '../registry/Namespace.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
 

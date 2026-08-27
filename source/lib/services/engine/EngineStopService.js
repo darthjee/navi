@@ -1,4 +1,4 @@
-import { Application } from './Application.js';
+import { Application } from '../application/Application.js';
 import { ConflictError } from '../exceptions/http/ConflictError.js';
 
 /**

@@ -1,6 +1,6 @@
 import { ConfigIncluder } from './ConfigIncluder.js';
 import { ConfigParser } from './ConfigParser.js';
-import { NamespaceMapBuilder } from './NamespaceMapBuilder.js';
+import { NamespaceMapBuilder } from '../builders/NamespaceMapBuilder.js';
 
 /**
  * ConfigLoader loads a YAML configuration file (and every file transitively reachable
