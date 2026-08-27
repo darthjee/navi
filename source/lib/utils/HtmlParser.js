@@ -1,6 +1,5 @@
-import { parse } from 'node-html-parser';
 import { HtmlElementParser } from './HtmlElementParser.js';
-import { InvalidHtmlResponseBody } from '../exceptions/request/InvalidHtmlResponseBody.js';
+import { HtmlRootParser } from '../common/utils/parser/HtmlRootParser.js';
 
 /**
  * HtmlParser parses a raw HTML string and extracts attribute values using CSS selectors.
@@ -21,14 +20,7 @@ class HtmlParser {
    * @throws {InvalidHtmlResponseBody} If the HTML cannot be parsed.
    */
   static parse(rawHtml, selector, attribute, logContext) {
-    let root;
-
-    try {
-      root = parse(rawHtml);
-    } catch (cause) {
-      throw new InvalidHtmlResponseBody(rawHtml, cause);
-    }
-
+    const root = new HtmlRootParser().parse(rawHtml);
     const elements = root.querySelectorAll(selector);
 
     if (elements.length === 0) {

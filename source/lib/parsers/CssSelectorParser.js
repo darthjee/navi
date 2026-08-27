@@ -1,7 +1,9 @@
-import { parse } from 'node-html-parser';
+import { FieldsMapper } from './css_selector_parser/FieldsMapper.js';
+import { FilterMatcher } from './css_selector_parser/FilterMatcher.js';
+import { ValueResolver } from './css_selector_parser/ValueResolver.js';
+import { HtmlRootParser } from '../common/utils/parser/HtmlRootParser.js';
 import { MissingParserField } from '../exceptions/config/MissingParserField.js';
 import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
-import { InvalidHtmlResponseBody } from '../exceptions/request/InvalidHtmlResponseBody.js';
 
 /**
  * CssSelectorParser extracts a list of mapped items from a raw HTML response body,
@@ -43,77 +45,16 @@ class CssSelectorParser {
     if (!match) throw new MissingParserMatch();
     if (!fields && !field) throw new MissingParserField();
 
-    const root = this.#parse(rawBody);
+    const root = new HtmlRootParser().parse(rawBody);
     const containers = root.querySelectorAll(match);
 
     return containers
-      .filter((container) => this.#matchesFilter(container, filter))
+      .filter((container) => new FilterMatcher(filter).matches(container))
       .map((container) => (
         fields
-          ? this.#mapFields(container, fields)
-          : { [field]: this.#resolveValue(container, { attribute, trim }) }
+          ? new FieldsMapper(fields).map(container)
+          : { [field]: new ValueResolver({ attribute, trim }).resolve(container) }
       ));
-  }
-
-  #parse(rawBody) {
-    try {
-      return parse(rawBody);
-    } catch (cause) {
-      throw new InvalidHtmlResponseBody(rawBody, cause);
-    }
-  }
-
-  #matchesFilter(container, filter) {
-    if (!filter) return true;
-
-    return filter.every((condition) => this.#matchesCondition(container, condition));
-  }
-
-  #matchesCondition(container, { selector, attribute, trim, equals }) {
-    const value = this.#resolveValue(container, { selector, attribute, trim });
-
-    return value === equals;
-  }
-
-  #mapFields(container, fields) {
-    return Object.entries(fields).reduce((mapped, [outputKey, fieldConfig]) => {
-      const { array } = fieldConfig || {};
-
-      mapped[outputKey] = array
-        ? this.#resolveArrayValue(container, fieldConfig)
-        : this.#resolveValue(container, fieldConfig);
-
-      return mapped;
-    }, {});
-  }
-
-  #resolveValue(element, { selector, attribute, trim = true } = {}) {
-    const target = selector ? element.querySelector(selector) : element;
-
-    if (!target) return null;
-
-    return this.#extractValue(target, attribute, trim);
-  }
-
-  #resolveArrayValue(element, { selector, attribute, trim = true } = {}) {
-    if (!selector) {
-      const value = this.#resolveValue(element, { attribute, trim });
-
-      return value === null ? [] : [value];
-    }
-
-    const targets = element.querySelectorAll(selector);
-
-    return targets.map((target) => this.#extractValue(target, attribute, trim));
-  }
-
-  #extractValue(target, attribute, trim) {
-    const raw = attribute !== undefined ? target.getAttribute(attribute) : target.text;
-    const value = raw === undefined ? null : raw;
-
-    if (value !== null && trim !== false) return value.trim();
-
-    return value;
   }
 }
 
