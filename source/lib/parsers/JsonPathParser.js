@@ -1,4 +1,6 @@
-import { InvalidParserMatch } from '../exceptions/config/InvalidParserMatch.js';
+import { FieldMapper } from './json_path/FieldMapper.js';
+import { FilterMatcher } from './json_path/FilterMatcher.js';
+import { MatchResolver } from './json_path/MatchResolver.js';
 import { MissingParserFields } from '../exceptions/config/MissingParserFields.js';
 import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
 
@@ -47,43 +49,11 @@ class JsonPathParser {
     if (!fields) throw new MissingParserFields();
 
     const parsedBody = JSON.parse(rawBody);
-    const items = this.#resolveMatch(parsedBody, match);
+    const items = new MatchResolver(match).resolve(parsedBody);
 
     return items
-      .filter((item) => this.#matchesFilter(item, filter))
-      .map((item) => this.#mapFields(item, fields));
-  }
-
-  #resolveMatch(parsedBody, match) {
-    const resolved = match.split('.').reduce((value, key) => {
-      if (value === undefined || value === null) return undefined;
-
-      return value[key];
-    }, parsedBody);
-
-    if (!Array.isArray(resolved)) throw new InvalidParserMatch(match);
-
-    return resolved;
-  }
-
-  #matchesFilter(item, filter) {
-    if (!filter) return true;
-
-    return filter.every((condition) => this.#matchesCondition(item, condition));
-  }
-
-  #matchesCondition(item, { field, equals, equals_field: equalsField }) {
-    if (equalsField !== undefined) return item[field] === item[equalsField];
-
-    return item[field] === equals;
-  }
-
-  #mapFields(item, fields) {
-    return Object.entries(fields).reduce((mapped, [sourceKey, outputKey]) => {
-      mapped[outputKey] = item[sourceKey];
-
-      return mapped;
-    }, {});
+      .filter((item) => new FilterMatcher(filter).matches(item))
+      .map((item) => new FieldMapper(fields).map(item));
   }
 }
 
