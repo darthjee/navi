@@ -1,11 +1,11 @@
-import { MissingClientsConfig } from '../../../lib/exceptions/config/MissingClientsConfig.js';
-import { MissingResourceConfig } from '../../../lib/exceptions/config/MissingResourceConfig.js';
-import { ClientNotFound } from '../../../lib/exceptions/registry/ClientNotFound.js';
-import { NamespaceNotFound } from '../../../lib/exceptions/registry/NamespaceNotFound.js';
-import { ResourceNotFound } from '../../../lib/exceptions/registry/ResourceNotFound.js';
-import { Namespace } from '../../../lib/registry/Namespace.js';
-import { NamespaceMapBuilder } from '../../../lib/services/NamespaceMapBuilder.js';
-import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
+import { MissingClientsConfig } from '../../../../lib/exceptions/config/MissingClientsConfig.js';
+import { MissingResourceConfig } from '../../../../lib/exceptions/config/MissingResourceConfig.js';
+import { ClientNotFound } from '../../../../lib/exceptions/registry/ClientNotFound.js';
+import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
+import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
+import { Namespace } from '../../../../lib/registry/Namespace.js';
+import { NamespaceMapBuilder } from '../../../../lib/services/builders/NamespaceMapBuilder.js';
+import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 
 const resourceEntry = (name, requests) => ({ namespace: 'default', resources: { [name]: requests }, clients: {}, filePath: `${name}.yml` });
 

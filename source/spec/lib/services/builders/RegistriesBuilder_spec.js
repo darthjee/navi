@@ -1,8 +1,8 @@
 import { JobFactory, JobRegistry, IdentifyableCollection } from 'deku-swarm';
-import { Config } from '../../../lib/models/configs/Config.js';
-import { RegistriesBuilder } from '../../../lib/services/RegistriesBuilder.js';
-import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
-import { RegistryCleanupUtils } from '../../support/utils/RegistryCleanupUtils.js';
+import { Config } from '../../../../lib/models/configs/Config.js';
+import { RegistriesBuilder } from '../../../../lib/services/builders/RegistriesBuilder.js';
+import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
+import { RegistryCleanupUtils } from '../../../support/utils/RegistryCleanupUtils.js';
 
 describe('RegistriesBuilder', () => {
   let builder;

@@ -1,9 +1,9 @@
 import { JobFactory, JobRegistry, IdentifyableCollection, Queue } from 'deku-swarm';
-import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
-import { FailureConfig } from '../../../lib/models/configs/FailureConfig.js';
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { FailureChecker } from '../../../lib/services/FailureChecker.js';
+import { ResourceRequestJob } from '../../../../lib/jobs/ResourceRequestJob.js';
+import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
+import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
+import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
+import { FailureChecker } from '../../../../lib/services/execution/FailureChecker.js';
 
 describe('FailureChecker', () => {
   let clients;

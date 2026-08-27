@@ -1,8 +1,8 @@
-import { ConfigurationFileNotFound } from '../../../lib/exceptions/config/ConfigurationFileNotFound.js';
-import { ConfigurationIncludeNotFound } from '../../../lib/exceptions/config/ConfigurationIncludeNotFound.js';
-import { ConfigIncluder } from '../../../lib/services/ConfigIncluder.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
-import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
+import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/ConfigurationFileNotFound.js';
+import { ConfigurationIncludeNotFound } from '../../../../lib/exceptions/config/ConfigurationIncludeNotFound.js';
+import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
+import { Logger } from '../../../../lib/utils/logging/Logger.js';
+import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
 
 describe('ConfigIncluder', () => {
   describe('.resolve', () => {

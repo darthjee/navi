@@ -1,7 +1,7 @@
 import { JobRegistry } from 'deku-swarm';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { FailureChecker } from '../../../lib/services/FailureChecker.js';
-import { RunReporter } from '../../../lib/services/RunReporter.js';
+import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
+import { FailureChecker } from '../../../../lib/services/execution/FailureChecker.js';
+import { RunReporter } from '../../../../lib/services/execution/RunReporter.js';
 
 describe('RunReporter', () => {
   let reporter;

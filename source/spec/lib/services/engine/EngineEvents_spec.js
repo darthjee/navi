@@ -1,4 +1,4 @@
-import { EngineEvents } from '../../../lib/services/EngineEvents.js';
+import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
 
 describe('EngineEvents', () => {
   afterEach(() => {

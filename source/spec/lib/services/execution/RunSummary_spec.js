@@ -1,4 +1,4 @@
-import { RunSummary } from '../../../lib/services/RunSummary.js';
+import { RunSummary } from '../../../../lib/services/execution/RunSummary.js';
 
 describe('RunSummary', () => {
   describe('#percentage', () => {

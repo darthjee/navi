@@ -1,9 +1,9 @@
-import { ConfigurationFileNotProvided } from '../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
-import { Config } from '../../../lib/models/configs/Config.js';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
-import { ApplicationConfigurator } from '../../../lib/services/ApplicationConfigurator.js';
-import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
+import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
+import { Config } from '../../../../lib/models/configs/Config.js';
+import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
+import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { ApplicationConfigurator } from '../../../../lib/services/application/ApplicationConfigurator.js';
+import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
 
 describe('ApplicationConfigurator', () => {
   let configurator;

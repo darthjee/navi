@@ -1,4 +1,4 @@
-import { EngineState } from '../../../lib/services/EngineState.js';
+import { EngineState } from '../../../../lib/services/engine/EngineState.js';
 
 describe('EngineState', () => {
   let state;

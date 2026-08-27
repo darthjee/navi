@@ -1,10 +1,10 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
-import { ApplicationInstance } from '../../../lib/services/ApplicationInstance.js';
-import { ConfigIncluder } from '../../../lib/services/ConfigIncluder.js';
-import { EngineEvents } from '../../../lib/services/EngineEvents.js';
-import { ResourceEnqueuer } from '../../../lib/utils/ResourceEnqueuer.js';
+import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
+import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
+import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
+import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
+import { ResourceEnqueuer } from '../../../../lib/utils/ResourceEnqueuer.js';
 
 describe('ApplicationInstance', () => {
   let instance;

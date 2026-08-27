@@ -1,6 +1,6 @@
-import { ConflictError } from '../../../lib/exceptions/http/ConflictError.js';
-import { Application } from '../../../lib/services/Application.js';
-import { EngineStopService } from '../../../lib/services/EngineStopService.js';
+import { ConflictError } from '../../../../lib/exceptions/http/ConflictError.js';
+import { Application } from '../../../../lib/services/application/Application.js';
+import { EngineStopService } from '../../../../lib/services/engine/EngineStopService.js';
 
 describe('EngineStopService', () => {
   beforeEach(() => {

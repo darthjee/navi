@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Client } from '../../../lib/services/Client.js';
+import { Client } from '../../../lib/client/Client.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';

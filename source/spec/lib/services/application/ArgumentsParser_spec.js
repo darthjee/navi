@@ -1,4 +1,4 @@
-import { ArgumentsParser, DEFAULT_CONFIG_FILE } from '../../../lib/services/ArgumentsParser.js';
+import { ArgumentsParser, DEFAULT_CONFIG_FILE } from '../../../../lib/services/application/ArgumentsParser.js';
 
 describe('ArgumentsParser', () => {
   describe('.parse', () => {
