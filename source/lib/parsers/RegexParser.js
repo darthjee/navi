@@ -1,5 +1,6 @@
-import { MissingParserField } from '../exceptions/config/MissingParserField.js';
-import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
+import { AttributesValidator } from './regex_parser/AttributesValidator.js';
+import { MatchValueExtractor } from './regex_parser/MatchValueExtractor.js';
+import { PatternMatcher } from './regex_parser/PatternMatcher.js';
 
 /**
  * RegexParser extracts a single field from a raw response body using a regular
@@ -19,17 +20,13 @@ class RegexParser {
    * @throws {MissingParserField} If `attributes.field` is absent.
    */
   extract(rawBody, { match, field } = {}) {
-    if (!match) throw new MissingParserMatch();
-    if (!field) throw new MissingParserField();
+    new AttributesValidator({ match, field }).validate();
 
-    const regex = new RegExp(match);
-    const result = regex.exec(rawBody);
+    const result = new PatternMatcher(match).exec(rawBody);
 
     if (!result) return [];
 
-    const value = result.length > 1 ? result[1] : result[0];
-
-    return [{ [field]: value }];
+    return [{ [field]: new MatchValueExtractor().extract(result) }];
   }
 }
 
