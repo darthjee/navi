@@ -1,25 +1,12 @@
-import { Engine, JobFactory, JobRegistry, WorkerFactory, WorkersRegistry } from 'deku-swarm';
+import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ConfigIncluder } from './ConfigIncluder.js';
 import { EngineEvents } from './EngineEvents.js';
-import { FailureChecker } from './FailureChecker.js';
-import { RunSummary } from './RunSummary.js';
-import { ConfigurationFileNotProvided } from '../exceptions/config/ConfigurationFileNotProvided.js';
-import { ActionProcessingJob } from '../jobs/ActionProcessingJob.js';
-import { AssetDownloadJob } from '../jobs/AssetDownloadJob.js';
-import { EmitJob } from '../jobs/EmitJob.js';
-import { ExtractionJob } from '../jobs/ExtractionJob.js';
-import { HtmlParseJob } from '../jobs/HtmlParseJob.js';
-import { PaginatedActionProcessingJob } from '../jobs/PaginatedActionProcessingJob.js';
-import { ResourceRequestJob } from '../jobs/ResourceRequestJob.js';
-import { Config } from '../models/configs/Config.js';
-import { CssSelectorParser } from '../parsers/CssSelectorParser.js';
-import { JsonPathParser } from '../parsers/JsonPathParser.js';
-import { RegexParser } from '../parsers/RegexParser.js';
-import { LogRegistry } from '../registry/LogRegistry.js';
+import { EngineState } from './EngineState.js';
+import { RegistriesBuilder } from './RegistriesBuilder.js';
+import { RunReporter } from './RunReporter.js';
 import { NamespaceMap } from '../registry/NamespaceMap.js';
-import { ParserRegistry } from '../registry/ParserRegistry.js';
 import { WebServer } from '../server/WebServer.js';
-import { LogContext } from '../utils/logging/LogContext.js';
 import { PromiseAggregator } from '../utils/PromiseAggregator.js';
 import { ResourceEnqueuer } from '../utils/ResourceEnqueuer.js';
 
@@ -33,7 +20,10 @@ const DEFAULT_POLL_SLEEP_MS = 10;
 class ApplicationInstance {
   #workers;
   #bufferedLogger;
-  #engineStatus;
+  #state;
+  #registriesBuilder;
+  #configurator;
+  #reporter;
   #aggregator;
   #enginePromise;
   #sleepMs;
@@ -42,9 +32,17 @@ class ApplicationInstance {
   /**
    * @param {object} [params={}] - Optional parameters for dependency injection.
    * @param {IdentifyableCollection} [params.workers] - Workers collection (injected for testing).
+   * @param {EngineState} [params.state] - Engine status state machine (injected for testing).
+   * @param {RegistriesBuilder} [params.registriesBuilder] - Registries bootstrap collaborator (injected for testing).
+   * @param {ApplicationConfigurator} [params.configurator] - Config loading collaborator (injected for testing).
+   * @param {RunReporter} [params.reporter] - Run summary/failure-check collaborator (injected for testing).
    */
-  constructor({ workers } = {}) {
+  constructor({ workers, state, registriesBuilder, configurator, reporter } = {}) {
     this.#workers = workers;
+    this.#state = state ?? new EngineState();
+    this.#registriesBuilder = registriesBuilder ?? new RegistriesBuilder();
+    this.#configurator = configurator ?? new ApplicationConfigurator();
+    this.#reporter = reporter ?? new RunReporter();
   }
 
   /**
@@ -55,15 +53,11 @@ class ApplicationInstance {
    * @returns {void}
    */
   loadConfig(configPath) {
-    if (!configPath) {
-      throw new ConfigurationFileNotProvided();
-    }
-
     this.#configPath = configPath;
-    this.config = Config.fromFile(configPath);
-    const logRegistry = LogRegistry.build({ retention: this.config.logConfig.size });
-    this.#bufferedLogger = logRegistry.bufferedLogger;
-    this.#initRegistries();
+    const { config, bufferedLogger } = this.#configurator.load(configPath);
+    this.config = config;
+    this.#bufferedLogger = bufferedLogger;
+    this.#registriesBuilder.build({ config, workers: this.#workers });
   }
 
   /**
@@ -80,10 +74,10 @@ class ApplicationInstance {
 
     if (this.#shouldAutostart()) {
       this.enqueueFirstJobs();
-      this.#engineStatus = 'running';
+      this.#state.set('running');
     } else {
       this.engine.pause();
-      this.#engineStatus = 'stopped';
+      this.#state.set('stopped');
     }
 
     this.#aggregator.add(this.webServer?.start());
@@ -161,7 +155,7 @@ class ApplicationInstance {
    * @returns {string|undefined} The current status.
    */
   status() {
-    return this.#engineStatus;
+    return this.#state.get();
   }
 
   /**
@@ -169,7 +163,7 @@ class ApplicationInstance {
    * @returns {boolean} True if the current status is 'running'.
    */
   isRunning() {
-    return this.#engineStatus === 'running';
+    return this.#state.isRunning();
   }
 
   /**
@@ -177,7 +171,7 @@ class ApplicationInstance {
    * @returns {boolean} True if the current status is 'paused'.
    */
   isPaused() {
-    return this.#engineStatus === 'paused';
+    return this.#state.isPaused();
   }
 
   /**
@@ -185,7 +179,7 @@ class ApplicationInstance {
    * @returns {boolean} True if the current status is 'stopped'.
    */
   isStopped() {
-    return this.#engineStatus === 'stopped';
+    return this.#state.isStopped();
   }
 
   /**
@@ -194,7 +188,7 @@ class ApplicationInstance {
    * @returns {void}
    */
   setStatus(value) {
-    this.#engineStatus = value;
+    this.#state.set(value);
   }
 
   /**
@@ -202,10 +196,10 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async pause() {
-    this.#engineStatus = 'pausing';
+    this.#state.set('pausing');
     this.engine.pause();
     await this.#waitForWorkersIdle();
-    this.#engineStatus = 'paused';
+    this.#state.set('paused');
   }
 
   /**
@@ -214,11 +208,11 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async stop() {
-    this.#engineStatus = 'stopping';
+    this.#state.set('stopping');
     this.engine.pause();
     await this.#waitForWorkersIdle();
     JobRegistry.clearQueues();
-    this.#engineStatus = 'stopped';
+    this.#state.set('stopped');
     EngineEvents.emit('stop');
   }
 
@@ -229,9 +223,9 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async continue() {
-    if (this.#engineStatus !== 'paused') return;
+    if (!this.#state.isPaused()) return;
     this.engine.resume();
-    this.#engineStatus = 'running';
+    this.#state.set('running');
   }
 
   /**
@@ -246,9 +240,9 @@ class ApplicationInstance {
    * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
   async start(names = [], { enqueue = true } = {}) {
-    if (this.#engineStatus !== 'stopped') return undefined;
+    if (!this.#state.isStopped()) return undefined;
     this.engine.resume();
-    this.#engineStatus = 'running';
+    this.#state.set('running');
     EngineEvents.emit('start');
     if (!enqueue) return { enqueued: [], skippedResources: [] };
     return this.enqueueResources(names);
@@ -260,7 +254,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async restart() {
-    if (this.#engineStatus !== 'running') return;
+    if (!this.#state.isRunning()) return;
     await this.stop();
     await this.start();
   }
@@ -272,7 +266,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async reload() {
-    if (this.#engineStatus !== 'running') return;
+    if (!this.#state.isRunning()) return;
     await this.stop();
     NamespaceMap.include(ConfigIncluder.resolve(this.#configPath));
     await this.start();
@@ -285,7 +279,7 @@ class ApplicationInstance {
    */
   async shutdown() {
     this.webServer?.shutdown();
-    if (this.#engineStatus === 'running') {
+    if (this.#state.isRunning()) {
       await this.stop();
     }
     this.engine.stop();
@@ -321,60 +315,13 @@ class ApplicationInstance {
   }
 
   /**
-   * Initializes the job factory, job registry, and workers registry from the loaded configuration.
-   * @returns {void}
-   */
-  #initRegistries() {
-    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: this.config.namespaceMap } });
-    JobFactory.build('Action', { klass: ActionProcessingJob });
-    JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
-    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: this.config.namespaceMap } });
-    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: this.config.namespaceMap } });
-
-    const parserRegistry = new ParserRegistry({
-      regex: new RegexParser(),
-      json_path: new JsonPathParser(),
-      css: new CssSelectorParser()
-    });
-    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
-    JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: this.config.namespaceMap } });
-
-    JobRegistry.build({ cooldown: this.config.workersConfig.retryCooldown, maxRetries: this.config.workersConfig.maxRetries });
-
-    const loggerFactory = ({ workerId, jobId }) => new LogContext({ workerId, jobId });
-
-    WorkersRegistry.build({
-      workers: this.#workers,
-      factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory }),
-      ...this.config.workersConfig,
-    });
-    WorkersRegistry.initWorkers();
-  }
-
-  /**
-   * Finalizes the run lifecycle by emitting stop events and evaluating failures.
+   * Finalizes the run lifecycle by emitting stop events and reporting the run outcome.
    * @returns {void}
    */
   #finishRun() {
-    this.#engineStatus = 'stopped';
+    this.#state.set('stopped');
     EngineEvents.emit('stop');
-    this.#printRunSummary();
-    new FailureChecker({ failureConfig: this.config.failureConfig }).check();
-  }
-
-  /**
-   * Prints the final run summary before threshold checking.
-   * @returns {void}
-   */
-  #printRunSummary() {
-    const stats = JobRegistry.stats();
-    const summary = new RunSummary({
-      totalJobs: stats.total,
-      failedJobs: stats.failed + stats.retryQueue + stats.dead,
-      threshold: this.config.failureConfig?.threshold,
-    });
-
-    LogRegistry.info(summary.report());
+    this.#reporter.report({ failureConfig: this.config.failureConfig });
   }
 }
 
