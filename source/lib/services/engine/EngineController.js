@@ -1,6 +1,6 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { RunReporter } from '../execution/RunReporter.js';
 import { EngineEvents } from './EngineEvents.js';
+import { RunReporter } from '../execution/RunReporter.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
 
