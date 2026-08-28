@@ -1,4 +1,3 @@
-import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
 import { LogBuffer } from '../../../../lib/utils/logging/LogBuffer.js';
 import { LogBufferCollection } from '../../../../lib/utils/logging/LogBufferCollection.js';
 
@@ -9,10 +8,6 @@ describe('LogBufferCollection', () => {
   beforeEach(() => {
     collection = new LogBufferCollection();
     sourceBuffer = new LogBuffer();
-  });
-
-  afterEach(() => {
-    EngineEvents.reset();
   });
 
   describe('#push', () => {
@@ -87,15 +82,6 @@ describe('LogBufferCollection', () => {
       collection.clear();
       expect(collection.getLogs('job-1')).toEqual([]);
       expect(collection.getLogs('job-2')).toEqual([]);
-    });
-  });
-
-  describe('stop event integration', () => {
-    it('clears all buffers when the stop event fires', () => {
-      const log = sourceBuffer.add('info', 'message');
-      collection.push('job-1', log);
-      EngineEvents.emit('stop');
-      expect(collection.getLogs('job-1')).toEqual([]);
     });
   });
 });

@@ -1,7 +1,6 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
-import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
 import { EngineState } from '../../../../lib/services/engine/EngineState.js';
 
 describe('EngineController', () => {
@@ -22,6 +21,7 @@ describe('EngineController', () => {
       stop: () => {},
       pause: () => {},
       resume: () => {},
+      emit: () => {},
     };
 
     spyOn(WorkersRegistry, 'hasBusyWorker').and.returnValue(false);
@@ -31,7 +31,6 @@ describe('EngineController', () => {
   afterEach(() => {
     JobRegistry.reset();
     LogRegistry.reset();
-    EngineEvents.reset();
   });
 
   describe('#pause', () => {
@@ -59,10 +58,10 @@ describe('EngineController', () => {
       expect(state.get()).toBe('stopped');
     });
 
-    it('emits a stop event on EngineEvents', async () => {
-      spyOn(EngineEvents, 'emit');
+    it('emits a stop event on the engine', async () => {
+      spyOn(controller.engine, 'emit');
       await controller.stop();
-      expect(EngineEvents.emit).toHaveBeenCalledWith('stop');
+      expect(controller.engine.emit).toHaveBeenCalledWith('stop');
     });
   });
 
@@ -111,11 +110,11 @@ describe('EngineController', () => {
       expect(state.get()).toBe('running');
     });
 
-    it('emits a start event on EngineEvents', async () => {
+    it('emits a start event on the engine', async () => {
       await controller.stop();
-      spyOn(EngineEvents, 'emit');
+      spyOn(controller.engine, 'emit');
       await controller.start();
-      expect(EngineEvents.emit).toHaveBeenCalledWith('start');
+      expect(controller.engine.emit).toHaveBeenCalledWith('start');
     });
 
     it('enqueues the default set when no names are given', async () => {
@@ -160,13 +159,13 @@ describe('EngineController', () => {
         expect(enqueueResources).not.toHaveBeenCalled();
       });
 
-      it('still emits a start event on EngineEvents', async () => {
+      it('still emits a start event on the engine', async () => {
         await controller.stop();
-        spyOn(EngineEvents, 'emit');
+        spyOn(controller.engine, 'emit');
 
         await controller.start([], { enqueue: false });
 
-        expect(EngineEvents.emit).toHaveBeenCalledWith('start');
+        expect(controller.engine.emit).toHaveBeenCalledWith('start');
       });
 
       it('returns undefined when not stopped', async () => {
@@ -275,24 +274,36 @@ describe('EngineController', () => {
   });
 
   describe('#finishRun', () => {
-    let reporter;
-
     beforeEach(() => {
-      reporter = jasmine.createSpyObj('RunReporter', ['report']);
       controller = new EngineController({
         state,
         config: { failureConfig: { threshold: 30 } },
-        reporter,
         enqueueResources,
         reloadConfig,
       });
+      controller.engine = { emit: () => {} };
     });
 
-    it('reports the run outcome once the engine finishes', () => {
+    it('sets the state to stopped', () => {
       controller.finishRun();
 
-      expect(reporter.report).toHaveBeenCalledWith({ failureConfig: { threshold: 30 } });
       expect(state.get()).toBe('stopped');
+    });
+
+    it('emits a stop event on the engine', () => {
+      spyOn(controller.engine, 'emit');
+
+      controller.finishRun();
+
+      expect(controller.engine.emit).toHaveBeenCalledWith('stop');
+    });
+
+    it('emits a finish event on the engine', () => {
+      spyOn(controller.engine, 'emit');
+
+      controller.finishRun();
+
+      expect(controller.engine.emit).toHaveBeenCalledWith('finish');
     });
   });
 });
