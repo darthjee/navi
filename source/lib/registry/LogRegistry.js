@@ -33,6 +33,14 @@ class LogRegistry {
   }
 
   /**
+   * Clears the per-job and per-worker log buffers.
+   * @returns {void}
+   */
+  static clearBuffers() {
+    LogRegistry.#getInstance().clearBuffers();
+  }
+
+  /**
    * Logs a debug message to both the console and the API buffer.
    * @param {string} message - The message to log.
    * @param {object} [attributes={}] - Optional structured metadata.
