@@ -266,4 +266,29 @@ describe('Engine', () => {
       });
     });
   });
+
+  describe('#on / #emit', () => {
+    it('invokes a registered handler, forwarding extra arguments', () => {
+      const handler = jasmine.createSpy('handler');
+      engine.on('some-event', handler);
+
+      engine.emit('some-event', 'arg1', 'arg2');
+
+      expect(handler).toHaveBeenCalledOnceWith('arg1', 'arg2');
+    });
+
+    it('invokes multiple handlers registered for the same event in registration order', () => {
+      const calls = [];
+      engine.on('some-event', () => calls.push('first'));
+      engine.on('some-event', () => calls.push('second'));
+
+      engine.emit('some-event');
+
+      expect(calls).toEqual(['first', 'second']);
+    });
+
+    it('does not throw when emitting an event with no registered listeners', () => {
+      expect(() => engine.emit('unregistered-event')).not.toThrow();
+    });
+  });
 });

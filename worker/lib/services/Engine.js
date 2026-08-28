@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { WorkersAllocator } from './WorkersAllocator.js';
 
 /**
@@ -23,6 +24,7 @@ class Engine {
   #idleTimeoutFired = false;
   #jobRegistry;
   #workersRegistry;
+  #emitter = new EventEmitter();
 
   /**
    * Creates an instance of Engine.
@@ -70,6 +72,31 @@ class Engine {
    */
   resume() {
     this.#paused = false;
+  }
+
+  /**
+   * Registers a handler for a domain-agnostic named event.
+   * Event names are opaque strings — Engine has no built-in notion of what
+   * events exist; callers define and emit their own. Multiple handlers
+   * registered for the same event name fire in registration order.
+   * @param {string} eventName - The name of the event to listen for.
+   * @param {Function} handler - The callback invoked when the event fires.
+   * @returns {void}
+   */
+  on(eventName, handler) {
+    this.#emitter.on(eventName, handler);
+  }
+
+  /**
+   * Emits a domain-agnostic named event, invoking all handlers registered
+   * via `on()` for that event name, in registration order. A no-op when
+   * there are no listeners for the given event name.
+   * @param {string} eventName - The name of the event to emit.
+   * @param {...*} args - Arguments forwarded to each registered handler.
+   * @returns {void}
+   */
+  emit(eventName, ...args) {
+    this.#emitter.emit(eventName, ...args);
   }
 
   /**
