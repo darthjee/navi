@@ -1,9 +1,9 @@
 import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
+import { ResourceQueueFacade } from './ResourceQueueFacade.js';
 import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { WebServer } from '../../server/WebServer.js';
 import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
-import { ResourceEnqueuer } from '../../utils/ResourceEnqueuer.js';
 import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { ConfigIncluder } from '../config/ConfigIncluder.js';
 import { EngineController } from '../engine/EngineController.js';
@@ -27,6 +27,7 @@ class ApplicationInstance {
   #sleepMs;
   #configPath;
   #engineController;
+  #resourceQueueFacade;
 
   /**
    * @param {object} [params={}] - Optional parameters for dependency injection.
@@ -35,13 +36,15 @@ class ApplicationInstance {
    * @param {RegistriesBuilder} [params.registriesBuilder] - Registries bootstrap collaborator (injected for testing).
    * @param {ApplicationConfigurator} [params.configurator] - Config loading collaborator (injected for testing).
    * @param {RunReporter} [params.reporter] - Run summary/failure-check collaborator (injected for testing).
+   * @param {ResourceQueueFacade} [params.resourceQueueFacade] - Resource-enqueuing collaborator (injected for testing).
    */
-  constructor({ workers, state, registriesBuilder, configurator, reporter } = {}) {
+  constructor({ workers, state, registriesBuilder, configurator, reporter, resourceQueueFacade } = {}) {
     this.#workers = workers;
     this.#state = state ?? new EngineState();
     this.#registriesBuilder = registriesBuilder ?? new RegistriesBuilder();
     this.#configurator = configurator ?? new ApplicationConfigurator();
     this.#reporter = reporter ?? new RunReporter();
+    this.#resourceQueueFacade = resourceQueueFacade ?? new ResourceQueueFacade();
   }
 
   /**
@@ -133,31 +136,21 @@ class ApplicationInstance {
 
   /**
    * Enqueues all parameter-free ResourceRequests into the job registry.
-   * These are requests whose URLs contain no {:placeholder} tokens and can be
-   * processed immediately without any external parameters.
-   * Delegates to `ResourceEnqueuer#enqueueAll` (default namespace), so it always
-   * reflects the live state of the `NamespaceMap` singleton, including resources
-   * added via `POST /api/config` after boot.
+   * Delegates to `ResourceQueueFacade#enqueueFirstJobs`.
    * @returns {void}
    */
   enqueueFirstJobs() {
-    new ResourceEnqueuer().enqueueAll();
+    this.#resourceQueueFacade.enqueueFirstJobs();
   }
 
   /**
    * Enqueues resources by name, or all parameter-free resources when no names are given.
-   * Unknown resource names, or resources with any request that needs parameters, are
-   * skipped entirely and reported back rather than failing the whole call.
+   * Delegates to `ResourceQueueFacade#enqueueResources`.
    * @param {Array<string>} [names=[]] - Resource names to enqueue; omit/empty for the default set.
    * @returns {{enqueued: Array<string>, skippedResources: Array<{name: string, reason: string}>}} The enqueued names and any skipped resources.
    */
   enqueueResources(names = []) {
-    if (!names.length) {
-      this.enqueueFirstJobs();
-      return { enqueued: [], skippedResources: [] };
-    }
-
-    return new ResourceEnqueuer().enqueue(names);
+    return this.#resourceQueueFacade.enqueueResources(names);
   }
 
   /**

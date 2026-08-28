@@ -3,7 +3,6 @@ import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
-import { ResourceEnqueuer } from '../../../../lib/utils/ResourceEnqueuer.js';
 
 describe('ApplicationInstance', () => {
   let instance;
@@ -27,31 +26,26 @@ describe('ApplicationInstance', () => {
   });
 
   describe('#enqueueFirstJobs', () => {
-    it('delegates to ResourceEnqueuer#enqueueAll', () => {
-      spyOn(ResourceEnqueuer.prototype, 'enqueueAll').and.stub();
+    it('delegates to ResourceQueueFacade#enqueueFirstJobs', () => {
+      const resourceQueueFacade = jasmine.createSpyObj('ResourceQueueFacade', ['enqueueFirstJobs']);
+      instance = new ApplicationInstance({ resourceQueueFacade });
 
       instance.enqueueFirstJobs();
 
-      expect(ResourceEnqueuer.prototype.enqueueAll).toHaveBeenCalled();
+      expect(resourceQueueFacade.enqueueFirstJobs).toHaveBeenCalled();
     });
   });
 
   describe('#enqueueResources', () => {
-    it('falls back to enqueueFirstJobs when no names are given', () => {
-      spyOn(instance, 'enqueueFirstJobs').and.stub();
-
-      const result = instance.enqueueResources();
-
-      expect(instance.enqueueFirstJobs).toHaveBeenCalled();
-      expect(result).toEqual({ enqueued: [], skippedResources: [] });
-    });
-
-    it('delegates named resources to ResourceEnqueuer', () => {
-      spyOn(ResourceEnqueuer.prototype, 'enqueue').and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
+    it('delegates to ResourceQueueFacade#enqueueResources and returns its result', () => {
+      const resourceQueueFacade = jasmine.createSpyObj('ResourceQueueFacade', {
+        enqueueResources: { enqueued: ['home_page'], skippedResources: [] },
+      });
+      instance = new ApplicationInstance({ resourceQueueFacade });
 
       const result = instance.enqueueResources(['home_page']);
 
-      expect(ResourceEnqueuer.prototype.enqueue).toHaveBeenCalledWith(['home_page']);
+      expect(resourceQueueFacade.enqueueResources).toHaveBeenCalledWith(['home_page']);
       expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
     });
   });
