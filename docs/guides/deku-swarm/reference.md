@@ -35,6 +35,7 @@ Static singleton facade managing the job queues (`enqueued`, `processing`, `fail
 | Method | Description |
 |--------|-------------|
 | `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior. Throws if already built. |
+| `JobRegistry.ensureBuild(options)` | Builds the singleton only if not already built; a pure no-op (options ignored) once built; returns the instance. |
 | `JobRegistry.reset()` | Destroys the singleton. Use in test teardown. |
 | `JobRegistry.enqueue(factoryKey, params = {})` | Builds a job via the named `JobFactory` and pushes it onto `enqueued`. |
 | `JobRegistry.pick()` | Removes and returns the next ready job (`enqueued` first, then `retryQueue`), moving it to `processing`. `undefined` if none are ready. |
@@ -76,8 +77,9 @@ Static singleton facade managing the worker pool. See [Setup](./setup.md) for bu
 | Method | Description |
 |--------|-------------|
 | `WorkersRegistry.build(options)` | Builds the singleton. `options.quantity` sets the pool size; `options.factory` optionally injects a custom `WorkerFactory` (defaults to one built with no `loggerFactory` — inject your own `WorkerFactory` if you need worker-level logging). Throws if already built. |
+| `WorkersRegistry.ensureBuild(options)` | Builds the singleton only if not already built; a pure no-op (options ignored) once built; returns the instance. |
 | `WorkersRegistry.reset()` | Destroys the singleton. Use in test teardown. |
-| `WorkersRegistry.initWorkers()` | Builds `quantity` workers via the factory and marks them all idle. |
+| `WorkersRegistry.initWorkers()` | Builds `quantity` workers via the factory and marks them all idle. Idempotent — calling it again after the pool is populated is a no-op. |
 | `WorkersRegistry.getIdleWorker()` | Picks (and marks busy) an idle worker, or returns `null` if none are idle. |
 | `WorkersRegistry.setBusy(id)` | Moves the worker with the given id from idle to busy (no-op if the id is unknown). |
 | `WorkersRegistry.setIdle(id)` | Moves the worker with the given id from busy to idle (no-op if the id is unknown). |
@@ -91,7 +93,7 @@ Drives the main loop. See [Running the Engine](./running-the-engine.md) for the 
 
 | Option | Description |
 |--------|-------------|
-| `jobRegistry` / `workersRegistry` | Required. Any object exposing the same method names as `JobRegistry`/`WorkersRegistry` — the static facades work directly. |
+| `jobRegistry` / `workersRegistry` | Optional. Default to the `JobRegistry`/`WorkersRegistry` static facades when omitted. Any object exposing the same method names works — the static facades directly, or your own instances. |
 | `allocator` | Optional `WorkersAllocator`. Defaults to one built from `jobRegistry`/`workersRegistry`. |
 | `sleepMs` | Milliseconds to wait between loop ticks. Defaults to `500`; a negative value disables sleeping. |
 | `keepAlive` | When `true`, the loop never exits on its own — only `stop()` ends it. Defaults to `false` (the loop exits once there are no jobs and no busy workers). |
