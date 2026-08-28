@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import { JobRegistry } from '../background/JobRegistry.js';
+import { WorkersRegistry } from '../background/WorkersRegistry.js';
 import { WorkersAllocator } from './WorkersAllocator.js';
 
 /**
@@ -30,14 +32,14 @@ class Engine {
    * Creates an instance of Engine.
    * @param {object} param0 - The parameters for creating an Engine instance.
    * @param {WorkersAllocator} [param0.allocator] - The workers allocator to manage job allocation. Defaults to a new `WorkersAllocator` built from `jobRegistry`/`workersRegistry`.
-   * @param {JobRegistry} param0.jobRegistry - The job registry to check and promote jobs on.
-   * @param {WorkersRegistry} param0.workersRegistry - The workers registry to check busy workers on.
+   * @param {JobRegistry} [param0.jobRegistry=JobRegistry] - Defaults to the JobRegistry singleton facade. Pass an instance for explicit DI.
+   * @param {WorkersRegistry} [param0.workersRegistry=WorkersRegistry] - Defaults to the WorkersRegistry singleton facade. Pass an instance for explicit DI.
    * @param {number} [param0.sleepMs=500] - Milliseconds to wait when all jobs are in cooldown. Use a negative value to disable sleeping (e.g. in tests).
    * @param {boolean} [param0.keepAlive=false] - When true, the loop runs indefinitely until `stop()` is called (web UI mode).
    * @param {number} [param0.idleTimeoutMs=0] - Milliseconds of inactivity before `onIdleTimeout` fires. `0` disables idle-timeout tracking.
    * @param {Function} [param0.onIdleTimeout] - Callback invoked (without being awaited) once the idle threshold is reached. Fires at most once per idle window.
    */
-  constructor({ allocator, jobRegistry, workersRegistry, sleepMs = 500, keepAlive = false, idleTimeoutMs = 0, onIdleTimeout = () => {} } = {}) {
+  constructor({ allocator, jobRegistry = JobRegistry, workersRegistry = WorkersRegistry, sleepMs = 500, keepAlive = false, idleTimeoutMs = 0, onIdleTimeout = () => {} } = {}) {
     this.#sleepMs = sleepMs;
     this.#keepAlive = keepAlive;
     this.#idleTimeoutMs = idleTimeoutMs;
