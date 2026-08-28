@@ -1,4 +1,4 @@
-import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { Engine } from 'deku-swarm';
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ResourceQueueFacade } from './ResourceQueueFacade.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
@@ -17,8 +17,6 @@ import { RunReporter } from '../execution/RunReporter.js';
  * @author darthjee
  */
 class ApplicationInstance {
-  #workers;
-  #bufferedLogger;
   #state;
   #registriesBuilder;
   #configurator;
@@ -26,26 +24,26 @@ class ApplicationInstance {
   #aggregator;
   #enginePromise;
   #sleepMs;
-  #configPath;
+  #configStore;
   #engineController;
   #resourceQueueFacade;
 
   /**
    * @param {object} [params={}] - Optional parameters for dependency injection.
-   * @param {IdentifyableCollection} [params.workers] - Workers collection (injected for testing).
    * @param {EngineState} [params.state] - Engine status state machine (injected for testing).
    * @param {RegistriesBuilder} [params.registriesBuilder] - Registries bootstrap collaborator (injected for testing).
    * @param {ApplicationConfigurator} [params.configurator] - Config loading collaborator (injected for testing).
    * @param {RunReporter} [params.reporter] - Run summary/failure-check collaborator (injected for testing).
    * @param {ResourceQueueFacade} [params.resourceQueueFacade] - Resource-enqueuing collaborator (injected for testing).
+   * @param {ConfigStore} [params.configStore] - Config-load output holder (injected for testing).
    */
-  constructor({ workers, state, registriesBuilder, configurator, reporter, resourceQueueFacade } = {}) {
-    this.#workers = workers;
+  constructor({ state, registriesBuilder, configurator, reporter, resourceQueueFacade, configStore } = {}) {
     this.#state = state ?? new EngineState();
     this.#registriesBuilder = registriesBuilder ?? new RegistriesBuilder();
     this.#configurator = configurator ?? new ApplicationConfigurator();
     this.#reporter = reporter ?? new RunReporter();
     this.#resourceQueueFacade = resourceQueueFacade ?? new ResourceQueueFacade();
+    this.#configStore = configStore;
   }
 
   /**
@@ -56,11 +54,8 @@ class ApplicationInstance {
    * @returns {void}
    */
   loadConfig(configPath) {
-    this.#configPath = configPath;
-    const { config, bufferedLogger } = this.#configurator.load(configPath);
-    this.config = config;
-    this.#bufferedLogger = bufferedLogger;
-    this.#registriesBuilder.build({ config, workers: this.#workers });
+    this.#configStore = this.#configurator.load(configPath);
+    this.#registriesBuilder.build({ config: this.config });
   }
 
   /**
@@ -76,7 +71,7 @@ class ApplicationInstance {
       state: this.#state,
       config: this.config,
       sleepMs: this.#sleepMs,
-      reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(this.#configPath)),
+      reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(this.#configStore.entryFilePath)),
       enqueueResources: names => this.enqueueResources(names),
     });
 
@@ -109,8 +104,6 @@ class ApplicationInstance {
    */
   buildEngine() {
     return new Engine({
-      jobRegistry: JobRegistry,
-      workersRegistry: WorkersRegistry,
       sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
       keepAlive: !!this.config.webConfig,
       idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
@@ -129,11 +122,21 @@ class ApplicationInstance {
   }
 
   /**
+   * Gets the configuration model loaded during `loadConfig()`.
+   * Reads before `loadConfig()` (or after one that threw) yield `undefined`.
+   * @returns {Config|undefined} The configuration model, or undefined when not loaded.
+   */
+  get config() {
+    return this.#configStore?.config;
+  }
+
+  /**
    * Gets the buffered logger instance created during config loading.
-   * @returns {BufferedLogger} The buffered logger instance.
+   * Reads before `loadConfig()` (or after one that threw) yield `undefined`.
+   * @returns {BufferedLogger|undefined} The buffered logger instance, or undefined when not loaded.
    */
   get bufferedLogger() {
-    return this.#bufferedLogger;
+    return this.#configStore?.bufferedLogger;
   }
 
   /**
