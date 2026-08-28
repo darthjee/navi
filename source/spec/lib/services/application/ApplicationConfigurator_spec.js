@@ -3,6 +3,7 @@ import { Config } from '../../../../lib/models/configs/Config.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { ApplicationConfigurator } from '../../../../lib/services/application/ApplicationConfigurator.js';
+import { ConfigStore } from '../../../../lib/services/application/ConfigStore.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
 
 describe('ApplicationConfigurator', () => {
@@ -23,10 +24,16 @@ describe('ApplicationConfigurator', () => {
     });
 
     describe('when the config file is valid', () => {
+      let configPath;
       let result;
 
       beforeEach(() => {
-        result = configurator.load(FixturesUtils.getFixturePath('config/sample_config.yml'));
+        configPath = FixturesUtils.getFixturePath('config/sample_config.yml');
+        result = configurator.load(configPath);
+      });
+
+      it('returns a ConfigStore', () => {
+        expect(result).toBeInstanceOf(ConfigStore);
       });
 
       it('returns the loaded config', () => {
@@ -35,6 +42,10 @@ describe('ApplicationConfigurator', () => {
 
       it('returns a buffered logger with the default retention size', () => {
         expect(result.bufferedLogger.retention).toBe(100);
+      });
+
+      it('returns the entry file path passed in', () => {
+        expect(result.entryFilePath).toBe(configPath);
       });
     });
 

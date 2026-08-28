@@ -1,3 +1,4 @@
+import { ConfigStore } from './ConfigStore.js';
 import { ConfigurationFileNotProvided } from '../../exceptions/config/ConfigurationFileNotProvided.js';
 import { Config } from '../../models/configs/Config.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
@@ -13,7 +14,7 @@ class ApplicationConfigurator {
    * @param {string} configPath - The path to the configuration file.
    * @throws {ConfigurationFileNotProvided} If the configuration file path is not provided.
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
-   * @returns {{config: Config, bufferedLogger: BufferedLogger}} The loaded config and its buffered logger.
+   * @returns {ConfigStore} The loaded config, its buffered logger, and the entry file path.
    */
   load(configPath) {
     if (!configPath) {
@@ -23,7 +24,11 @@ class ApplicationConfigurator {
     const config = Config.fromFile(configPath);
     const logRegistry = LogRegistry.build({ retention: config.logConfig.size });
 
-    return { config, bufferedLogger: logRegistry.bufferedLogger };
+    return new ConfigStore({
+      config,
+      bufferedLogger: logRegistry.bufferedLogger,
+      entryFilePath: configPath,
+    });
   }
 }
 
