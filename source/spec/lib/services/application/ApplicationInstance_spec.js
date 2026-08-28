@@ -28,6 +28,17 @@ function buildFakeEngine(overrides = {}) {
   };
 }
 
+/**
+ * Builds an ApplicationInstance whose `config` getter resolves to the given
+ * config object, via the `configStore` DI seam.
+ * @param {object} config - The config object the `config` getter should return.
+ * @param {object} [deps={}] - Extra collaborators forwarded to the constructor.
+ * @returns {ApplicationInstance} The constructed instance.
+ */
+function buildInstanceWithConfig(config, deps = {}) {
+  return new ApplicationInstance({ ...deps, configStore: { config } });
+}
+
 describe('ApplicationInstance', () => {
   let instance;
 
@@ -82,10 +93,11 @@ describe('ApplicationInstance', () => {
     });
 
     it('wires web.idle_timeout into the built Engine and calls shutdown() once it expires', async () => {
-      instance.config = {
+      // 1ms — idle_timeout=0 means "disabled", so use the smallest enabled value
+      instance = buildInstanceWithConfig({
         workersConfig: { sleep: -1 },
-        webConfig: { idleTimeout: 0.001 }, // 1ms — idle_timeout=0 means "disabled", so use the smallest enabled value
-      };
+        webConfig: { idleTimeout: 0.001 },
+      });
       spyOn(instance, 'shutdown');
 
       const engine = instance.buildEngine();
@@ -104,10 +116,10 @@ describe('ApplicationInstance', () => {
     });
 
     it('does not shut down before a larger configured idle_timeout has elapsed', async () => {
-      instance.config = {
+      instance = buildInstanceWithConfig({
         workersConfig: { sleep: -1 },
         webConfig: { idleTimeout: 60 },
-      };
+      });
       spyOn(instance, 'shutdown');
 
       const engine = instance.buildEngine();
@@ -124,9 +136,7 @@ describe('ApplicationInstance', () => {
     });
 
     it('disables idle-timeout tracking when there is no web config', async () => {
-      instance.config = {
-        workersConfig: { sleep: -1 },
-      };
+      instance = buildInstanceWithConfig({ workersConfig: { sleep: -1 } });
       spyOn(instance, 'shutdown');
 
       const engine = instance.buildEngine();
@@ -148,17 +158,16 @@ describe('ApplicationInstance', () => {
 
     beforeEach(() => {
       reporter = jasmine.createSpyObj('RunReporter', ['report']);
-      instance = new ApplicationInstance({ reporter });
+      instance = buildInstanceWithConfig(
+        { workersConfig: { sleep: 1 }, failureConfig: { threshold: 30 } },
+        { reporter },
+      );
       instance.engine = {
         stop: () => {},
         pause: () => {},
         resume: () => {},
       };
       instance.setStatus('running');
-      instance.config = {
-        workersConfig: { sleep: 1 },
-        failureConfig: { threshold: 30 },
-      };
       spyOn(LogRegistry, 'clearBuffers');
       spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
       spyOn(instance, 'buildWebServer').and.returnValue(null);
@@ -207,11 +216,7 @@ describe('ApplicationInstance', () => {
 
   describe('delegation to EngineController', () => {
     beforeEach(async () => {
-      instance = new ApplicationInstance();
-      instance.config = {
-        workersConfig: { sleep: 1 },
-        failureConfig: {},
-      };
+      instance = buildInstanceWithConfig({ workersConfig: { sleep: 1 }, failureConfig: {} });
       spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
       spyOn(instance, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();

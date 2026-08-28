@@ -5,18 +5,18 @@
 ## Constructing an `Engine`
 
 ```js
-import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { Engine } from 'deku-swarm';
 
 const engine = new Engine({
-  jobRegistry: JobRegistry,
-  workersRegistry: WorkersRegistry,
   sleepMs: 500,
 });
 ```
 
+Omitting `jobRegistry` / `workersRegistry` (as above) wires the `JobRegistry` / `WorkersRegistry` static facades automatically; pass them — or your own instances — explicitly only when you want that dependency injection to be visible at the call site.
+
 | Option | Description |
 |--------|-------------|
-| `jobRegistry` / `workersRegistry` | Required. Any object exposing the same method names as `JobRegistry`/`WorkersRegistry` — the static facades work directly, or pass your own instances for explicit dependency injection. |
+| `jobRegistry` / `workersRegistry` | Optional. Default to the `JobRegistry` / `WorkersRegistry` static facades when omitted. Pass any object exposing the same method names — the static facades directly, or your own instances for explicit dependency injection. |
 | `allocator` | Optional `WorkersAllocator`. Defaults to one built from `jobRegistry`/`workersRegistry`; most consumers never need to override this. |
 | `sleepMs` | Milliseconds to wait between loop ticks. Defaults to `500`. A negative value disables sleeping entirely — useful in tests, where you want ticks to run back-to-back with no real delay. |
 | `keepAlive` | When `true`, the loop never exits on its own — only an explicit `stop()` call ends it. Use this for a long-lived process (e.g. a server that accepts new work over time). Defaults to `false`. |

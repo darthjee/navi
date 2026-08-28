@@ -14,11 +14,10 @@ describe('Application failure threshold', () => {
 
   const prepareRunScenario = ({ fixtureName, successRate }) => {
     DummyJob.setSuccessRate(successRate);
-    app = Application.build();
-    app.loadConfig(FixturesUtils.getFixturePath(fixtureName));
-    WorkersRegistry.reset();
     WorkersRegistry.build({ quantity: 1, factory: workerFactory });
     WorkersRegistry.initWorkers();
+    app = Application.build();
+    app.loadConfig(FixturesUtils.getFixturePath(fixtureName));
     JobFactory.registry('ResourceRequestJob', jobFactory);
     spyOn(process, 'exit').and.stub();
   };

@@ -1,4 +1,4 @@
-import { JobFactory, JobRegistry, IdentifyableCollection } from 'deku-swarm';
+import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { RegistriesBuilder } from '../../../../lib/services/builders/RegistriesBuilder.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
@@ -33,11 +33,9 @@ describe('RegistriesBuilder', () => {
     });
 
     it('initializes workers using the configured quantity', () => {
-      const workers = new IdentifyableCollection();
+      builder.build({ config });
 
-      builder.build({ config, workers });
-
-      expect(workers.size()).toEqual(5);
+      expect(WorkersRegistry.stats().idle).toEqual(5);
     });
   });
 });

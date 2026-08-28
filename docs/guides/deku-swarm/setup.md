@@ -41,7 +41,7 @@ JobRegistry.build({ cooldown: 2000, maxRetries: 3 });
 | `cooldown` | Milliseconds a failed job waits before it's eligible for retry. Defaults to `5000`. |
 | `maxRetries` | Default retry ceiling applied to every job, unless a `Job` subclass overrides its own `get maxRetries()` (see [Defining Jobs](./defining-jobs.md)). Defaults to `3`. |
 
-Calling `build()` a second time without an intervening `reset()` throws — use `JobRegistry.reset()` between test examples to destroy the singleton and allow a fresh `build()`.
+Calling `build()` a second time without an intervening `reset()` throws — use `JobRegistry.reset()` between test examples to destroy the singleton and allow a fresh `build()`. If your bootstrap path can run more than once per process, call `JobRegistry.ensureBuild(options)` instead: it builds on the first call and is a pure no-op (options ignored) afterwards, returning the existing instance.
 
 ## Building the `WorkersRegistry`
 
@@ -62,7 +62,7 @@ WorkersRegistry.initWorkers();
 | `quantity` | The number of workers in the pool — i.e. how many jobs can run concurrently. |
 | `factory` | Optional `WorkerFactory` instance. If omitted, a default one is built for you (with no logging — see below for why you'll usually want to inject your own). |
 
-`WorkersRegistry.initWorkers()` then builds `quantity` workers via the factory and marks every one of them idle, ready to be handed jobs once the engine starts. As with `JobRegistry`, `WorkersRegistry.reset()` destroys the singleton for test teardown.
+`WorkersRegistry.initWorkers()` then builds `quantity` workers via the factory and marks every one of them idle, ready to be handed jobs once the engine starts; it's idempotent, so a repeated call once the pool is populated does nothing. As with `JobRegistry`, `WorkersRegistry.reset()` destroys the singleton for test teardown. `WorkersRegistry.ensureBuild(options)` mirrors `JobRegistry.ensureBuild` — the idempotent variant to reach for when bootstrap may run more than once, building on the first call and a pure no-op (options ignored) after that.
 
 ## Wiring a `WorkerFactory`
 

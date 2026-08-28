@@ -14,11 +14,10 @@ describe('Application web server integration', () => {
   let workerFactory;
 
   const buildWebEnabledApplication = () => {
-    app = Application.build();
-    app.loadConfig(FixturesUtils.getFixturePath('config/sample_config_with_web.yml'));
-    WorkersRegistry.reset();
     WorkersRegistry.build({ quantity: 1, factory: workerFactory });
     WorkersRegistry.initWorkers();
+    app = Application.build();
+    app.loadConfig(FixturesUtils.getFixturePath('config/sample_config_with_web.yml'));
     JobFactory.registry('ResourceRequestJob', jobFactory);
   };
 

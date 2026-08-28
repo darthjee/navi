@@ -1,4 +1,4 @@
-import { JobFactory, JobRegistry, WorkersRegistry, IdentifyableCollection } from 'deku-swarm';
+import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
@@ -23,10 +23,9 @@ describe('Application', () => {
 
   const prepareRunScenario = (fixtureName = 'config/sample_config.yml') => {
     DummyJob.setSuccessRate(1);
-    loadApplication(fixtureName);
-    WorkersRegistry.reset();
     WorkersRegistry.build({ quantity: 1, factory: workerFactory });
     WorkersRegistry.initWorkers();
+    loadApplication(fixtureName);
     JobFactory.registry('ResourceRequestJob', jobFactory);
   };
 
@@ -69,13 +68,11 @@ describe('Application', () => {
       });
 
       it('initializes workers using the configured quantity', () => {
-        const workers = new IdentifyableCollection();
-
         RegistryCleanupUtils.resetApplicationState();
         Logger.suppress();
-        loadApplication('config/sample_config.yml', { workers });
+        loadApplication('config/sample_config.yml');
 
-        expect(workers.size()).toEqual(5);
+        expect(WorkersRegistry.stats().idle).toEqual(5);
       });
 
       it('creates a buffered logger with the default retention size', () => {

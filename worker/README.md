@@ -46,11 +46,13 @@ WorkersRegistry.initWorkers();
 JobRegistry.enqueue('greet', { name: 'World' });
 
 // 5. Run the engine until every job is finished/dead and every worker is idle
-const engine = new Engine({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, sleepMs: 500 });
+const engine = new Engine({ sleepMs: 500 });
 await engine.start();
 ```
 
-`JobRegistry` and `WorkersRegistry` are static singleton facades: `build()` once at startup, `reset()` between test examples. Both `Engine` and `WorkerFactory` accept either the static facade classes (as above) or plain instances exposing the same method names — pass whichever fits your application's dependency-injection style.
+`Engine`'s `jobRegistry` / `workersRegistry` are optional — omitting them (as above) wires the `JobRegistry` / `WorkersRegistry` static facades automatically. Pass them, or your own instances, only when you want the dependency injection visible at the call site.
+
+`JobRegistry` and `WorkersRegistry` are static singleton facades: `build()` once at startup, `reset()` between test examples. Both `Engine` and `WorkerFactory` accept either the static facade classes or plain instances exposing the same method names — pass whichever fits your application's dependency-injection style. When a bootstrap path can run more than once per process, use `JobRegistry.ensureBuild()` / `WorkersRegistry.ensureBuild()` instead of `build()`.
 
 ### `Job`
 
@@ -93,7 +95,8 @@ Static singleton facade managing the job queues: enqueued, processing, failed (c
 
 | Method | Description |
 |--------|-------------|
-| `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior. |
+| `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior. Throws if already built. |
+| `JobRegistry.ensureBuild(options)` | Builds the singleton only if not already built; a pure no-op (options ignored) once built. Returns the instance. |
 | `JobRegistry.reset()` | Destroys the singleton. Use in test teardown. |
 | `JobRegistry.enqueue(factoryKey, params)` | Builds a job via the named `JobFactory` and pushes it onto the enqueued queue. |
 | `JobRegistry.pick()` | Removes and returns the next ready job, moving it to processing. Used internally by `WorkersAllocator`. |
@@ -112,9 +115,10 @@ Static singleton facade managing the worker pool.
 
 | Method | Description |
 |--------|-------------|
-| `WorkersRegistry.build(options)` | Builds the singleton. `options.quantity` sets the pool size; `options.factory` optionally injects a custom `WorkerFactory`. |
+| `WorkersRegistry.build(options)` | Builds the singleton. `options.quantity` sets the pool size; `options.factory` optionally injects a custom `WorkerFactory`. Throws if already built. |
+| `WorkersRegistry.ensureBuild(options)` | Builds the singleton only if not already built; a pure no-op (options ignored, workers not initialized) once built. Returns the instance. |
 | `WorkersRegistry.reset()` | Destroys the singleton. Use in test teardown. |
-| `WorkersRegistry.initWorkers()` | Builds `quantity` workers and marks them idle. |
+| `WorkersRegistry.initWorkers()` | Builds `quantity` workers and marks them idle. Idempotent — only the first call populates the pool; a later call once workers exist is a no-op. |
 | `WorkersRegistry.getIdleWorker()` | Picks (and marks busy) an idle worker, or returns `null`. |
 | `WorkersRegistry.setBusy(id)` / `WorkersRegistry.setIdle(id)` | Moves a worker between the busy/idle collections. |
 | `WorkersRegistry.hasBusyWorker()` / `WorkersRegistry.hasIdleWorker()` | Pool-state checks. |
@@ -130,7 +134,7 @@ Drives the main loop: promotes cooling-down jobs, allocates ready jobs to idle w
 
 | Option | Description |
 |--------|-------------|
-| `jobRegistry` / `workersRegistry` | Required. Any object exposing the same method names as `JobRegistry`/`WorkersRegistry` (the static facades work directly). |
+| `jobRegistry` / `workersRegistry` | Optional. Default to the `JobRegistry` / `WorkersRegistry` static facades when omitted. Any object exposing the same method names works — the static facades directly, or your own instances for explicit dependency injection. |
 | `allocator` | Optional `WorkersAllocator`. Defaults to one built from `jobRegistry`/`workersRegistry`. |
 | `sleepMs` | Milliseconds to wait between loop ticks. Defaults to `500`; a negative value disables sleeping (useful in tests). |
 | `keepAlive` | When `true`, the loop never exits on its own — only `stop()` ends it. Use this when a long-lived process (e.g. a web UI) needs the engine to wait for new work. Defaults to `false`, meaning the loop exits once there are no jobs and no busy workers. |
