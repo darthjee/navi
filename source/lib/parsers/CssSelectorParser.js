@@ -24,7 +24,11 @@ class CssSelectorParser {
    * @param {string} attributes.match A CSS selector for the repeated container elements.
    * @param {Array<object>} [attributes.filter] Optional list of AND'ed conditions a container
    * must satisfy to be included. Each condition is `{ selector, attribute, trim, equals }`,
-   * resolved relative to the container and compared for strict equality against `equals`.
+   * resolved relative to the container and compared for strict equality against `equals`, or
+   * `{ selector, attribute, trim, equals_field: { selector, attribute, trim } }`, where both
+   * sides are resolved relative to the container and compared for strict equality. When a
+   * condition carries both `equals` and `equals_field`, `equals_field` wins and a one-time
+   * `Logger.warn` is emitted.
    * @param {object} [attributes.fields] A `{ outputKey: { selector, attribute, array, trim } }`
    * map. When present, enables multi-field mode: each field's `selector` runs relative to the
    * matched container (absent/empty `selector` means the container itself).
@@ -48,8 +52,11 @@ class CssSelectorParser {
     const root = new HtmlRootParser().parse(rawBody);
     const containers = root.querySelectorAll(match);
 
+    const filterMatcher = new FilterMatcher(filter);
+    filterMatcher.warnConflicts();
+
     return containers
-      .filter((container) => new FilterMatcher(filter).matches(container))
+      .filter((container) => filterMatcher.matches(container))
       .map((container) => (
         fields
           ? new FieldsMapper(fields).map(container)
