@@ -3,6 +3,7 @@ import { JobRegistry } from '../../lib/background/JobRegistry.js';
 import { WorkersRegistry } from '../../lib/background/WorkersRegistry.js';
 import { IdentifyableCollection } from '../../lib/collections/IdentifyableCollection.js';
 import { Engine } from '../../lib/services/Engine.js';
+import { WorkersAllocator } from '../../lib/services/WorkersAllocator.js';
 import { DummyJobFactory } from '../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../support/dummies/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../support/dummies/models/DummyJob.js';
@@ -264,6 +265,49 @@ describe('Engine', () => {
           expect(iterations).toBeLessThan(SAFETY_NET_ITERATIONS);
         });
       });
+    });
+  });
+
+  describe('registry defaults', () => {
+    it('defaults the allocator to a WorkersAllocator backed by the singleton facades', () => {
+      const defaultEngine = new Engine({ sleepMs: -1 });
+
+      expect(defaultEngine.allocator).toBeInstanceOf(WorkersAllocator);
+    });
+
+    it('drives the JobRegistry / WorkersRegistry facades when no registries are injected', async () => {
+      const defaultEngine = new Engine({ sleepMs: -1 });
+      enqueueJobs(2);
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callThrough();
+
+      await defaultEngine.start();
+
+      expect(JobRegistry.promoteReadyJobs).toHaveBeenCalled();
+      expect(finished.size()).toBe(2);
+    });
+
+    it('uses an injected registry over the default', async () => {
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callThrough();
+      const injectedJobRegistry = {
+        promoteReadyJobs: jasmine.createSpy('promoteReadyJobs'),
+        hasReadyJob: () => false,
+        hasJob: () => false,
+      };
+      const injectedWorkersRegistry = {
+        hasBusyWorker: () => false,
+      };
+      const injectedEngine = new Engine({
+        jobRegistry: injectedJobRegistry,
+        workersRegistry: injectedWorkersRegistry,
+        keepAlive: true,
+        sleepMs: -1,
+      });
+      injectedJobRegistry.promoteReadyJobs.and.callFake(() => injectedEngine.stop());
+
+      await injectedEngine.start();
+
+      expect(injectedJobRegistry.promoteReadyJobs).toHaveBeenCalled();
+      expect(JobRegistry.promoteReadyJobs).not.toHaveBeenCalled();
     });
   });
 

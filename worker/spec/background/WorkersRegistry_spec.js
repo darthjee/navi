@@ -48,6 +48,51 @@ describe('WorkersRegistry', () => {
     });
   });
 
+  describe('.ensureBuild', () => {
+    beforeEach(() => {
+      WorkersRegistry.reset();
+    });
+
+    describe('when the singleton has not been built', () => {
+      it('builds and returns the instance', () => {
+        const instance = WorkersRegistry.ensureBuild({ quantity: 2 });
+
+        expect(instance).toBeDefined();
+        expect(WorkersRegistry.stats()).toEqual({ idle: 0, busy: 0 });
+      });
+
+      it('builds a pool that initWorkers then populates', () => {
+        WorkersRegistry.ensureBuild({ quantity: 2 });
+        WorkersRegistry.initWorkers();
+
+        expect(WorkersRegistry.stats()).toEqual({ idle: 2, busy: 0 });
+      });
+    });
+
+    describe('when the singleton is already built', () => {
+      let firstInstance;
+
+      beforeEach(() => {
+        firstInstance = WorkersRegistry.build({ quantity: 1 });
+      });
+
+      it('returns the same instance', () => {
+        expect(WorkersRegistry.ensureBuild()).toBe(firstInstance);
+      });
+
+      it('does not throw', () => {
+        expect(() => WorkersRegistry.ensureBuild({ quantity: 5 })).not.toThrow();
+      });
+
+      it('ignores the new options', () => {
+        WorkersRegistry.ensureBuild({ quantity: 5 });
+        WorkersRegistry.initWorkers();
+
+        expect(WorkersRegistry.stats()).toEqual({ idle: 1, busy: 0 });
+      });
+    });
+  });
+
   describe('.initWorkers', () => {
     beforeEach(() => {
       WorkersRegistry.reset();
@@ -61,6 +106,34 @@ describe('WorkersRegistry', () => {
       WorkersRegistry.initWorkers();
 
       expect(workers.size()).toEqual(3);
+    });
+
+    it('does not double the pool when called twice', () => {
+      WorkersRegistry.initWorkers();
+      WorkersRegistry.initWorkers();
+
+      expect(workers.size()).toEqual(3);
+    });
+
+    describe('when quantity is 0', () => {
+      beforeEach(() => {
+        WorkersRegistry.reset();
+        workers = new IdentifyableCollection();
+        WorkersRegistry.build({ quantity: 0, workers });
+      });
+
+      it('creates no workers', () => {
+        WorkersRegistry.initWorkers();
+
+        expect(workers.size()).toEqual(0);
+      });
+
+      it('remains a no-op on a repeat call', () => {
+        WorkersRegistry.initWorkers();
+        WorkersRegistry.initWorkers();
+
+        expect(workers.size()).toEqual(0);
+      });
     });
 
     it('creates the workers as idle', () => {
