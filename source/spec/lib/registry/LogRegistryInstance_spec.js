@@ -1,5 +1,4 @@
 import { LogRegistryInstance } from '../../../lib/registry/LogRegistryInstance.js';
-import { EngineEvents } from '../../../lib/services/engine/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
@@ -13,7 +12,6 @@ describe('LogRegistryInstance', () => {
 
   afterEach(() => {
     Logger.reset();
-    EngineEvents.reset();
   });
 
   describe('#bufferedLogger', () => {
@@ -193,6 +191,20 @@ describe('LogRegistryInstance', () => {
       expect(typeof json[0].id).toBe('number');
       expect(json[0].level).toBe('info');
       expect(json[0].message).toBe('message');
+    });
+  });
+
+  describe('#clearBuffers', () => {
+    it('clears the per-job log buffer', () => {
+      instance.info('job log', { jobId: 'job-1' });
+      instance.clearBuffers();
+      expect(instance.getLogsByJobId('job-1')).toEqual([]);
+    });
+
+    it('clears the per-worker log buffer', () => {
+      instance.info('worker log', { workerId: 'worker-1' });
+      instance.clearBuffers();
+      expect(instance.getLogsByWorkerId('worker-1')).toEqual([]);
     });
   });
 });

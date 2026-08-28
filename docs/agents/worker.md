@@ -164,14 +164,13 @@ These are concrete `Job` implementations that live in `source/lib/jobs/`, import
 
 ## Engine auxiliary services (Navi-specific)
 
-These four services stay in `source/lib/services/` and currently reach into the worker package's static singletons directly, rather than through any formal listener interface `Engine` exposes — the extraction did not change this, since it was scoped to `Engine`/`WorkersAllocator`/`Worker`'s own dependency injection, not to these four:
+`Engine` now exposes a generic `on(eventName, handler)` / `emit(eventName, ...args)` listener API of its own (`worker/lib/services/Engine.js`), including a `'finish'` event fired at the end of a run. `EngineController`, `LogBufferCollection`/`LogRegistry`, and `ApplicationInstance` subscribe to it directly; `RunReporter` subscribes to `'finish'` to run `FailureChecker` and `RunSummary` at the right point in the lifecycle. `EngineStopService` is the remaining holdout that still reaches into `Application`/`JobRegistry` directly rather than through the listener API — tracked separately in [#728](https://github.com/darthjee/navi/issues/728):
 
 | Service | File | Responsibility | Extraction note |
 |---|---|---|---|
-| `EngineEvents` | `source/lib/services/EngineEvents.js` | Static `EventEmitter`-backed bus for lifecycle transitions (`'stop'`, `'start'`, `'restart'`, `'reset'`); `emit`/`on`/`reset`. | Should become an injectable listener rather than a global bus. |
-| `EngineStopService` | `source/lib/services/EngineStopService.js` | Shared logic for `PATCH /engine/stop` and `POST /api/engine/stop`: throws `ConflictError` unless `Application.isRunning()`, otherwise calls `Application.stop()`. | Navi-specific HTTP glue; not generic today. Should become an injectable listener. |
-| `FailureChecker` | `source/lib/services/FailureChecker.js` | Post-run check: reads `JobRegistry.stats()`, computes the dead/total ratio, and calls `process.exit(1)` if it exceeds the configured `failureConfig.threshold`. No-op if `failureConfig` is `null` or `total === 0`. | Should become an injectable listener. |
-| `RunSummary` | `source/lib/services/RunSummary.js` | Computes and formats the final run report (`percentage()`, `result()` — `'Success'`/`'Failure'` against an optional threshold, `report()` — multi-line summary string). | Should become an injectable listener. |
+| `EngineStopService` | `source/lib/services/EngineStopService.js` | Shared logic for `PATCH /engine/stop` and `POST /api/engine/stop`: throws `ConflictError` unless `Application.isRunning()`, otherwise calls `Application.stop()`. | Navi-specific HTTP glue; not generic today. Should become an injectable listener — tracked in [#728](https://github.com/darthjee/navi/issues/728). |
+| `FailureChecker` | `source/lib/services/execution/FailureChecker.js` | Post-run check: reads `JobRegistry.stats()`, computes the dead/total ratio, and calls `process.exit(1)` if it exceeds the configured `failureConfig.threshold`. No-op if `failureConfig` is `null` or `total === 0`. | Done — reached indirectly via `RunReporter`'s `'finish'` subscription on `Engine`. |
+| `RunSummary` | `source/lib/services/execution/RunSummary.js` | Computes and formats the final run report (`percentage()`, `result()` — `'Success'`/`'Failure'` against an optional threshold, `report()` — multi-line summary string). | Done — wrapped by `RunReporter`, reached the same way as `FailureChecker`. |
 
 ## What stays in Navi
 
@@ -179,7 +178,7 @@ These four services stay in `source/lib/services/` and currently reach into the 
 - `ResourceEnqueuer` — the dedicated Navi class that calls `JobRegistry.enqueue()` from outside the package
 - `LogContext` (`source/lib/utils/logging/LogContext.js`) — Navi-specific logging, wired into `Worker` via the injected `loggerFactory` rather than imported by the package directly
 - `IncrementalIdGenerator` (`source/lib/utils/generators/IncrementalIdGenerator.js`) — used by `source/lib/common/utils/logging/LogFactory.js`, outside the worker subsystem; not part of `deku-swarm`
-- `EngineEvents`, `EngineStopService`, `FailureChecker`, `RunSummary` — see "Engine auxiliary services" above
+- `EngineStopService`, `FailureChecker`, `RunSummary` — see "Engine auxiliary services" above
 - `ApplicationInstance` — orchestrates boot, registers the five job factories, builds `JobRegistry`/`WorkersRegistry`/`Engine` from `deku-swarm`
 
 ## Out of scope

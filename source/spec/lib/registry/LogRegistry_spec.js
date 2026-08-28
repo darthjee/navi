@@ -1,5 +1,4 @@
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
-import { EngineEvents } from '../../../lib/services/engine/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('LogRegistry', () => {
@@ -10,7 +9,6 @@ describe('LogRegistry', () => {
   afterEach(() => {
     LogRegistry.reset();
     Logger.reset();
-    EngineEvents.reset();
   });
 
   describe('.build', () => {
@@ -186,6 +184,17 @@ describe('LogRegistry', () => {
       const json = LogRegistry.getLogsJSON();
       expect(Array.isArray(json)).toBeTrue();
       expect(typeof json[0].id).toBe('number');
+    });
+  });
+
+  describe('.clearBuffers', () => {
+    it('clears the per-job and per-worker log buffers', () => {
+      LogRegistry.build();
+      LogRegistry.info('job log', { jobId: 'job-1' });
+      LogRegistry.info('worker log', { workerId: 'worker-1' });
+      LogRegistry.clearBuffers();
+      expect(LogRegistry.getLogsByJobId('job-1')).toEqual([]);
+      expect(LogRegistry.getLogsByWorkerId('worker-1')).toEqual([]);
     });
   });
 });

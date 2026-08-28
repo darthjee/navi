@@ -3,7 +3,6 @@ import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
 import { NotFoundError } from '../../../lib/exceptions/http/NotFoundError.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { RouteRegister } from '../../../lib/server/RouteRegister.js';
-import { EngineEvents } from '../../../lib/services/engine/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
@@ -22,7 +21,6 @@ describe('RouteRegister', () => {
   afterEach(() => {
     LogRegistry.reset();
     Logger.reset();
-    EngineEvents.reset();
   });
 
   describe('#registerPost', () => {

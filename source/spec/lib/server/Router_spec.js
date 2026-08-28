@@ -1,7 +1,6 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
-import { EngineEvents } from '../../../lib/services/engine/EngineEvents.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('Router', () => {
@@ -20,7 +19,6 @@ describe('Router', () => {
     LogRegistry.reset();
     Logger.reset();
     WorkersRegistry.reset();
-    EngineEvents.reset();
   });
 
   describe('#build', () => {

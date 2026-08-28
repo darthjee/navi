@@ -1,7 +1,6 @@
 import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { LogsHandler } from '../../../../lib/server/handlers/LogsHandler.js';
-import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
 import { Logger } from '../../../../lib/utils/logging/Logger.js';
 
 describe("describe('LogsHandler'", () => {
@@ -16,7 +15,6 @@ describe("describe('LogsHandler'", () => {
   afterEach(() => {
     LogRegistry.reset();
     Logger.reset();
-    EngineEvents.reset();
   });
 
   it('is an instance of RequestHandlerExecutor', () => {

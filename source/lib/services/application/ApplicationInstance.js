@@ -1,6 +1,7 @@
 import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ResourceQueueFacade } from './ResourceQueueFacade.js';
+import { LogRegistry } from '../../registry/LogRegistry.js';
 import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { WebServer } from '../../server/WebServer.js';
 import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
@@ -75,12 +76,13 @@ class ApplicationInstance {
       state: this.#state,
       config: this.config,
       sleepMs: this.#sleepMs,
-      reporter: this.#reporter,
       reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(this.#configPath)),
       enqueueResources: names => this.enqueueResources(names),
     });
 
     this.engine = this.buildEngine();
+    this.engine.on('stop', () => LogRegistry.clearBuffers());
+    this.engine.on('finish', () => this.#reporter.report({ failureConfig: this.config.failureConfig }));
     this.webServer = this.buildWebServer();
     this.#engineController.engine = this.engine;
     this.#engineController.webServer = this.webServer;

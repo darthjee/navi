@@ -1,9 +1,9 @@
 import { LogBuffer } from './LogBuffer.js';
-import { EngineEvents } from '../../../services/engine/EngineEvents.js';
 
 /**
  * LogBufferCollection manages a keyed map of LogBuffer instances.
- * Buffers are created on first use and cleared automatically when the engine stops.
+ * Buffers are created on first use. Callers are responsible for invoking
+ * `clear()` when appropriate (e.g. LogRegistryInstance clears buffers on engine stop).
  * @author darthjee
  */
 class LogBufferCollection {
@@ -16,7 +16,6 @@ class LogBufferCollection {
   constructor(retention = 100) {
     this.#buffers = new Map();
     this.#retention = retention;
-    EngineEvents.on('stop', () => this.clear());
   }
 
   /**

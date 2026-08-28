@@ -2,7 +2,31 @@ import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
-import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
+
+/**
+ * Builds a minimal fake Engine test double that supports the `on`/`emit`
+ * listener API, so specs can assert on listener wiring without depending on
+ * the real Engine implementation.
+ * @param {object} [overrides={}] - Properties to override on the fake engine.
+ * @returns {object} The fake engine instance.
+ */
+function buildFakeEngine(overrides = {}) {
+  const handlers = {};
+
+  return {
+    start: async () => {},
+    pause: () => {},
+    resume: () => {},
+    stop: () => {},
+    on: (eventName, handler) => {
+      handlers[eventName] = handler;
+    },
+    emit: (eventName, ...args) => {
+      handlers[eventName]?.(...args);
+    },
+    ...overrides,
+  };
+}
 
 describe('ApplicationInstance', () => {
   let instance;
@@ -22,7 +46,6 @@ describe('ApplicationInstance', () => {
   afterEach(() => {
     JobRegistry.reset();
     LogRegistry.reset();
-    EngineEvents.reset();
   });
 
   describe('#enqueueFirstJobs', () => {
@@ -136,12 +159,13 @@ describe('ApplicationInstance', () => {
         workersConfig: { sleep: 1 },
         failureConfig: { threshold: 30 },
       };
+      spyOn(LogRegistry, 'clearBuffers');
+      spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
+      spyOn(instance, 'buildWebServer').and.returnValue(null);
+      spyOn(instance, 'enqueueFirstJobs').and.stub();
     });
 
     it('finalizes the run via EngineController once the engine finishes', async () => {
-      spyOn(instance, 'buildEngine').and.returnValue({ start: async () => {} });
-      spyOn(instance, 'buildWebServer').and.returnValue(null);
-      spyOn(instance, 'enqueueFirstJobs').and.stub();
       spyOn(EngineController.prototype, 'finishRun').and.callThrough();
 
       await instance.run();
@@ -150,16 +174,28 @@ describe('ApplicationInstance', () => {
       expect(instance.status()).toBe('stopped');
     });
 
+    it('clears the log buffers when the engine emits stop', async () => {
+      await instance.run();
+      instance.engine.emit('stop');
+
+      expect(LogRegistry.clearBuffers).toHaveBeenCalled();
+    });
+
+    it('reports the run outcome when the engine emits finish', async () => {
+      await instance.run();
+      instance.engine.emit('finish');
+
+      expect(reporter.report).toHaveBeenCalledWith({ failureConfig: { threshold: 30 } });
+    });
+
     describe('when web.autostart is false', () => {
       beforeEach(() => {
         instance.config.webConfig = { autostart: false };
       });
 
       it('boots paused and stopped instead of enqueueing and running', async () => {
-        const engine = { start: async () => {}, pause: jasmine.createSpy('pause') };
-        spyOn(instance, 'buildEngine').and.returnValue(engine);
-        spyOn(instance, 'buildWebServer').and.returnValue(null);
-        spyOn(instance, 'enqueueFirstJobs').and.stub();
+        const engine = buildFakeEngine({ pause: jasmine.createSpy('pause') });
+        instance.buildEngine.and.returnValue(engine);
 
         await instance.run();
 
@@ -176,12 +212,7 @@ describe('ApplicationInstance', () => {
         workersConfig: { sleep: 1 },
         failureConfig: {},
       };
-      spyOn(instance, 'buildEngine').and.returnValue({
-        start: async () => {},
-        pause: () => {},
-        resume: () => {},
-        stop: () => {},
-      });
+      spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
       spyOn(instance, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();
       spyOn(EngineController.prototype, 'finishRun').and.stub();

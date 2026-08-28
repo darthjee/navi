@@ -1,6 +1,4 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { EngineEvents } from './EngineEvents.js';
-import { RunReporter } from '../execution/RunReporter.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
 
@@ -14,7 +12,6 @@ const DEFAULT_POLL_SLEEP_MS = 10;
 class EngineController {
   #state;
   #sleepMs;
-  #reporter;
   #reloadConfig;
   #enqueueResources;
 
@@ -26,15 +23,13 @@ class EngineController {
    * @param {EngineState} [params.state] - Shared engine status state machine.
    * @param {Config} [params.config] - The application's loaded configuration.
    * @param {number} [params.sleepMs] - Poll interval in ms for idle-wait.
-   * @param {RunReporter} [params.reporter] - Run summary/failure-check collaborator (injected for testing).
    * @param {Function} [params.reloadConfig] - Callback invoked by `reload()` to re-read config.
    * @param {Function} [params.enqueueResources] - Callback invoked by `start()` to enqueue resources by name.
    */
-  constructor({ state, config, sleepMs, reporter, reloadConfig, enqueueResources } = {}) {
+  constructor({ state, config, sleepMs, reloadConfig, enqueueResources } = {}) {
     this.#state = state;
     this.config = config;
     this.#sleepMs = sleepMs;
-    this.#reporter = reporter ?? new RunReporter();
     this.#reloadConfig = reloadConfig;
     this.#enqueueResources = enqueueResources;
   }
@@ -61,7 +56,7 @@ class EngineController {
     await this.#waitForWorkersIdle();
     JobRegistry.clearQueues();
     this.#state.set('stopped');
-    EngineEvents.emit('stop');
+    this.engine.emit('stop');
   }
 
   /**
@@ -91,7 +86,7 @@ class EngineController {
     if (!this.#state.isStopped()) return undefined;
     this.engine.resume();
     this.#state.set('running');
-    EngineEvents.emit('start');
+    this.engine.emit('start');
     if (!enqueue) return { enqueued: [], skippedResources: [] };
     return this.#enqueueResources(names);
   }
@@ -134,13 +129,14 @@ class EngineController {
   }
 
   /**
-   * Finalizes the run lifecycle by emitting stop events and reporting the run outcome.
+   * Finalizes the run lifecycle by emitting the 'stop' and 'finish' events.
+   * Run-outcome reporting is handled by the 'finish' event's listener, not here.
    * @returns {void}
    */
   finishRun() {
     this.#state.set('stopped');
-    EngineEvents.emit('stop');
-    this.#reporter.report({ failureConfig: this.config.failureConfig });
+    this.engine.emit('stop');
+    this.engine.emit('finish');
   }
 
   /**
