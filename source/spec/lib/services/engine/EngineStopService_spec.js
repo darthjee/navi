@@ -3,42 +3,59 @@ import { Application } from '../../../../lib/services/application/Application.js
 import { EngineStopService } from '../../../../lib/services/engine/EngineStopService.js';
 
 describe('EngineStopService', () => {
-  beforeEach(() => {
-    spyOn(Application, 'stop');
-  });
-
-  afterEach(() => {
-    Application.reset();
-  });
-
   describe('.stop', () => {
+    let statusProvider;
+
+    beforeEach(() => {
+      statusProvider = {
+        isRunning: jasmine.createSpy('isRunning'),
+        stop: jasmine.createSpy('stop')
+      };
+    });
+
     describe('when the engine is running', () => {
       beforeEach(() => {
-        spyOn(Application, 'isRunning').and.returnValue(true);
+        statusProvider.isRunning.and.returnValue(true);
       });
 
-      it('calls Application.stop()', () => {
-        EngineStopService.stop();
-        expect(Application.stop).toHaveBeenCalled();
+      it('calls statusProvider.stop()', () => {
+        EngineStopService.stop(statusProvider);
+        expect(statusProvider.stop).toHaveBeenCalled();
       });
 
       it('returns the stopping status', () => {
-        expect(EngineStopService.stop()).toEqual({ status: 'stopping' });
+        expect(EngineStopService.stop(statusProvider)).toEqual({ status: 'stopping' });
       });
     });
 
     describe('when the engine is not running', () => {
       beforeEach(() => {
-        spyOn(Application, 'isRunning').and.returnValue(false);
+        statusProvider.isRunning.and.returnValue(false);
       });
 
       it('throws a ConflictError', () => {
-        expect(() => EngineStopService.stop()).toThrowError(ConflictError);
+        expect(() => EngineStopService.stop(statusProvider)).toThrowError(ConflictError);
       });
 
-      it('does not call Application.stop()', () => {
-        expect(() => EngineStopService.stop()).toThrow();
-        expect(Application.stop).not.toHaveBeenCalled();
+      it('does not call statusProvider.stop()', () => {
+        expect(() => EngineStopService.stop(statusProvider)).toThrow();
+        expect(statusProvider.stop).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when no statusProvider is given', () => {
+      beforeEach(() => {
+        spyOn(Application, 'isRunning').and.returnValue(true);
+        spyOn(Application, 'stop');
+      });
+
+      afterEach(() => {
+        Application.reset();
+      });
+
+      it('defaults to the Application facade', () => {
+        EngineStopService.stop();
+        expect(Application.stop).toHaveBeenCalled();
       });
     });
   });

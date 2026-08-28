@@ -9,12 +9,14 @@ import { Application } from '../application/Application.js';
 class EngineStopService {
   /**
    * Initiates engine stop.
+   * @param {object} [statusProvider] Object exposing `isRunning()`/`stop()`,
+   *   defaulting to the {@link Application} facade.
    * @returns {{status: string}} The transitional status response body.
    * @throws {ConflictError} When the engine is not currently running.
    */
-  static stop() {
-    if (!Application.isRunning()) throw new ConflictError();
-    Application.stop();
+  static stop(statusProvider = Application) {
+    if (!statusProvider.isRunning()) throw new ConflictError();
+    statusProvider.stop();
     return { status: 'stopping' };
   }
 }
