@@ -44,9 +44,15 @@ class WorkersRegistryInstance {
    *
    * This method creates the workers and adds them to the internal workers list,
    * marking them as idle.
+   *
+   * Idempotent: only the first call populates the pool. If the pool already has
+   * workers this returns immediately. It does not short-circuit on `quantity`, so
+   * a `quantity: 0` instance harmlessly runs a 0-iteration loop on every call.
    * @returns {void}
    */
   initWorkers() {
+    if (this.#workers.hasAny()) return;
+
     for (let i = 0; i < this.#quantity; i++) {
       this.#buildWorker();
     }

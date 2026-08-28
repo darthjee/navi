@@ -25,6 +25,23 @@ class WorkersRegistry {
   }
 
   /**
+   * Builds the singleton instance only if it has not been built yet.
+   *
+   * Idempotent: the first `build`/`ensureBuild` call wins. On an already-built
+   * singleton this is a pure no-op — it does not reconstruct the instance, does
+   * not initialize workers, and the `options` argument is ignored entirely
+   * (call `initWorkers()` separately to populate the pool).
+   * @param {object} [options={}] - Forwarded to `build()` only when the singleton does not yet exist; ignored otherwise.
+   * @returns {WorkersRegistryInstance} The singleton instance.
+   */
+  static ensureBuild(options = {}) {
+    if (!WorkersRegistry.#instance) {
+      WorkersRegistry.build(options);
+    }
+    return WorkersRegistry.#instance;
+  }
+
+  /**
    * Destroys the singleton instance. Intended for test teardown.
    * @returns {void}
    */
