@@ -2,6 +2,7 @@ import { InvalidHtmlResponseBody } from '../../../lib/common/exceptions/request/
 import { MissingParserField } from '../../../lib/exceptions/config/MissingParserField.js';
 import { MissingParserMatch } from '../../../lib/exceptions/config/MissingParserMatch.js';
 import { CssSelectorParser } from '../../../lib/parsers/CssSelectorParser.js';
+import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('CssSelectorParser', () => {
   let parser;
@@ -250,6 +251,124 @@ describe('CssSelectorParser', () => {
               { selector: '.stock', attribute: 'data-available', equals: 'true' },
               { selector: '.category', equals: 'books' },
             ],
+            fields: { title: { selector: 'h2' } },
+          };
+
+          expect(parser.extract(rawBody, attributes)).toEqual([{ title: 'Widget' }]);
+        });
+      });
+
+      describe('when an equals_field condition is given', () => {
+        const rawBody = `
+          <div class="product">
+            <a class="primary" href="/product/widget"></a>
+            <a class="canonical" href="/product/widget"></a>
+            <h2>Widget</h2>
+          </div>
+          <div class="product">
+            <a class="primary" href="/product/gadget?ref=ad"></a>
+            <a class="canonical" href="/product/gadget"></a>
+            <h2>Gadget</h2>
+          </div>
+        `;
+        const condition = {
+          selector: 'a.primary',
+          attribute: 'href',
+          equals_field: { selector: 'a.canonical', attribute: 'href' },
+        };
+
+        it('keeps only containers where both sides resolve equal', () => {
+          const attributes = {
+            match: '.product',
+            filter: [condition],
+            fields: { title: { selector: 'h2' } },
+          };
+
+          expect(parser.extract(rawBody, attributes)).toEqual([{ title: 'Widget' }]);
+        });
+
+        it('behaves the same in fallback single-field mode', () => {
+          const attributes = {
+            match: '.product',
+            filter: [condition],
+            field: 'title',
+            attribute: 'data-name',
+          };
+
+          expect(parser.extract(rawBody, attributes)).toEqual([{ title: null }]);
+        });
+      });
+
+      describe('when a container is missing both sides of an equals_field condition', () => {
+        it('keeps the container (both sides resolve null)', () => {
+          const rawBody = `
+            <div class="product">
+              <h2>Widget</h2>
+            </div>
+          `;
+          const attributes = {
+            match: '.product',
+            filter: [{
+              selector: 'a.primary',
+              attribute: 'href',
+              equals_field: { selector: 'a.canonical', attribute: 'href' },
+            }],
+            fields: { title: { selector: 'h2' } },
+          };
+
+          expect(parser.extract(rawBody, attributes)).toEqual([{ title: 'Widget' }]);
+        });
+      });
+
+      describe('when a condition carries both equals and equals_field', () => {
+        it('lets equals_field win and warns once', () => {
+          spyOn(Logger, 'warn');
+
+          const rawBody = `
+            <div class="product">
+              <a class="primary" href="/product/widget"></a>
+              <a class="canonical" href="/product/widget"></a>
+              <h2>Widget</h2>
+            </div>
+            <div class="product">
+              <a class="primary" href="/product/gadget?ref=ad"></a>
+              <a class="canonical" href="/product/gadget"></a>
+              <h2>Gadget</h2>
+            </div>
+          `;
+          const attributes = {
+            match: '.product',
+            filter: [{
+              selector: 'a.primary',
+              attribute: 'href',
+              equals: '/never',
+              equals_field: { selector: 'a.canonical', attribute: 'href' },
+            }],
+            fields: { title: { selector: 'h2' } },
+          };
+
+          expect(parser.extract(rawBody, attributes)).toEqual([{ title: 'Widget' }]);
+          expect(Logger.warn).toHaveBeenCalledTimes(1);
+        });
+      });
+
+      describe('when array is set inside a filter condition', () => {
+        it('ignores it and compares scalars', () => {
+          const rawBody = `
+            <div class="product">
+              <a class="primary" href="/product/widget"></a>
+              <a class="canonical" href="/product/widget"></a>
+              <h2>Widget</h2>
+            </div>
+          `;
+          const attributes = {
+            match: '.product',
+            filter: [{
+              selector: 'a.primary',
+              attribute: 'href',
+              array: true,
+              equals_field: { selector: 'a.canonical', attribute: 'href', array: true },
+            }],
             fields: { title: { selector: 'h2' } },
           };
 
