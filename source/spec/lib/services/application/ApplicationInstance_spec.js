@@ -1,8 +1,7 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
-import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
+import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { EngineEvents } from '../../../../lib/services/engine/EngineEvents.js';
 import { ResourceEnqueuer } from '../../../../lib/utils/ResourceEnqueuer.js';
 
@@ -19,210 +18,12 @@ describe('ApplicationInstance', () => {
     };
 
     instance.setStatus('running');
-
-    spyOn(WorkersRegistry, 'hasBusyWorker').and.returnValue(false);
-    spyOn(JobRegistry, 'clearQueues').and.stub();
   });
 
   afterEach(() => {
     JobRegistry.reset();
     LogRegistry.reset();
     EngineEvents.reset();
-  });
-
-  describe('#pause', () => {
-    it('pauses the engine without stopping it', async () => {
-      spyOn(instance.engine, 'pause');
-      spyOn(instance.engine, 'stop');
-
-      await instance.pause();
-
-      expect(instance.engine.pause).toHaveBeenCalled();
-      expect(instance.engine.stop).not.toHaveBeenCalled();
-      expect(instance.status()).toBe('paused');
-    });
-  });
-
-  describe('#stop', () => {
-    it('stops without recreating the engine', async () => {
-      const originalEngine = instance.engine;
-      spyOn(instance.engine, 'pause');
-
-      await instance.stop();
-
-      expect(instance.engine).toBe(originalEngine);
-      expect(instance.engine.pause).toHaveBeenCalled();
-      expect(instance.status()).toBe('stopped');
-    });
-
-    it('emits a stop event on EngineEvents', async () => {
-      spyOn(EngineEvents, 'emit');
-      await instance.stop();
-      expect(EngineEvents.emit).toHaveBeenCalledWith('stop');
-    });
-  });
-
-  describe('#continue', () => {
-    it('resumes without creating a new engine', async () => {
-      await instance.pause();
-      const originalEngine = instance.engine;
-      spyOn(instance.engine, 'resume');
-
-      await instance.continue();
-
-      expect(instance.engine).toBe(originalEngine);
-      expect(instance.engine.resume).toHaveBeenCalled();
-      expect(instance.status()).toBe('running');
-    });
-
-    it('does nothing when not paused', async () => {
-      spyOn(instance.engine, 'resume');
-
-      await instance.continue();
-
-      expect(instance.engine.resume).not.toHaveBeenCalled();
-      expect(instance.status()).toBe('running');
-    });
-  });
-
-  describe('#start', () => {
-    beforeEach(() => {
-      spyOn(instance, 'enqueueFirstJobs').and.stub();
-    });
-
-    it('starts without creating a new engine', async () => {
-      await instance.stop();
-      const originalEngine = instance.engine;
-      spyOn(instance.engine, 'resume');
-
-      await instance.start();
-
-      expect(instance.engine).toBe(originalEngine);
-      expect(instance.engine.resume).toHaveBeenCalled();
-      expect(instance.status()).toBe('running');
-    });
-
-    it('does nothing when not stopped', async () => {
-      spyOn(instance.engine, 'resume');
-
-      await instance.start();
-
-      expect(instance.engine.resume).not.toHaveBeenCalled();
-      expect(instance.status()).toBe('running');
-    });
-
-    it('emits a start event on EngineEvents', async () => {
-      await instance.stop();
-      spyOn(EngineEvents, 'emit');
-      await instance.start();
-      expect(EngineEvents.emit).toHaveBeenCalledWith('start');
-    });
-
-    it('enqueues the default set when no names are given', async () => {
-      await instance.stop();
-      await instance.start();
-      expect(instance.enqueueFirstJobs).toHaveBeenCalled();
-    });
-
-    it('delegates to enqueueResources and returns its result', async () => {
-      await instance.stop();
-      spyOn(instance, 'enqueueResources').and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
-
-      const result = await instance.start(['home_page']);
-
-      expect(instance.enqueueResources).toHaveBeenCalledWith(['home_page']);
-      expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
-    });
-
-    it('returns undefined when not stopped', async () => {
-      const result = await instance.start();
-      expect(result).toBeUndefined();
-    });
-
-    describe('when called with { enqueue: false }', () => {
-      it('transitions to running without enqueueing anything', async () => {
-        await instance.stop();
-        spyOn(instance.engine, 'resume');
-
-        const result = await instance.start([], { enqueue: false });
-
-        expect(instance.engine.resume).toHaveBeenCalled();
-        expect(instance.status()).toBe('running');
-        expect(instance.enqueueFirstJobs).not.toHaveBeenCalled();
-        expect(result).toEqual({ enqueued: [], skippedResources: [] });
-      });
-
-      it('does not call enqueueResources', async () => {
-        await instance.stop();
-        spyOn(instance, 'enqueueResources');
-
-        await instance.start(['home_page'], { enqueue: false });
-
-        expect(instance.enqueueResources).not.toHaveBeenCalled();
-      });
-
-      it('still emits a start event on EngineEvents', async () => {
-        await instance.stop();
-        spyOn(EngineEvents, 'emit');
-
-        await instance.start([], { enqueue: false });
-
-        expect(EngineEvents.emit).toHaveBeenCalledWith('start');
-      });
-
-      it('returns undefined when not stopped', async () => {
-        const result = await instance.start([], { enqueue: false });
-        expect(result).toBeUndefined();
-      });
-    });
-  });
-
-  describe('#reload', () => {
-    beforeEach(() => {
-      spyOn(instance, 'enqueueFirstJobs').and.stub();
-    });
-
-    it('stops then starts the engine, in order', async () => {
-      spyOn(ConfigIncluder, 'resolve').and.returnValue([]);
-      spyOn(NamespaceMap, 'include').and.stub();
-      spyOn(instance, 'stop').and.callThrough();
-      spyOn(instance, 'start').and.callThrough();
-
-      await instance.reload();
-
-      expect(instance.stop).toHaveBeenCalledBefore(instance.start);
-      expect(instance.status()).toBe('running');
-    });
-
-    it('merges ConfigIncluder.resolve()\'s result into NamespaceMap between stop and start', async () => {
-      const files = [{ namespace: 'default', resources: {}, clients: {}, filePath: '/config.yml' }];
-      spyOn(ConfigIncluder, 'resolve').and.returnValue(files);
-      spyOn(NamespaceMap, 'include').and.stub();
-      spyOn(instance, 'stop').and.callThrough();
-      spyOn(instance, 'start').and.callThrough();
-
-      await instance.reload();
-
-      expect(NamespaceMap.include).toHaveBeenCalledWith(files);
-      expect(instance.stop).toHaveBeenCalledBefore(NamespaceMap.include);
-      expect(NamespaceMap.include).toHaveBeenCalledBefore(instance.start);
-    });
-
-    it('does nothing when not running', async () => {
-      instance.setStatus('stopped');
-      spyOn(ConfigIncluder, 'resolve');
-      spyOn(NamespaceMap, 'include');
-      spyOn(instance, 'stop');
-      spyOn(instance, 'start');
-
-      await instance.reload();
-
-      expect(instance.stop).not.toHaveBeenCalled();
-      expect(instance.start).not.toHaveBeenCalled();
-      expect(ConfigIncluder.resolve).not.toHaveBeenCalled();
-      expect(NamespaceMap.include).not.toHaveBeenCalled();
-      expect(instance.status()).toBe('stopped');
-    });
   });
 
   describe('#enqueueFirstJobs', () => {
@@ -255,51 +56,12 @@ describe('ApplicationInstance', () => {
     });
   });
 
-  describe('#shutdown', () => {
-    beforeEach(() => {
-      spyOn(instance.engine, 'stop');
-    });
-
-    describe('when a web server is present', () => {
-      beforeEach(() => {
-        instance.webServer = { shutdown: jasmine.createSpy('shutdown') };
-      });
-
-      it('shuts down the web server', async () => {
-        await instance.shutdown();
-
-        expect(instance.webServer.shutdown).toHaveBeenCalled();
-      });
-
-      it('stops the engine', async () => {
-        await instance.shutdown();
-
-        expect(instance.engine.stop).toHaveBeenCalled();
-      });
-    });
-
-    describe('when there is no web server', () => {
-      beforeEach(() => {
-        instance.webServer = null;
-      });
-
-      it('does not throw', async () => {
-        await expectAsync(instance.shutdown()).not.toBeRejected();
-      });
-
-      it('stops the engine', async () => {
-        await instance.shutdown();
-
-        expect(instance.engine.stop).toHaveBeenCalled();
-      });
-    });
-  });
-
   describe('#buildEngine', () => {
     beforeEach(() => {
       instance.webServer = null;
       spyOn(JobRegistry, 'hasReadyJob').and.returnValue(false);
       spyOn(JobRegistry, 'hasJob').and.returnValue(false);
+      spyOn(WorkersRegistry, 'hasBusyWorker').and.returnValue(false);
     });
 
     it('wires web.idle_timeout into the built Engine and calls shutdown() once it expires', async () => {
@@ -307,7 +69,7 @@ describe('ApplicationInstance', () => {
         workersConfig: { sleep: -1 },
         webConfig: { idleTimeout: 0.001 }, // 1ms — idle_timeout=0 means "disabled", so use the smallest enabled value
       };
-      spyOn(instance, 'shutdown').and.callThrough();
+      spyOn(instance, 'shutdown');
 
       const engine = instance.buildEngine();
 
@@ -382,14 +144,15 @@ describe('ApplicationInstance', () => {
       };
     });
 
-    it('reports the run outcome once the engine finishes', async () => {
+    it('finalizes the run via EngineController once the engine finishes', async () => {
       spyOn(instance, 'buildEngine').and.returnValue({ start: async () => {} });
       spyOn(instance, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();
+      spyOn(EngineController.prototype, 'finishRun').and.callThrough();
 
       await instance.run();
 
-      expect(reporter.report).toHaveBeenCalledWith({ failureConfig: { threshold: 30 } });
+      expect(EngineController.prototype.finishRun).toHaveBeenCalled();
       expect(instance.status()).toBe('stopped');
     });
 
@@ -409,6 +172,98 @@ describe('ApplicationInstance', () => {
         expect(engine.pause).toHaveBeenCalled();
         expect(instance.enqueueFirstJobs).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('delegation to EngineController', () => {
+    beforeEach(async () => {
+      instance = new ApplicationInstance();
+      instance.config = {
+        workersConfig: { sleep: 1 },
+        failureConfig: {},
+      };
+      spyOn(instance, 'buildEngine').and.returnValue({
+        start: async () => {},
+        pause: () => {},
+        resume: () => {},
+        stop: () => {},
+      });
+      spyOn(instance, 'buildWebServer').and.returnValue(null);
+      spyOn(instance, 'enqueueFirstJobs').and.stub();
+      spyOn(EngineController.prototype, 'finishRun').and.stub();
+
+      await instance.run();
+    });
+
+    it('#pause delegates to EngineController#pause', async () => {
+      spyOn(EngineController.prototype, 'pause').and.returnValue('pause-result');
+
+      const result = await instance.pause();
+
+      expect(EngineController.prototype.pause).toHaveBeenCalled();
+      expect(result).toBe('pause-result');
+    });
+
+    it('#stop delegates to EngineController#stop', async () => {
+      spyOn(EngineController.prototype, 'stop').and.returnValue('stop-result');
+
+      const result = await instance.stop();
+
+      expect(EngineController.prototype.stop).toHaveBeenCalled();
+      expect(result).toBe('stop-result');
+    });
+
+    it('#continue delegates to EngineController#continue', async () => {
+      spyOn(EngineController.prototype, 'continue').and.returnValue('continue-result');
+
+      const result = await instance.continue();
+
+      expect(EngineController.prototype.continue).toHaveBeenCalled();
+      expect(result).toBe('continue-result');
+    });
+
+    it('#start delegates to EngineController#start with the given names/options', async () => {
+      spyOn(EngineController.prototype, 'start').and.returnValue('start-result');
+
+      const result = await instance.start(['home_page'], { enqueue: false });
+
+      expect(EngineController.prototype.start).toHaveBeenCalledWith(['home_page'], { enqueue: false });
+      expect(result).toBe('start-result');
+    });
+
+    it('#start defaults names/options when called with no arguments', async () => {
+      spyOn(EngineController.prototype, 'start').and.returnValue('start-result');
+
+      await instance.start();
+
+      expect(EngineController.prototype.start).toHaveBeenCalledWith([], {});
+    });
+
+    it('#restart delegates to EngineController#restart', async () => {
+      spyOn(EngineController.prototype, 'restart').and.returnValue('restart-result');
+
+      const result = await instance.restart();
+
+      expect(EngineController.prototype.restart).toHaveBeenCalled();
+      expect(result).toBe('restart-result');
+    });
+
+    it('#reload delegates to EngineController#reload', async () => {
+      spyOn(EngineController.prototype, 'reload').and.returnValue('reload-result');
+
+      const result = await instance.reload();
+
+      expect(EngineController.prototype.reload).toHaveBeenCalled();
+      expect(result).toBe('reload-result');
+    });
+
+    it('#shutdown delegates to EngineController#shutdown', async () => {
+      spyOn(EngineController.prototype, 'shutdown').and.returnValue('shutdown-result');
+
+      const result = await instance.shutdown();
+
+      expect(EngineController.prototype.shutdown).toHaveBeenCalled();
+      expect(result).toBe('shutdown-result');
     });
   });
 });

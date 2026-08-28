@@ -6,11 +6,9 @@ import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
 import { ResourceEnqueuer } from '../../utils/ResourceEnqueuer.js';
 import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { ConfigIncluder } from '../config/ConfigIncluder.js';
-import { EngineEvents } from '../engine/EngineEvents.js';
+import { EngineController } from '../engine/EngineController.js';
 import { EngineState } from '../engine/EngineState.js';
 import { RunReporter } from '../execution/RunReporter.js';
-
-const DEFAULT_POLL_SLEEP_MS = 10;
 
 /**
  * ApplicationInstance holds all instance-level state and logic for a single
@@ -28,6 +26,7 @@ class ApplicationInstance {
   #enginePromise;
   #sleepMs;
   #configPath;
+  #engineController;
 
   /**
    * @param {object} [params={}] - Optional parameters for dependency injection.
@@ -69,8 +68,19 @@ class ApplicationInstance {
     this.#aggregator = new PromiseAggregator();
     this.#sleepMs = this.config.workersConfig.sleep;
 
+    this.#engineController = new EngineController({
+      state: this.#state,
+      config: this.config,
+      sleepMs: this.#sleepMs,
+      reporter: this.#reporter,
+      reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(this.#configPath)),
+      enqueueResources: names => this.enqueueResources(names),
+    });
+
     this.engine = this.buildEngine();
     this.webServer = this.buildWebServer();
+    this.#engineController.engine = this.engine;
+    this.#engineController.webServer = this.webServer;
 
     if (this.#shouldAutostart()) {
       this.enqueueFirstJobs();
@@ -85,7 +95,7 @@ class ApplicationInstance {
     this.#aggregator.add(this.#enginePromise);
 
     await this.#aggregator.wait();
-    this.#finishRun();
+    this.#engineController.finishRun();
   }
 
   /**
@@ -99,7 +109,7 @@ class ApplicationInstance {
       sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
       keepAlive: !!this.config.webConfig,
       idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
-      onIdleTimeout: () => this.#handleIdleTimeout(),
+      onIdleTimeout: () => this.shutdown(),
     });
   }
 
@@ -196,10 +206,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async pause() {
-    this.#state.set('pausing');
-    this.engine.pause();
-    await this.#waitForWorkersIdle();
-    this.#state.set('paused');
+    return this.#engineController.pause();
   }
 
   /**
@@ -208,12 +215,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async stop() {
-    this.#state.set('stopping');
-    this.engine.pause();
-    await this.#waitForWorkersIdle();
-    JobRegistry.clearQueues();
-    this.#state.set('stopped');
-    EngineEvents.emit('stop');
+    return this.#engineController.stop();
   }
 
   /**
@@ -223,9 +225,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async continue() {
-    if (!this.#state.isPaused()) return;
-    this.engine.resume();
-    this.#state.set('running');
+    return this.#engineController.continue();
   }
 
   /**
@@ -239,13 +239,8 @@ class ApplicationInstance {
    * flows) that manage their own enqueueing afterwards.
    * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
-  async start(names = [], { enqueue = true } = {}) {
-    if (!this.#state.isStopped()) return undefined;
-    this.engine.resume();
-    this.#state.set('running');
-    EngineEvents.emit('start');
-    if (!enqueue) return { enqueued: [], skippedResources: [] };
-    return this.enqueueResources(names);
+  async start(names = [], options = {}) {
+    return this.#engineController.start(names, options);
   }
 
   /**
@@ -254,9 +249,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async restart() {
-    if (!this.#state.isRunning()) return;
-    await this.stop();
-    await this.start();
+    return this.#engineController.restart();
   }
 
   /**
@@ -266,10 +259,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async reload() {
-    if (!this.#state.isRunning()) return;
-    await this.stop();
-    NamespaceMap.include(ConfigIncluder.resolve(this.#configPath));
-    await this.start();
+    return this.#engineController.reload();
   }
 
   /**
@@ -278,11 +268,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async shutdown() {
-    this.webServer?.shutdown();
-    if (this.#state.isRunning()) {
-      await this.stop();
-    }
-    this.engine.stop();
+    return this.#engineController.shutdown();
   }
 
   /**
@@ -292,36 +278,6 @@ class ApplicationInstance {
    */
   #shouldAutostart() {
     return this.config.webConfig?.autostart ?? true;
-  }
-
-  /**
-   * Invoked by the Engine when `web.idle_timeout` has elapsed with no jobs
-   * queued and no busy workers. Shuts the application down exactly like a
-   * manual `PATCH /engine/shutdown` call, regardless of `enable_shutdown`.
-   * @returns {Promise<void>}
-   */
-  async #handleIdleTimeout() {
-    await this.shutdown();
-  }
-
-  /**
-   * Polls until all workers are idle.
-   * @returns {Promise<void>}
-   */
-  async #waitForWorkersIdle() {
-    while (WorkersRegistry.hasBusyWorker()) {
-      await new Promise(resolve => setTimeout(resolve, this.#sleepMs ?? DEFAULT_POLL_SLEEP_MS));
-    }
-  }
-
-  /**
-   * Finalizes the run lifecycle by emitting stop events and reporting the run outcome.
-   * @returns {void}
-   */
-  #finishRun() {
-    this.#state.set('stopped');
-    EngineEvents.emit('stop');
-    this.#reporter.report({ failureConfig: this.config.failureConfig });
   }
 }
 
