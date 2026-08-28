@@ -17,12 +17,7 @@ describe('EngineController', () => {
     reloadConfig = jasmine.createSpy('reloadConfig');
 
     controller = new EngineController({ state, sleepMs: 0, enqueueResources, reloadConfig });
-    controller.engine = {
-      stop: () => {},
-      pause: () => {},
-      resume: () => {},
-      emit: () => {},
-    };
+    controller.engine = { stop: () => {}, pause: () => {}, resume: () => {}, emit: () => {} };
 
     spyOn(WorkersRegistry, 'hasBusyWorker').and.returnValue(false);
     spyOn(JobRegistry, 'clearQueues').and.stub();
@@ -282,6 +277,7 @@ describe('EngineController', () => {
         reloadConfig,
       });
       controller.engine = { emit: () => {} };
+      spyOn(controller.engine, 'emit');
     });
 
     it('sets the state to stopped', () => {
@@ -290,19 +286,10 @@ describe('EngineController', () => {
       expect(state.get()).toBe('stopped');
     });
 
-    it('emits a stop event on the engine', () => {
-      spyOn(controller.engine, 'emit');
-
+    it('emits stop and finish events on the engine', () => {
       controller.finishRun();
 
       expect(controller.engine.emit).toHaveBeenCalledWith('stop');
-    });
-
-    it('emits a finish event on the engine', () => {
-      spyOn(controller.engine, 'emit');
-
-      controller.finishRun();
-
       expect(controller.engine.emit).toHaveBeenCalledWith('finish');
     });
   });

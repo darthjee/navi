@@ -969,7 +969,7 @@ define-properties@^1.1.3, define-properties@^1.2.1:
     object-keys "^1.1.1"
 
 "deku-swarm@file:../worker":
-  version "1.6.2"
+  version "1.7.0"
 
 delayed-stream@~1.0.0:
   version "1.0.0"

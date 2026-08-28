@@ -159,12 +159,13 @@ describe('ApplicationInstance', () => {
         workersConfig: { sleep: 1 },
         failureConfig: { threshold: 30 },
       };
-    });
-
-    it('finalizes the run via EngineController once the engine finishes', async () => {
+      spyOn(LogRegistry, 'clearBuffers');
       spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
       spyOn(instance, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();
+    });
+
+    it('finalizes the run via EngineController once the engine finishes', async () => {
       spyOn(EngineController.prototype, 'finishRun').and.callThrough();
 
       await instance.run();
@@ -174,11 +175,6 @@ describe('ApplicationInstance', () => {
     });
 
     it('clears the log buffers when the engine emits stop', async () => {
-      spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
-      spyOn(instance, 'buildWebServer').and.returnValue(null);
-      spyOn(instance, 'enqueueFirstJobs').and.stub();
-      spyOn(LogRegistry, 'clearBuffers');
-
       await instance.run();
       instance.engine.emit('stop');
 
@@ -186,10 +182,6 @@ describe('ApplicationInstance', () => {
     });
 
     it('reports the run outcome when the engine emits finish', async () => {
-      spyOn(instance, 'buildEngine').and.returnValue(buildFakeEngine());
-      spyOn(instance, 'buildWebServer').and.returnValue(null);
-      spyOn(instance, 'enqueueFirstJobs').and.stub();
-
       await instance.run();
       instance.engine.emit('finish');
 
@@ -203,9 +195,7 @@ describe('ApplicationInstance', () => {
 
       it('boots paused and stopped instead of enqueueing and running', async () => {
         const engine = buildFakeEngine({ pause: jasmine.createSpy('pause') });
-        spyOn(instance, 'buildEngine').and.returnValue(engine);
-        spyOn(instance, 'buildWebServer').and.returnValue(null);
-        spyOn(instance, 'enqueueFirstJobs').and.stub();
+        instance.buildEngine.and.returnValue(engine);
 
         await instance.run();
 
