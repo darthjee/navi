@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
+import { WorkersAllocator } from './WorkersAllocator.js';
 import { JobRegistry } from '../background/JobRegistry.js';
 import { WorkersRegistry } from '../background/WorkersRegistry.js';
-import { WorkersAllocator } from './WorkersAllocator.js';
 
 /**
  * Engine is responsible for managing the job processing workflow.
