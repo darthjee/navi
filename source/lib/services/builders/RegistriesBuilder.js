@@ -22,10 +22,9 @@ class RegistriesBuilder {
    * Registers all job factories and builds the parser, job, and workers registries.
    * @param {object} params - Construction parameters.
    * @param {Config} params.config - The loaded application configuration.
-   * @param {IdentifyableCollection} [params.workers] - Workers collection (injected for testing).
    * @returns {void}
    */
-  build({ config, workers }) {
+  build({ config }) {
     JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: config.namespaceMap } });
     JobFactory.build('Action', { klass: ActionProcessingJob });
     JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
@@ -40,12 +39,11 @@ class RegistriesBuilder {
     JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: config.namespaceMap } });
 
-    JobRegistry.build({ cooldown: config.workersConfig.retryCooldown, maxRetries: config.workersConfig.maxRetries });
+    JobRegistry.ensureBuild({ cooldown: config.workersConfig.retryCooldown, maxRetries: config.workersConfig.maxRetries });
 
     const loggerFactory = ({ workerId, jobId }) => new LogContext({ workerId, jobId });
 
-    WorkersRegistry.build({
-      workers,
+    WorkersRegistry.ensureBuild({
       factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory }),
       ...config.workersConfig,
     });
