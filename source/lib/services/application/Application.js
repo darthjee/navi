@@ -89,14 +89,6 @@ class Application {
   }
 
   /**
-   * Builds and returns a new Engine instance.
-   * @returns {Engine} The created Engine instance.
-   */
-  static buildEngine() {
-    return Application.#getInstance().buildEngine();
-  }
-
-  /**
    * Builds and returns a WebServer or null.
    * @returns {WebServer|null} The created WebServer instance or null.
    */
