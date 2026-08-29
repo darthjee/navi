@@ -203,17 +203,15 @@ describe('EngineController', () => {
     });
   });
 
-  describe('#launch', () => {
+  describe('#start', () => {
     let localController;
 
-    beforeEach(() => {
-      localController = new EngineController({ state });
+    it('when built with shouldAutostart: true, sets state to running and starts without pausing', () => {
+      localController = new EngineController({ state, shouldAutostart: true });
       localController.engine = buildFakeEngine({ start: jasmine.createSpy('start').and.returnValue('start-result') });
       spyOn(localController.engine, 'pause');
-    });
 
-    it('when shouldAutostart is true, sets state to running and starts without pausing', () => {
-      const result = localController.launch(true);
+      const result = localController.start();
 
       expect(state.get()).toBe('running');
       expect(localController.engine.pause).not.toHaveBeenCalled();
@@ -221,8 +219,12 @@ describe('EngineController', () => {
       expect(result).toBe('start-result');
     });
 
-    it('when shouldAutostart is false, pauses, sets state to stopped, then starts', () => {
-      const result = localController.launch(false);
+    it('when built with shouldAutostart: false, pauses, sets state to stopped, then starts', () => {
+      localController = new EngineController({ state, shouldAutostart: false });
+      localController.engine = buildFakeEngine({ start: jasmine.createSpy('start').and.returnValue('start-result') });
+      spyOn(localController.engine, 'pause');
+
+      const result = localController.start();
 
       expect(localController.engine.pause).toHaveBeenCalled();
       expect(state.get()).toBe('stopped');
@@ -286,13 +288,13 @@ describe('EngineController', () => {
     });
   });
 
-  describe('#start', () => {
+  describe('#resumeProcessing', () => {
     it('starts without creating a new engine', async () => {
       await controller.stop();
       const originalEngine = controller.engine;
       spyOn(controller.engine, 'resume');
 
-      await controller.start();
+      await controller.resumeProcessing();
 
       expect(controller.engine).toBe(originalEngine);
       expect(controller.engine.resume).toHaveBeenCalled();
@@ -302,7 +304,7 @@ describe('EngineController', () => {
     it('does nothing when not stopped', async () => {
       spyOn(controller.engine, 'resume');
 
-      await controller.start();
+      await controller.resumeProcessing();
 
       expect(controller.engine.resume).not.toHaveBeenCalled();
       expect(state.get()).toBe('running');
@@ -311,13 +313,13 @@ describe('EngineController', () => {
     it('emits a start event on the engine', async () => {
       await controller.stop();
       spyOn(controller.engine, 'emit');
-      await controller.start();
+      await controller.resumeProcessing();
       expect(controller.engine.emit).toHaveBeenCalledWith('start');
     });
 
     it('enqueues the default set when no names are given', async () => {
       await controller.stop();
-      await controller.start();
+      await controller.resumeProcessing();
       expect(enqueueResources).toHaveBeenCalledWith([]);
     });
 
@@ -325,14 +327,14 @@ describe('EngineController', () => {
       await controller.stop();
       enqueueResources.and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
 
-      const result = await controller.start(['home_page']);
+      const result = await controller.resumeProcessing(['home_page']);
 
       expect(enqueueResources).toHaveBeenCalledWith(['home_page']);
       expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
     });
 
     it('returns undefined when not stopped', async () => {
-      const result = await controller.start();
+      const result = await controller.resumeProcessing();
       expect(result).toBeUndefined();
     });
 
@@ -341,7 +343,7 @@ describe('EngineController', () => {
         await controller.stop();
         spyOn(controller.engine, 'resume');
 
-        const result = await controller.start([], { enqueue: false });
+        const result = await controller.resumeProcessing([], { enqueue: false });
 
         expect(controller.engine.resume).toHaveBeenCalled();
         expect(state.get()).toBe('running');
@@ -352,7 +354,7 @@ describe('EngineController', () => {
       it('does not call the enqueueResources callback', async () => {
         await controller.stop();
 
-        await controller.start(['home_page'], { enqueue: false });
+        await controller.resumeProcessing(['home_page'], { enqueue: false });
 
         expect(enqueueResources).not.toHaveBeenCalled();
       });
@@ -361,71 +363,71 @@ describe('EngineController', () => {
         await controller.stop();
         spyOn(controller.engine, 'emit');
 
-        await controller.start([], { enqueue: false });
+        await controller.resumeProcessing([], { enqueue: false });
 
         expect(controller.engine.emit).toHaveBeenCalledWith('start');
       });
 
       it('returns undefined when not stopped', async () => {
-        const result = await controller.start([], { enqueue: false });
+        const result = await controller.resumeProcessing([], { enqueue: false });
         expect(result).toBeUndefined();
       });
     });
   });
 
   describe('#restart', () => {
-    it('stops then starts the engine, in order', async () => {
+    it('stops then resumes the engine, in order', async () => {
       spyOn(controller, 'stop').and.callThrough();
-      spyOn(controller, 'start').and.callThrough();
+      spyOn(controller, 'resumeProcessing').and.callThrough();
 
       await controller.restart();
 
-      expect(controller.stop).toHaveBeenCalledBefore(controller.start);
+      expect(controller.stop).toHaveBeenCalledBefore(controller.resumeProcessing);
       expect(state.get()).toBe('running');
     });
 
     it('does nothing when not running', async () => {
       state.set('stopped');
       spyOn(controller, 'stop');
-      spyOn(controller, 'start');
+      spyOn(controller, 'resumeProcessing');
 
       await controller.restart();
 
       expect(controller.stop).not.toHaveBeenCalled();
-      expect(controller.start).not.toHaveBeenCalled();
+      expect(controller.resumeProcessing).not.toHaveBeenCalled();
     });
   });
 
   describe('#reload', () => {
-    it('stops then starts the engine, in order', async () => {
+    it('stops then resumes the engine, in order', async () => {
       spyOn(controller, 'stop').and.callThrough();
-      spyOn(controller, 'start').and.callThrough();
+      spyOn(controller, 'resumeProcessing').and.callThrough();
 
       await controller.reload();
 
-      expect(controller.stop).toHaveBeenCalledBefore(controller.start);
+      expect(controller.stop).toHaveBeenCalledBefore(controller.resumeProcessing);
       expect(state.get()).toBe('running');
     });
 
-    it('calls the injected reloadConfig callback between stop and start', async () => {
+    it('calls the injected reloadConfig callback between stop and resumeProcessing', async () => {
       spyOn(controller, 'stop').and.callThrough();
-      spyOn(controller, 'start').and.callThrough();
+      spyOn(controller, 'resumeProcessing').and.callThrough();
 
       await controller.reload();
 
       expect(controller.stop).toHaveBeenCalledBefore(reloadConfig);
-      expect(reloadConfig).toHaveBeenCalledBefore(controller.start);
+      expect(reloadConfig).toHaveBeenCalledBefore(controller.resumeProcessing);
     });
 
     it('does nothing when not running', async () => {
       state.set('stopped');
       spyOn(controller, 'stop');
-      spyOn(controller, 'start');
+      spyOn(controller, 'resumeProcessing');
 
       await controller.reload();
 
       expect(controller.stop).not.toHaveBeenCalled();
-      expect(controller.start).not.toHaveBeenCalled();
+      expect(controller.resumeProcessing).not.toHaveBeenCalled();
       expect(reloadConfig).not.toHaveBeenCalled();
       expect(state.get()).toBe('stopped');
     });

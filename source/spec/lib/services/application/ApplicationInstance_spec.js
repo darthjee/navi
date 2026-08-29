@@ -159,21 +159,21 @@ describe('ApplicationInstance', () => {
       expect(result).toBe('continue-result');
     });
 
-    it('#start delegates to EngineController#start with the given names/options', async () => {
-      spyOn(EngineController.prototype, 'start').and.returnValue('start-result');
+    it('#start delegates to EngineController#resumeProcessing with the given names/options', async () => {
+      spyOn(EngineController.prototype, 'resumeProcessing').and.returnValue('start-result');
 
       const result = await instance.start(['home_page'], { enqueue: false });
 
-      expect(EngineController.prototype.start).toHaveBeenCalledWith(['home_page'], { enqueue: false });
+      expect(EngineController.prototype.resumeProcessing).toHaveBeenCalledWith(['home_page'], { enqueue: false });
       expect(result).toBe('start-result');
     });
 
     it('#start defaults names/options when called with no arguments', async () => {
-      spyOn(EngineController.prototype, 'start').and.returnValue('start-result');
+      spyOn(EngineController.prototype, 'resumeProcessing').and.returnValue('start-result');
 
       await instance.start();
 
-      expect(EngineController.prototype.start).toHaveBeenCalledWith([], {});
+      expect(EngineController.prototype.resumeProcessing).toHaveBeenCalledWith([], {});
     });
 
     it('#restart delegates to EngineController#restart', async () => {
