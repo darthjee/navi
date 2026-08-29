@@ -1,10 +1,10 @@
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ResourceQueueFacade } from './ResourceQueueFacade.js';
-import { WebServer } from '../../server/WebServer.js';
 import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
 import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { EngineController } from '../engine/EngineController.js';
 import { EngineState } from '../engine/EngineState.js';
+import { ServerController } from '../engine/ServerController.js';
 import { RunReporter } from '../execution/RunReporter.js';
 
 /**
@@ -22,6 +22,7 @@ class ApplicationInstance {
   #sleepMs;
   #configStore;
   #engineController;
+  #serverController;
   #resourceQueueFacade;
 
   /**
@@ -70,29 +71,19 @@ class ApplicationInstance {
       enqueueResources: names => this.enqueueResources(names),
       reporter: this.#reporter,
     });
-    this.webServer = this.buildWebServer();
-    this.#engineController.webServer = this.webServer;
+    this.#serverController = ServerController.build({ webConfig: this.config.webConfig });
+    this.#engineController.serverController = this.#serverController;
 
     if (this.#shouldAutostart()) {
       this.enqueueFirstJobs();
     }
 
-    this.#aggregator.add(this.webServer?.start());
+    this.#aggregator.add(this.#serverController.start());
     this.#enginePromise = this.#engineController.launch(this.#shouldAutostart());
     this.#aggregator.add(this.#enginePromise);
 
     await this.#aggregator.wait();
     this.#engineController.finishRun();
-  }
-
-  /**
-   * Builds and returns a WebServer if web configuration is present, otherwise null.
-   * @returns {WebServer|null} The created WebServer instance or null.
-   */
-  buildWebServer() {
-    return WebServer.build({
-      webConfig: this.config.webConfig,
-    });
   }
 
   /**
