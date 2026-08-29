@@ -1,4 +1,5 @@
-import { JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { LogRegistry } from '../../registry/LogRegistry.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
 
@@ -14,6 +15,7 @@ class EngineController {
   #sleepMs;
   #reloadConfig;
   #enqueueResources;
+  #reporter;
 
   engine;
   webServer;
@@ -32,6 +34,30 @@ class EngineController {
     this.#sleepMs = sleepMs;
     this.#reloadConfig = reloadConfig;
     this.#enqueueResources = enqueueResources;
+  }
+
+  /**
+   * Builds and returns a new Engine instance wired to the current registries.
+   * @returns {Engine} The created Engine instance.
+   */
+  buildEngine() {
+    return new Engine({
+      sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
+      keepAlive: !!this.config.webConfig,
+      idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
+      onIdleTimeout: () => this.shutdown(),
+    });
+  }
+
+  /**
+   * Stores the given reporter and wires the engine's `stop`/`finish` event listeners.
+   * @param {RunReporter} reporter - Run summary/failure-check collaborator.
+   * @returns {void}
+   */
+  bind(reporter) {
+    this.#reporter = reporter;
+    this.engine.on('stop', () => LogRegistry.clearBuffers());
+    this.engine.on('finish', () => this.#reporter.report({ failureConfig: this.config.failureConfig }));
   }
 
   /**
