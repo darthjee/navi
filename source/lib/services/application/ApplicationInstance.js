@@ -1,6 +1,6 @@
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ResourceQueueFacade } from './ResourceQueueFacade.js';
-import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
+import { StartupCoordinator } from './StartupCoordinator.js';
 import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { EngineController } from '../engine/EngineController.js';
 import { EngineState } from '../engine/EngineState.js';
@@ -17,8 +17,7 @@ class ApplicationInstance {
   #registriesBuilder;
   #configurator;
   #reporter;
-  #aggregator;
-  #enginePromise;
+  #startupCoordinator;
   #sleepMs;
   #configStore;
   #engineController;
@@ -61,7 +60,7 @@ class ApplicationInstance {
    * @returns {Promise<void>}
    */
   async run() {
-    this.#aggregator = new PromiseAggregator();
+    this.#startupCoordinator = new StartupCoordinator();
     this.#sleepMs = this.config.workersConfig.sleep;
 
     this.#engineController = EngineController.build({
@@ -70,6 +69,7 @@ class ApplicationInstance {
       sleepMs: this.#sleepMs,
       enqueueResources: names => this.enqueueResources(names),
       reporter: this.#reporter,
+      shouldAutostart: this.#shouldAutostart(),
     });
     this.#serverController = ServerController.build({ webConfig: this.config.webConfig });
     this.#engineController.serverController = this.#serverController;
@@ -78,11 +78,9 @@ class ApplicationInstance {
       this.enqueueFirstJobs();
     }
 
-    this.#aggregator.add(this.#serverController.start());
-    this.#enginePromise = this.#engineController.launch(this.#shouldAutostart());
-    this.#aggregator.add(this.#enginePromise);
+    this.#startupCoordinator.startAll([this.#serverController, this.#engineController]);
 
-    await this.#aggregator.wait();
+    await this.#startupCoordinator.wait();
     this.#engineController.finishRun();
   }
 
@@ -203,7 +201,7 @@ class ApplicationInstance {
    * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
   async start(names = [], options = {}) {
-    return this.#engineController.start(names, options);
+    return this.#engineController.resumeProcessing(names, options);
   }
 
   /**

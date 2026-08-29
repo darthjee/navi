@@ -18,6 +18,7 @@ class EngineController {
   #reloadConfig;
   #enqueueResources;
   #reporter;
+  #shouldAutostart;
 
   engine;
 
@@ -34,14 +35,16 @@ class EngineController {
    * @param {Config} [params.config] - The application's loaded configuration.
    * @param {number} [params.sleepMs] - Poll interval in ms for idle-wait.
    * @param {Function} [params.reloadConfig] - Callback invoked by `reload()` to re-read config.
-   * @param {Function} [params.enqueueResources] - Callback invoked by `start()` to enqueue resources by name.
+   * @param {Function} [params.enqueueResources] - Callback invoked by `resumeProcessing()` to enqueue resources by name.
+   * @param {boolean} [params.shouldAutostart] - Whether `start()` should begin processing immediately.
    */
-  constructor({ state, config, sleepMs, reloadConfig, enqueueResources } = {}) {
+  constructor({ state, config, sleepMs, reloadConfig, enqueueResources, shouldAutostart } = {}) {
     this.#state = state;
     this.config = config;
     this.#sleepMs = sleepMs;
     this.#reloadConfig = reloadConfig;
     this.#enqueueResources = enqueueResources;
+    this.#shouldAutostart = shouldAutostart;
   }
 
   /**
@@ -51,17 +54,19 @@ class EngineController {
    * @param {EngineState} params.state - Shared engine status state machine.
    * @param {ConfigStore} params.configStore - Config-load output holder.
    * @param {number} params.sleepMs - Poll interval in ms for idle-wait.
-   * @param {Function} params.enqueueResources - Callback invoked by `start()` to enqueue resources by name.
+   * @param {Function} params.enqueueResources - Callback invoked by `resumeProcessing()` to enqueue resources by name.
    * @param {RunReporter} params.reporter - Run summary/failure-check collaborator.
+   * @param {boolean} params.shouldAutostart - Whether `start()` should begin processing immediately.
    * @returns {EngineController} The built and bound EngineController instance.
    */
-  static build({ state, configStore, sleepMs, enqueueResources, reporter }) {
+  static build({ state, configStore, sleepMs, enqueueResources, reporter, shouldAutostart }) {
     const controller = new EngineController({
       state,
       config: configStore.config,
       sleepMs,
       reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(configStore.entryFilePath)),
       enqueueResources,
+      shouldAutostart,
     });
 
     controller.engine = controller.buildEngine();
@@ -95,12 +100,12 @@ class EngineController {
 
   /**
    * Kicks off the engine loop for the first time, either paused (with status set to
-   * `stopped`) or running (with status set to `running`), depending on autostart.
-   * @param {boolean} shouldAutostart - Whether the engine should start processing immediately.
+   * `stopped`) or running (with status set to `running`), depending on the
+   * `shouldAutostart` flag stored at construction/build time.
    * @returns {Promise<void>} The engine's run-loop promise.
    */
-  launch(shouldAutostart) {
-    if (!shouldAutostart) {
+  start() {
+    if (!this.#shouldAutostart) {
       this.engine.pause();
       this.#state.set('stopped');
       return this.engine.start();
@@ -147,7 +152,7 @@ class EngineController {
   }
 
   /**
-   * Starts processing from a stopped state by calling engine.resume() and enqueueing resources.
+   * Resumes processing from a stopped state by calling engine.resume() and enqueueing resources.
    * No new engine is created; the existing loop continues.
    * Only valid when status is 'stopped'.
    * @param {Array<string>} [names=[]] - Resource names to enqueue; omit/empty for the default set.
@@ -157,7 +162,7 @@ class EngineController {
    * flows) that manage their own enqueueing afterwards.
    * @returns {Promise<{enqueued: Array<string>, skippedResources: Array<object>}|undefined>} The enqueue result, or undefined when not stopped.
    */
-  async start(names = [], { enqueue = true } = {}) {
+  async resumeProcessing(names = [], { enqueue = true } = {}) {
     if (!this.#state.isStopped()) return undefined;
     this.engine.resume();
     this.#state.set('running');
@@ -174,7 +179,7 @@ class EngineController {
   async restart() {
     if (!this.#state.isRunning()) return;
     await this.stop();
-    await this.start();
+    await this.resumeProcessing();
   }
 
   /**
@@ -187,7 +192,7 @@ class EngineController {
     if (!this.#state.isRunning()) return;
     await this.stop();
     this.#reloadConfig();
-    await this.start();
+    await this.resumeProcessing();
   }
 
   /**
