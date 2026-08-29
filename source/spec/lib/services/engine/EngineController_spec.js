@@ -436,15 +436,15 @@ describe('EngineController', () => {
       spyOn(controller.engine, 'stop');
     });
 
-    describe('when a web server is present', () => {
+    describe('when a server controller is present', () => {
       beforeEach(() => {
-        controller.webServer = { shutdown: jasmine.createSpy('shutdown') };
+        controller.serverController = { shutdown: jasmine.createSpy('shutdown') };
       });
 
-      it('shuts down the web server', async () => {
+      it('shuts down the server controller', async () => {
         await controller.shutdown();
 
-        expect(controller.webServer.shutdown).toHaveBeenCalled();
+        expect(controller.serverController.shutdown).toHaveBeenCalled();
       });
 
       it('stops the engine', async () => {
@@ -454,9 +454,9 @@ describe('EngineController', () => {
       });
     });
 
-    describe('when there is no web server', () => {
+    describe('when there is no server controller', () => {
       beforeEach(() => {
-        controller.webServer = null;
+        controller.serverController = null;
       });
 
       it('does not throw', async () => {

@@ -20,7 +20,13 @@ class EngineController {
   #reporter;
 
   engine;
-  webServer;
+
+  /**
+   * The server controller wrapping the optional web server, wired in
+   * externally by `ApplicationInstance` once both have been built.
+   * @type {ServerController|undefined}
+   */
+  serverController;
 
   /**
    * @param {object} [params={}] - Dependency injection parameters.
@@ -190,7 +196,7 @@ class EngineController {
    * @returns {Promise<void>}
    */
   async shutdown() {
-    this.webServer?.shutdown();
+    this.serverController?.shutdown();
     if (this.#state.isRunning()) {
       await this.stop();
     }
