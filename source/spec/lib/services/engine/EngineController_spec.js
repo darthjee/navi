@@ -1,7 +1,34 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
+import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { EngineState } from '../../../../lib/services/engine/EngineState.js';
+
+/**
+ * Builds a minimal fake Engine test double that supports the `on`/`emit`
+ * listener API, so specs can assert on listener wiring without depending on
+ * the real Engine implementation.
+ * @param {object} [overrides={}] - Properties to override on the fake engine.
+ * @returns {object} The fake engine instance.
+ */
+function buildFakeEngine(overrides = {}) {
+  const handlers = {};
+
+  return {
+    start: async () => {},
+    pause: () => {},
+    resume: () => {},
+    stop: () => {},
+    on: (eventName, handler) => {
+      handlers[eventName] = handler;
+    },
+    emit: (eventName, ...args) => {
+      handlers[eventName]?.(...args);
+    },
+    ...overrides,
+  };
+}
 
 describe('EngineController', () => {
   let controller;
@@ -26,6 +53,182 @@ describe('EngineController', () => {
   afterEach(() => {
     JobRegistry.reset();
     LogRegistry.reset();
+  });
+
+  describe('#buildEngine', () => {
+    beforeEach(() => {
+      spyOn(JobRegistry, 'hasReadyJob').and.returnValue(false);
+      spyOn(JobRegistry, 'hasJob').and.returnValue(false);
+    });
+
+    it('wires web.idle_timeout into the built Engine and calls shutdown() once it expires', async () => {
+      // 1ms — idle_timeout=0 means "disabled", so use the smallest enabled value
+      const localController = new EngineController({
+        state,
+        config: { workersConfig: { sleep: -1 }, webConfig: { idleTimeout: 0.001 } },
+      });
+      spyOn(localController, 'shutdown');
+
+      const engine = localController.buildEngine();
+
+      let iterations = 0;
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+        iterations++;
+        // stop as soon as shutdown() fired; a generous safety net avoids a
+        // hang if the implementation is broken and it never fires at all.
+        if (localController.shutdown.calls.count() > 0 || iterations >= 20000) engine.stop();
+      });
+
+      await engine.start();
+
+      expect(localController.shutdown).toHaveBeenCalled();
+    });
+
+    it('does not shut down before a larger configured idle_timeout has elapsed', async () => {
+      const localController = new EngineController({
+        state,
+        config: { workersConfig: { sleep: -1 }, webConfig: { idleTimeout: 60 } },
+      });
+      spyOn(localController, 'shutdown');
+
+      const engine = localController.buildEngine();
+
+      let iterations = 0;
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+        iterations++;
+        if (iterations >= 5) engine.stop();
+      });
+
+      await engine.start();
+
+      expect(localController.shutdown).not.toHaveBeenCalled();
+    });
+
+    it('disables idle-timeout tracking when there is no web config', async () => {
+      const localController = new EngineController({
+        state,
+        config: { workersConfig: { sleep: -1 } },
+      });
+      spyOn(localController, 'shutdown');
+
+      const engine = localController.buildEngine();
+
+      let iterations = 0;
+      spyOn(JobRegistry, 'promoteReadyJobs').and.callFake(() => {
+        iterations++;
+        if (iterations >= 5) engine.stop();
+      });
+
+      await engine.start();
+
+      expect(localController.shutdown).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('#bind', () => {
+    let reporter;
+    let localController;
+
+    beforeEach(() => {
+      reporter = jasmine.createSpyObj('RunReporter', ['report']);
+      localController = new EngineController({
+        state,
+        config: { failureConfig: { threshold: 30 } },
+      });
+      localController.engine = buildFakeEngine();
+      spyOn(LogRegistry, 'clearBuffers');
+    });
+
+    it('clears the log buffers when the engine emits stop', () => {
+      localController.bind(reporter);
+      localController.engine.emit('stop');
+
+      expect(LogRegistry.clearBuffers).toHaveBeenCalled();
+    });
+
+    it('reports the run outcome when the engine emits finish', () => {
+      localController.bind(reporter);
+      localController.engine.emit('finish');
+
+      expect(reporter.report).toHaveBeenCalledWith({ failureConfig: { threshold: 30 } });
+    });
+  });
+
+  describe('.build', () => {
+    it('builds an engine and binds the given reporter', () => {
+      const configStore = { config: { workersConfig: { sleep: 5 } }, entryFilePath: '/some/path.yml' };
+      const reporter = jasmine.createSpyObj('RunReporter', ['report']);
+      const fakeEngine = buildFakeEngine();
+
+      spyOn(EngineController.prototype, 'buildEngine').and.returnValue(fakeEngine);
+      spyOn(EngineController.prototype, 'bind').and.callThrough();
+
+      const builtController = EngineController.build({
+        state,
+        configStore,
+        sleepMs: 5,
+        enqueueResources,
+        reporter,
+      });
+
+      expect(EngineController.prototype.buildEngine).toHaveBeenCalled();
+      expect(EngineController.prototype.bind).toHaveBeenCalledWith(reporter);
+      expect(builtController.engine).toBe(fakeEngine);
+      expect(builtController.config).toBe(configStore.config);
+    });
+
+    it('wires reloadConfig to merge the resolved config include into the NamespaceMap', async () => {
+      const configStore = { config: {}, entryFilePath: '/some/path.yml' };
+      const reporter = jasmine.createSpyObj('RunReporter', ['report']);
+      const localState = new EngineState();
+      localState.set('running');
+
+      spyOn(EngineController.prototype, 'buildEngine').and.returnValue(buildFakeEngine());
+      spyOn(EngineController.prototype, 'bind').and.stub();
+      spyOn(ConfigIncluder, 'resolve').and.returnValue('resolved-config');
+      spyOn(NamespaceMap, 'include').and.stub();
+
+      const builtController = EngineController.build({
+        state: localState,
+        configStore,
+        sleepMs: 0,
+        enqueueResources,
+        reporter,
+      });
+
+      await builtController.reload();
+
+      expect(ConfigIncluder.resolve).toHaveBeenCalledWith(configStore.entryFilePath);
+      expect(NamespaceMap.include).toHaveBeenCalledWith('resolved-config');
+    });
+  });
+
+  describe('#launch', () => {
+    let localController;
+
+    beforeEach(() => {
+      localController = new EngineController({ state });
+      localController.engine = buildFakeEngine({ start: jasmine.createSpy('start').and.returnValue('start-result') });
+      spyOn(localController.engine, 'pause');
+    });
+
+    it('when shouldAutostart is true, sets state to running and starts without pausing', () => {
+      const result = localController.launch(true);
+
+      expect(state.get()).toBe('running');
+      expect(localController.engine.pause).not.toHaveBeenCalled();
+      expect(localController.engine.start).toHaveBeenCalled();
+      expect(result).toBe('start-result');
+    });
+
+    it('when shouldAutostart is false, pauses, sets state to stopped, then starts', () => {
+      const result = localController.launch(false);
+
+      expect(localController.engine.pause).toHaveBeenCalled();
+      expect(state.get()).toBe('stopped');
+      expect(localController.engine.start).toHaveBeenCalled();
+      expect(result).toBe('start-result');
+    });
   });
 
   describe('#pause', () => {
