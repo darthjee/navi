@@ -8,17 +8,17 @@
 
 Cache Warmer Tool
 
-**Current Version:** [1.8.1](https://github.com/darthjee/navi/releases/tag/1.8.1)
+**Current Version:** [1.8.2](https://github.com/darthjee/navi/releases/tag/1.8.2)
 
-**Next Release:** [1.8.2](https://github.com/darthjee/navi/compare/1.8.1...main)
+**Next Release:** [1.8.3](https://github.com/darthjee/navi/compare/1.8.2...main)
 
 **Client Current Version:** [0.1.2](https://github.com/darthjee/navi/releases/tag/client-0.1.2)
 
 **Client Next Version:** [0.1.3](https://github.com/darthjee/navi/compare/client-0.1.2...main)
 
-**Worker Current Version:** [1.8.0](https://github.com/darthjee/navi/releases/tag/worker-1.8.0)
+**Worker Current Version:** [1.8.2](https://github.com/darthjee/navi/releases/tag/worker-1.8.2)
 
-**Worker Next Version:** [1.8.1](https://github.com/darthjee/navi/compare/worker-1.8.0...main)
+**Worker Next Version:** [1.8.3](https://github.com/darthjee/navi/compare/worker-1.8.2...main)
 
 Tagging a navi release now automatically publishes `deku-swarm` to npm and pushes a matching `worker-x.y.z` tag whenever `worker/` changed since the last worker release (or `force_worker_build` was explicitly set for that pipeline run) and that version isn't already published — no separate manual worker release step is needed anymore. Use `bump_version.sh worker [version]` beforehand to bump the worker version and the badges above. `force_worker_build` is a CircleCI pipeline parameter that can only be set by explicitly triggering a pipeline (UI/API "Trigger Pipeline"), not by a normal tag push.
 
