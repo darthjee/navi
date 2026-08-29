@@ -1,12 +1,8 @@
-import { Engine } from 'deku-swarm';
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ResourceQueueFacade } from './ResourceQueueFacade.js';
-import { LogRegistry } from '../../registry/LogRegistry.js';
-import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { WebServer } from '../../server/WebServer.js';
 import { PromiseAggregator } from '../../utils/PromiseAggregator.js';
 import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
-import { ConfigIncluder } from '../config/ConfigIncluder.js';
 import { EngineController } from '../engine/EngineController.js';
 import { EngineState } from '../engine/EngineState.js';
 import { RunReporter } from '../execution/RunReporter.js';
@@ -67,48 +63,26 @@ class ApplicationInstance {
     this.#aggregator = new PromiseAggregator();
     this.#sleepMs = this.config.workersConfig.sleep;
 
-    this.#engineController = new EngineController({
+    this.#engineController = EngineController.build({
       state: this.#state,
-      config: this.config,
+      configStore: this.#configStore,
       sleepMs: this.#sleepMs,
-      reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(this.#configStore.entryFilePath)),
       enqueueResources: names => this.enqueueResources(names),
+      reporter: this.#reporter,
     });
-
-    this.engine = this.buildEngine();
-    this.engine.on('stop', () => LogRegistry.clearBuffers());
-    this.engine.on('finish', () => this.#reporter.report({ failureConfig: this.config.failureConfig }));
     this.webServer = this.buildWebServer();
-    this.#engineController.engine = this.engine;
     this.#engineController.webServer = this.webServer;
 
     if (this.#shouldAutostart()) {
       this.enqueueFirstJobs();
-      this.#state.set('running');
-    } else {
-      this.engine.pause();
-      this.#state.set('stopped');
     }
 
     this.#aggregator.add(this.webServer?.start());
-    this.#enginePromise = this.engine.start();
+    this.#enginePromise = this.#engineController.launch(this.#shouldAutostart());
     this.#aggregator.add(this.#enginePromise);
 
     await this.#aggregator.wait();
     this.#engineController.finishRun();
-  }
-
-  /**
-   * Builds and returns a new Engine instance wired to the current registries.
-   * @returns {Engine} The created Engine instance.
-   */
-  buildEngine() {
-    return new Engine({
-      sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
-      keepAlive: !!this.config.webConfig,
-      idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
-      onIdleTimeout: () => this.shutdown(),
-    });
   }
 
   /**
