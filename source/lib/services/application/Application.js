@@ -89,14 +89,6 @@ class Application {
   }
 
   /**
-   * Builds and returns a WebServer or null.
-   * @returns {WebServer|null} The created WebServer instance or null.
-   */
-  static buildWebServer() {
-    return Application.#getInstance().buildWebServer();
-  }
-
-  /**
    * Enqueues all parameter-free ResourceRequests.
    * @returns {void}
    */

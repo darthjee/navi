@@ -107,26 +107,6 @@ describe('Application', () => {
 
       expect(JobRegistry.hasJob()).toBeFalse();
     });
-
-    it('sets webServer to null when no web config is present', async () => {
-      await app.run();
-
-      expect(app.webServer).toBeNull();
-    });
-  });
-
-  describe('#buildWebServer', () => {
-    it('returns null when config has no web key', () => {
-      loadApplication('config/sample_config.yml');
-
-      expect(app.buildWebServer()).toBeNull();
-    });
-
-    it('returns a web server instance when config has a web key', () => {
-      loadApplication('config/sample_config_with_web.yml');
-
-      expect(app.buildWebServer()).not.toBeNull();
-    });
   });
 
   [

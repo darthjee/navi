@@ -2,6 +2,7 @@ import { JobRegistry } from 'deku-swarm';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
+import { ServerController } from '../../../../lib/services/engine/ServerController.js';
 
 /**
  * Builds a minimal fake Engine test double that supports the `on`/`emit`
@@ -90,7 +91,7 @@ describe('ApplicationInstance', () => {
       instance.setStatus('running');
       spyOn(LogRegistry, 'clearBuffers');
       spyOn(EngineController.prototype, 'buildEngine').and.returnValue(buildFakeEngine());
-      spyOn(instance, 'buildWebServer').and.returnValue(null);
+      spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();
     });
 
@@ -124,7 +125,7 @@ describe('ApplicationInstance', () => {
     beforeEach(async () => {
       instance = buildInstanceWithConfig({ workersConfig: { sleep: 1 }, failureConfig: {} });
       spyOn(EngineController.prototype, 'buildEngine').and.returnValue(buildFakeEngine());
-      spyOn(instance, 'buildWebServer').and.returnValue(null);
+      spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();
       spyOn(EngineController.prototype, 'finishRun').and.stub();
 
