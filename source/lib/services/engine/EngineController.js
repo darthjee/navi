@@ -1,4 +1,7 @@
-import { JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { LogRegistry } from '../../registry/LogRegistry.js';
+import { NamespaceMap } from '../../registry/NamespaceMap.js';
+import { ConfigIncluder } from '../config/ConfigIncluder.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
 
@@ -14,6 +17,7 @@ class EngineController {
   #sleepMs;
   #reloadConfig;
   #enqueueResources;
+  #reporter;
 
   engine;
   webServer;
@@ -32,6 +36,71 @@ class EngineController {
     this.#sleepMs = sleepMs;
     this.#reloadConfig = reloadConfig;
     this.#enqueueResources = enqueueResources;
+  }
+
+  /**
+   * Builds a fully wired `EngineController`: constructs it, builds its `Engine`,
+   * and binds the given reporter's `stop`/`finish` event listeners.
+   * @param {object} params - Build parameters.
+   * @param {EngineState} params.state - Shared engine status state machine.
+   * @param {ConfigStore} params.configStore - Config-load output holder.
+   * @param {number} params.sleepMs - Poll interval in ms for idle-wait.
+   * @param {Function} params.enqueueResources - Callback invoked by `start()` to enqueue resources by name.
+   * @param {RunReporter} params.reporter - Run summary/failure-check collaborator.
+   * @returns {EngineController} The built and bound EngineController instance.
+   */
+  static build({ state, configStore, sleepMs, enqueueResources, reporter }) {
+    const controller = new EngineController({
+      state,
+      config: configStore.config,
+      sleepMs,
+      reloadConfig: () => NamespaceMap.include(ConfigIncluder.resolve(configStore.entryFilePath)),
+      enqueueResources,
+    });
+
+    controller.engine = controller.buildEngine();
+    controller.bind(reporter);
+    return controller;
+  }
+
+  /**
+   * Builds and returns a new Engine instance wired to the current registries.
+   * @returns {Engine} The created Engine instance.
+   */
+  buildEngine() {
+    return new Engine({
+      sleepMs: this.#sleepMs ?? this.config.workersConfig.sleep,
+      keepAlive: !!this.config.webConfig,
+      idleTimeoutMs: (this.config.webConfig?.idleTimeout ?? 0) * 1000,
+      onIdleTimeout: () => this.shutdown(),
+    });
+  }
+
+  /**
+   * Stores the given reporter and wires the engine's `stop`/`finish` event listeners.
+   * @param {RunReporter} reporter - Run summary/failure-check collaborator.
+   * @returns {void}
+   */
+  bind(reporter) {
+    this.#reporter = reporter;
+    this.engine.on('stop', () => LogRegistry.clearBuffers());
+    this.engine.on('finish', () => this.#reporter.report({ failureConfig: this.config.failureConfig }));
+  }
+
+  /**
+   * Kicks off the engine loop for the first time, either paused (with status set to
+   * `stopped`) or running (with status set to `running`), depending on autostart.
+   * @param {boolean} shouldAutostart - Whether the engine should start processing immediately.
+   * @returns {Promise<void>} The engine's run-loop promise.
+   */
+  launch(shouldAutostart) {
+    if (!shouldAutostart) {
+      this.engine.pause();
+      this.#state.set('stopped');
+      return this.engine.start();
+    }
+    this.#state.set('running');
+    return this.engine.start();
   }
 
   /**

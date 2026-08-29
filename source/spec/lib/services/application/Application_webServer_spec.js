@@ -1,6 +1,7 @@
 import { JobFactory, JobRegistry, WorkersRegistry, Engine } from 'deku-swarm';
 import { WebServer } from '../../../../lib/server/WebServer.js';
 import { Application } from '../../../../lib/services/application/Application.js';
+import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { Logger } from '../../../../lib/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../../support/dummies/factories/DummyWorkerFactory.js';
@@ -38,6 +39,7 @@ describe('Application web server integration', () => {
       let runResolved = false;
       let webServerStartResolved = false;
       let resolveWebServerStart;
+      let engine;
 
       const webServerPromise = new Promise((resolve) => {
         resolveWebServerStart = resolve;
@@ -48,12 +50,15 @@ describe('Application web server integration', () => {
           webServerStartResolved = true;
         });
       });
-      spyOn(app, 'buildEngine').and.callFake(() => new Engine({
-        jobRegistry: JobRegistry,
-        workersRegistry: WorkersRegistry,
-        keepAlive: true,
-        sleepMs: 1,
-      }));
+      spyOn(EngineController.prototype, 'buildEngine').and.callFake(() => {
+        engine = new Engine({
+          jobRegistry: JobRegistry,
+          workersRegistry: WorkersRegistry,
+          keepAlive: true,
+          sleepMs: 1,
+        });
+        return engine;
+      });
 
       const runPromise = app.run().then(() => {
         runResolved = true;
@@ -64,7 +69,7 @@ describe('Application web server integration', () => {
       expect(runResolved).toBeFalse();
 
       resolveWebServerStart();
-      app.engine.stop();
+      engine.stop();
       await runPromise;
 
       expect(webServerStartResolved).toBeTrue();
