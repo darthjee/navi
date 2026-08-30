@@ -1,8 +1,8 @@
 import { ClientReference } from './ClientReference.js';
-import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
-import { MissingEmitUrl } from '../../exceptions/config/MissingEmitUrl.js';
-import { InvalidEmitRetries } from '../../exceptions/config/InvalidEmitRetries.js';
 import { InvalidEmitCooldown } from '../../exceptions/config/InvalidEmitCooldown.js';
+import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
+import { InvalidEmitRetries } from '../../exceptions/config/InvalidEmitRetries.js';
+import { MissingEmitUrl } from '../../exceptions/config/MissingEmitUrl.js';
 
 /**
  * The set of supported `emit.method` values.
