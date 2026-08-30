@@ -28,18 +28,31 @@ describe('EmitEnqueuer', () => {
 
       it('calls enqueue once with the Emit factory key, item, emit and parameters', () => {
         new EmitEnqueuer([item], emit, parameters).enqueue();
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Emit', { item, emit, parameters });
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Emit', {
+          item, emit, parameters, extractionId: null,
+        });
+      });
+
+      it('forwards the given extractionId in the enqueue payload', () => {
+        new EmitEnqueuer([item], emit, parameters, JobRegistry, 42).enqueue();
+        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('Emit', {
+          item, emit, parameters, extractionId: 42,
+        });
       });
     });
 
     describe('when there are multiple items', () => {
       const items = [{ id: 1 }, { id: 2 }];
 
-      it('calls enqueue once per item, forwarding the same emit and parameters', () => {
-        new EmitEnqueuer(items, emit, parameters).enqueue();
+      it('calls enqueue once per item, forwarding the same emit, parameters and extractionId', () => {
+        new EmitEnqueuer(items, emit, parameters, JobRegistry, 7).enqueue();
         expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Emit', { item: { id: 1 }, emit, parameters });
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Emit', { item: { id: 2 }, emit, parameters });
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Emit', {
+          item: { id: 1 }, emit, parameters, extractionId: 7,
+        });
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith('Emit', {
+          item: { id: 2 }, emit, parameters, extractionId: 7,
+        });
       });
     });
 

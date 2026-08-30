@@ -10,7 +10,8 @@ describe('EmissionRecord', () => {
       method: 'POST',
       httpStatus: 200,
       error: null,
-      itemRef: 'abc123'
+      itemRef: 'abc123',
+      extractionId: 7
     });
   });
 
@@ -43,6 +44,10 @@ describe('EmissionRecord', () => {
       expect(record.itemRef).toBe('abc123');
     });
 
+    it('creates a record with the given extractionId', () => {
+      expect(record.extractionId).toBe(7);
+    });
+
     it('creates a record with a timestamp', () => {
       expect(record.timestamp).toBeInstanceOf(Date);
     });
@@ -68,6 +73,10 @@ describe('EmissionRecord', () => {
 
       it('defaults itemRef to null', () => {
         expect(minimalRecord.itemRef).toBeNull();
+      });
+
+      it('defaults extractionId to null', () => {
+        expect(minimalRecord.extractionId).toBeNull();
       });
     });
   });
@@ -114,6 +123,10 @@ describe('EmissionRecord', () => {
 
     it('returns an object with the record itemRef', () => {
       expect(record.toJSON().itemRef).toBe('abc123');
+    });
+
+    it('returns an object with the record extractionId', () => {
+      expect(record.toJSON().extractionId).toBe(7);
     });
 
     it('returns an object with the timestamp as ISO string', () => {

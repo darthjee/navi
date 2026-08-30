@@ -35,7 +35,9 @@ The `ExtractionJob` is **parallel** to existing jobs — it does not replace cha
 5. **Maintain backward compatibility** — existing cache-warming configurations continue to work without modification
 6. **Reuse the existing clients infrastructure** — the `EmitJob` references a `client` from the YAML to know where to send data
 7. **Track and observe emissions** — aggregate `extracted`/`emitted`/`failed`/`dead` counters plus a per-emission ring buffer, exposed at `GET /emissions.json` and summarised in `GET /stats.json` (**implemented**, #703)
+8. **Track and observe extractions** — a per-extraction-run ring buffer (`parserType`, `originUrl`, `itemCount`) with a monotonic `extracted` counter, exposed at `GET /extractions.json`; every emission record additionally carries an `extractionId` linking it back to the extraction that produced it (**implemented**, #704)
 
 ## Status
 
 - Emission tracking / observability (counters + ring buffer + `GET /emissions.json`) is **implemented** (#703), built on the `#698` `MemoryDataStore` ring-buffer pattern. Sized by the top-level `emit.size` config (default 100); data resets on engine stop.
+- Extraction tracking / observability (per-extraction ring buffer + monotonic `extracted` counter + `GET /extractions.json`, plus an `extractionId` link on every emission record) is **implemented** (#704), a structural copy of the #703 emission store. Sized by the top-level `extraction.size` config (default 100); data resets on engine stop. The emission↔extraction join is best-effort — bounded by each ring buffer's retention.

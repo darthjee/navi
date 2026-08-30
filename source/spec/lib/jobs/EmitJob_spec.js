@@ -388,6 +388,38 @@ describe('EmitJob', () => {
           expect(record.httpStatus).toBeNull();
         });
       });
+
+      describe('when the job carries an extractionId', () => {
+        beforeEach(() => {
+          job = EmitJobFactory.build({ item, emit, clients, parameters: {}, extractionId: 99 });
+        });
+
+        it('stamps extractionId on a success emission', async () => {
+          response = AxiosUtils.stubPost(200, {});
+
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.getRecords()[0].extractionId).toBe(99);
+        });
+
+        it('stamps extractionId on a failed emission', async () => {
+          AxiosUtils.stubPostRejection({ response: { status: 502 } });
+
+          await job.perform(logContext).catch(() => {});
+
+          expect(EmissionRegistry.getRecords()[0].extractionId).toBe(99);
+        });
+      });
+
+      describe('when the job carries no extractionId', () => {
+        it('records a null extractionId', async () => {
+          response = AxiosUtils.stubPost(200, {});
+
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.getRecords()[0].extractionId).toBeNull();
+        });
+      });
     });
 
     describe('when the registry has not been built', () => {

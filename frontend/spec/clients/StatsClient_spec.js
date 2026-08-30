@@ -7,6 +7,7 @@ describe('StatsClient', () => {
       const data = {
         workers: { idle: 3, busy: 1 },
         jobs: { enqueued: 5, processing: 2, failed: 1, finished: 10, dead: 0 },
+        emissions: { extracted: 12, emitted: 9, failed: 2, dead: 1 },
       };
 
       mockFetchSuccess(data);
@@ -21,9 +22,32 @@ describe('StatsClient', () => {
         expect(result.jobs).toEqual({ enqueued: 5, processing: 2, failed: 1, finished: 10, dead: 0 });
       });
 
+      it('returns the emissions stats', async () => {
+        const result = await fetchStats();
+        expect(result.emissions).toEqual({ extracted: 12, emitted: 9, failed: 2, dead: 1 });
+      });
+
       it('fetches from /stats.json', async () => {
         await fetchStats();
         expect(globalThis.fetch).toHaveBeenCalledWith('/stats.json');
+      });
+    });
+
+    describe('when the request succeeds with missing emissions data', () => {
+      mockFetchSuccess({ workers: {}, jobs: {} });
+
+      it('fills missing emission fields with defaults', async () => {
+        const result = await fetchStats();
+        expect(result.emissions).toEqual({ extracted: 0, emitted: 0, failed: 0, dead: 0 });
+      });
+    });
+
+    describe('when the request succeeds with partial emissions data', () => {
+      mockFetchSuccess({ emissions: { emitted: 7 } });
+
+      it('merges provided values with defaults', async () => {
+        const result = await fetchStats();
+        expect(result.emissions).toEqual({ extracted: 0, emitted: 7, failed: 0, dead: 0 });
       });
     });
 
@@ -56,6 +80,11 @@ describe('StatsClient', () => {
       it('returns default jobs', async () => {
         const result = await fetchStats();
         expect(result.jobs).toEqual({ enqueued: 0, processing: 0, failed: 0, finished: 0, dead: 0 });
+      });
+
+      it('returns default emissions', async () => {
+        const result = await fetchStats();
+        expect(result.emissions).toEqual({ extracted: 0, emitted: 0, failed: 0, dead: 0 });
       });
     });
 

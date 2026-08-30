@@ -27,6 +27,7 @@ class ConfigLoader {
    * webConfig: WebConfig|null,
    * logConfig: LogConfig,
    * emitConfig: EmitConfig,
+   * extractionConfig: ExtractionConfig,
    * failureConfig: FailureConfig|null
    * }} The built namespace map, alongside the entry file's non-resource configuration sections.
    * @throws {MissingTopLevelConfigKey} Throws when a single-file (no `include:`) config is
@@ -47,6 +48,7 @@ class ConfigLoader {
    * webConfig: WebConfig|null,
    * logConfig: LogConfig,
    * emitConfig: EmitConfig,
+   * extractionConfig: ExtractionConfig,
    * failureConfig: FailureConfig|null
    * }} The built namespace map, alongside the entry file's non-resource configuration sections.
    * @throws {MissingTopLevelConfigKey} Throws when a single-file (no `include:`) config is
@@ -66,6 +68,7 @@ class ConfigLoader {
       webConfig:     entryConfig.webConfig,
       logConfig:     entryConfig.logConfig,
       emitConfig:    entryConfig.emitConfig,
+      extractionConfig: entryConfig.extractionConfig,
       failureConfig: entryConfig.failureConfig,
     };
   }

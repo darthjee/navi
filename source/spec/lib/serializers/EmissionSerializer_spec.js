@@ -4,6 +4,7 @@ describe('EmissionSerializer', () => {
   const timestamp = new Date('2026-04-29T12:00:00.000Z');
   const makeRecord = (overrides = {}) => ({
     id: 1,
+    extractionId: 7,
     status: 'success',
     url: 'http://example.com/hook',
     method: 'POST',
@@ -19,6 +20,7 @@ describe('EmissionSerializer', () => {
       it('returns a plain object with all emission fields', () => {
         expect(EmissionSerializer.serialize(makeRecord())).toEqual({
           id: 1,
+          extractionId: 7,
           status: 'success',
           url: 'http://example.com/hook',
           method: 'POST',
@@ -27,6 +29,11 @@ describe('EmissionSerializer', () => {
           itemRef: 'abc123',
           timestamp: '2026-04-29T12:00:00.000Z',
         });
+      });
+
+      it('defaults extractionId to null when the record has none', () => {
+        const record = makeRecord({ extractionId: null });
+        expect(EmissionSerializer.serialize(record).extractionId).toBeNull();
       });
 
       it('serializes the timestamp as an ISO string', () => {

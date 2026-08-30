@@ -1,6 +1,7 @@
 import { Job } from 'deku-swarm';
 import { EmitEnqueuer } from '../enqueuers/EmitEnqueuer.js';
 import { EmissionRegistry } from '../registry/EmissionRegistry.js';
+import { ExtractionRegistry } from '../registry/ExtractionRegistry.js';
 
 /**
  * ExtractionJob is a Job that extracts structured items from a raw response body
@@ -78,9 +79,17 @@ class ExtractionJob extends Job {
       const items = parserImpl.extract(this.#rawBody, this.#parser.attributes);
       logContext.debug(`ExtractionJob #${this.id} extracted ${items.length} item(s)`, { items });
       EmissionRegistry.incExtracted(items.length);
+      const extraction = ExtractionRegistry.recordExtraction({
+        parserType: this.#parser.type,
+        originUrl:  this.#originUrl,
+        itemCount:  items.length,
+      });
+      const extractionId = extraction?.id ?? null;
 
       if (this.#emit) {
-        new EmitEnqueuer(items, this.#emit, this.#parameters, this.#jobRegistry).enqueue();
+        new EmitEnqueuer(
+          items, this.#emit, this.#parameters, this.#jobRegistry, extractionId
+        ).enqueue();
       }
     } catch (error) {
       this._fail(error);

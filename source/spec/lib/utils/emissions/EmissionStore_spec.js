@@ -46,6 +46,16 @@ describe('EmissionStore', () => {
       expect(record.itemRef).toBe('abc');
     });
 
+    it('forwards extractionId to the record', () => {
+      const record = store.recordEmission(emission({ extractionId: 42 }));
+      expect(record.extractionId).toBe(42);
+    });
+
+    it('defaults extractionId to null when omitted', () => {
+      const record = store.recordEmission(emission());
+      expect(record.extractionId).toBeNull();
+    });
+
     it('assigns incremental IDs starting at 1', () => {
       const first = store.recordEmission(emission());
       const second = store.recordEmission(emission());

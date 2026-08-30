@@ -1,6 +1,7 @@
 import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { EmitConfig } from '../../../../lib/models/configs/EmitConfig.js';
+import { ExtractionConfig } from '../../../../lib/models/configs/ExtractionConfig.js';
 import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
 import { LogConfig } from '../../../../lib/models/configs/LogConfig.js';
 import { WorkersConfig } from '../../../../lib/models/configs/WorkersConfig.js';
@@ -41,6 +42,8 @@ describe('Config', () => {
         expect(config.logConfig.size).toBe(100);
         expect(config.emitConfig instanceof EmitConfig).toBeTrue();
         expect(config.emitConfig.size).toBe(100);
+        expect(config.extractionConfig instanceof ExtractionConfig).toBeTrue();
+        expect(config.extractionConfig.size).toBe(100);
       });
     });
 
@@ -61,6 +64,16 @@ describe('Config', () => {
         const config = Config.fromFile(configFilePath);
 
         expect(config.emitConfig.size).toBe(25);
+      });
+    });
+
+    describe('when the yaml file has an extraction section', () => {
+      it('returns a Config with the configured extraction size', () => {
+        const configFilePath = FixturesUtils.getFixturePath('config/sample_config_with_extraction.yml');
+
+        const config = Config.fromFile(configFilePath);
+
+        expect(config.extractionConfig.size).toBe(25);
       });
     });
 

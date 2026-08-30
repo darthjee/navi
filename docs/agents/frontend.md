@@ -22,11 +22,13 @@ frontend/
 ├── src/
 │   ├── main.jsx                  # React entrypoint; router setup
 │   ├── clients/                  # API client modules (pure fetch)
-│   │   ├── StatsClient.js        # GET /stats.json
+│   │   ├── StatsClient.js        # GET /stats.json (includes emissions block)
 │   │   ├── JobsClient.js         # GET /jobs/:status.json
 │   │   ├── JobClient.js          # GET /job/:id.json
 │   │   ├── EngineClient.js       # GET /engine/status + PATCH /engine/*
-│   │   └── MemoryStatusClient.js # GET /memory/status.json
+│   │   ├── MemoryStatusClient.js # GET /memory/status.json
+│   │   ├── EmissionsClient.js    # GET /emissions.json (?last_id= cursor)
+│   │   └── ExtractionsClient.js  # GET /extractions.json (?last_id= cursor)
 │   ├── constants/
 │   │   └── jobStatus.js          # Status → Bootstrap color variant mapping
 │   └── components/
@@ -37,13 +39,20 @@ frontend/
 │       │   ├── LogsPage.jsx
 │       │   ├── MemoryStatus.jsx
 │       │   ├── MemoryStatus.css
+│       │   ├── Emissions.jsx
+│       │   ├── Extractions.jsx
 │       │   ├── controllers/      # Data/logic controller classes
-│       │   │   └── MemoryStatusController.jsx
+│       │   │   ├── MemoryStatusController.jsx
+│       │   │   ├── EmissionsController.jsx
+│       │   │   └── ExtractionsController.jsx
 │       │   └── helpers/          # HTML rendering helpers
-│       │       └── MemoryStatusHelper.jsx
+│       │       ├── MemoryStatusHelper.jsx
+│       │       ├── EmissionsHelper.jsx
+│       │       └── ExtractionsHelper.jsx
 │       └── elements/             # Reusable UI widgets
 │           ├── EngineControls.jsx
-│           ├── StatsHeader.jsx
+│           ├── StatsHeader.jsx    # workers + jobs + emissions groups
+│           ├── StatsDisplay.jsx
 │           ├── JobDetails.jsx
 │           ├── ReadyCountdown.jsx
 │           ├── Logs.jsx
@@ -77,14 +86,18 @@ Components live in either `components/pages/` (full page views registered as rou
 | `/jobs/:status` | `Jobs` | Jobs filtered to one status. |
 | `/job/:id` | `Job` | Full detail for a single job. |
 | `/memory/status` | `MemoryStatus` | Memory usage and status |
+| `/emissions` | `Emissions` | Live emission feed (counts strip + status filter). |
+| `/extractions` | `Extractions` | Per-crawl chain: resource → parser → items → emits sent → emit status. |
 
 ## Component hierarchy
 
 ```
 Layout
 ├── StatsHeader    (auto-refresh every 5 s)
-│   ├── StatItem         (workers: idle, busy)
-│   └── JobStatItem[]    (jobs: enqueued, processing, failed, finished, dead)
+│   └── StatsDisplay
+│       ├── StatItem         (workers: idle, busy)
+│       ├── JobStatItem[]    (jobs: enqueued, processing, failed, finished, dead)
+│       └── StatItem[]       (emissions: extracted → /extractions; emitted/failed/dead → /emissions)
 ├── EngineControls (auto-refresh every 2 s)
 └── <Outlet>
     ├── Jobs             (route: /jobs or /jobs/:status)
@@ -92,7 +105,9 @@ Layout
     │   ├── CollapsibleSection  (Arguments)
     │   ├── ReadyCountdown      (failed only)
     │   └── CollapsibleSection  (Last Error — failed/dead only)
-    └── MemoryStatus     (route: /memory/status)
+    ├── MemoryStatus     (route: /memory/status)
+    ├── Emissions        (route: /emissions — last_id cursor poll, ~1 s)
+    └── Extractions      (route: /extractions — joins /extractions.json + /emissions.json, ~5 s)
 ```
 
 ## Job status → colour mapping

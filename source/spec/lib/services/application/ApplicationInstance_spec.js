@@ -1,5 +1,6 @@
 import { JobRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
+import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
@@ -92,6 +93,7 @@ describe('ApplicationInstance', () => {
       instance.setStatus('running');
       spyOn(LogRegistry, 'clearBuffers');
       spyOn(EmissionRegistry, 'clear');
+      spyOn(ExtractionRegistry, 'clear');
       spyOn(EngineController.prototype, 'buildEngine').and.returnValue(buildFakeEngine());
       spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();

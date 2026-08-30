@@ -2,6 +2,7 @@ import { Client } from '../../client/Client.js';
 import { MissingClientsConfig } from '../../exceptions/config/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../exceptions/config/MissingResourceConfig.js';
 import { EmitConfig } from '../../models/configs/EmitConfig.js';
+import { ExtractionConfig } from '../../models/configs/ExtractionConfig.js';
 import { FailureConfig } from '../../models/configs/FailureConfig.js';
 import { LogConfig } from '../../models/configs/LogConfig.js';
 import { WebConfig } from '../../models/configs/WebConfig.js';
@@ -57,9 +58,10 @@ class ConfigParser {
    * webConfig: WebConfig|null,
    * logConfig: LogConfig,
    * emitConfig: EmitConfig,
+   * extractionConfig: ExtractionConfig,
    * failureConfig: FailureConfig|null
    * }} Parsed configuration with resources, clients, workersConfig, webConfig, logConfig,
-   * emitConfig, and failureConfig.
+   * emitConfig, extractionConfig, and failureConfig.
    */
   parse() {
     const mappedResources = Object.fromEntries(
@@ -77,6 +79,7 @@ class ConfigParser {
       webConfig:     this.#webConfig(),
       logConfig:     this.#logConfig(),
       emitConfig:    this.#emitConfig(),
+      extractionConfig: this.#extractionConfig(),
       failureConfig: this.#failureConfig(),
     };
   }
@@ -114,6 +117,14 @@ class ConfigParser {
    */
   #emitConfig() {
     return EmitConfig.fromObject(this.config.emit);
+  }
+
+  /**
+   * Creates an ExtractionConfig from the parsed YAML extraction section.
+   * @returns {ExtractionConfig} The extraction configuration instance.
+   */
+  #extractionConfig() {
+    return ExtractionConfig.fromObject(this.config.extraction);
   }
 
   /**

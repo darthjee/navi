@@ -1,5 +1,6 @@
 import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
+import { ExtractionRegistry } from '../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { Application } from '../../../lib/services/application/Application.js';
@@ -19,6 +20,7 @@ class RegistryCleanupUtils {
     JobFactory.reset();
     LogRegistry.reset();
     EmissionRegistry.reset();
+    ExtractionRegistry.reset();
     WorkersRegistry.reset();
     NamespaceMap.reset();
     Application.reset();

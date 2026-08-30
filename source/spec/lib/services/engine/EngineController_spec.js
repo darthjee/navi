@@ -1,5 +1,6 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
+import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
@@ -139,10 +140,12 @@ describe('EngineController', () => {
       localController.engine = buildFakeEngine();
       spyOn(LogRegistry, 'clearBuffers');
       EmissionRegistry.build();
+      ExtractionRegistry.build();
     });
 
     afterEach(() => {
       EmissionRegistry.reset();
+      ExtractionRegistry.reset();
     });
 
     it('clears the log buffers when the engine emits stop', () => {
@@ -161,6 +164,16 @@ describe('EngineController', () => {
 
       expect(EmissionRegistry.getRecords()).toEqual([]);
       expect(EmissionRegistry.counts).toEqual({ extracted: 0, emitted: 0, failed: 0, dead: 0 });
+    });
+
+    it('clears the extraction store when the engine emits stop', () => {
+      ExtractionRegistry.recordExtraction({ parserType: 'regex', originUrl: '/list', itemCount: 3 });
+      localController.bind(reporter);
+
+      localController.engine.emit('stop');
+
+      expect(ExtractionRegistry.getRecords()).toEqual([]);
+      expect(ExtractionRegistry.counts).toEqual({ extracted: 0 });
     });
 
     it('reports the run outcome when the engine emits finish', () => {
