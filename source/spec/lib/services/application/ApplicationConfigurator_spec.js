@@ -1,5 +1,6 @@
 import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
+import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
 import { ApplicationConfigurator } from '../../../../lib/services/application/ApplicationConfigurator.js';
@@ -15,6 +16,7 @@ describe('ApplicationConfigurator', () => {
 
   afterEach(() => {
     LogRegistry.reset();
+    EmissionRegistry.reset();
     NamespaceMap.reset();
   });
 
@@ -46,6 +48,10 @@ describe('ApplicationConfigurator', () => {
 
       it('returns the entry file path passed in', () => {
         expect(result.entryFilePath).toBe(configPath);
+      });
+
+      it('builds the emission registry', () => {
+        expect(() => EmissionRegistry.getRecords()).not.toThrow();
       });
     });
 
