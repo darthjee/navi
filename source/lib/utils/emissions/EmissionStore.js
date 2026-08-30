@@ -33,10 +33,14 @@ class EmissionStore {
    * @param {number|null} [params.httpStatus] - The HTTP response status, when available.
    * @param {string|null} [params.error] - The error message, when the emission failed.
    * @param {string|null} [params.itemRef] - A compact reference to the emitted item.
+   * @param {number|null} [params.extractionId] - The id of the extraction record whose items
+   * produced this emission, or null when it cannot be traced.
    * @returns {import('./EmissionRecord.js').EmissionRecord} The created emission record.
    */
-  recordEmission({ status, url, method, httpStatus, error, itemRef }) {
-    const record = this.#factory.build({ status, url, method, httpStatus, error, itemRef });
+  recordEmission({ status, url, method, httpStatus, error, itemRef, extractionId }) {
+    const record = this.#factory.build({
+      status, url, method, httpStatus, error, itemRef, extractionId
+    });
 
     this.#records.unshift(record);
 

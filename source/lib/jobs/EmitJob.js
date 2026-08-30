@@ -47,6 +47,7 @@ class EmitJob extends Job {
   #clients;
   #maxRetries;
   #cooldown;
+  #extractionId;
 
   /**
    * Creates a new EmitJob instance.
@@ -58,8 +59,10 @@ class EmitJob extends Job {
    * @param {object} [params.parameters] - Key-value map used to resolve {:placeholder} tokens
    * in the emit URL.
    * @param {NamespaceMap} params.clients - The namespace map used to resolve the client for this emit.
+   * @param {number|null} [params.extractionId=null] - The id of the extraction record whose
+   * items produced this emission, or null when it cannot be traced.
    */
-  constructor({ id, item, emit, parameters, clients }) {
+  constructor({ id, item, emit, parameters, clients, extractionId = null }) {
     super({ id });
     this.#item = item;
     this.#emit = emit;
@@ -67,6 +70,7 @@ class EmitJob extends Job {
     this.#clients = clients;
     this.#maxRetries = emit.retries ?? EmitJob.DEFAULT_MAX_RETRIES;
     this.#cooldown = emit.cooldown ?? EmitJob.DEFAULT_COOLDOWN;
+    this.#extractionId = extractionId;
   }
 
   /**
@@ -125,7 +129,8 @@ class EmitJob extends Job {
         method, url, this.#item, this.#emit.status, logContext, this.#emit.headers,
       );
       EmissionRegistry.recordEmission({
-        status: 'success', url, method, httpStatus: response?.status ?? null, itemRef: this.#itemRef(),
+        status: 'success', url, method, httpStatus: response?.status ?? null,
+        itemRef: this.#itemRef(), extractionId: this.#extractionId,
       });
       return response;
     } catch (error) {
@@ -134,7 +139,8 @@ class EmitJob extends Job {
       const dead = this._attempts + 1 >= this.maxRetries;
       const httpStatus = error instanceof RequestFailed ? error.statusCode : null;
       EmissionRegistry.recordEmission({
-        status: dead ? 'dead' : 'failed', url, method, httpStatus, error: String(error), itemRef: this.#itemRef(),
+        status: dead ? 'dead' : 'failed', url, method, httpStatus, error: String(error),
+        itemRef: this.#itemRef(), extractionId: this.#extractionId,
       });
       this._fail(error);
     }

@@ -11,18 +11,21 @@ class EmitEnqueuer {
   #emit;
   #parameters;
   #jobRegistry;
+  #extractionId;
 
   /**
    * @param {Array<ExtractedItem>} items List of extracted items, as produced by a parser's `extract()`.
    * @param {ResourceRequestEmit} emit The resource request's declared emit configuration.
    * @param {object} [parameters] Key-value map used to resolve {:placeholder} tokens in the emit URL.
    * @param {object} [jobRegistry=JobRegistry] The job registry to enqueue jobs to.
+   * @param {number|null} [extractionId=null] The id of the extraction record whose items are being emitted.
    */
-  constructor(items, emit, parameters, jobRegistry = DefaultJobRegistry) {
+  constructor(items, emit, parameters, jobRegistry = DefaultJobRegistry, extractionId = null) {
     this.#items = items;
     this.#emit = emit;
     this.#parameters = parameters;
     this.#jobRegistry = jobRegistry;
+    this.#extractionId = extractionId;
   }
 
   /**
@@ -33,7 +36,9 @@ class EmitEnqueuer {
   enqueue() {
     if (Application.isStopped()) return;
     for (const item of this.#items) {
-      this.#jobRegistry.enqueue('Emit', { item, emit: this.#emit, parameters: this.#parameters });
+      this.#jobRegistry.enqueue('Emit', {
+        item, emit: this.#emit, parameters: this.#parameters, extractionId: this.#extractionId,
+      });
     }
   }
 }

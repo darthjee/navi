@@ -4,6 +4,7 @@
  */
 class EmissionRecord {
   #id;
+  #extractionId;
   #status;
   #url;
   #method;
@@ -22,9 +23,15 @@ class EmissionRecord {
    * @param {number|null} [params.httpStatus=null] - The HTTP response status, when available.
    * @param {string|null} [params.error=null] - The error message, when the emission failed.
    * @param {string|null} [params.itemRef=null] - A compact reference to the emitted item.
+   * @param {number|null} [params.extractionId=null] - The id of the extraction record whose
+   * items produced this emission, or null when it cannot be traced.
    */
-  constructor(id, { status, url, method, httpStatus = null, error = null, itemRef = null }) {
+  constructor(
+    id,
+    { status, url, method, httpStatus = null, error = null, itemRef = null, extractionId = null }
+  ) {
     this.#id = id;
+    this.#extractionId = extractionId;
     this.#status = status;
     this.#url = url;
     this.#method = method;
@@ -40,6 +47,14 @@ class EmissionRecord {
    */
   get id() {
     return this.#id;
+  }
+
+  /**
+   * Gets the id of the extraction record whose items produced this emission.
+   * @returns {number|null} The extraction ID or null.
+   */
+  get extractionId() {
+    return this.#extractionId;
   }
 
   /**
@@ -105,6 +120,7 @@ class EmissionRecord {
   toJSON() {
     return {
       id: this.#id,
+      extractionId: this.#extractionId,
       status: this.#status,
       url: this.#url,
       method: this.#method,
