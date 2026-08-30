@@ -4,6 +4,7 @@ import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
 import { ResourceRequestEmit } from '../../../lib/models/request/ResourceRequestEmit.js';
 import { ResourceRequestParser } from '../../../lib/models/request/ResourceRequestParser.js';
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
+import { ExtractionRegistry } from '../../../lib/registry/ExtractionRegistry.js';
 import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
 
 describe('ExtractionJob', () => {
@@ -105,8 +106,12 @@ describe('ExtractionJob', () => {
         parserImpl.extract.and.returnValue(items);
         await job.perform(logContext);
         expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Emit', { item: items[0], emit, parameters });
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('Emit', { item: items[1], emit, parameters });
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith(
+          'Emit', { item: items[0], emit, parameters, extractionId: null },
+        );
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith(
+          'Emit', { item: items[1], emit, parameters, extractionId: null },
+        );
       });
 
       it('does not enqueue when there are no extracted items', async () => {
@@ -240,6 +245,85 @@ describe('ExtractionJob', () => {
         parserImpl.extract.and.returnValue([{ price: '42.50' }]);
 
         await expectAsync(job.perform(logContext)).toBeResolved();
+      });
+    });
+  });
+
+  describe('extraction tracking', () => {
+    const emit = new ResourceRequestEmit({ method: 'POST', url: 'https://example.com/items/{:id}' });
+    const parameters = { id: '42' };
+    const originUrl = 'https://example.com/list?page=1';
+
+    describe('when the registry has been built', () => {
+      beforeEach(() => {
+        ExtractionRegistry.build();
+        job = new ExtractionJob({
+          id: 'test-id', rawBody, parser, parserRegistry, jobRegistry, emit, parameters, originUrl,
+        });
+      });
+
+      afterEach(() => {
+        ExtractionRegistry.reset();
+      });
+
+      it('records an extraction with parserType, originUrl and itemCount', async () => {
+        parserImpl.extract.and.returnValue([{ price: '42.50' }, { price: '10.00' }]);
+
+        await job.perform(logContext);
+
+        const [record] = ExtractionRegistry.getRecords();
+        expect(record.parserType).toBe('regex');
+        expect(record.originUrl).toBe(originUrl);
+        expect(record.itemCount).toBe(2);
+      });
+
+      it('adds the item count to the extracted counter', async () => {
+        parserImpl.extract.and.returnValue([{ price: '42.50' }, { price: '10.00' }]);
+
+        await job.perform(logContext);
+
+        expect(ExtractionRegistry.counts.extracted).toBe(2);
+      });
+
+      it('passes the recorded extraction id to each Emit enqueue payload', async () => {
+        const items = [{ price: '42.50' }, { price: '10.00' }];
+        parserImpl.extract.and.returnValue(items);
+
+        await job.perform(logContext);
+
+        const extractionId = ExtractionRegistry.getRecords()[0].id;
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith(
+          'Emit', { item: items[0], emit, parameters, extractionId },
+        );
+      });
+
+      it('still increments the emission extracted counter', async () => {
+        EmissionRegistry.build();
+        parserImpl.extract.and.returnValue([{ price: '42.50' }]);
+
+        await job.perform(logContext);
+
+        expect(EmissionRegistry.counts.extracted).toBe(1);
+        EmissionRegistry.reset();
+      });
+    });
+
+    describe('when the registry has not been built', () => {
+      beforeEach(() => {
+        job = new ExtractionJob({
+          id: 'test-id', rawBody, parser, parserRegistry, jobRegistry, emit, parameters, originUrl,
+        });
+      });
+
+      it('still performs and enqueues with a null extractionId', async () => {
+        const items = [{ price: '42.50' }];
+        parserImpl.extract.and.returnValue(items);
+
+        await job.perform(logContext);
+
+        expect(jobRegistry.enqueue).toHaveBeenCalledWith(
+          'Emit', { item: items[0], emit, parameters, extractionId: null },
+        );
       });
     });
   });

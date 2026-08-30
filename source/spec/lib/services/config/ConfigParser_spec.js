@@ -1,6 +1,7 @@
 import { MissingClientsConfig } from '../../../../lib/exceptions/config/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../../../lib/exceptions/config/MissingResourceConfig.js';
 import { EmitConfig } from '../../../../lib/models/configs/EmitConfig.js';
+import { ExtractionConfig } from '../../../../lib/models/configs/ExtractionConfig.js';
 import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
 import { LogConfig } from '../../../../lib/models/configs/LogConfig.js';
 import { WebConfig } from '../../../../lib/models/configs/WebConfig.js';
@@ -173,6 +174,21 @@ describe('ConfigParser', () => {
 
     it('returns the default EmitConfig size when the config has no emit key', () => {
       expect(parseFixture('sample_config.yml').emitConfig.size).toBe(100);
+    });
+
+    describe('when the config has an extraction key', () => {
+      it('returns an ExtractionConfig instance', () => {
+        expect(parseFixture('sample_config_with_extraction.yml').extractionConfig)
+          .toBeInstanceOf(ExtractionConfig);
+      });
+
+      it('returns the configured extraction size', () => {
+        expect(parseFixture('sample_config_with_extraction.yml').extractionConfig.size).toBe(25);
+      });
+    });
+
+    it('returns the default ExtractionConfig size when the config has no extraction key', () => {
+      expect(parseFixture('sample_config.yml').extractionConfig.size).toBe(100);
     });
 
     describe('when the config has a failure key', () => {

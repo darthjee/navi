@@ -14,7 +14,8 @@ describe('EmissionRecordFactory', () => {
       method: 'POST',
       httpStatus: 200,
       error: null,
-      itemRef: 'abc123'
+      itemRef: 'abc123',
+      extractionId: 7
     };
   });
 
@@ -45,6 +46,14 @@ describe('EmissionRecordFactory', () => {
 
     it('assigns the given itemRef', () => {
       expect(factory.build(params).itemRef).toBe('abc123');
+    });
+
+    it('assigns the given extractionId', () => {
+      expect(factory.build(params).extractionId).toBe(7);
+    });
+
+    it('defaults extractionId to null when omitted', () => {
+      expect(factory.build({ ...params, extractionId: undefined }).extractionId).toBeNull();
     });
 
     it('assigns an incremental id starting at 1', () => {

@@ -39,6 +39,8 @@ source/lib/server/
     │   └── MemoryStatusHandler.js
     ├── emissions/
     │   └── EmissionsHandler.js
+    ├── extractions/
+    │   └── ExtractionsHandler.js
     └── jobs/
         ├── JobHandler.js
         ├── JobLogsHandler.js
@@ -57,6 +59,7 @@ constructs the executor as `(req, res, ...parameters)` only when a matching requ
 | `GET` | `/settings.json` | Returns `{ "enable_shutdown": true }` when shutdown is enabled; 403 when disabled. |
 | `GET` | `/stats.json` | Aggregated worker and job-queue counts, plus crawler `emissions` counters. |
 | `GET` | `/emissions.json` | Crawler emission tracking: aggregate counters plus a paginated ring buffer of per-emission records. |
+| `GET` | `/extractions.json` | Crawler extraction tracking: `counts.extracted` plus a paginated ring buffer of per-extraction records. |
 | `GET` | `/links.json` | Configured `web.links` plus one link per client (`base_url` and `linkText`/client name). |
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
@@ -129,6 +132,7 @@ newest-truncated ring buffer of per-emission records:
   "emissions": [
     {
       "id": 1,
+      "extractionId": 7,
       "status": "success",
       "url": "https://hooks.example.com/items/42",
       "method": "POST",
@@ -146,13 +150,47 @@ newest-truncated ring buffer of per-emission records:
 is `success` (accepted response), `failed` (a retryable error — the job will be retried) or
 `dead` (retries exhausted, or a non-retryable 4xx). `itemRef` is a compact reference to the
 emitted item (its `id` field when present, otherwise `null`) — never the full payload.
-`error` is the stringified failure (or `null`).
+`error` is the stringified failure (or `null`). `extractionId` is the `id` of the
+`GET /extractions.json` record whose items produced this emission, or `null` when it cannot
+be traced (e.g. the extraction was evicted from its ring buffer, or the registry was not built).
 
 `emissions` is ordered oldest-first, capped at `web.logs_page_size` records (default 20,
 shared with `/logs.json`). Pass `?last_id=<id>` to page forward from a known record id;
 an unknown id yields an empty `emissions` list. The counters are exact for the whole run
 even after old records are evicted from the ring buffer. Both the ring buffer and the
 counters reset when the engine stops.
+
+### `GET /extractions.json`
+
+Reports the crawler's `ExtractionJob` run tracking — one record per extraction run (not per
+item) plus a monotonic extracted-item counter:
+
+```json
+{
+  "counts": { "extracted": 128 },
+  "extractions": [
+    {
+      "id": 1,
+      "parserType": "json_path",
+      "originUrl": "https://example.com/list?page=1",
+      "itemCount": 20,
+      "timestamp": "2026-08-30T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+`counts.extracted` is the monotonic sum of every record's `itemCount` for the run (exact
+past ring-buffer eviction), mirroring the meaning of `emissions.counts.extracted` on
+`GET /emissions.json`. `parserType` is the resolved parser (`regex`, `json_path`, `css`).
+`originUrl` is the URL of the `ResourceRequestJob` that triggered the extraction, or `null`
+when none was threaded through. `itemCount` is the number of items the parser produced.
+
+`extractions` is ordered oldest-first, capped at `web.logs_page_size` records (default 20,
+shared with `/logs.json` and `/emissions.json`). Pass `?last_id=<id>` to page forward from a
+known record id; an unknown id yields an empty `extractions` list. The store is sized by the
+top-level `extraction.size` config key (default 100). Both the ring buffer and the counter
+reset when the engine stops.
 
 ## `/api` namespace
 
@@ -215,7 +253,9 @@ Identical to `PATCH /engine/stop` — no body, 409 if not `running`.
 
 **`LogSerializer`** flattens `Log` entries for `GET /logs.json`; **`EmissionSerializer`**
 does the same for `EmissionRecord` entries in the `emissions` array of `GET /emissions.json`
-(`id`, `status`, `url`, `method`, `httpStatus`, `error`, `itemRef`, `timestamp`).
+(`id`, `extractionId`, `status`, `url`, `method`, `httpStatus`, `error`, `itemRef`, `timestamp`);
+**`ExtractionSerializer`** does the same for `ExtractionRecord` entries in the `extractions`
+array of `GET /extractions.json` (`id`, `parserType`, `originUrl`, `itemCount`, `timestamp`).
 
 **`JobIndexSerializer`** (list view):
 
@@ -290,3 +330,16 @@ emit:
 crawler sends extracted items): `emit.size` only bounds how many per-emission records
 `GET /emissions.json` keeps in memory. The emission counters themselves are unbounded and
 stay exact for the whole run; both the ring buffer and the counters reset on engine stop.
+
+### `extraction.size`
+
+```yaml
+extraction:
+  size: 100   # optional; retention of the in-memory extraction ring buffer
+```
+
+`extraction.size` (default `100`) is a **top-level** config key — a sibling of `resources`,
+`web`, `log` and `emit`, and it works exactly like `emit.size` but for the per-extraction
+store behind `GET /extractions.json`: it only bounds how many per-extraction-run records are
+retained. `counts.extracted` is unbounded and stays exact for the whole run; both the ring
+buffer and the counter reset on engine stop.

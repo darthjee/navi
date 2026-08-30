@@ -14,6 +14,7 @@ class EmitJobFactory {
    * @param {ResourceRequestEmit} [params.emit] - The emit configuration. Defaults to ResourceRequestEmitFactory.build().
    * @param {object} [params.parameters={}] - The job parameters.
    * @param {NamespaceMap} [params.clients] - The namespace map. Defaults to NamespaceMapFactory.build().
+   * @param {number|null} [params.extractionId=null] - The id of the extraction whose items produced this emit.
    * @returns {EmitJob} A new EmitJob instance.
    */
   static build({
@@ -22,8 +23,9 @@ class EmitJobFactory {
     emit = ResourceRequestEmitFactory.build(),
     parameters = {},
     clients = NamespaceMapFactory.build(),
+    extractionId = null,
   } = {}) {
-    return new EmitJob({ id, item, emit, parameters, clients });
+    return new EmitJob({ id, item, emit, parameters, clients, extractionId });
   }
 }
 
