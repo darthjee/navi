@@ -1,5 +1,5 @@
-import { JobRegistry } from '../../lib/background/JobRegistry.js';
 import { Job } from '../../lib/background/Job.js';
+import { JobRegistry } from '../../lib/background/JobRegistry.js';
 
 const error = new Error('test error');
 
