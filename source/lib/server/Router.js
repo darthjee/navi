@@ -14,6 +14,7 @@ import { EngineShutdownHandler } from './handlers/engine/EngineShutdownHandler.j
 import { EngineStartHandler } from './handlers/engine/EngineStartHandler.js';
 import { EngineStatusHandler } from './handlers/engine/EngineStatusHandler.js';
 import { EngineStopHandler } from './handlers/engine/EngineStopHandler.js';
+import { EmissionsHandler } from './handlers/emissions/EmissionsHandler.js';
 import { IndexHandler } from './handlers/IndexHandler.js';
 import { JobHandler } from './handlers/jobs/JobHandler.js';
 import { JobLogsHandler } from './handlers/jobs/JobLogsHandler.js';
@@ -68,6 +69,7 @@ class Router {
       '/engine/status':           new HandlerConfig(EngineStatusHandler),
       '/memory/status.json':      new HandlerConfig(MemoryStatusHandler, [this.#webConfig.memory]),
       '/logs.json':               new HandlerConfig(LogsHandler, this.#webConfig.logsPageSize),
+      '/emissions.json':          new HandlerConfig(EmissionsHandler, this.#webConfig.logsPageSize),
       '/links.json':              new HandlerConfig(LinksHandler, [this.#webConfig.links]),
       '/':                        new HandlerConfig(IndexHandler),
       '/assets/*path':            new HandlerConfig(AssetsHandler, [assetsDir, assetsValidator]),
