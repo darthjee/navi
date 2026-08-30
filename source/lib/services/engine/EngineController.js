@@ -1,4 +1,5 @@
 import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 import { NamespaceMap } from '../../registry/NamespaceMap.js';
 import { ConfigIncluder } from '../config/ConfigIncluder.js';
@@ -94,7 +95,10 @@ class EngineController {
    */
   bind(reporter) {
     this.#reporter = reporter;
-    this.engine.on('stop', () => LogRegistry.clearBuffers());
+    this.engine.on('stop', () => {
+      LogRegistry.clearBuffers();
+      EmissionRegistry.clear();
+    });
     this.engine.on('finish', () => this.#reporter.report({ failureConfig: this.config.failureConfig }));
   }
 

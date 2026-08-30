@@ -34,5 +34,13 @@ describe('Router', () => {
       expect(layer).toBeDefined();
       expect(layer.route.methods.get).toBeTrue();
     });
+
+    it('registers GET /emissions.json', () => {
+      const expressRouter = router.build();
+      const layer = expressRouter.stack.find((entry) => entry.route?.path === '/emissions.json');
+
+      expect(layer).toBeDefined();
+      expect(layer.route.methods.get).toBeTrue();
+    });
   });
 });

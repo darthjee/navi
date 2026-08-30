@@ -1,11 +1,12 @@
 import { ConfigStore } from './ConfigStore.js';
 import { ConfigurationFileNotProvided } from '../../exceptions/config/ConfigurationFileNotProvided.js';
 import { Config } from '../../models/configs/Config.js';
+import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
  * ApplicationConfigurator loads the application configuration from disk and
- * bootstraps the log registry that depends on it.
+ * bootstraps the log and emission registries that depend on it.
  * @author darthjee
  */
 class ApplicationConfigurator {
@@ -23,6 +24,7 @@ class ApplicationConfigurator {
 
     const config = Config.fromFile(configPath);
     const logRegistry = LogRegistry.build({ retention: config.logConfig.size });
+    EmissionRegistry.build({ retention: config.emitConfig.size });
 
     return new ConfigStore({
       config,

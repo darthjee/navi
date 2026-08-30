@@ -3,6 +3,7 @@ import { ParserNotFound } from '../../../lib/exceptions/registry/ParserNotFound.
 import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
 import { ResourceRequestEmit } from '../../../lib/models/request/ResourceRequestEmit.js';
 import { ResourceRequestParser } from '../../../lib/models/request/ResourceRequestParser.js';
+import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
 
 describe('ExtractionJob', () => {
@@ -185,6 +186,61 @@ describe('ExtractionJob', () => {
 
     it('returns false with zero attempts', () => {
       expect(job.exhausted()).toBeFalse();
+    });
+  });
+
+  describe('emission tracking', () => {
+    describe('when the registry has been built', () => {
+      beforeEach(() => {
+        EmissionRegistry.build();
+      });
+
+      afterEach(() => {
+        EmissionRegistry.reset();
+      });
+
+      describe('when emit is present', () => {
+        const emit = new ResourceRequestEmit({ method: 'POST', url: 'https://example.com/items/{:id}' });
+        const parameters = { id: '42' };
+
+        beforeEach(() => {
+          job = new ExtractionJob({ id: 'test-id', rawBody, parser, parserRegistry, jobRegistry, emit, parameters });
+        });
+
+        it('increments the extracted counter by the item count', async () => {
+          parserImpl.extract.and.returnValue([{ price: '42.50' }, { price: '10.00' }]);
+
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.counts.extracted).toBe(2);
+        });
+      });
+
+      describe('when emit is absent', () => {
+        beforeEach(() => {
+          job = new ExtractionJob({ id: 'test-id', rawBody, parser, parserRegistry, jobRegistry });
+        });
+
+        it('still increments the extracted counter by the item count', async () => {
+          parserImpl.extract.and.returnValue([{ price: '42.50' }]);
+
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.counts.extracted).toBe(1);
+        });
+      });
+    });
+
+    describe('when the registry has not been built', () => {
+      beforeEach(() => {
+        job = new ExtractionJob({ id: 'test-id', rawBody, parser, parserRegistry, jobRegistry });
+      });
+
+      it('still performs without throwing', async () => {
+        parserImpl.extract.and.returnValue([{ price: '42.50' }]);
+
+        await expectAsync(job.perform(logContext)).toBeResolved();
+      });
     });
   });
 });

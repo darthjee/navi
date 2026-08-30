@@ -1,5 +1,6 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { RequestHandler } from '../../common/server/RequestHandler.js';
+import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 
 /**
  * Executes request-handling behaviour for GET /stats.json.
@@ -18,13 +19,14 @@ class StatsHandler extends RequestHandler {
   }
 
   /**
-   * Responds with combined job and worker stats.
+   * Responds with combined job, worker and emission stats.
    * @returns {void}
    */
   handle() {
     this.#response.json({
-      jobs:    JobRegistry.stats(),
-      workers: WorkersRegistry.stats(),
+      jobs:      JobRegistry.stats(),
+      workers:   WorkersRegistry.stats(),
+      emissions: EmissionRegistry.counts,
     });
   }
 }

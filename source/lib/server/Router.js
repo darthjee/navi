@@ -6,6 +6,7 @@ import { HandlerConfig } from '../common/server/HandlerConfig.js';
 import { ApiConfigHandler } from './handlers/api/ApiConfigHandler.js';
 import { ApiEngineStartHandler } from './handlers/api/ApiEngineStartHandler.js';
 import { ApiEngineStopHandler } from './handlers/api/ApiEngineStopHandler.js';
+import { EmissionsHandler } from './handlers/emissions/EmissionsHandler.js';
 import { EngineContinueHandler } from './handlers/engine/EngineContinueHandler.js';
 import { EnginePauseHandler } from './handlers/engine/EnginePauseHandler.js';
 import { EngineReloadHandler } from './handlers/engine/EngineReloadHandler.js';
@@ -68,6 +69,7 @@ class Router {
       '/engine/status':           new HandlerConfig(EngineStatusHandler),
       '/memory/status.json':      new HandlerConfig(MemoryStatusHandler, [this.#webConfig.memory]),
       '/logs.json':               new HandlerConfig(LogsHandler, this.#webConfig.logsPageSize),
+      '/emissions.json':          new HandlerConfig(EmissionsHandler, this.#webConfig.logsPageSize),
       '/links.json':              new HandlerConfig(LinksHandler, [this.#webConfig.links]),
       '/':                        new HandlerConfig(IndexHandler),
       '/assets/*path':            new HandlerConfig(AssetsHandler, [assetsDir, assetsValidator]),

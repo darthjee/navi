@@ -5,7 +5,7 @@ import { NamespaceMapBuilder } from '../builders/NamespaceMapBuilder.js';
 /**
  * ConfigLoader loads a YAML configuration file (and every file transitively reachable
  * through its `include:` chain), grouping the resources/clients contributed by each
- * file into a NamespaceMap, and sourcing worker/web/log/failure sections from the
+ * file into a NamespaceMap, and sourcing worker/web/log/emit/failure sections from the
  * entry file only.
  * @author darthjee
  */
@@ -26,6 +26,7 @@ class ConfigLoader {
    * workersConfig: WorkersConfig,
    * webConfig: WebConfig|null,
    * logConfig: LogConfig,
+   * emitConfig: EmitConfig,
    * failureConfig: FailureConfig|null
    * }} The built namespace map, alongside the entry file's non-resource configuration sections.
    * @throws {MissingTopLevelConfigKey} Throws when a single-file (no `include:`) config is
@@ -45,6 +46,7 @@ class ConfigLoader {
    * workersConfig: WorkersConfig,
    * webConfig: WebConfig|null,
    * logConfig: LogConfig,
+   * emitConfig: EmitConfig,
    * failureConfig: FailureConfig|null
    * }} The built namespace map, alongside the entry file's non-resource configuration sections.
    * @throws {MissingTopLevelConfigKey} Throws when a single-file (no `include:`) config is
@@ -63,6 +65,7 @@ class ConfigLoader {
       workersConfig: entryConfig.workersConfig,
       webConfig:     entryConfig.webConfig,
       logConfig:     entryConfig.logConfig,
+      emitConfig:    entryConfig.emitConfig,
       failureConfig: entryConfig.failureConfig,
     };
   }

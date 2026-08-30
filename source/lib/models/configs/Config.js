@@ -1,3 +1,4 @@
+import { EmitConfig } from './EmitConfig.js';
 import { LogConfig } from './LogConfig.js';
 import { NamespaceNotFound } from '../../exceptions/registry/NamespaceNotFound.js';
 import { NamespaceMap } from '../../registry/NamespaceMap.js';
@@ -19,14 +20,16 @@ class Config {
    * @param {WorkersConfig} params.workersConfig - The configuration for worker instances.
    * @param {WebConfig|null} [params.webConfig] - Optional web server configuration.
    * @param {LogConfig} [params.logConfig] - Optional log configuration.
+   * @param {EmitConfig} [params.emitConfig] - Optional emission-tracking configuration.
    * @param {FailureConfig|null} [params.failureConfig] - Optional failure threshold configuration.
    */
-  constructor({ namespaceMap, workersConfig, webConfig, logConfig, failureConfig }) {
+  constructor({ namespaceMap, workersConfig, webConfig, logConfig, emitConfig, failureConfig }) {
     this.namespaceMap = NamespaceMap.build(namespaceMap);
 
     this.workersConfig = workersConfig;
     this.webConfig = webConfig ?? null;
     this.logConfig = logConfig ?? new LogConfig();
+    this.emitConfig = emitConfig ?? new EmitConfig();
     this.failureConfig = failureConfig ?? null;
   }
 

@@ -1,6 +1,7 @@
 import http from 'http';
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
+import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
 import { Logger } from '../../../lib/utils/logging/Logger.js';
@@ -10,12 +11,14 @@ describe('WebServer', () => {
     Logger.suppress();
     JobRegistry.build({ cooldown: -1 });
     LogRegistry.build();
+    EmissionRegistry.build();
     WorkersRegistry.build({ quantity: 0 });
   });
 
   afterEach(() => {
     JobRegistry.reset();
     LogRegistry.reset();
+    EmissionRegistry.reset();
     Logger.reset();
     WorkersRegistry.reset();
   });

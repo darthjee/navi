@@ -1,6 +1,7 @@
 import { Client } from '../../client/Client.js';
 import { MissingClientsConfig } from '../../exceptions/config/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../exceptions/config/MissingResourceConfig.js';
+import { EmitConfig } from '../../models/configs/EmitConfig.js';
 import { FailureConfig } from '../../models/configs/FailureConfig.js';
 import { LogConfig } from '../../models/configs/LogConfig.js';
 import { WebConfig } from '../../models/configs/WebConfig.js';
@@ -55,8 +56,10 @@ class ConfigParser {
    * workersConfig: WorkersConfig,
    * webConfig: WebConfig|null,
    * logConfig: LogConfig,
+   * emitConfig: EmitConfig,
    * failureConfig: FailureConfig|null
-   * }} Parsed configuration with resources, clients, workersConfig, webConfig, logConfig, and failureConfig.
+   * }} Parsed configuration with resources, clients, workersConfig, webConfig, logConfig,
+   * emitConfig, and failureConfig.
    */
   parse() {
     const mappedResources = Object.fromEntries(
@@ -73,6 +76,7 @@ class ConfigParser {
       workersConfig: this.#workersConfig(),
       webConfig:     this.#webConfig(),
       logConfig:     this.#logConfig(),
+      emitConfig:    this.#emitConfig(),
       failureConfig: this.#failureConfig(),
     };
   }
@@ -102,6 +106,14 @@ class ConfigParser {
    */
   #logConfig() {
     return LogConfig.fromObject(this.config.log);
+  }
+
+  /**
+   * Creates an EmitConfig from the parsed YAML emit section.
+   * @returns {EmitConfig} The emit configuration instance.
+   */
+  #emitConfig() {
+    return EmitConfig.fromObject(this.config.emit);
   }
 
   /**
