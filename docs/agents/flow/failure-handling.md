@@ -7,7 +7,7 @@
 3. If exhausted: job moves to `dead`.
 4. `JobRegistry.promoteReadyJobs()` (each engine tick) moves jobs with `readyBy ≤ Date.now()` back to `retryQueue`.
 
-`ResourceRequestJob` retries up to `max-retries` times. `ActionProcessingJob`, `PaginatedActionProcessingJob`, and `HtmlParseJob` are exhausted after the **first** failure.
+`ResourceRequestJob` retries up to `max-retries` times. `ActionProcessingJob`, `PaginatedActionProcessingJob`, and `HtmlParseJob` are exhausted after the **first** failure — this is now genuinely enforced by `JobRegistryInstance#fail()` (which trusts each job's own `exhausted()`/`cooldown` rather than always applying the registry's configured global), instead of being silently ignored. `EmitJob`'s own retry/cooldown policy is documented in the crawler decisions log rather than here.
 
 ---
 

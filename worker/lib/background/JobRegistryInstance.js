@@ -62,10 +62,10 @@ class JobRegistryInstance {
   fail(job) {
     if (!job) return;
     this.#processing.remove(job.id);
-    if (job.exhausted(this.#maxRetries)) {
+    if (job.exhausted()) {
       this.#dead.push(job);
     } else {
-      job.applyCooldown(this.#cooldown);
+      job.applyCooldown(job.cooldown ?? this.#cooldown);
       this.#failed.push(job);
     }
   }
