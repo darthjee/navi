@@ -104,14 +104,16 @@ class Client {
    * @param {number} [expectedStatus] The expected HTTP response status code. When omitted,
    * any 2xx status is treated as success.
    * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
+   * @param {object} [headers={}] Extra HTTP headers for this single emit call, merged over
+   * the client's configured headers (per-call keys win on collision).
    * @returns {Promise<object>} The Axios response object.
    * @throws {RequestFailed} Throws an error if the request fails or the status does not match.
    */
-  async emit(method, resourceUrl, body, expectedStatus, logContext) {
+  async emit(method, resourceUrl, body, expectedStatus, logContext, headers = {}) {
     const requestUrl = this.#buildUrl(resourceUrl);
     logContext.info(`[Client:${this.name}] Emitting ${method} ${requestUrl}`);
     try {
-      return await this.#emitRequest(method, requestUrl, body, expectedStatus, logContext);
+      return await this.#emitRequest(method, requestUrl, body, expectedStatus, logContext, headers);
     } catch (error) {
       this.#handleError(error, requestUrl, logContext);
     }
@@ -161,11 +163,17 @@ class Client {
    * @param {number} [expectedStatus] The expected HTTP response status code. When omitted,
    * any 2xx status is treated as success.
    * @param {LogContext} logContext Context carrying workerId/jobId for log entries.
+   * @param {object} [headers={}] Extra HTTP headers for this single emit call, merged over
+   * the client's configured headers (per-call keys win on collision).
    * @returns {Promise<object>} The Axios response object.
    * @throws {RequestFailed} Throws an error if the response status does not match.
    */
-  async #emitRequest(method, requestUrl, body, expectedStatus, logContext) {
-    const options = { timeout: this.timeout, headers: this.headers, validateStatus: () => true };
+  async #emitRequest(method, requestUrl, body, expectedStatus, logContext, headers = {}) {
+    const options = {
+      timeout: this.timeout,
+      headers: { ...this.headers, ...headers },
+      validateStatus: () => true,
+    };
 
     let response;
     switch (method) {

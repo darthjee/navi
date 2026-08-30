@@ -222,6 +222,56 @@ describe('Client', () => {
       });
     });
 
+    describe('per-call headers', () => {
+      describe('when no headers argument is given', () => {
+        it('sends exactly the client headers', async () => {
+          client = ClientFactory.build({ baseUrl, headers: { 'X-Client': 'base' } });
+          AxiosUtils.stubPost(200);
+
+          await client.emit('POST', resourceUrl, body, 200, logContext);
+
+          expect(axios.post).toHaveBeenCalledWith(fullEmitUrl, body, {
+            timeout: 5000,
+            headers: { 'X-Client': 'base' },
+            validateStatus: jasmine.any(Function),
+          });
+        });
+      });
+
+      describe('when the per-call headers have disjoint keys', () => {
+        it('sends the union of client and per-call headers', async () => {
+          client = ClientFactory.build({ baseUrl, headers: { 'X-Client': 'base' } });
+          AxiosUtils.stubPost(200);
+
+          await client.emit('POST', resourceUrl, body, 200, logContext, { 'X-Emit': 'extra' });
+
+          expect(axios.post).toHaveBeenCalledWith(fullEmitUrl, body, {
+            timeout: 5000,
+            headers: { 'X-Client': 'base', 'X-Emit': 'extra' },
+            validateStatus: jasmine.any(Function),
+          });
+        });
+      });
+
+      describe('when a per-call header collides with a client header', () => {
+        it('uses the per-call value and keeps the other client headers', async () => {
+          client = ClientFactory.build({
+            baseUrl,
+            headers: { Authorization: 'Bearer base', 'X-Client': 'base' },
+          });
+          AxiosUtils.stubPut(200);
+
+          await client.emit('PUT', resourceUrl, body, 200, logContext, { Authorization: 'Bearer override' });
+
+          expect(axios.put).toHaveBeenCalledWith(fullEmitUrl, body, {
+            timeout: 5000,
+            headers: { Authorization: 'Bearer override', 'X-Client': 'base' },
+            validateStatus: jasmine.any(Function),
+          });
+        });
+      });
+    });
+
     describe('when no expectedStatus is given', () => {
       [200, 201, 204].forEach((statusCode) => {
         it(`treats ${statusCode} as a success`, async () => {
