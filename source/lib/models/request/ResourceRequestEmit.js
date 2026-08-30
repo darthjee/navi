@@ -1,6 +1,8 @@
 import { ClientReference } from './ClientReference.js';
 import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
 import { MissingEmitUrl } from '../../exceptions/config/MissingEmitUrl.js';
+import { InvalidEmitRetries } from '../../exceptions/config/InvalidEmitRetries.js';
+import { InvalidEmitCooldown } from '../../exceptions/config/InvalidEmitCooldown.js';
 
 /**
  * The set of supported `emit.method` values.
@@ -17,6 +19,8 @@ const EMIT_METHODS = ['POST', 'PUT', 'PATCH'];
 class ResourceRequestEmit {
   #clientName;
   #clientNamespace;
+  #retries;
+  #cooldown;
 
   /**
    * @param {object} attributes ResourceRequestEmit attributes.
@@ -27,14 +31,23 @@ class ResourceRequestEmit {
    * one of "POST", "PUT", "PATCH".
    * @param {string} attributes.url The URL to emit the request to.
    * @param {number} [attributes.status] The expected status code of the emit response.
+   * @param {number} [attributes.retries] The maximum number of retries for this emit,
+   * overriding EmitJob's own default. Must be a non-negative number when given.
+   * @param {number} [attributes.cooldown] The cooldown, in milliseconds, applied between
+   * retries for this emit, overriding EmitJob's own default. Must be a non-negative
+   * number when given.
    */
-  constructor({ client, method, url, status }) {
+  constructor({ client, method, url, status, retries, cooldown }) {
     if (!EMIT_METHODS.includes(method)) throw new InvalidEmitMethod(method);
     if (!url) throw new MissingEmitUrl();
+    if (retries !== undefined && (typeof retries !== 'number' || retries < 0)) throw new InvalidEmitRetries(retries);
+    if (cooldown !== undefined && (typeof cooldown !== 'number' || cooldown < 0)) throw new InvalidEmitCooldown(cooldown);
 
     const parsedClient = ClientReference.parse(client);
     this.#clientName = parsedClient.name;
     this.#clientNamespace = parsedClient.namespace;
+    this.#retries = retries;
+    this.#cooldown = cooldown;
 
     this.method = method;
     this.url = url;
@@ -56,6 +69,24 @@ class ResourceRequestEmit {
    */
   get clientNamespace() {
     return this.#clientNamespace;
+  }
+
+  /**
+   * Returns the maximum number of retries configured for this emit, or undefined
+   * when not set, letting EmitJob apply its own default.
+   * @returns {number|undefined} The configured retries, or undefined.
+   */
+  get retries() {
+    return this.#retries;
+  }
+
+  /**
+   * Returns the cooldown, in milliseconds, configured for this emit, or undefined
+   * when not set, letting EmitJob apply its own default.
+   * @returns {number|undefined} The configured cooldown, or undefined.
+   */
+  get cooldown() {
+    return this.#cooldown;
   }
 
   /**
