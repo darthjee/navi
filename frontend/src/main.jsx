@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Emissions from './components/pages/Emissions.jsx';
 import Job from './components/pages/Job.jsx';
 import Jobs from './components/pages/Jobs.jsx';
 import Layout from './components/pages/Layout.jsx';
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="jobs/:status" element={<Jobs />} />
           <Route path="job/:id" element={<Job />} />
           <Route path="memory/status" element={<MemoryStatus />} />
+          <Route path="emissions" element={<Emissions />} />
         </Route>
       </Routes>
     </HashRouter>
