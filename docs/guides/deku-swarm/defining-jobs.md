@@ -40,10 +40,14 @@ class FlakyJob extends Job {
 }
 ```
 
-- `get maxRetries()` — the maximum number of failed attempts allowed before the job is considered exhausted. Defaults to `3`; override the getter in a subclass to raise or lower it per job type. A `maxRetries` of `1` means the very first failure exhausts the job.
+- `constructor({ id, maxRetries, cooldown })` — besides `id`, a job can also carry its own `maxRetries`/`cooldown`, both optional. Pass them when you need a *per-instance* retry policy (e.g. computed from the job's own attributes) rather than one fixed per job class.
+- `get maxRetries()` — the maximum number of failed attempts allowed before the job is considered exhausted. Defaults to `3` (also the default when the constructor's `maxRetries` param is omitted); override the getter in a subclass to raise or lower it per job type, or pass `maxRetries` to the constructor to set it per instance. A `maxRetries` of `1` means the very first failure exhausts the job.
+- `get cooldown()` — this job's own cooldown override, in milliseconds, or `undefined` if none was passed to the constructor. When set, the registry uses it instead of its own globally-configured cooldown when this job fails (see [`JobRegistry.fail(job)`](./reference.md)).
 - `applyCooldown(ms)` — marks the job not ready for retry until `ms` milliseconds from now. This is called internally by the registry when a job fails (see [Job Lifecycle](./job-lifecycle.md)); you generally don't call it yourself, but knowing it exists explains why a failed job doesn't retry instantly.
 - `isReadyBy(currentTime)` — returns whether the job's cooldown has elapsed as of `currentTime`. An internal scheduling hook, exposed as reference for readers building custom registries or tooling around jobs.
 - `exhausted(maxRetries)` — returns whether the job has used up its allotted retries. Also internal-but-public, used by the registry to decide between re-queuing and dead-lettering a failed job.
+
+A subclass's own `get maxRetries()` (or `get cooldown()`) override always takes full precedence — it's a plain method override, so it wins regardless of whatever was passed to the constructor. Constructor params are for jobs that don't override the getter but still need a value that varies per instance.
 
 ### How retry math works under the hood
 

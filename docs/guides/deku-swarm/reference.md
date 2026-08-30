@@ -8,12 +8,13 @@ Abstract base class for every unit of work. See [Defining Jobs](./defining-jobs.
 
 | Member | Description |
 |--------|-------------|
-| `constructor({ id })` | `id` is the job's unique identifier. |
+| `constructor({ id, maxRetries, cooldown })` | `id` is the job's unique identifier. `maxRetries`/`cooldown` are optional per-instance overrides (see the getters below). |
 | `async perform(logContext)` | Must be overridden by subclasses. Throwing marks the job as failed; resolving marks it finished. |
 | `get readyBy` | The absolute timestamp (epoch ms) before which the job isn't eligible for retry. |
 | `applyCooldown(ms)` | Sets `readyBy` to `Date.now() + ms`. Called internally on failure; a negative `ms` marks the job immediately ready. |
 | `isReadyBy(currentTime)` | Whether the job's cooldown has elapsed as of `currentTime`. |
-| `get maxRetries()` | Maximum retry count for this job class. Defaults to `3`; override to customize per subclass. |
+| `get maxRetries()` | Maximum retry count for this job. Returns the constructor's `maxRetries` if given, else `3`; override the getter in a subclass to customize per job class (the override always wins over the constructor param). |
+| `get cooldown()` | This job's own cooldown override in ms, or `undefined` if not passed to the constructor. Used by `JobRegistry.fail(job)` in place of the registry's configured global when set. |
 | `exhausted(maxRetries = this.maxRetries)` | Whether the job has used up its retry attempts. |
 
 ## `JobFactory`
