@@ -119,7 +119,9 @@ class EmitJob extends Job {
     try {
       this.lastError = undefined;
       const url = this.#emit.resolveUrl(this.#parameters);
-      const response = await this.#getClient().emit(this.#emit.method, url, this.#item, this.#emit.status, logContext);
+      const response = await this.#getClient().emit(
+        this.#emit.method, url, this.#item, this.#emit.status, logContext, this.#emit.headers,
+      );
       return response;
     } catch (error) {
       logContext.error(`EmitJob #${this.id} failed: ${error}`);
