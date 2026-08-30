@@ -35,6 +35,8 @@ resources:
         client: majora_api
         method: POST
         url: /api/miniatures
+        headers:
+          Authorization: Bearer $MAJORA_API_TOKEN
       actions:
         - resource: miniature_detail
           parameters:
