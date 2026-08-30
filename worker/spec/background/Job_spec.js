@@ -11,6 +11,12 @@ describe('Job', () => {
     it('stores the id', () => {
       expect(job.id).toEqual('test-id');
     });
+
+    describe('when no params are given', () => {
+      it('does not raise', () => {
+        expect(() => new Job()).not.toThrow();
+      });
+    });
   });
 
   describe('#perform', () => {
@@ -48,6 +54,48 @@ describe('Job', () => {
   describe('#maxRetries', () => {
     it('returns 3 by default', () => {
       expect(job.maxRetries).toBe(3);
+    });
+
+    describe('when a custom maxRetries is passed to the constructor', () => {
+      beforeEach(() => {
+        job = new Job({ id: 'test-id', maxRetries: 7 });
+      });
+
+      it('returns the custom value', () => {
+        expect(job.maxRetries).toBe(7);
+      });
+    });
+
+    describe('when a subclass overrides the getter', () => {
+      class CustomJob extends Job {
+        get maxRetries() {
+          return 1;
+        }
+      }
+
+      beforeEach(() => {
+        job = new CustomJob({ id: 'test-id', maxRetries: 7 });
+      });
+
+      it('the subclass getter wins over the constructor value', () => {
+        expect(job.maxRetries).toBe(1);
+      });
+    });
+  });
+
+  describe('#cooldown', () => {
+    it('returns undefined by default', () => {
+      expect(job.cooldown).toBeUndefined();
+    });
+
+    describe('when a custom cooldown is passed to the constructor', () => {
+      beforeEach(() => {
+        job = new Job({ id: 'test-id', cooldown: 12_345 });
+      });
+
+      it('returns the custom value', () => {
+        expect(job.cooldown).toBe(12_345);
+      });
     });
   });
 
