@@ -57,6 +57,15 @@ describe('Client', () => {
       expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
       expect(logContext.error).toHaveBeenCalled();
     });
+
+    it('forwards the response headers onto the thrown RequestFailed', async () => {
+      const headers = { 'retry-after': '5' };
+      spyOn(axios, 'get').and.returnValue(Promise.resolve({ status: 404, headers }));
+
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(
+        jasmine.objectContaining({ name: 'RequestFailed', statusCode: 404, headers }),
+      );
+    });
   });
 
   describe('when request status is 404 but it is a match', () => {
@@ -86,6 +95,15 @@ describe('Client', () => {
 
       await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
       expect(logContext.error).toHaveBeenCalled();
+    });
+
+    it('forwards the caught error response headers onto the thrown RequestFailed', async () => {
+      const headers = { 'retry-after': '30' };
+      AxiosUtils.stubGetRejection({ response: { status: 500, headers } });
+
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(
+        jasmine.objectContaining({ name: 'RequestFailed', statusCode: 500, headers }),
+      );
     });
   });
 
