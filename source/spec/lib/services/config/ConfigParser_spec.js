@@ -1,5 +1,6 @@
 import { MissingClientsConfig } from '../../../../lib/exceptions/config/MissingClientsConfig.js';
 import { MissingResourceConfig } from '../../../../lib/exceptions/config/MissingResourceConfig.js';
+import { EmitConfig } from '../../../../lib/models/configs/EmitConfig.js';
 import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
 import { LogConfig } from '../../../../lib/models/configs/LogConfig.js';
 import { WebConfig } from '../../../../lib/models/configs/WebConfig.js';
@@ -158,6 +159,20 @@ describe('ConfigParser', () => {
 
     it('returns the default LogConfig size when the config has no log key', () => {
       expect(parseFixture('sample_config.yml').logConfig.size).toBe(100);
+    });
+
+    describe('when the config has an emit key', () => {
+      it('returns an EmitConfig instance', () => {
+        expect(parseFixture('sample_config_with_emit.yml').emitConfig).toBeInstanceOf(EmitConfig);
+      });
+
+      it('returns the configured emit size', () => {
+        expect(parseFixture('sample_config_with_emit.yml').emitConfig.size).toBe(25);
+      });
+    });
+
+    it('returns the default EmitConfig size when the config has no emit key', () => {
+      expect(parseFixture('sample_config.yml').emitConfig.size).toBe(100);
     });
 
     describe('when the config has a failure key', () => {
