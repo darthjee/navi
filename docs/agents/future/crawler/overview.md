@@ -34,3 +34,8 @@ The `ExtractionJob` is **parallel** to existing jobs — it does not replace cha
 4. **Preserve the existing chaining mechanism** for children URL discovery — no changes to the current architecture
 5. **Maintain backward compatibility** — existing cache-warming configurations continue to work without modification
 6. **Reuse the existing clients infrastructure** — the `EmitJob` references a `client` from the YAML to know where to send data
+7. **Track and observe emissions** — aggregate `extracted`/`emitted`/`failed`/`dead` counters plus a per-emission ring buffer, exposed at `GET /emissions.json` and summarised in `GET /stats.json` (**implemented**, #703)
+
+## Status
+
+- Emission tracking / observability (counters + ring buffer + `GET /emissions.json`) is **implemented** (#703), built on the `#698` `MemoryDataStore` ring-buffer pattern. Sized by the top-level `emit.size` config (default 100); data resets on engine stop.

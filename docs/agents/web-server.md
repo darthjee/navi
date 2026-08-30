@@ -37,6 +37,8 @@ source/lib/server/
     │   └── EngineStopHandler.js
     ├── memory/
     │   └── MemoryStatusHandler.js
+    ├── emissions/
+    │   └── EmissionsHandler.js
     └── jobs/
         ├── JobHandler.js
         ├── JobLogsHandler.js
@@ -53,7 +55,8 @@ constructs the executor as `(req, res, ...parameters)` only when a matching requ
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/settings.json` | Returns `{ "enable_shutdown": true }` when shutdown is enabled; 403 when disabled. |
-| `GET` | `/stats.json` | Aggregated worker and job-queue counts. |
+| `GET` | `/stats.json` | Aggregated worker and job-queue counts, plus crawler `emissions` counters. |
+| `GET` | `/emissions.json` | Crawler emission tracking: aggregate counters plus a paginated ring buffer of per-emission records. |
 | `GET` | `/links.json` | Configured `web.links` plus one link per client (`base_url` and `linkText`/client name). |
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
@@ -115,6 +118,42 @@ Returns the current process's RSS memory usage against the resolved maximum:
 
 `maximum` is resolved via a fallback chain, the first source that yields a value wins: **`web.memory.maximum` (config) → cgroup v2 limit (`memory.max`) → cgroup v1 limit (`memory.limit_in_bytes`) → OS total memory (`os.totalmem()`)**. Cgroup v2 reports the literal string `"max"`, and cgroup v1 reports a very large sentinel number, when unbounded — both are treated as "no limit" and fall through to the next source in the chain. `os.totalmem()` never fails, so the chain always resolves to some maximum.
 
+### `GET /emissions.json`
+
+Reports the crawler's EmitJob emission tracking — the aggregate counters and a paginated,
+newest-truncated ring buffer of per-emission records:
+
+```json
+{
+  "counts": { "extracted": 128, "emitted": 120, "failed": 5, "dead": 3 },
+  "emissions": [
+    {
+      "id": 1,
+      "status": "success",
+      "url": "https://hooks.example.com/items/42",
+      "method": "POST",
+      "httpStatus": 200,
+      "error": null,
+      "itemRef": 42,
+      "timestamp": "2026-08-30T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+`counts.extracted` is every item produced by an `ExtractionJob` (whether or not it had an
+`emit` config); `emitted` / `failed` / `dead` count emission outcomes. `status` on a record
+is `success` (accepted response), `failed` (a retryable error — the job will be retried) or
+`dead` (retries exhausted, or a non-retryable 4xx). `itemRef` is a compact reference to the
+emitted item (its `id` field when present, otherwise `null`) — never the full payload.
+`error` is the stringified failure (or `null`).
+
+`emissions` is ordered oldest-first, capped at `web.logs_page_size` records (default 20,
+shared with `/logs.json`). Pass `?last_id=<id>` to page forward from a known record id;
+an unknown id yields an empty `emissions` list. The counters are exact for the whole run
+even after old records are evicted from the ring buffer. Both the ring buffer and the
+counters reset when the engine stops.
+
 ## `/api` namespace
 
 Every `/api/*` route requires a bearer token matching `web.api.token` (see [Configuration](#configuration)), checked by the shared `SecuredRequestHandler` base class: `Authorization: Bearer <web.api.token value>`. A missing/invalid token — or no `web.api.token` configured at all — responds 403. This is a distinct, external-facing namespace from the UI-facing `/engine/*` routes above, reusing the `NamespaceMap.include()`/`NamespaceMapBuilder` runtime-merge machinery to accept config changes without a restart.
@@ -173,6 +212,10 @@ Malformed `targets` (missing/non-string `namespace`, or a non-array-of-strings `
 Identical to `PATCH /engine/stop` — no body, 409 if not `running`.
 
 ## Serialization
+
+**`LogSerializer`** flattens `Log` entries for `GET /logs.json`; **`EmissionSerializer`**
+does the same for `EmissionRecord` entries in the `emissions` array of `GET /emissions.json`
+(`id`, `status`, `url`, `method`, `httpStatus`, `error`, `itemRef`, `timestamp`).
 
 **`JobIndexSerializer`** (list view):
 
@@ -233,3 +276,17 @@ When `idle_timeout` is set to a positive number of seconds, the application auto
 `web.memory.thresholds` must be in strictly ascending order (`low < medium < high < over`); boot fails fast with `InvalidMemoryThresholds` when this doesn't hold. `web.memory` (like the rest of `web:`) is only ever parsed when `web.port` is set — without a running web server there's no route to serve it from.
 
 `web.memory.data_store.size` (default `100`) configures the retention limit of an in-memory ring buffer of memory readings, mirroring the log buffer's `size`. As of this writing, nothing populates this store yet — there is no periodic RSS-polling loop and no read endpoint for it — this config key only sizes the buffer for a future issue to wire up.
+
+### `emit.size`
+
+```yaml
+emit:
+  size: 100   # optional; retention of the in-memory emission ring buffer
+```
+
+`emit.size` (default `100`) is a **top-level** config key — a sibling of `resources`,
+`web` and `log`, mirroring how top-level `log.size` relates to per-context logging. It is
+**separate from** the per-resource `resources.*.emit` block (which declares where a
+crawler sends extracted items): `emit.size` only bounds how many per-emission records
+`GET /emissions.json` keeps in memory. The emission counters themselves are unbounded and
+stay exact for the whole run; both the ring buffer and the counters reset on engine stop.
