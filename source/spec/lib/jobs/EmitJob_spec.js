@@ -28,8 +28,10 @@ describe('EmitJob', () => {
   let logContext;
   let response;
 
-  const rebuildJob = ({ emitUrl = url, method = 'POST', status = undefined, jobItem = item, jobParameters = {} } = {}) => {
-    emit = ResourceRequestEmitFactory.build({ url: emitUrl, method, status });
+  const rebuildJob = ({
+    emitUrl = url, method = 'POST', status = undefined, jobItem = item, jobParameters = {}, headers = undefined,
+  } = {}) => {
+    emit = ResourceRequestEmitFactory.build({ url: emitUrl, method, status, headers });
     parameters = jobParameters;
     job = EmitJobFactory.build({ item: jobItem, emit, clients, parameters });
   };
@@ -96,6 +98,32 @@ describe('EmitJob', () => {
 
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
+      });
+    });
+
+    describe('emit headers forwarding', () => {
+      beforeEach(() => {
+        spyOn(client, 'emit').and.resolveTo({ status: 200, data: {} });
+      });
+
+      describe('when the emit configures headers', () => {
+        beforeEach(() => {
+          rebuildJob({ headers: { 'X-Token': 'abc' } });
+        });
+
+        it('passes the configured headers as the 6th argument to client.emit', async () => {
+          await job.perform(logContext);
+
+          expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, { 'X-Token': 'abc' });
+        });
+      });
+
+      describe('when the emit configures no headers', () => {
+        it('passes an empty object as the 6th argument to client.emit', async () => {
+          await job.perform(logContext);
+
+          expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, {});
+        });
       });
     });
 

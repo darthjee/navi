@@ -1,8 +1,15 @@
 import { ClientReference } from './ClientReference.js';
 import { InvalidEmitCooldown } from '../../exceptions/config/InvalidEmitCooldown.js';
+import { InvalidEmitHeaders } from '../../exceptions/config/InvalidEmitHeaders.js';
 import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
 import { InvalidEmitRetries } from '../../exceptions/config/InvalidEmitRetries.js';
 import { MissingEmitUrl } from '../../exceptions/config/MissingEmitUrl.js';
+
+/**
+ * The value types accepted for an individual `emit.headers` entry.
+ * @type {Array<string>}
+ */
+const HEADER_VALUE_TYPES = ['string', 'number', 'boolean'];
 
 /**
  * The set of supported `emit.method` values.
@@ -21,6 +28,7 @@ class ResourceRequestEmit {
   #clientNamespace;
   #retries;
   #cooldown;
+  #headers;
 
   /**
    * @param {object} attributes ResourceRequestEmit attributes.
@@ -36,8 +44,11 @@ class ResourceRequestEmit {
    * @param {number} [attributes.cooldown] The cooldown, in milliseconds, applied between
    * retries for this emit, overriding EmitJob's own default. Must be a non-negative
    * number when given.
+   * @param {object} [attributes.headers] A map of extra HTTP headers to send with this
+   * emit request, merged over the client's own headers. Values must be string-coercible
+   * (string, number, or boolean). Defaults to an empty object when omitted.
    */
-  constructor({ client, method, url, status, retries, cooldown }) {
+  constructor({ client, method, url, status, retries, cooldown, headers }) {
     if (!EMIT_METHODS.includes(method)) throw new InvalidEmitMethod(method);
     if (!url) throw new MissingEmitUrl();
     if (retries !== undefined && (typeof retries !== 'number' || retries < 0)) throw new InvalidEmitRetries(retries);
@@ -48,6 +59,7 @@ class ResourceRequestEmit {
     this.#clientNamespace = parsedClient.namespace;
     this.#retries = retries;
     this.#cooldown = cooldown;
+    this.#headers = this.#parseHeaders(headers);
 
     this.method = method;
     this.url = url;
@@ -90,6 +102,15 @@ class ResourceRequestEmit {
   }
 
   /**
+   * Returns the map of extra HTTP headers configured for this emit. Always an object;
+   * an empty object when no headers were configured.
+   * @returns {object} The configured headers map.
+   */
+  get headers() {
+    return this.#headers;
+  }
+
+  /**
    * Returns the URL with every {:placeholder} token replaced by the
    * corresponding value from the parameters object.
    * Tokens with no matching key are left unchanged.
@@ -107,6 +128,25 @@ class ResourceRequestEmit {
    */
   static fromObject(obj) {
     return new ResourceRequestEmit(obj);
+  }
+
+  /**
+   * Validates and normalises the raw `headers` config value.
+   * @param {object} [headers] The raw headers map from config.
+   * @returns {object} The validated headers map, or an empty object when none was given.
+   * @throws {InvalidEmitHeaders} When headers is not a plain object of string-coercible values.
+   */
+  #parseHeaders(headers) {
+    if (headers === undefined) return {};
+    if (headers === null || typeof headers !== 'object' || Array.isArray(headers)) {
+      throw new InvalidEmitHeaders(headers);
+    }
+
+    for (const value of Object.values(headers)) {
+      if (!HEADER_VALUE_TYPES.includes(typeof value)) throw new InvalidEmitHeaders(headers);
+    }
+
+    return headers;
   }
 }
 
