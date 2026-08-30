@@ -3,13 +3,17 @@ import { JobFactory, JobRegistry } from 'deku-swarm';
 import { ActionProcessingJob } from '../../../lib/jobs/ActionProcessingJob.js';
 import { EmitJob } from '../../../lib/jobs/EmitJob.js';
 import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
+import { PaginatedActionProcessingJob } from '../../../lib/jobs/PaginatedActionProcessingJob.js';
 import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 import { ResourceRequest } from '../../../lib/models/request/ResourceRequest.js';
 import { JsonPathParser } from '../../../lib/parsers/JsonPathParser.js';
 import { RegexParser } from '../../../lib/parsers/RegexParser.js';
+import { Namespace } from '../../../lib/registry/Namespace.js';
+import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
 import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
+import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
@@ -204,6 +208,242 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
       expect(enqueued.some((job_) => job_ instanceof EmitJob)).toBeFalse();
       expect(enqueued.some((job_) => job_ instanceof ActionProcessingJob)).toBeTrue();
       expect(axios.post).not.toHaveBeenCalled();
+    });
+  });
+});
+
+/**
+ * End-to-end coverage for the interaction between `paginated_actions` fan-out and the
+ * `parser` + `emit` extraction path (issue #705). It drives the real chain
+ * ResourceRequestJob → PaginatedActionProcessingJob → per-page ResourceRequestJob →
+ * ExtractionJob → EmitJob through the real JobFactory/JobRegistry, resolving resources and
+ * clients from the real NamespaceMap singleton, and mocking only the HTTP boundary
+ * (`axios.get` for the crawl fetches, `axios.post` for the emit).
+ */
+describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
+  let logContext;
+  let namespaceMap;
+  let parserRegistry;
+
+  const buildNamespaceMap = ({ resources }) => NamespaceMap.build({
+    default: new Namespace({
+      name: 'default',
+      resources,
+      clients: {
+        lootstudios: ClientFactory.build({ name: 'lootstudios', baseUrl: 'https://app.lootstudios.com' }),
+        majora_api: ClientFactory.build({ name: 'majora_api', baseUrl: 'https://majora.example.com' }),
+      },
+    }),
+  });
+
+  const registerJobFactories = () => {
+    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: namespaceMap } });
+    JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
+    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
+    JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: namespaceMap } });
+  };
+
+  const enqueued = (klass) => JobRegistry.jobsByStatus('enqueued').filter((job) => job instanceof klass);
+
+  beforeEach(() => {
+    LoggerUtils.stubLoggerMethods();
+    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
+
+    JobRegistry.build({ cooldown: -1 });
+    parserRegistry = new ParserRegistry({ json_path: new JsonPathParser(), regex: new RegexParser() });
+
+    AxiosUtils.stubPost(200, {});
+  });
+
+  afterEach(() => {
+    JobRegistry.reset();
+    JobFactory.reset();
+    NamespaceMap.reset();
+  });
+
+  describe('Scenario A — the paginated target resource carries parser + emit', () => {
+    let originJob;
+
+    beforeEach(() => {
+      const targetRequest = new ResourceRequest({
+        url: '/products/{:page}.json',
+        status: 200,
+        clientName: 'lootstudios',
+        namespace: 'default',
+        parser: { type: 'json_path', match: 'items', fields: { sku: 'sku', name: 'name' } },
+        emit: { client: 'majora_api', method: 'POST', url: '/api/products/{:page}' },
+      });
+
+      namespaceMap = buildNamespaceMap({
+        resources: {
+          product: ResourceFactory.build({ name: 'product', resourceRequests: [targetRequest], namespace: 'default' }),
+        },
+      });
+      registerJobFactories();
+
+      const originRequest = new ResourceRequest({
+        url: '/index.json',
+        status: 200,
+        clientName: 'lootstudios',
+        namespace: 'default',
+        paginated_actions: [
+          { resource: 'product', pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }] },
+        ],
+      });
+      originJob = new ResourceRequestJob({ id: 'origin', resourceRequest: originRequest, parameters: {}, clients: namespaceMap });
+
+      // page-varying stub: the origin fetch drives pagination, each product page returns its own list
+      spyOn(axios, 'get').and.callFake((url) => {
+        const match = url.match(/\/products\/(\d+)\.json$/);
+        if (match) {
+          const page = match[1];
+          return Promise.resolve({
+            status: 200,
+            data: JSON.stringify({
+              items: [
+                { sku: `P${page}-A`, name: `Product ${page} A` },
+                { sku: `P${page}-B`, name: `Product ${page} B` },
+              ],
+            }),
+          });
+        }
+        return Promise.resolve({ status: 200, data: JSON.stringify({ total_pages: 3 }) });
+      });
+    });
+
+    it('runs an independent ExtractionJob → EmitJob chain per page, with no cross-talk', async () => {
+      await originJob.perform(logContext);
+
+      const paginatedJobs = enqueued(PaginatedActionProcessingJob);
+      expect(paginatedJobs.length).toBe(1);
+      expect(enqueued(ExtractionJob).length).toBe(0);
+
+      await paginatedJobs[0].perform(logContext);
+
+      const perPageJobs = enqueued(ResourceRequestJob);
+      expect(perPageJobs.length).toBe(3);
+      expect(perPageJobs.map((job) => job.arguments.url).sort()).toEqual([
+        '/products/1.json', '/products/2.json', '/products/3.json',
+      ]);
+
+      for (const job of perPageJobs) {
+        await job.perform(logContext);
+      }
+
+      const extractionJobs = enqueued(ExtractionJob);
+      expect(extractionJobs.length).toBe(3);
+
+      for (const job of extractionJobs) {
+        await job.perform(logContext);
+      }
+
+      const emitJobs = enqueued(EmitJob);
+      expect(emitJobs.length).toBe(6);
+
+      for (const job of emitJobs) {
+        await job.perform(logContext);
+      }
+
+      expect(axios.post).toHaveBeenCalledTimes(6);
+      for (const page of [1, 2, 3]) {
+        expect(axios.post).toHaveBeenCalledWith(
+          `https://majora.example.com/api/products/${page}`,
+          { sku: `P${page}-A`, name: `Product ${page} A` },
+          jasmine.anything(),
+        );
+        expect(axios.post).toHaveBeenCalledWith(
+          `https://majora.example.com/api/products/${page}`,
+          { sku: `P${page}-B`, name: `Product ${page} B` },
+          jasmine.anything(),
+        );
+      }
+    });
+  });
+
+  describe('Scenario B — the origin resource carries parser + emit alongside paginated_actions', () => {
+    let originJob;
+
+    beforeEach(() => {
+      const targetRequest = new ResourceRequest({
+        url: '/products/{:page}.json',
+        status: 200,
+        clientName: 'lootstudios',
+        namespace: 'default',
+      });
+
+      namespaceMap = buildNamespaceMap({
+        resources: {
+          product: ResourceFactory.build({ name: 'product', resourceRequests: [targetRequest], namespace: 'default' }),
+        },
+      });
+      registerJobFactories();
+
+      const originRequest = new ResourceRequest({
+        url: '/catalog.json',
+        status: 200,
+        clientName: 'lootstudios',
+        namespace: 'default',
+        parser: { type: 'json_path', match: 'products', fields: { id: 'id', title: 'title' } },
+        emit: { client: 'majora_api', method: 'POST', url: '/api/catalog' },
+        paginated_actions: [
+          { resource: 'product', pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }] },
+        ],
+      });
+      originJob = new ResourceRequestJob({ id: 'origin', resourceRequest: originRequest, parameters: {}, clients: namespaceMap });
+
+      spyOn(axios, 'get').and.callFake((url) => {
+        if (url.includes('/products/')) return Promise.resolve({ status: 200, data: '{}' });
+        return Promise.resolve({
+          status: 200,
+          data: JSON.stringify({
+            total_pages: 2,
+            products: [{ id: 'c1', title: 'Cat One' }, { id: 'c2', title: 'Cat Two' }],
+          }),
+        });
+      });
+    });
+
+    it('emits the origin extraction exactly once while the pagination fan-out still happens', async () => {
+      await originJob.perform(logContext);
+
+      expect(enqueued(ExtractionJob).length).toBe(1);
+      expect(enqueued(PaginatedActionProcessingJob).length).toBe(1);
+
+      const [originExtraction] = enqueued(ExtractionJob);
+      await originExtraction.perform(logContext);
+
+      const originEmitJobs = enqueued(EmitJob);
+      expect(originEmitJobs.length).toBe(2);
+
+      for (const job of originEmitJobs) {
+        await job.perform(logContext);
+      }
+
+      expect(axios.post).toHaveBeenCalledTimes(2);
+      expect(axios.post).toHaveBeenCalledWith(
+        'https://majora.example.com/api/catalog', { id: 'c1', title: 'Cat One' }, jasmine.anything(),
+      );
+      expect(axios.post).toHaveBeenCalledWith(
+        'https://majora.example.com/api/catalog', { id: 'c2', title: 'Cat Two' }, jasmine.anything(),
+      );
+
+      const extractionCountBefore = enqueued(ExtractionJob).length;
+      const emitCountBefore = enqueued(EmitJob).length;
+
+      const [paginatedJob] = enqueued(PaginatedActionProcessingJob);
+      await paginatedJob.perform(logContext);
+
+      const perPageJobs = enqueued(ResourceRequestJob);
+      expect(perPageJobs.map((job) => job.arguments.url).sort()).toEqual(['/products/1.json', '/products/2.json']);
+
+      for (const job of perPageJobs) {
+        await job.perform(logContext);
+      }
+
+      // the paginated target has no parser: it produces no further ExtractionJob/EmitJob
+      expect(enqueued(ExtractionJob).length).toBe(extractionCountBefore);
+      expect(enqueued(EmitJob).length).toBe(emitCountBefore);
+      expect(axios.post).toHaveBeenCalledTimes(2);
     });
   });
 });

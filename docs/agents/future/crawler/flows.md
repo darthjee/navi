@@ -88,3 +88,70 @@ The `ExtractionJob` **does not interfere** with `ActionProcessingJob`. Both proc
 - Have only `actions` (pure cache-warming — current behavior)
 - Have only `parser` + `emit` (pure extraction — no chaining)
 - Have both (crawling with extraction — extracts data AND chains children)
+
+### Interaction with paginated_actions
+
+`ResourceRequestJob.#handleResponse()` runs four things off a single successful response, with
+no early return between them: it enqueues asset jobs, enqueues one `ExtractionJob` when the
+resource declares `parser` + `emit`, calls `enqueueActions` (normal chaining), and calls
+`enqueuePaginatedActions` (pagination fan-out). The `ExtractionJob` is therefore enqueued
+**per performed `ResourceRequestJob`**, in parallel with `enqueueActions` and
+`enqueuePaginatedActions` — regardless of how that job was enqueued (startup, `actions`
+chaining, or `paginated_actions` fan-out).
+
+- When the **origin** resource (whose response drives pagination) also has `parser` + `emit`,
+  its `ExtractionJob` → `EmitJob` chain fires exactly once for the origin response,
+  independently of the pagination fan-out. `enqueuePaginatedActions` never clears or
+  re-enqueues that extraction.
+- When the **paginated target** resource has `parser` + `emit`, each per-page
+  `ResourceRequestJob` is a distinct instance and runs its own `ExtractionJob` → `EmitJob`
+  chain independently — one extraction/emit per page. The per-page parameters (inherited
+  parameters + mapped parameters + `{ page_key: page }`) are threaded into
+  `ResourceRequest.enqueueExtraction(...)` and on into each `EmitJob`, so that page's values
+  are applied to field mapping and to `{:placeholder}` resolution in the emit URL.
+- There is no duplication, no missing emits, and no cross-talk between the pagination and
+  extraction paths. Each per-page `ResourceRequestJob` also recomputes its own origin URL
+  from its resolved page URL, so each page's extraction is attributed to that page.
+
+**Worked example:** a resource `index` paginates over a `product` resource that carries
+`parser` + `emit`:
+
+```yaml
+resources:
+  index:
+    - url: /index.json
+      status: 200
+      client: lootstudios
+      paginated_actions:
+        - resource: product
+          pagination:
+            - pages: parsedBody.total_pages
+              page_key: page
+  product:
+    - url: /products/{:page}.json
+      status: 200
+      client: lootstudios
+      parser:
+        type: json_path
+        match: items
+        fields:
+          sku: sku
+          name: name
+      emit:
+        client: majora_api
+        method: POST
+        url: /api/products/{:page}
+```
+
+**Flow** (response to `/index.json` has `total_pages: 3`, each page returns 2 items):
+
+1. `ResourceRequestJob` for `index` → `GET /index.json` → `#handleResponse()` has no `parser`,
+   so it enqueues one `PaginatedActionProcessingJob` and nothing else.
+2. `PaginatedActionProcessingJob` → resolves 3 pages, enqueues one `ResourceRequestJob` per
+   page for `product` with parameters `{ page: 1 }`, `{ page: 2 }`, `{ page: 3 }`.
+3. Each per-page `ResourceRequestJob` → `GET /products/<page>.json` → `#handleResponse()` sees
+   `parser` + `emit` and enqueues one `ExtractionJob` (3 `ExtractionJob`s total, one per page).
+4. Each `ExtractionJob` → extracts 2 items → enqueues one `EmitJob` per item
+   (2 × 3 = 6 `EmitJob`s total).
+5. Each `EmitJob` → `POST https://majora.example.com/api/products/<page>` with the mapped body,
+   the `{:page}` token resolved from that page's parameters.
