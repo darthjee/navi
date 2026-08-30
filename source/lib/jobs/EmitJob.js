@@ -1,5 +1,6 @@
 import { Job } from 'deku-swarm';
 import { RequestFailed } from '../exceptions/request/RequestFailed.js';
+import { EmissionRegistry } from '../registry/EmissionRegistry.js';
 
 /**
  * The set of HTTP status codes considered retryable by EmitJob's default policy:
@@ -116,17 +117,37 @@ class EmitJob extends Job {
    */
   async perform(logContext) {
     logContext.debug(`EmitJob #${this.id} performing`);
+    const url = this.#emit.resolveUrl(this.#parameters);
+    const method = this.#emit.method;
     try {
       this.lastError = undefined;
-      const url = this.#emit.resolveUrl(this.#parameters);
       const response = await this.#getClient().emit(
-        this.#emit.method, url, this.#item, this.#emit.status, logContext, this.#emit.headers,
+        method, url, this.#item, this.#emit.status, logContext, this.#emit.headers,
       );
+      EmissionRegistry.recordEmission({
+        status: 'success', url, method, httpStatus: response?.status ?? null, itemRef: this.#itemRef(),
+      });
       return response;
     } catch (error) {
       logContext.error(`EmitJob #${this.id} failed: ${error}`);
+      this.lastError = error;
+      const dead = this._attempts + 1 >= this.maxRetries;
+      const httpStatus = error instanceof RequestFailed ? error.statusCode : null;
+      EmissionRegistry.recordEmission({
+        status: dead ? 'dead' : 'failed', url, method, httpStatus, error: String(error), itemRef: this.#itemRef(),
+      });
       this._fail(error);
     }
+  }
+
+  /**
+   * Derives a compact reference to the emitted item for the emission record. Never returns
+   * the full payload; falls back to null when the item has no `id` field.
+   * @returns {string|number|null} The item's `id`, or null.
+   * @private
+   */
+  #itemRef() {
+    return this.#item?.id ?? null;
   }
 
   /**

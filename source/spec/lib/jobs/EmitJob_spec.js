@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
 import { EmitJob } from '../../../lib/jobs/EmitJob.js';
+import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { EmitJobFactory } from '../../support/factories/EmitJobFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
@@ -256,6 +257,120 @@ describe('EmitJob', () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
 
         expect(axios.post).toHaveBeenCalledWith('http://other.example.com/items', item, expectedRequestOptions);
+      });
+    });
+  });
+
+  describe('emission tracking', () => {
+    afterEach(() => {
+      EmissionRegistry.reset();
+    });
+
+    describe('when the registry has been built', () => {
+      beforeEach(() => {
+        EmissionRegistry.build();
+      });
+
+      describe('when the emit is successful', () => {
+        beforeEach(() => {
+          response = AxiosUtils.stubPost(200, {});
+        });
+
+        it('records a success emission', async () => {
+          await job.perform(logContext);
+
+          const [record] = EmissionRegistry.getRecords();
+          expect(record.status).toBe('success');
+          expect(record.url).toBe(url);
+          expect(record.method).toBe('POST');
+          expect(record.httpStatus).toBe(200);
+          expect(record.itemRef).toBe(7);
+        });
+
+        it('increments the emitted counter', async () => {
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.counts.emitted).toBe(1);
+        });
+      });
+
+      describe('when the emit fails with a retryable status', () => {
+        beforeEach(() => {
+          AxiosUtils.stubPostRejection({ response: { status: 502 } });
+        });
+
+        it('records a failed emission with the http status', async () => {
+          await job.perform(logContext).catch(() => {});
+
+          const [record] = EmissionRegistry.getRecords();
+          expect(record.status).toBe('failed');
+          expect(record.httpStatus).toBe(502);
+          expect(record.error).toContain('502');
+        });
+
+        it('increments the failed counter', async () => {
+          await job.perform(logContext).catch(() => {});
+
+          expect(EmissionRegistry.counts).toEqual(jasmine.objectContaining({ failed: 1, dead: 0 }));
+        });
+      });
+
+      describe('when the emit fails past maxRetries', () => {
+        beforeEach(() => {
+          emit = ResourceRequestEmitFactory.build({ url, retries: 1 });
+          job = EmitJobFactory.build({ item, emit, clients, parameters: {} });
+          AxiosUtils.stubPostRejection({ response: { status: 502 } });
+        });
+
+        it('records a dead emission', async () => {
+          await job.perform(logContext).catch(() => {});
+
+          const [record] = EmissionRegistry.getRecords();
+          expect(record.status).toBe('dead');
+        });
+
+        it('increments the dead counter but not the failed counter', async () => {
+          await job.perform(logContext).catch(() => {});
+
+          expect(EmissionRegistry.counts).toEqual(jasmine.objectContaining({ failed: 0, dead: 1 }));
+        });
+      });
+
+      describe('when the emit fails with a non-retryable 4xx', () => {
+        beforeEach(() => {
+          AxiosUtils.stubPostRejection({ response: { status: 404 } });
+        });
+
+        it('records a dead emission', async () => {
+          await job.perform(logContext).catch(() => {});
+
+          const [record] = EmissionRegistry.getRecords();
+          expect(record.status).toBe('dead');
+          expect(record.httpStatus).toBe(404);
+        });
+      });
+
+      describe('when the emitted item has no id', () => {
+        beforeEach(() => {
+          rebuildJob({ jobItem: { name: 'no-id' } });
+          response = AxiosUtils.stubPost(200, {});
+        });
+
+        it('records a null itemRef', async () => {
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.getRecords()[0].itemRef).toBeNull();
+        });
+      });
+    });
+
+    describe('when the registry has not been built', () => {
+      beforeEach(() => {
+        response = AxiosUtils.stubPost(200, {});
+      });
+
+      it('still performs without throwing', async () => {
+        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
       });
     });
   });
