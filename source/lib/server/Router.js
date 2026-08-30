@@ -6,6 +6,7 @@ import { HandlerConfig } from '../common/server/HandlerConfig.js';
 import { ApiConfigHandler } from './handlers/api/ApiConfigHandler.js';
 import { ApiEngineStartHandler } from './handlers/api/ApiEngineStartHandler.js';
 import { ApiEngineStopHandler } from './handlers/api/ApiEngineStopHandler.js';
+import { EmissionsHandler } from './handlers/emissions/EmissionsHandler.js';
 import { EngineContinueHandler } from './handlers/engine/EngineContinueHandler.js';
 import { EnginePauseHandler } from './handlers/engine/EnginePauseHandler.js';
 import { EngineReloadHandler } from './handlers/engine/EngineReloadHandler.js';
@@ -14,7 +15,6 @@ import { EngineShutdownHandler } from './handlers/engine/EngineShutdownHandler.j
 import { EngineStartHandler } from './handlers/engine/EngineStartHandler.js';
 import { EngineStatusHandler } from './handlers/engine/EngineStatusHandler.js';
 import { EngineStopHandler } from './handlers/engine/EngineStopHandler.js';
-import { EmissionsHandler } from './handlers/emissions/EmissionsHandler.js';
 import { IndexHandler } from './handlers/IndexHandler.js';
 import { JobHandler } from './handlers/jobs/JobHandler.js';
 import { JobLogsHandler } from './handlers/jobs/JobLogsHandler.js';

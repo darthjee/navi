@@ -362,6 +362,32 @@ describe('EmitJob', () => {
           expect(EmissionRegistry.getRecords()[0].itemRef).toBeNull();
         });
       });
+
+      describe('when the success response carries no status', () => {
+        beforeEach(() => {
+          spyOn(client, 'emit').and.resolveTo(null);
+        });
+
+        it('records a null httpStatus', async () => {
+          await job.perform(logContext);
+
+          expect(EmissionRegistry.getRecords()[0].httpStatus).toBeNull();
+        });
+      });
+
+      describe('when the emit fails with a network-level error', () => {
+        beforeEach(() => {
+          AxiosUtils.stubPostRejection(new Error('network down'));
+        });
+
+        it('records a failed emission with a null httpStatus', async () => {
+          await job.perform(logContext).catch(() => {});
+
+          const [record] = EmissionRegistry.getRecords();
+          expect(record.status).toBe('failed');
+          expect(record.httpStatus).toBeNull();
+        });
+      });
     });
 
     describe('when the registry has not been built', () => {

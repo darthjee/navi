@@ -1,6 +1,6 @@
-import { IncrementalIdGenerator } from '../../../../lib/utils/generators/IncrementalIdGenerator.js';
 import { EmissionRecord } from '../../../../lib/utils/emissions/EmissionRecord.js';
 import { EmissionRecordFactory } from '../../../../lib/utils/emissions/EmissionRecordFactory.js';
+import { IncrementalIdGenerator } from '../../../../lib/utils/generators/IncrementalIdGenerator.js';
 
 describe('EmissionRecordFactory', () => {
   let factory;
