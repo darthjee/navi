@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import formatTimestamp from '../../../utils/formatTimestamp.js';
 import ErrorAlert from '../../elements/ErrorAlert.jsx';
 import LoadingSpinner from '../../elements/LoadingSpinner.jsx';
 
@@ -9,13 +9,6 @@ const STATUS_BADGES = [
   { key: 'failed', variant: 'warning' },
   { key: 'dead', variant: 'dark' },
 ];
-
-const formatTime = (timestamp) => {
-  if (!timestamp) return DASH;
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return timestamp;
-  return format(date, 'yyyy-MM-dd HH:mm:ss');
-};
 
 const renderEmitStatus = (breakdown) => {
   const visible = STATUS_BADGES.filter((badge) => breakdown[badge.key] > 0);
@@ -43,7 +36,7 @@ const renderEmitsSent = (row) => (
 
 const renderRow = (row) => (
   <tr key={row.id}>
-    <td>{formatTime(row.timestamp)}</td>
+    <td>{formatTimestamp(row.timestamp)}</td>
     <td className="font-monospace text-break">{row.originUrl ?? DASH}</td>
     <td><span className="badge text-bg-info">{row.parserType}</span></td>
     <td>{row.itemCount}</td>

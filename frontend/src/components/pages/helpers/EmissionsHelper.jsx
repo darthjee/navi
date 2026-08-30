@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import formatTimestamp from '../../../utils/formatTimestamp.js';
 import ErrorAlert from '../../elements/ErrorAlert.jsx';
 import LoadingSpinner from '../../elements/LoadingSpinner.jsx';
 
@@ -18,13 +18,6 @@ const COUNT_CHIPS = [
   { key: 'failed', label: 'Failed', variant: 'warning' },
   { key: 'dead', label: 'Dead', variant: 'dark' },
 ];
-
-const formatTime = (timestamp) => {
-  if (!timestamp) return DASH;
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return timestamp;
-  return format(date, 'yyyy-MM-dd HH:mm:ss');
-};
 
 const filterRows = (rows, statusFilter) => {
   if (statusFilter === 'all') return rows;
@@ -58,7 +51,7 @@ const renderFilter = (statusFilter, onStatusFilterChange) => (
 
 const renderRow = (row) => (
   <tr key={row.id}>
-    <td>{formatTime(row.timestamp)}</td>
+    <td>{formatTimestamp(row.timestamp)}</td>
     <td>
       <span className={`badge text-bg-${STATUS_VARIANT[row.status] ?? 'secondary'}`}>
         {row.status}
