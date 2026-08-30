@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
+import { EmitJob } from '../../../lib/jobs/EmitJob.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { EmitJobFactory } from '../../support/factories/EmitJobFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
@@ -194,7 +195,9 @@ describe('EmitJob', () => {
         expect(logContext.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
 
-      it('exhausts after maxRetries (default 3) failed attempts', async () => {
+      it('exhausts after maxRetries (default 5, since 502 is retryable) failed attempts', async () => {
+        await job.perform(logContext).catch(() => {});
+        await job.perform(logContext).catch(() => {});
         await job.perform(logContext).catch(() => {});
         await job.perform(logContext).catch(() => {});
         expect(job.exhausted()).toBeFalse();
@@ -225,6 +228,123 @@ describe('EmitJob', () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
 
         expect(axios.post).toHaveBeenCalledWith('http://other.example.com/items', item, expectedRequestOptions);
+      });
+    });
+  });
+
+  describe('#maxRetries', () => {
+    const fail = (error) => { try { job._fail(error); } catch (_) { /* expected */ } };
+
+    describe('when no emit.retries override is configured', () => {
+      it('returns EmitJob.DEFAULT_MAX_RETRIES', () => {
+        expect(job.maxRetries).toBe(EmitJob.DEFAULT_MAX_RETRIES);
+      });
+    });
+
+    describe('when emit.retries is configured', () => {
+      beforeEach(() => {
+        emit = ResourceRequestEmitFactory.build({ url, retries: 2 });
+        job = EmitJobFactory.build({ item, emit, clients, parameters: {} });
+      });
+
+      it('returns the configured value', () => {
+        expect(job.maxRetries).toBe(2);
+      });
+    });
+
+    describe('when the last error is a retryable RequestFailed', () => {
+      [500, 502, 503, 429, 408].forEach((statusCode) => {
+        it(`keeps the configured maxRetries for a ${statusCode} response`, () => {
+          fail(new RequestFailed(statusCode, fullUrl));
+
+          expect(job.maxRetries).toBe(EmitJob.DEFAULT_MAX_RETRIES);
+        });
+      });
+    });
+
+    describe('when the last error is a non-retryable RequestFailed (any other 4xx)', () => {
+      [400, 401, 403, 404, 422].forEach((statusCode) => {
+        it(`forces immediate exhaustion for a ${statusCode} response`, () => {
+          fail(new RequestFailed(statusCode, fullUrl));
+
+          expect(job.maxRetries).toBe(job._attempts);
+          expect(job.exhausted()).toBeTrue();
+        });
+      });
+    });
+
+    describe('when the last error is a network-level error (not a RequestFailed)', () => {
+      it('keeps the configured maxRetries, treating it as always retryable', () => {
+        fail(new Error('network down'));
+
+        expect(job.maxRetries).toBe(EmitJob.DEFAULT_MAX_RETRIES);
+      });
+    });
+  });
+
+  describe('#cooldown', () => {
+    const fail = (error) => { try { job._fail(error); } catch (_) { /* expected */ } };
+
+    describe('when no emit.cooldown override is configured and there is no Retry-After to honor', () => {
+      it('returns EmitJob.DEFAULT_COOLDOWN', () => {
+        expect(job.cooldown).toBe(EmitJob.DEFAULT_COOLDOWN);
+      });
+    });
+
+    describe('when emit.cooldown is configured', () => {
+      beforeEach(() => {
+        emit = ResourceRequestEmitFactory.build({ url, cooldown: 1234 });
+        job = EmitJobFactory.build({ item, emit, clients, parameters: {} });
+      });
+
+      it('returns the configured value', () => {
+        expect(job.cooldown).toBe(1234);
+      });
+    });
+
+    describe('when the last error is a 429 with a parseable Retry-After header', () => {
+      it('returns the Retry-After value converted to milliseconds', () => {
+        fail(new RequestFailed(429, fullUrl, 'Request failed', { 'retry-after': '10' }));
+
+        expect(job.cooldown).toBe(10000);
+      });
+
+      it('caps the value at EmitJob.RETRY_AFTER_CAP_MS', () => {
+        fail(new RequestFailed(429, fullUrl, 'Request failed', { 'retry-after': '120' }));
+
+        expect(job.cooldown).toBe(EmitJob.RETRY_AFTER_CAP_MS);
+      });
+    });
+
+    describe('when the last error is a 429 without a Retry-After header', () => {
+      it('falls back to the configured cooldown', () => {
+        fail(new RequestFailed(429, fullUrl));
+
+        expect(job.cooldown).toBe(EmitJob.DEFAULT_COOLDOWN);
+      });
+    });
+
+    describe('when the last error is a 429 with a non-numeric Retry-After header', () => {
+      it('falls back to the configured cooldown', () => {
+        fail(new RequestFailed(429, fullUrl, 'Request failed', { 'retry-after': 'not-a-number' }));
+
+        expect(job.cooldown).toBe(EmitJob.DEFAULT_COOLDOWN);
+      });
+    });
+
+    describe('when the last error is a 429 with an HTTP-date Retry-After header', () => {
+      it('treats it as unparseable and falls back to the configured cooldown', () => {
+        fail(new RequestFailed(429, fullUrl, 'Request failed', { 'retry-after': 'Wed, 21 Oct 2026 07:28:00 GMT' }));
+
+        expect(job.cooldown).toBe(EmitJob.DEFAULT_COOLDOWN);
+      });
+    });
+
+    describe('when the last error is a non-429 RequestFailed carrying a Retry-After-like header', () => {
+      it('returns the configured cooldown, ignoring the header', () => {
+        fail(new RequestFailed(503, fullUrl, 'Request failed', { 'retry-after': '10' }));
+
+        expect(job.cooldown).toBe(EmitJob.DEFAULT_COOLDOWN);
       });
     });
   });

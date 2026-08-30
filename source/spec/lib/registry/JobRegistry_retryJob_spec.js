@@ -47,8 +47,8 @@ describe('JobRegistry', () => {
 
       beforeEach(() => {
         JobRegistry.reset();
-        JobRegistry.build({ cooldown: -1, maxRetries: 1 });
-        job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.build({ cooldown: -1 });
+        job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 }, maxRetries: 1 });
 
         JobRegistry.pick();
         try { job._fail(new Error('test')); } catch (_) { /* expected */ }

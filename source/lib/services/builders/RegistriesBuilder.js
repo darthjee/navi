@@ -25,18 +25,20 @@ class RegistriesBuilder {
    * @returns {void}
    */
   build({ config }) {
-    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: config.namespaceMap } });
-    JobFactory.build('Action', { klass: ActionProcessingJob });
-    JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob });
-    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: config.namespaceMap } });
-    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: config.namespaceMap } });
+    const { maxRetries, retryCooldown: cooldown } = config.workersConfig;
+
+    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: config.namespaceMap, maxRetries, cooldown } });
+    JobFactory.build('Action', { klass: ActionProcessingJob, attributes: { maxRetries, cooldown } });
+    JobFactory.build('PaginatedAction', { klass: PaginatedActionProcessingJob, attributes: { maxRetries, cooldown } });
+    JobFactory.build('HtmlParse', { klass: HtmlParseJob, attributes: { jobRegistry: JobRegistry, clientRegistry: config.namespaceMap, maxRetries, cooldown } });
+    JobFactory.build('AssetDownload', { klass: AssetDownloadJob, attributes: { clientRegistry: config.namespaceMap, maxRetries, cooldown } });
 
     const parserRegistry = new ParserRegistry({
       regex: new RegexParser(),
       json_path: new JsonPathParser(),
       css: new CssSelectorParser()
     });
-    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
+    JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry, maxRetries, cooldown } });
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: config.namespaceMap } });
 
     JobRegistry.ensureBuild({ cooldown: config.workersConfig.retryCooldown, maxRetries: config.workersConfig.maxRetries });

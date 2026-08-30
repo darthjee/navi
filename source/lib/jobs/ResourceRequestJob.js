@@ -18,9 +18,13 @@ class ResourceRequestJob extends Job {
    * @param {ResourceRequest} params.resourceRequest - The resource request associated with this job.
    * @param {object} params.parameters - Additional parameters for the request.
    * @param {NamespaceMap} params.clients - The namespace map used to resolve the client for this request.
+   * @param {number} [params.maxRetries] - The maximum number of retries allowed for this job,
+   * normally injected from the global `workers.max-retries` config.
+   * @param {number} [params.cooldown] - The cooldown, in milliseconds, applied on failure,
+   * normally injected from the global `workers.retry_cooldown` config.
    */
-  constructor({ id, resourceRequest, parameters, clients }) {
-    super({ id });
+  constructor({ id, resourceRequest, parameters, clients, maxRetries, cooldown }) {
+    super({ id, maxRetries, cooldown });
     this.#resourceRequest = resourceRequest;
     this.#parameters = parameters;
     this.#clients = clients;

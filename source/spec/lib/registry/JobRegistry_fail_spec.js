@@ -57,10 +57,10 @@ describe('JobRegistry', () => {
     });
 
     describe('when the job is exhausted', () => {
-      it('moves the job to the dead queue using the configured maxRetries', () => {
+      it('moves the job to the dead queue using its own configured maxRetries', () => {
         JobRegistry.reset();
-        JobRegistry.build({ cooldown: -1, maxRetries: 2 });
-        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
+        JobRegistry.build({ cooldown: -1 });
+        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 }, maxRetries: 2 });
         const error = new Error('test error');
 
         JobRegistry.pick();

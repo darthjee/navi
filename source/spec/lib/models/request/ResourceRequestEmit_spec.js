@@ -1,4 +1,6 @@
+import { InvalidEmitCooldown } from '../../../../lib/exceptions/config/InvalidEmitCooldown.js';
 import { InvalidEmitMethod } from '../../../../lib/exceptions/config/InvalidEmitMethod.js';
+import { InvalidEmitRetries } from '../../../../lib/exceptions/config/InvalidEmitRetries.js';
 import { MissingEmitUrl } from '../../../../lib/exceptions/config/MissingEmitUrl.js';
 import { ResourceRequestEmit } from '../../../../lib/models/request/ResourceRequestEmit.js';
 
@@ -56,6 +58,86 @@ describe('ResourceRequestEmit', () => {
       it('throws MissingEmitUrl', () => {
         expect(() => new ResourceRequestEmit({ method: 'POST' }))
           .toThrowMatching((error) => error instanceof MissingEmitUrl);
+      });
+    });
+
+    describe('retries', () => {
+      describe('when not given', () => {
+        it('exposes undefined', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit' });
+
+          expect(emit.retries).toBeUndefined();
+        });
+      });
+
+      describe('when given a positive number', () => {
+        it('exposes the configured value', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', retries: 5 });
+
+          expect(emit.retries).toBe(5);
+        });
+      });
+
+      describe('when given 0', () => {
+        it('accepts it as a valid value (one attempt, no retries)', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', retries: 0 });
+
+          expect(emit.retries).toBe(0);
+        });
+      });
+
+      describe('when given a negative number', () => {
+        it('throws InvalidEmitRetries', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', retries: -1 }))
+            .toThrowMatching((error) => error instanceof InvalidEmitRetries);
+        });
+      });
+
+      describe('when given a non-numeric value', () => {
+        it('throws InvalidEmitRetries', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', retries: 'five' }))
+            .toThrowMatching((error) => error instanceof InvalidEmitRetries);
+        });
+      });
+    });
+
+    describe('cooldown', () => {
+      describe('when not given', () => {
+        it('exposes undefined', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit' });
+
+          expect(emit.cooldown).toBeUndefined();
+        });
+      });
+
+      describe('when given a positive number', () => {
+        it('exposes the configured value', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', cooldown: 5000 });
+
+          expect(emit.cooldown).toBe(5000);
+        });
+      });
+
+      describe('when given 0', () => {
+        it('accepts it as a valid value', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', cooldown: 0 });
+
+          expect(emit.cooldown).toBe(0);
+        });
+      });
+
+      describe('when given a negative number', () => {
+        it('throws InvalidEmitCooldown', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', cooldown: -1 }))
+            .toThrowMatching((error) => error instanceof InvalidEmitCooldown);
+        });
+      });
+
+      describe('when given a non-numeric value', () => {
+        it('throws InvalidEmitCooldown', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', cooldown: 'five thousand' }))
+            .toThrowMatching((error) => error instanceof InvalidEmitCooldown);
+        });
       });
     });
   });

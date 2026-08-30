@@ -11,10 +11,19 @@ class ResourceRequestEmitFactory {
    * @param {string} [params.method='POST'] - The HTTP method used for the emit request.
    * @param {string} [params.url='/emit'] - The URL to emit the request to.
    * @param {number} [params.status] - The expected status code of the emit response.
+   * @param {number} [params.retries] - Optional per-resource retries override.
+   * @param {number} [params.cooldown] - Optional per-resource cooldown override.
    * @returns {ResourceRequestEmit} A new ResourceRequestEmit instance.
    */
-  static build({ client = undefined, method = 'POST', url = '/emit', status = undefined } = {}) {
-    return new ResourceRequestEmit({ client, method, url, status });
+  static build({
+    client = undefined,
+    method = 'POST',
+    url = '/emit',
+    status = undefined,
+    retries = undefined,
+    cooldown = undefined,
+  } = {}) {
+    return new ResourceRequestEmit({ client, method, url, status, retries, cooldown });
   }
 }
 

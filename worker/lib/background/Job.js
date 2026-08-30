@@ -6,16 +6,22 @@
 class Job {
   #attempts;
   #readyBy;
+  #maxRetries;
+  #cooldown;
 
   /**
    * Creates a new Job instance.
-   * @param {object} params - The parameters for creating a Job instance.
+   * @param {object} [params] - The parameters for creating a Job instance.
    * @param {string} params.id - The unique identifier for this job.
+   * @param {number} [params.maxRetries] - The maximum number of retries allowed for this job instance.
+   * @param {number} [params.cooldown] - The cooldown duration in milliseconds to apply on failure.
    */
-  constructor({ id }) {
+  constructor({ id, maxRetries, cooldown } = {}) {
     this.id = id;
     this.#attempts = 0;
     this.#readyBy = 0;
+    this.#maxRetries = maxRetries;
+    this.#cooldown = cooldown;
   }
 
   /**
@@ -57,10 +63,19 @@ class Job {
   /**
    * Returns the maximum number of retries allowed for this job.
    * Subclasses may override this to return a different value.
+   * Defaults to 3 when no `maxRetries` was given at construction time.
    * @returns {number} The maximum number of retries.
    */
   get maxRetries() {
-    return 3;
+    return this.#maxRetries ?? 3;
+  }
+
+  /**
+   * Returns the cooldown duration in milliseconds configured for this job instance.
+   * @returns {number|undefined} The cooldown duration in milliseconds, or undefined when not set.
+   */
+  get cooldown() {
+    return this.#cooldown;
   }
 
   /**

@@ -203,7 +203,7 @@ class Client {
 
     if (!matches) {
       logContext.info(`[Client:${this.name}] ${requestUrl} did not match (got ${response.status}, expected ${expectedStatus ?? '2xx'})`);
-      throw new RequestFailed(response.status, requestUrl);
+      throw new RequestFailed(response.status, requestUrl, 'Request failed', response.headers);
     }
 
     logContext.info(`[Client:${this.name}] ${requestUrl} matched (expected ${expectedStatus ?? '2xx'})`);
@@ -221,7 +221,7 @@ class Client {
   #handleError(error, requestUrl, logContext) {
     logContext.error(`Request failed: ${error}`);
     if (error.response) {
-      throw new RequestFailed(error.response.status, requestUrl);
+      throw new RequestFailed(error.response.status, requestUrl, 'Request failed', error.response.headers);
     }
     throw error;
   }

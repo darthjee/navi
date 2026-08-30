@@ -21,9 +21,13 @@ class AssetDownloadJob extends Job {
    * @param {number} params.status - Expected HTTP status code.
    * @param {NamespaceMap} params.clientRegistry - The namespace map used to look up the client.
    * Resolution always targets the `default` namespace (not namespace-aware).
+   * @param {number} [params.maxRetries] - The maximum number of retries allowed for this job,
+   * normally injected from the global `workers.max-retries` config.
+   * @param {number} [params.cooldown] - The cooldown, in milliseconds, applied on failure,
+   * normally injected from the global `workers.retry_cooldown` config.
    */
-  constructor({ id, url, client, status, clientRegistry }) {
-    super({ id });
+  constructor({ id, url, client, status, clientRegistry, maxRetries, cooldown }) {
+    super({ id, maxRetries, cooldown });
     this.#url = url;
     this.#clientName = client;
     this.#status = status;
