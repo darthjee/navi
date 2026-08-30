@@ -122,6 +122,15 @@ class ResourceRequestEmit {
   }
 
   /**
+   * Creates a ResourceRequestEmit instance from a plain config object.
+   * @param {object} obj Raw config object.
+   * @returns {ResourceRequestEmit} A new ResourceRequestEmit instance.
+   */
+  static fromObject(obj) {
+    return new ResourceRequestEmit(obj);
+  }
+
+  /**
    * Validates and normalises the raw `headers` config value.
    * @param {object} [headers] The raw headers map from config.
    * @returns {object} The validated headers map, or an empty object when none was given.
@@ -138,15 +147,6 @@ class ResourceRequestEmit {
     }
 
     return headers;
-  }
-
-  /**
-   * Creates a ResourceRequestEmit instance from a plain config object.
-   * @param {object} obj Raw config object.
-   * @returns {ResourceRequestEmit} A new ResourceRequestEmit instance.
-   */
-  static fromObject(obj) {
-    return new ResourceRequestEmit(obj);
   }
 }
 
