@@ -1,4 +1,5 @@
 import { InvalidEmitCooldown } from '../../../../lib/exceptions/config/InvalidEmitCooldown.js';
+import { InvalidEmitHeaders } from '../../../../lib/exceptions/config/InvalidEmitHeaders.js';
 import { InvalidEmitMethod } from '../../../../lib/exceptions/config/InvalidEmitMethod.js';
 import { InvalidEmitRetries } from '../../../../lib/exceptions/config/InvalidEmitRetries.js';
 import { MissingEmitUrl } from '../../../../lib/exceptions/config/MissingEmitUrl.js';
@@ -137,6 +138,46 @@ describe('ResourceRequestEmit', () => {
         it('throws InvalidEmitCooldown', () => {
           expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', cooldown: 'five thousand' }))
             .toThrowMatching((error) => error instanceof InvalidEmitCooldown);
+        });
+      });
+    });
+
+    describe('headers', () => {
+      describe('when not given', () => {
+        it('exposes an empty object', () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit' });
+
+          expect(emit.headers).toEqual({});
+        });
+      });
+
+      describe('when given a valid map', () => {
+        it('exposes it unchanged, leaving $VAR-looking literals as-is', () => {
+          const headers = { Authorization: 'Bearer ${TOKEN}', 'X-Count': 3, 'X-Flag': true };
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', headers });
+
+          expect(emit.headers).toEqual(headers);
+        });
+      });
+
+      describe('when given an array', () => {
+        it('throws InvalidEmitHeaders', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', headers: ['a', 'b'] }))
+            .toThrowMatching((error) => error instanceof InvalidEmitHeaders);
+        });
+      });
+
+      describe('when given a non-object primitive', () => {
+        it('throws InvalidEmitHeaders', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', headers: 'nope' }))
+            .toThrowMatching((error) => error instanceof InvalidEmitHeaders);
+        });
+      });
+
+      describe('when given an object with a nested-object value', () => {
+        it('throws InvalidEmitHeaders', () => {
+          expect(() => new ResourceRequestEmit({ method: 'POST', url: '/emit', headers: { X: { nested: 1 } } }))
+            .toThrowMatching((error) => error instanceof InvalidEmitHeaders);
         });
       });
     });
