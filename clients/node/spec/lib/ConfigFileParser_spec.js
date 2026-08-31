@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ConfigFileParser } from '../../lib/ConfigFileParser.js';
 import { ConfigFileParseError } from '../../lib/exceptions/ConfigFileParseError.js';
+import { Logger } from '../../lib/logging/Logger.js';
 
 const FIXTURES_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'support', 'fixtures');
 const fixture = (name) => { return path.join(FIXTURES_DIR, name); };
@@ -101,6 +102,78 @@ describe('ConfigFileParser', () => {
             error.message.includes('Failed to parse config file') &&
             error.message.includes('yaml');
         });
+    });
+  });
+
+  describe('debug logging of $VAR interpolation', () => {
+    beforeEach(() => {
+      spyOn(Logger, 'debug');
+    });
+
+    afterEach(() => {
+      delete process.env.FIXTURE_ENV_VAR;
+      delete process.env.FIXTURE_MISSING_VAR;
+    });
+
+    it('emits one debug line per distinct variable, deduped across repeated occurrences', () => {
+      process.env.FIXTURE_ENV_VAR = 'resolved-value';
+
+      ConfigFileParser.parse(fixture('repeated_env_var.yml'));
+
+      const variableCalls = Logger.debug.calls.allArgs()
+        .filter(([message]) => { return message.includes('FIXTURE_ENV_VAR'); });
+
+      expect(variableCalls.length).toBe(1);
+      expect(variableCalls[0]).toEqual([
+        'Config interpolation: $FIXTURE_ENV_VAR',
+        jasmine.objectContaining({
+          path: fixture('repeated_env_var.yml'),
+          defined: true,
+          length: 'resolved-value'.length,
+          hash: jasmine.any(String),
+        }),
+      ]);
+    });
+
+    it('emits a per-file summary line with per-occurrence placeholder/resolved/missing counts', () => {
+      process.env.FIXTURE_ENV_VAR = 'resolved-value';
+
+      ConfigFileParser.parse(fixture('mixed_env_vars.yml'));
+
+      expect(Logger.debug).toHaveBeenCalledWith(
+        `Config interpolation summary: ${fixture('mixed_env_vars.yml')}`,
+        {
+          path: fixture('mixed_env_vars.yml'),
+          placeholders: 2,
+          resolved: 1,
+          missing: 1,
+        },
+      );
+    });
+
+    it('reports an unset variable as not defined, without length or hash', () => {
+      ConfigFileParser.parse(fixture('env_var.yml'));
+
+      expect(Logger.debug).toHaveBeenCalledWith(
+        'Config interpolation: $FIXTURE_ENV_VAR',
+        { path: fixture('env_var.yml'), defined: false },
+      );
+    });
+
+    it('logs an independent summary and variable set per file for multi-file runs', () => {
+      process.env.FIXTURE_ENV_VAR = 'resolved-value';
+
+      ConfigFileParser.parse(fixture('repeated_env_var.yml'));
+      ConfigFileParser.parse(fixture('mixed_env_vars.yml'));
+
+      expect(Logger.debug).toHaveBeenCalledWith(
+        `Config interpolation summary: ${fixture('repeated_env_var.yml')}`,
+        jasmine.objectContaining({ path: fixture('repeated_env_var.yml'), placeholders: 2 }),
+      );
+      expect(Logger.debug).toHaveBeenCalledWith(
+        `Config interpolation summary: ${fixture('mixed_env_vars.yml')}`,
+        jasmine.objectContaining({ path: fixture('mixed_env_vars.yml'), placeholders: 2 }),
+      );
     });
   });
 });

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Logger } from '../../lib/logging/Logger.js';
 import { NaviApiClient } from '../../lib/NaviApiClient.js';
 
 describe('NaviApiClient', () => {
@@ -67,6 +68,42 @@ describe('NaviApiClient', () => {
           name: 'ApiRequestFailed',
           url: fullUrl,
         }));
+      });
+    });
+
+    describe('debug logging of the outbound request', () => {
+      beforeEach(() => {
+        spyOn(Logger, 'debug');
+        spyOn(axios, 'post').and.returnValue(Promise.resolve({ status: 200, data: {} }));
+      });
+
+      it('logs method, url and body before sending the request', async () => {
+        const body = { namespace: 'reports' };
+
+        await apiClient.post(path, body);
+
+        expect(Logger.debug).toHaveBeenCalledWith('Outbound request', {
+          method: 'POST',
+          url: fullUrl,
+          body,
+        });
+      });
+
+      it('never logs headers or the Authorization/bearer token', async () => {
+        await apiClient.post(path, { namespace: 'reports' });
+
+        const [, loggedAttributes] = Logger.debug.calls.mostRecent().args;
+
+        expect(loggedAttributes).toEqual({ method: 'POST', url: fullUrl, body: { namespace: 'reports' } });
+        expect(loggedAttributes.headers).toBeUndefined();
+        expect(JSON.stringify(loggedAttributes)).not.toContain(token);
+        expect(JSON.stringify(loggedAttributes)).not.toContain('Authorization');
+      });
+
+      it('logs before issuing the request, not derived from the axios request/config object', async () => {
+        await apiClient.post(path, { namespace: 'reports' });
+
+        expect(Logger.debug).toHaveBeenCalledBefore(axios.post);
       });
     });
   });

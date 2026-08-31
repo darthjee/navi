@@ -16,6 +16,7 @@ describe('CliArgumentsParser', () => {
         action: 'config',
         payload: '{"namespace":"reports"}',
         configFiles: [],
+        logLevel: undefined,
       });
     });
 
@@ -32,6 +33,7 @@ describe('CliArgumentsParser', () => {
         action: 'engine-stop',
         payload: undefined,
         configFiles: [],
+        logLevel: undefined,
       });
     });
 
@@ -44,7 +46,14 @@ describe('CliArgumentsParser', () => {
         action: undefined,
         payload: undefined,
         configFiles: [],
+        logLevel: undefined,
       });
+    });
+
+    it('parses --log-level', () => {
+      const result = CliArgumentsParser.parse(['--log-level', 'debug']);
+
+      expect(result.logLevel).toBe('debug');
     });
 
     it('collects repeated --file options', () => {
