@@ -545,6 +545,21 @@ resources:
 
 Here the regex `postid-(\d+)` captures `880433` out of the response body's `postid-880433` class name, and Navi enqueues `POST https://majora.example.com/api/bundles/resolve` with `{ "post_id": "880433" }`.
 
+### Emit retry policy
+
+Each `EmitJob` retries independently of the global `workers.max-retries`/`workers.retry_cooldown` policy: **5 retries, 5000ms cooldown between attempts** by default, since external endpoints are more likely to be transiently flaky than Navi's own crawl targets. Override either value per resource via `emit.retries`/`emit.cooldown` (see the Fields table above). An `EmitJob` retries on any `5xx`, `429`, `408`, or network-level (no response) failure; any other `4xx` dead-letters immediately, since those represent bad requests/config/auth issues that won't resolve by waiting. A `429` response honors a `Retry-After` header (capped at 60 seconds) instead of the normal cooldown; a malformed or missing value falls back to the normal cooldown.
+
+### Tracking extraction and emission
+
+Navi tracks every extraction run and emission attempt in memory, exposed through two unauthenticated `GET` endpoints alongside the monitoring web UI:
+
+- **`GET /extractions.json`** — returns `{ counts, extractions }`. `counts` is `{ extracted }`, the monotonic total number of items produced across every `ExtractionJob` run (exact even past ring-buffer eviction). `extractions` is a page of records — one per `ExtractionJob` run, not per item — each shaped `{ id, parserType, originUrl, itemCount, timestamp }`.
+- **`GET /emissions.json`** — returns `{ counts, emissions }`. `counts` is `{ extracted, emitted, failed, dead }`. `emissions` is a page of records, each shaped `{ id, extractionId, status, url, method, httpStatus, error, itemRef, timestamp }`, where `status` is one of `success`/`failed`/`dead` and `extractionId` links back to the `GET /extractions.json` record whose items produced it (`null` when it can't be traced).
+
+Both endpoints page with a `?last_id=<id>` cursor and cap each page at `web.logs_page_size` records (default `20`, shared with `/logs.json`), ordered oldest-first. Their underlying ring buffers are sized independently via the top-level `emit.size` / `extraction.size` config keys (default `100` each, see the Fields table above); the counters themselves stay exact for the whole run regardless of ring-buffer eviction. `GET /stats.json` also summarizes the same counters under its `emissions` key. All of this data resets when the engine stops, the same as the log buffers.
+
+See [`docs/agents/future/crawler/flows.md`](https://github.com/darthjee/navi/blob/main/docs/agents/future/crawler/flows.md) for further worked examples, including how extraction/emit interacts with `paginated_actions`.
+
 ---
 
 ## Roadmap
@@ -585,3 +600,7 @@ When enabled, the UI is accessible at `http://localhost:<port>` and includes the
 - Current vs. maximum usage, formatted (e.g. `512 MB / 2 GB`).
 - Usage percentage.
 - Status label (`low`/`medium`/`high`/`over`), colored per status — a distinct color when usage exceeds 100% of the maximum.
+
+**Extractions (`/#/extractions`)** — shows a table of `ExtractionJob` runs (parser type, origin URL, item count, timestamp), each linked to the emissions it produced, with a running `extracted` total.
+
+**Emissions (`/#/emissions`)** — shows a table of individual `EmitJob` emissions (status, target URL/method, HTTP status, error when failed/dead, linked extraction, timestamp), with running `extracted`/`emitted`/`failed`/`dead` totals.
