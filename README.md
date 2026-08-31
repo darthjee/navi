@@ -212,6 +212,24 @@ resources:
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
 | `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
 | `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
+| `parser` | Optional. Extracts structured items from the raw response body after a successful response, independently of the resource's own `actions`/`paginated_actions` chaining. |
+| `parser.type` | One of `regex`, `json_path`, `css`. Selects the extraction strategy. |
+| `parser.match` | Meaning depends on `type`: a regex pattern (`regex`), a dot-notation path to the array to extract items from, e.g. `data.items` (`json_path`), or a CSS selector for the repeated container elements (`css`). Required for all three. |
+| `parser.filter` | Optional, `json_path`/`css` only. List of AND'ed conditions a matched item/container must satisfy to be included. `json_path`: each condition is `{ field, equals }` (literal comparison) or `{ field, equals_field }` (compares two fields of the same item; `equals_field` wins when both are given). `css`: each condition is `{ selector, attribute, trim, equals }` (literal, resolved relative to the container) or `{ ..., equals_field: { selector, attribute, trim } }` (field-to-field, both sides resolved relative to the container; `equals_field` wins when both are given). |
+| `parser.fields` | Meaning depends on `type`. `json_path`: a `{ sourceKey: outputKey }` map remapping the matched item's keys into the output item. `css`: a `{ outputKey: { selector, attribute, array, trim } }` map (multi-field mode); each field is resolved relative to the matched container (an absent/empty `selector` means the container itself, `array: true` collects every match instead of just the first). |
+| `parser.field` | `regex`: required, names the single output key populated with the captured value. `css`: fallback single-field mode's output key name, used when `fields` is absent. |
+| `parser.attribute` | `css` fallback single-field mode only (used when `fields` is absent). Attribute to read off the matched container; reads text content when absent. |
+| `parser.trim` | `css` fallback single-field mode only (used when `fields` is absent). Whether to trim the resolved value. Defaults to `true`. |
+| `emit` | Optional. Sends each item extracted by `parser` to an external endpoint, one `EmitJob` per item. |
+| `emit.client` | Name of the client to use for the emit request, reusing the same `clients.<name>` config as `resources.<name>.client`. |
+| `emit.method` | One of `POST`, `PUT`, `PATCH`. Required. |
+| `emit.url` | URL to emit the request to. Supports `{:placeholder}` tokens resolved from the request's own parameters. Required. |
+| `emit.status` | Optional expected HTTP status code for the emit response. |
+| `emit.headers` | Optional map of extra HTTP headers, merged over the client's own headers (`emit.headers` wins on key collision). Values support `$VAR`/`${VAR}` resolution like `clients.<name>.headers`. |
+| `emit.body_template` | Optional object/array template used to wrap/re-shape the extracted item before it's sent as the emit request body. `{:key}`/`{:nested.path}` tokens resolve against the item; `{:.}` refers to the whole item. Defaults to sending the bare extracted item when omitted. |
+| `emit.retries` / `emit.cooldown` | Optional. Override `EmitJob`'s default retry policy (see below) for this specific emit. Must be non-negative numbers when given. |
+| `emit.size` | Optional. Top-level config key (a sibling of `resources`/`web`/`log`, not part of a resource's `emit` block) sizing the in-memory ring buffer behind `GET /emissions.json`. Defaults to `100`. |
+| `extraction.size` | Optional. Top-level config key, sibling of `emit.size`, sizing the in-memory ring buffer behind `GET /extractions.json`. Defaults to `100`. |
 
 `GET /memory/status.json` — unauthenticated, like the other `GET` monitoring endpoints (no `web.api.token` involved). Responds with:
 
@@ -454,6 +472,96 @@ Omitted, `null`, `0`, or any other non-positive-integer value means unlimited (a
 
 ---
 
+## Data Extraction and Emission
+
+After a successful response, a resource-request entry may optionally declare a `parser` and an `emit`. The `parser` extracts one or more structured items from the raw response body; `emit` then sends each extracted item as its own HTTP request to an external endpoint. This runs independently of (in parallel with) `actions`/`paginated_actions` chaining — a resource can have only `actions`, only `parser`/`emit`, or both at once, and neither path interferes with the other.
+
+Three parser types are available, each producing the same shape of extracted item(s) regardless of which one is used:
+
+- **`regex`** — applies a regular expression to the raw response body and captures a single field.
+- **`json_path`** — navigates to an array within the parsed JSON body, optionally filters it, and maps selected fields into each extracted item.
+- **`css`** — applies a CSS selector to an HTML response body and maps selected fields (and/or attributes) into each extracted item.
+
+See the [Configuration File Fields](#fields) table below for the full field-by-field breakdown of `parser` and `emit`.
+
+### Example: `json_path` extraction with `emit`
+
+The `loot_catalog` resource below fetches a miniature catalog, extracts every `miniature`-typed item from its `bundleObjs` array, and posts each one to the `majora_api` client:
+
+```yaml
+clients:
+  lootstudios:
+    base_url: https://app.lootstudios.com
+  majora_api:
+    base_url: https://majora.example.com
+    headers:
+      Authorization: Bearer 
+
+resources:
+  loot_catalog:
+    - url: /wp-admin/admin-ajax.php?action=GetMyLootsCache
+      status: 200
+      client: lootstudios
+      parser:
+        type: json_path
+        match: bundleObjs
+        filter:
+          - field: obj_type
+            equals: miniature
+        fields:
+          obj_inid: inid
+          obj_title: name
+          obj_post_id: post_id
+          bnd_title: bundle
+      emit:
+        client: majora_api
+        method: POST
+        url: /api/miniatures
+        headers:
+          Authorization: Bearer $MAJORA_API_TOKEN
+```
+
+For each of the 28 matched items, Navi enqueues one `POST https://majora.example.com/api/miniatures` request with a body built from the mapped fields (`{ inid, name, post_id, bundle }`).
+
+### Example: `regex` standalone
+
+A `parser` doesn't need `json_path`'s nested `fields`/`filter` — a `regex` parser captures a single field directly from the raw body, useful for pulling a value out of HTML that isn't itself JSON:
+
+```yaml
+resources:
+  bundle_page:
+    - url: /bundle/tidal-aberrations/?logged-in
+      status: 200
+      client: lootstudios
+      parser:
+        type: regex
+        match: 'postid-(\d+)'
+        field: post_id
+      emit:
+        client: majora_api
+        method: POST
+        url: /api/bundles/resolve
+```
+
+Here the regex `postid-(\d+)` captures `880433` out of the response body's `postid-880433` class name, and Navi enqueues `POST https://majora.example.com/api/bundles/resolve` with `{ "post_id": "880433" }`.
+
+### Emit retry policy
+
+Each `EmitJob` retries independently of the global `workers.max-retries`/`workers.retry_cooldown` policy: **5 retries, 5000ms cooldown between attempts** by default, since external endpoints are more likely to be transiently flaky than Navi's own crawl targets. Override either value per resource via `emit.retries`/`emit.cooldown` (see the Fields table above). An `EmitJob` retries on any `5xx`, `429`, `408`, or network-level (no response) failure; any other `4xx` dead-letters immediately, since those represent bad requests/config/auth issues that won't resolve by waiting. A `429` response honors a `Retry-After` header (capped at 60 seconds) instead of the normal cooldown; a malformed or missing value falls back to the normal cooldown.
+
+### Tracking extraction and emission
+
+Navi tracks every extraction run and emission attempt in memory, exposed through two unauthenticated `GET` endpoints alongside the monitoring web UI:
+
+- **`GET /extractions.json`** — returns `{ counts, extractions }`. `counts` is `{ extracted }`, the monotonic total number of items produced across every `ExtractionJob` run (exact even past ring-buffer eviction). `extractions` is a page of records — one per `ExtractionJob` run, not per item — each shaped `{ id, parserType, originUrl, itemCount, timestamp }`.
+- **`GET /emissions.json`** — returns `{ counts, emissions }`. `counts` is `{ extracted, emitted, failed, dead }`. `emissions` is a page of records, each shaped `{ id, extractionId, status, url, method, httpStatus, error, itemRef, timestamp }`, where `status` is one of `success`/`failed`/`dead` and `extractionId` links back to the `GET /extractions.json` record whose items produced it (`null` when it can't be traced).
+
+Both endpoints page with a `?last_id=<id>` cursor and cap each page at `web.logs_page_size` records (default `20`, shared with `/logs.json`), ordered oldest-first. Their underlying ring buffers are sized independently via the top-level `emit.size` / `extraction.size` config keys (default `100` each, see the Fields table above); the counters themselves stay exact for the whole run regardless of ring-buffer eviction. `GET /stats.json` also summarizes the same counters under its `emissions` key. All of this data resets when the engine stops, the same as the log buffers.
+
+See [`docs/agents/future/crawler/flows.md`](https://github.com/darthjee/navi/blob/main/docs/agents/future/crawler/flows.md) for further worked examples, including how extraction/emit interacts with `paginated_actions`.
+
+---
+
 ## Roadmap
 
 The following features are planned but not yet implemented:
@@ -492,3 +600,7 @@ When enabled, the UI is accessible at `http://localhost:<port>` and includes the
 - Current vs. maximum usage, formatted (e.g. `512 MB / 2 GB`).
 - Usage percentage.
 - Status label (`low`/`medium`/`high`/`over`), colored per status — a distinct color when usage exceeds 100% of the maximum.
+
+**Extractions (`/#/extractions`)** — shows a table of `ExtractionJob` runs (parser type, origin URL, item count, timestamp), each linked to the emissions it produced, with a running `extracted` total.
+
+**Emissions (`/#/emissions`)** — shows a table of individual `EmitJob` emissions (status, target URL/method, HTTP status, error when failed/dead, linked extraction, timestamp), with running `extracted`/`emitted`/`failed`/`dead` totals.

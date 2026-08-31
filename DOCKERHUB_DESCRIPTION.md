@@ -21,6 +21,7 @@ Key features:
 - URL templates with placeholder parameters (e.g. `{:id}`).
 - Response-driven actions: after each successful request, configurable actions extract variables from the response and trigger follow-up processing.
 - Paginated resource support: `paginated_actions` fan out one request per page based on a page-count expression evaluated against the response.
+- Crawler support: an optional `parser` (`regex`, `json_path`, or `css`) extracts structured items from a response, and `emit` sends each one to an external endpoint.
 - Automatic retry of failed requests after the main queue is exhausted.
 
 ---
