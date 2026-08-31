@@ -1,3 +1,5 @@
+import { Logger } from './logging/Logger.js';
+
 /**
  * Pattern matching environment variable references in strings.
  * Supports `$VAR_NAME` and `${VAR_NAME}` syntax.
@@ -49,7 +51,7 @@ class EnvStringResolver {
       const resolved = process.env[varName];
 
       if (resolved === undefined) {
-        console.warn(`Environment variable not defined: ${varName}`);
+        Logger.warn(`Environment variable not defined: ${varName}`);
         return '';
       }
 
