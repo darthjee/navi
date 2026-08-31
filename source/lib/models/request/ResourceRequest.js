@@ -5,6 +5,7 @@ import { ResourceRequestAction } from './ResourceRequestAction.js';
 import { ResourceRequestEmit } from './ResourceRequestEmit.js';
 import { ResourceRequestPaginatedAction } from './ResourceRequestPaginatedAction.js';
 import { ResourceRequestParser } from './ResourceRequestParser.js';
+import { UrlTokenResolver } from './UrlTokenResolver.js';
 import { ActionsEnqueuer } from '../../enqueuers/ActionsEnqueuer.js';
 import { PaginatedActionsEnqueuer } from '../../enqueuers/PaginatedActionsEnqueuer.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
@@ -212,7 +213,7 @@ class ResourceRequest {
    * @returns {string} The resolved URL.
    */
   resolveUrl(parameters = {}) {
-    return this.url.replace(/\{:(\w+)\}/g, (_, key) => parameters[key] ?? `{:${key}}`);
+    return UrlTokenResolver.resolve(this.url, parameters);
   }
 
   /**

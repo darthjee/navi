@@ -1,4 +1,5 @@
 import { ClientReference } from './ClientReference.js';
+import { UrlTokenResolver } from './UrlTokenResolver.js';
 import { InvalidEmitBodyTemplate } from '../../exceptions/config/InvalidEmitBodyTemplate.js';
 import { InvalidEmitCooldown } from '../../exceptions/config/InvalidEmitCooldown.js';
 import { InvalidEmitHeaders } from '../../exceptions/config/InvalidEmitHeaders.js';
@@ -133,7 +134,7 @@ class ResourceRequestEmit {
    * @returns {string} The resolved URL.
    */
   resolveUrl(parameters = {}) {
-    return this.url.replace(/\{:(\w+)\}/g, (_, key) => parameters[key] ?? `{:${key}}`);
+    return UrlTokenResolver.resolve(this.url, parameters);
   }
 
   /**
