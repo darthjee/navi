@@ -3,6 +3,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { EnvStringResolver } from './EnvStringResolver.js';
 import { ConfigFileParseError } from './exceptions/ConfigFileParseError.js';
+import { Logger } from './logging/Logger.js';
 
 /**
  * ConfigFileParser reads and parses a single JSON/YAML config file (the same
@@ -79,7 +80,48 @@ class ConfigFileParser {
       );
     }
 
-    return EnvStringResolver.resolve(content);
+    const resolver = new EnvStringResolver(content);
+    const resolved = resolver.resolve();
+    this.#logInterpolation(resolver.matches);
+
+    return resolved;
+  }
+
+  /**
+   * Emits debug-only interpolation diagnostics for the given file's
+   * `$VAR`/`${VAR}` matches: one line per distinct variable name (deduped —
+   * repeats within a file resolve identically), plus one per-file summary
+   * line. No-op when the active log level is above `debug`.
+   *
+   * @param {Array<{varName: string, defined: boolean, length?: number, hash?: string}>} matches
+   * Per-occurrence resolution data from `EnvStringResolver#resolve`, in match order (not deduped).
+   * @returns {void}
+   * @private
+   */
+  #logInterpolation(matches) {
+    const uniqueByVarName = new Map();
+    let resolvedCount = 0;
+    let missingCount = 0;
+
+    for (const match of matches) {
+      if (match.defined) resolvedCount += 1;
+      else missingCount += 1;
+
+      if (!uniqueByVarName.has(match.varName)) uniqueByVarName.set(match.varName, match);
+    }
+
+    for (const match of uniqueByVarName.values()) {
+      Logger.debug(`Config interpolation: $${match.varName}`, match.defined
+        ? { path: this.path, defined: true, length: match.length, hash: match.hash }
+        : { path: this.path, defined: false });
+    }
+
+    Logger.debug(`Config interpolation summary: ${this.path}`, {
+      path: this.path,
+      placeholders: matches.length,
+      resolved: resolvedCount,
+      missing: missingCount,
+    });
   }
 
   /**
