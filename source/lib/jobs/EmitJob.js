@@ -115,7 +115,8 @@ class EmitJob extends Job {
   }
 
   /**
-   * Emits the extracted item to the configured external endpoint.
+   * Emits the extracted item to the configured external endpoint, rendered through the
+   * emit's `bodyTemplate` when one is configured (the bare item is sent otherwise).
    * @param {LogContext} logContext - Context carrying workerId/jobId for log entries.
    * @returns {Promise<object>} A promise that resolves with the HTTP response.
    */
@@ -126,7 +127,7 @@ class EmitJob extends Job {
     try {
       this.lastError = undefined;
       const response = await this.#getClient().emit(
-        method, url, this.#item, this.#emit.status, logContext, this.#emit.headers,
+        method, url, this.#emit.resolveBody(this.#item), this.#emit.status, logContext, this.#emit.headers,
       );
       EmissionRegistry.recordEmission({
         status: 'success', url, method, httpStatus: response?.status ?? null,
