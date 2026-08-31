@@ -31,8 +31,9 @@ describe('EmitJob', () => {
 
   const rebuildJob = ({
     emitUrl = url, method = 'POST', status = undefined, jobItem = item, jobParameters = {}, headers = undefined,
+    bodyTemplate = undefined,
   } = {}) => {
-    emit = ResourceRequestEmitFactory.build({ url: emitUrl, method, status, headers });
+    emit = ResourceRequestEmitFactory.build({ url: emitUrl, method, status, headers, body_template: bodyTemplate });
     parameters = jobParameters;
     job = EmitJobFactory.build({ item: jobItem, emit, clients, parameters });
   };
@@ -121,6 +122,32 @@ describe('EmitJob', () => {
 
       describe('when the emit configures no headers', () => {
         it('passes an empty object as the 6th argument to client.emit', async () => {
+          await job.perform(logContext);
+
+          expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, {});
+        });
+      });
+    });
+
+    describe('emit body_template rendering', () => {
+      beforeEach(() => {
+        spyOn(client, 'emit').and.resolveTo({ status: 200, data: {} });
+      });
+
+      describe('when the emit configures a body_template', () => {
+        beforeEach(() => {
+          rebuildJob({ bodyTemplate: { itemName: '{:name}' } });
+        });
+
+        it('sends the rendered body as the 3rd argument to client.emit, not the raw item', async () => {
+          await job.perform(logContext);
+
+          expect(client.emit).toHaveBeenCalledWith('POST', url, { itemName: 'widget' }, undefined, logContext, {});
+        });
+      });
+
+      describe('when the emit configures no body_template', () => {
+        it('sends the raw item as the 3rd argument to client.emit, unchanged', async () => {
           await job.perform(logContext);
 
           expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, {});

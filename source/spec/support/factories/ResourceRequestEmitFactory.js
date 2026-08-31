@@ -14,6 +14,7 @@ class ResourceRequestEmitFactory {
    * @param {number} [params.retries] - Optional per-resource retries override.
    * @param {number} [params.cooldown] - Optional per-resource cooldown override.
    * @param {object} [params.headers] - Optional map of extra HTTP headers for this emit.
+   * @param {object|Array} [params.body_template] - Optional body template for this emit.
    * @returns {ResourceRequestEmit} A new ResourceRequestEmit instance.
    */
   static build({
@@ -24,8 +25,11 @@ class ResourceRequestEmitFactory {
     retries = undefined,
     cooldown = undefined,
     headers = undefined,
+    body_template: bodyTemplate = undefined,
   } = {}) {
-    return new ResourceRequestEmit({ client, method, url, status, retries, cooldown, headers });
+    return new ResourceRequestEmit({
+      client, method, url, status, retries, cooldown, headers, body_template: bodyTemplate,
+    });
   }
 }
 

@@ -185,7 +185,12 @@ class ResourceRequestEmit {
    */
   #parseBodyTemplate(bodyTemplate) {
     if (bodyTemplate === undefined) return undefined;
-    if (bodyTemplate === null || typeof bodyTemplate !== 'object') {
+
+    const isPlainArray = Array.isArray(bodyTemplate);
+    const isPlainObject = bodyTemplate !== null && typeof bodyTemplate === 'object' && !isPlainArray
+      && Object.getPrototypeOf(bodyTemplate) === Object.prototype;
+
+    if (!isPlainArray && !isPlainObject) {
       throw new InvalidEmitBodyTemplate(bodyTemplate);
     }
 
