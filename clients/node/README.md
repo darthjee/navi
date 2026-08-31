@@ -77,9 +77,12 @@ npx navi-client --base-url http://localhost:3000 --token $NAVI_API_TOKEN --actio
 | `--token` | `-t` | Bearer token. Required. |
 | `--action` | `-a` | One of `config`, `engine-start`, `engine-stop`. Required. |
 | `--payload` | `-p` | Optional JSON request body (used by `config`/`engine-start`). Mutually exclusive with `--file`/`--json`/`--yaml`. |
+| `--log-level` | | One of `debug`, `info`, `warn`, `error`, `silent`. Defaults to the `LOG_LEVEL` env var, or `info`. Takes precedence over `LOG_LEVEL` when both are given. |
 | `--file <path>` | | `config` only. `configFromFiles` semantics (auto-detects JSON/YAML by extension). Repeatable. |
 | `--json <path>` | | `config` only. `configFromJson` semantics (forces JSON parsing). Repeatable. |
 | `--yaml <path>` | | `config` only. `configFromYaml` semantics (forces YAML parsing). Repeatable. |
+
+Setting `LOG_LEVEL=debug` (or `--log-level debug`) additionally logs each `$VAR`/`${VAR}` resolved while parsing a config file (name, set/unset status, and — when set — the resolved value's length and a short hash, never the raw value) and every outbound HTTP request the CLI makes (method, URL, body) — request headers, including the bearer token, are never logged at any level.
 
 ```bash
 navi-client -b http://localhost:3000 -t $NAVI_API_TOKEN -a config \
