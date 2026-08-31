@@ -54,4 +54,6 @@ For an extracted item `{ "id": 1, "name": "Widget" }`, Navi sends:
 
 If `emit` had no `body_template`, the bare item (`{ "id": 1, "name": "Widget" }`) would be sent as-is.
 
+**Related sample:** [Emit every extracted item to an external endpoint](samples/emit-extracted-items.md), [Reshape the emitted body with a template](samples/emit-body-template.md)
+
 [← Back to How to Use Navi](../how_to_use_navi.md)
