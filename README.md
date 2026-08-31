@@ -212,6 +212,24 @@ resources:
 | `assets[].attribute` | Attribute on the matched element that holds the asset URL (e.g. `src`, `href`). |
 | `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
 | `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
+| `parser` | Optional. Extracts structured items from the raw response body after a successful response, independently of the resource's own `actions`/`paginated_actions` chaining. |
+| `parser.type` | One of `regex`, `json_path`, `css`. Selects the extraction strategy. |
+| `parser.match` | Meaning depends on `type`: a regex pattern (`regex`), a dot-notation path to the array to extract items from, e.g. `data.items` (`json_path`), or a CSS selector for the repeated container elements (`css`). Required for all three. |
+| `parser.filter` | Optional, `json_path`/`css` only. List of AND'ed conditions a matched item/container must satisfy to be included. `json_path`: each condition is `{ field, equals }` (literal comparison) or `{ field, equals_field }` (compares two fields of the same item; `equals_field` wins when both are given). `css`: each condition is `{ selector, attribute, trim, equals }` (literal, resolved relative to the container) or `{ ..., equals_field: { selector, attribute, trim } }` (field-to-field, both sides resolved relative to the container; `equals_field` wins when both are given). |
+| `parser.fields` | Meaning depends on `type`. `json_path`: a `{ sourceKey: outputKey }` map remapping the matched item's keys into the output item. `css`: a `{ outputKey: { selector, attribute, array, trim } }` map (multi-field mode); each field is resolved relative to the matched container (an absent/empty `selector` means the container itself, `array: true` collects every match instead of just the first). |
+| `parser.field` | `regex`: required, names the single output key populated with the captured value. `css`: fallback single-field mode's output key name, used when `fields` is absent. |
+| `parser.attribute` | `css` fallback single-field mode only (used when `fields` is absent). Attribute to read off the matched container; reads text content when absent. |
+| `parser.trim` | `css` fallback single-field mode only (used when `fields` is absent). Whether to trim the resolved value. Defaults to `true`. |
+| `emit` | Optional. Sends each item extracted by `parser` to an external endpoint, one `EmitJob` per item. |
+| `emit.client` | Name of the client to use for the emit request, reusing the same `clients.<name>` config as `resources.<name>.client`. |
+| `emit.method` | One of `POST`, `PUT`, `PATCH`. Required. |
+| `emit.url` | URL to emit the request to. Supports `{:placeholder}` tokens resolved from the request's own parameters. Required. |
+| `emit.status` | Optional expected HTTP status code for the emit response. |
+| `emit.headers` | Optional map of extra HTTP headers, merged over the client's own headers (`emit.headers` wins on key collision). Values support `$VAR`/`${VAR}` resolution like `clients.<name>.headers`. |
+| `emit.body_template` | Optional object/array template used to wrap/re-shape the extracted item before it's sent as the emit request body. `{:key}`/`{:nested.path}` tokens resolve against the item; `{:.}` refers to the whole item. Defaults to sending the bare extracted item when omitted. |
+| `emit.retries` / `emit.cooldown` | Optional. Override `EmitJob`'s default retry policy (see below) for this specific emit. Must be non-negative numbers when given. |
+| `emit.size` | Optional. Top-level config key (a sibling of `resources`/`web`/`log`, not part of a resource's `emit` block) sizing the in-memory ring buffer behind `GET /emissions.json`. Defaults to `100`. |
+| `extraction.size` | Optional. Top-level config key, sibling of `emit.size`, sizing the in-memory ring buffer behind `GET /extractions.json`. Defaults to `100`. |
 
 `GET /memory/status.json` — unauthenticated, like the other `GET` monitoring endpoints (no `web.api.token` involved). Responds with:
 
