@@ -1,6 +1,7 @@
 import { NaviClient } from '../../client.js';
 import { CliRunner } from '../../lib/CliRunner.js';
 import { ConfigFileGrouper } from '../../lib/ConfigFileGrouper.js';
+import { Logger } from '../../lib/logging/Logger.js';
 
 describe('CliRunner', () => {
   const baseUrl = 'http://example.com';
@@ -8,7 +9,11 @@ describe('CliRunner', () => {
 
   beforeEach(() => {
     spyOn(console, 'log');
-    spyOn(console, 'error');
+    spyOn(Logger, 'error');
+  });
+
+  afterEach(() => {
+    Logger.reset();
   });
 
   describe('.run', () => {
@@ -17,29 +22,38 @@ describe('CliRunner', () => {
         const code = await CliRunner.run({ token, action: 'engine-stop' });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith('Missing required option: --base-url');
+        expect(Logger.error).toHaveBeenCalledWith('Missing required option: --base-url');
       });
 
       it('fails when --token is missing', async () => {
         const code = await CliRunner.run({ baseUrl, action: 'engine-stop' });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith('Missing required option: --token');
+        expect(Logger.error).toHaveBeenCalledWith('Missing required option: --token');
       });
 
       it('fails when --action is missing', async () => {
         const code = await CliRunner.run({ baseUrl, token });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith('Missing required option: --action');
+        expect(Logger.error).toHaveBeenCalledWith('Missing required option: --action');
       });
 
       it('fails when --action is invalid', async () => {
         const code = await CliRunner.run({ baseUrl, token, action: 'bogus' });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith(
+        expect(Logger.error).toHaveBeenCalledWith(
           'Invalid --action "bogus". Must be one of: config, engine-start, engine-stop',
+        );
+      });
+
+      it('fails when --log-level is invalid', async () => {
+        const code = await CliRunner.run({ baseUrl, token, action: 'engine-stop', logLevel: 'verbose' });
+
+        expect(code).toBe(1);
+        expect(Logger.error).toHaveBeenCalledWith(
+          'Invalid --log-level "verbose". Must be one of: debug, info, warn, error, silent',
         );
       });
     });
@@ -51,7 +65,7 @@ describe('CliRunner', () => {
         });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith('--payload cannot be combined with --file/--json/--yaml');
+        expect(Logger.error).toHaveBeenCalledWith('--payload cannot be combined with --file/--json/--yaml');
       });
     });
 
@@ -60,7 +74,44 @@ describe('CliRunner', () => {
         const code = await CliRunner.run({ baseUrl, token, action: 'config', payload: '{not json' });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith(jasmine.stringContaining('Invalid JSON payload'));
+        expect(Logger.error).toHaveBeenCalledWith(jasmine.stringContaining('Invalid JSON payload'));
+      });
+    });
+
+    describe('--log-level wiring', () => {
+      it('sets the effective log level before dispatching', async () => {
+        spyOn(Logger, 'setLevel');
+        spyOn(NaviClient.prototype, 'engineStop').and.returnValue(Promise.resolve({ status: 'stopped' }));
+
+        await CliRunner.run({ baseUrl, token, action: 'engine-stop', logLevel: 'debug' });
+
+        expect(Logger.setLevel).toHaveBeenCalledWith('debug');
+      });
+
+      it('does not call Logger.setLevel when --log-level is not given', async () => {
+        spyOn(Logger, 'setLevel');
+        spyOn(NaviClient.prototype, 'engineStop').and.returnValue(Promise.resolve({ status: 'stopped' }));
+
+        await CliRunner.run({ baseUrl, token, action: 'engine-stop' });
+
+        expect(Logger.setLevel).not.toHaveBeenCalled();
+      });
+
+      it('takes precedence over LOG_LEVEL when both are given', async () => {
+        const originalLevel = process.env.LOG_LEVEL;
+        process.env.LOG_LEVEL = 'error';
+        spyOn(Logger, 'setLevel');
+        spyOn(NaviClient.prototype, 'engineStop').and.returnValue(Promise.resolve({ status: 'stopped' }));
+
+        await CliRunner.run({ baseUrl, token, action: 'engine-stop', logLevel: 'debug' });
+
+        expect(Logger.setLevel).toHaveBeenCalledWith('debug');
+
+        if (originalLevel === undefined) {
+          delete process.env.LOG_LEVEL;
+        } else {
+          process.env.LOG_LEVEL = originalLevel;
+        }
       });
     });
 
@@ -129,7 +180,7 @@ describe('CliRunner', () => {
         });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith('bad file');
+        expect(Logger.error).toHaveBeenCalledWith('bad file');
         expect(NaviClient.prototype.config).not.toHaveBeenCalled();
       });
     });
@@ -141,7 +192,7 @@ describe('CliRunner', () => {
         const code = await CliRunner.run({ baseUrl, token, action: 'engine-stop' });
 
         expect(code).toBe(1);
-        expect(console.error).toHaveBeenCalledWith('boom');
+        expect(Logger.error).toHaveBeenCalledWith('boom');
       });
     });
   });

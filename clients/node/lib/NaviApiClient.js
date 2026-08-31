@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ApiRequestFailed } from './exceptions/ApiRequestFailed.js';
+import { Logger } from './logging/Logger.js';
 
 /**
  * NaviApiClient performs authenticated POST requests against a running Navi
@@ -33,6 +34,11 @@ class NaviApiClient {
    */
   async post(path, body = {}) {
     const url = `${this.baseUrl}${path}`;
+
+    // Never log the axios request/config object as a whole — it carries
+    // `headers`, including the `Authorization: Bearer <token>` set below,
+    // which must never reach a log line.
+    Logger.debug('Outbound request', { method: 'POST', url, body });
 
     let response;
     try {

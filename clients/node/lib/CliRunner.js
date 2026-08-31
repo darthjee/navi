@@ -1,7 +1,9 @@
 import { NaviClient } from '../client.js';
 import { ConfigFileGrouper } from './ConfigFileGrouper.js';
+import { Logger } from './logging/Logger.js';
 
 const ACTIONS = ['config', 'engine-start', 'engine-stop'];
+const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'];
 
 /**
  * CliRunner drives the `navi-client` CLI: validates the parsed arguments,
@@ -21,20 +23,24 @@ class CliRunner {
    * @param {string} [options.payload] Optional JSON request body.
    * @param {Array<{path: string, mode: 'json'|'yaml'|'auto'}>} [options.configFiles] Optional
    * ordered `--file`/`--json`/`--yaml` list (`config` action only), mutually exclusive with `payload`.
+   * @param {string} [options.logLevel] Optional `--log-level` value. One of `debug`/`info`/`warn`/
+   * `error`/`silent`. Takes precedence over the `LOG_LEVEL` env var when given.
    * @returns {Promise<number>} The process exit code (`0` on success, `1` on failure).
    */
-  static async run({ baseUrl, token, action, payload, configFiles = [] }) {
-    const validationError = CliRunner.#validate({ baseUrl, token, action, payload, configFiles });
+  static async run({ baseUrl, token, action, payload, configFiles = [], logLevel }) {
+    const validationError = CliRunner.#validate({ baseUrl, token, action, payload, configFiles, logLevel });
     if (validationError) {
-      console.error(validationError);
+      Logger.error(validationError);
       return 1;
     }
+
+    if (logLevel) Logger.setLevel(logLevel);
 
     let body;
     try {
       body = payload ? JSON.parse(payload) : undefined;
     } catch (error) {
-      console.error(`Invalid JSON payload: ${error.message}`);
+      Logger.error(`Invalid JSON payload: ${error.message}`);
       return 1;
     }
 
@@ -45,7 +51,7 @@ class CliRunner {
       console.log(JSON.stringify(result, null, 2));
       return 0;
     } catch (error) {
-      console.error(error.message);
+      Logger.error(error.message);
       return 1;
     }
   }
@@ -109,15 +115,19 @@ class CliRunner {
    * @param {string} options.action
    * @param {string} [options.payload]
    * @param {Array} [options.configFiles]
+   * @param {string} [options.logLevel]
    * @returns {string|null} An error message, or `null` when the options are valid.
    */
-  static #validate({ baseUrl, token, action, payload, configFiles }) {
+  static #validate({ baseUrl, token, action, payload, configFiles, logLevel }) {
     if (!baseUrl) return 'Missing required option: --base-url';
     if (!token) return 'Missing required option: --token';
     if (!action) return 'Missing required option: --action';
     if (!ACTIONS.includes(action)) return `Invalid --action "${action}". Must be one of: ${ACTIONS.join(', ')}`;
     if (payload && configFiles.length > 0) {
       return '--payload cannot be combined with --file/--json/--yaml';
+    }
+    if (logLevel && !LOG_LEVELS.includes(logLevel)) {
+      return `Invalid --log-level "${logLevel}". Must be one of: ${LOG_LEVELS.join(', ')}`;
     }
 
     return null;

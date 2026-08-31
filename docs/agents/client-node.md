@@ -12,6 +12,10 @@ clients/node/
 │   ├── NaviApiClient.js   # internal HTTP helper (axios POST + status handling)
 │   ├── CliArgumentsParser.js
 │   ├── CliRunner.js
+│   ├── logging/           # self-contained port of source/lib/common/utils/logging/
+│   │   ├── Logger.js       # static facade, no LoggerGroup (single ConsoleLogger sink)
+│   │   ├── BaseLogger.js    # level-filtering logic (debug/info/warn/error/silent)
+│   │   └── ConsoleLogger.js
 │   └── exceptions/
 │       └── ApiRequestFailed.js
 ├── bin/
@@ -36,6 +40,10 @@ Every method returns a `Promise` resolving to the parsed JSON response body, and
 ## CLI usage
 
 The published `navi-client` command (`bin/navi-client.js`) parses `--base-url`/`-b`, `--token`/`-t`, `--action`/`-a` (`config`, `engine-start`, or `engine-stop`), and an optional `--payload`/`-p` JSON string, then delegates to `CliRunner.run` (`lib/CliRunner.js`), which builds a `NaviClient` and dispatches to the matching method. The result is printed as JSON to stdout on success; on failure, the error message goes to stderr and the process exits with status `1`.
+
+## Logging
+
+`lib/logging/` ports the *shape* of the engine's `Logger`/`BaseLogger`/`ConsoleLogger` stack (`source/lib/common/utils/logging/`) with no dependency on `source/` — same precedent as `EnvStringResolver.js`. `LoggerGroup` is intentionally not ported, since the CLI only ever has one output sink (stdout/stderr). The effective level is read from the `LOG_LEVEL` env var (default `info`), overridable per-run via the `--log-level <level>` CLI flag (which takes precedence when both are given), one of `debug`/`info`/`warn`/`error`/`silent`. Under `debug`, `ConfigFileParser` logs deduped per-`$VAR`/`${VAR}` interpolation lines (name, set/unset status, and — when set — value length + a short hash, never the raw value) plus a per-file summary, and `NaviApiClient#post` logs every outbound request (method, URL, body) — the `Authorization` header/bearer token is never logged, at any level.
 
 ## Testing
 
