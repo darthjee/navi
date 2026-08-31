@@ -70,4 +70,6 @@ Even though `/categories.json` reports 3 pages, `products_page` caps itself at 2
 
 Omitted, `null`, `0`, or any other non-positive-integer value means unlimited (all pages the caller resolves are enqueued) — the default. A present-but-invalid value (e.g. a negative number or a non-numeric string) also logs a warning.
 
+**Related sample:** [Warm a paginated API](samples/paginated-warmup.md), [Crawl every page and emit every item](samples/paginated-crawl-emit.md)
+
 [← Back to How to Use Navi](../how_to_use_navi.md)

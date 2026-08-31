@@ -24,4 +24,5 @@ Four integration modes are covered:
 - [Paginated Actions](./navi/paginated-actions.md) — Fanning out one request per page with `paginated_actions`.
 - [Emit Configuration](./navi/emit-configuration.md) — Sending extracted items onward to an external endpoint with `emit`, including reshaping the body with `body_template`.
 - [Splitting Configuration Across Files](./navi/splitting-configuration.md) — Using `include` and `namespace` to organize config across multiple files.
+- [Samples](./navi/samples.md) — end-to-end, copy-paste recipes for cache warm-up and crawling.
 - [Reference](./navi/reference.md) — CLI flags, environment variable substitution, and headless vs. web UI mode.
