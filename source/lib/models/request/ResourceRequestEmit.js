@@ -1,4 +1,5 @@
 import { ClientReference } from './ClientReference.js';
+import { InvalidEmitBodyTemplate } from '../../exceptions/config/InvalidEmitBodyTemplate.js';
 import { InvalidEmitCooldown } from '../../exceptions/config/InvalidEmitCooldown.js';
 import { InvalidEmitHeaders } from '../../exceptions/config/InvalidEmitHeaders.js';
 import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
@@ -29,6 +30,7 @@ class ResourceRequestEmit {
   #retries;
   #cooldown;
   #headers;
+  #bodyTemplate;
 
   /**
    * @param {object} attributes ResourceRequestEmit attributes.
@@ -47,8 +49,12 @@ class ResourceRequestEmit {
    * @param {object} [attributes.headers] A map of extra HTTP headers to send with this
    * emit request, merged over the client's own headers. Values must be string-coercible
    * (string, number, or boolean). Defaults to an empty object when omitted.
+   * @param {object|Array} [attributes.body_template] A plain object or array template used
+   * to wrap/re-shape the extracted item before it is sent as the emit request body. `{:key}`
+   * / `{:nested.path}` tokens are resolved against the item; `{:.}` refers to the whole item.
+   * When omitted, the bare item is sent as the body (current behavior).
    */
-  constructor({ client, method, url, status, retries, cooldown, headers }) {
+  constructor({ client, method, url, status, retries, cooldown, headers, body_template: bodyTemplate }) {
     if (!EMIT_METHODS.includes(method)) throw new InvalidEmitMethod(method);
     if (!url) throw new MissingEmitUrl();
     if (retries !== undefined && (typeof retries !== 'number' || retries < 0)) throw new InvalidEmitRetries(retries);
@@ -60,6 +66,7 @@ class ResourceRequestEmit {
     this.#retries = retries;
     this.#cooldown = cooldown;
     this.#headers = this.#parseHeaders(headers);
+    this.#bodyTemplate = this.#parseBodyTemplate(bodyTemplate);
 
     this.method = method;
     this.url = url;
@@ -111,6 +118,14 @@ class ResourceRequestEmit {
   }
 
   /**
+   * Returns the configured body template, or undefined when no template was configured.
+   * @returns {object|Array|undefined} The configured body template.
+   */
+  get bodyTemplate() {
+    return this.#bodyTemplate;
+  }
+
+  /**
    * Returns the URL with every {:placeholder} token replaced by the
    * corresponding value from the parameters object.
    * Tokens with no matching key are left unchanged.
@@ -119,6 +134,18 @@ class ResourceRequestEmit {
    */
   resolveUrl(parameters = {}) {
     return this.url.replace(/\{:(\w+)\}/g, (_, key) => parameters[key] ?? `{:${key}}`);
+  }
+
+  /**
+   * Returns the emit request body for the given item, rendered through the configured
+   * `bodyTemplate` when one was given, or the bare item unchanged when it wasn't.
+   * @param {*} item The extracted item to build the emit body from.
+   * @returns {*} The resolved emit request body.
+   */
+  resolveBody(item) {
+    if (this.#bodyTemplate === undefined) return item;
+
+    return this.#renderTemplate(this.#bodyTemplate, item);
   }
 
   /**
@@ -147,6 +174,87 @@ class ResourceRequestEmit {
     }
 
     return headers;
+  }
+
+  /**
+   * Validates and normalises the raw `body_template` config value.
+   * @param {object|Array} [bodyTemplate] The raw body template from config.
+   * @returns {object|Array|undefined} The validated body template, or undefined when none
+   * was given.
+   * @throws {InvalidEmitBodyTemplate} When bodyTemplate is not a plain object or array.
+   */
+  #parseBodyTemplate(bodyTemplate) {
+    if (bodyTemplate === undefined) return undefined;
+
+    const isPlainArray = Array.isArray(bodyTemplate);
+    const isPlainObject = bodyTemplate !== null && typeof bodyTemplate === 'object' && !isPlainArray
+      && Object.getPrototypeOf(bodyTemplate) === Object.prototype;
+
+    if (!isPlainArray && !isPlainObject) {
+      throw new InvalidEmitBodyTemplate(bodyTemplate);
+    }
+
+    return bodyTemplate;
+  }
+
+  /**
+   * Recursively renders a body template node against the given item.
+   * @param {*} node The template node to render (array, plain object, string, or scalar).
+   * @param {*} item The item to resolve tokens against.
+   * @returns {*} The rendered node.
+   */
+  #renderTemplate(node, item) {
+    if (Array.isArray(node)) {
+      return node.map((element) => this.#renderTemplate(element, item));
+    }
+
+    if (node !== null && typeof node === 'object') {
+      return Object.fromEntries(
+        Object.entries(node).map(([key, value]) => [key, this.#renderTemplate(value, item)])
+      );
+    }
+
+    if (typeof node === 'string') {
+      return this.#renderString(node, item);
+    }
+
+    return node;
+  }
+
+  /**
+   * Renders a single template string against the given item, resolving `{:key}` /
+   * `{:nested.path}` tokens.
+   * @param {string} str The template string to render.
+   * @param {*} item The item to resolve tokens against.
+   * @returns {*} The rendered value: the resolved value verbatim for whole-token strings,
+   * or a string with every resolvable token interpolated.
+   */
+  #renderString(str, item) {
+    const wholeTokenMatch = str.match(/^\{:([.\w]+)\}$/);
+
+    if (wholeTokenMatch) {
+      const value = this.#resolveToken(wholeTokenMatch[1], item);
+
+      return value === undefined ? str : value;
+    }
+
+    return str.replace(/\{:([.\w]+)\}/g, (full, path) => {
+      const value = this.#resolveToken(path, item);
+
+      return value === undefined ? full : String(value);
+    });
+  }
+
+  /**
+   * Resolves a dot-path token against the given item.
+   * @param {string} path The dot-path to resolve, or "." for the whole item.
+   * @param {*} item The item to resolve the path against.
+   * @returns {*} The resolved value, or undefined when the path can't be resolved.
+   */
+  #resolveToken(path, item) {
+    if (path === '.') return item;
+
+    return path.split('.').reduce((current, segment) => current?.[segment], item);
   }
 }
 
