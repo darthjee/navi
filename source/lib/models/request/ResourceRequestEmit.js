@@ -1,3 +1,4 @@
+import { BodyTemplateRenderer } from './BodyTemplateRenderer.js';
 import { ClientReference } from './ClientReference.js';
 import { UrlTokenResolver } from './UrlTokenResolver.js';
 import { InvalidEmitBodyTemplate } from '../../exceptions/config/InvalidEmitBodyTemplate.js';
@@ -146,7 +147,7 @@ class ResourceRequestEmit {
   resolveBody(item) {
     if (this.#bodyTemplate === undefined) return item;
 
-    return this.#renderTemplate(this.#bodyTemplate, item);
+    return BodyTemplateRenderer.render(this.#bodyTemplate, item);
   }
 
   /**
@@ -196,66 +197,6 @@ class ResourceRequestEmit {
     }
 
     return bodyTemplate;
-  }
-
-  /**
-   * Recursively renders a body template node against the given item.
-   * @param {*} node The template node to render (array, plain object, string, or scalar).
-   * @param {*} item The item to resolve tokens against.
-   * @returns {*} The rendered node.
-   */
-  #renderTemplate(node, item) {
-    if (Array.isArray(node)) {
-      return node.map((element) => this.#renderTemplate(element, item));
-    }
-
-    if (node !== null && typeof node === 'object') {
-      return Object.fromEntries(
-        Object.entries(node).map(([key, value]) => [key, this.#renderTemplate(value, item)])
-      );
-    }
-
-    if (typeof node === 'string') {
-      return this.#renderString(node, item);
-    }
-
-    return node;
-  }
-
-  /**
-   * Renders a single template string against the given item, resolving `{:key}` /
-   * `{:nested.path}` tokens.
-   * @param {string} str The template string to render.
-   * @param {*} item The item to resolve tokens against.
-   * @returns {*} The rendered value: the resolved value verbatim for whole-token strings,
-   * or a string with every resolvable token interpolated.
-   */
-  #renderString(str, item) {
-    const wholeTokenMatch = str.match(/^\{:([.\w]+)\}$/);
-
-    if (wholeTokenMatch) {
-      const value = this.#resolveToken(wholeTokenMatch[1], item);
-
-      return value === undefined ? str : value;
-    }
-
-    return str.replace(/\{:([.\w]+)\}/g, (full, path) => {
-      const value = this.#resolveToken(path, item);
-
-      return value === undefined ? full : String(value);
-    });
-  }
-
-  /**
-   * Resolves a dot-path token against the given item.
-   * @param {string} path The dot-path to resolve, or "." for the whole item.
-   * @param {*} item The item to resolve the path against.
-   * @returns {*} The resolved value, or undefined when the path can't be resolved.
-   */
-  #resolveToken(path, item) {
-    if (path === '.') return item;
-
-    return path.split('.').reduce((current, segment) => current?.[segment], item);
   }
 }
 
