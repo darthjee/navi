@@ -9,6 +9,7 @@ const ARGUMENTS_CONFIG = {
     file: { type: 'string', multiple: true },
     json: { type: 'string', multiple: true },
     yaml: { type: 'string', multiple: true },
+    'log-level': { type: 'string' },
   },
   allowPositionals: false,
 };
@@ -32,6 +33,9 @@ class CliArgumentsParser {
    *   --file <path>                    Repeatable; config file, parser auto-detected by extension
    *   --json <path>                    Repeatable; config file, forced JSON parsing
    *   --yaml <path>                    Repeatable; config file, forced YAML parsing
+   *   --log-level <level>              One of: debug, info, warn, error, silent. Defaults to
+   *                                    the LOG_LEVEL env var, or 'info'. Takes precedence
+   *                                    over LOG_LEVEL when both are given.
    *
    * `--file`/`--json`/`--yaml` are freely combinable and repeatable; the resulting
    * `configFiles` list preserves their literal command-line order across all three flags.
@@ -39,7 +43,7 @@ class CliArgumentsParser {
    * @param {string[]} args Command line arguments (typically `process.argv.slice(2)`).
    * @returns {{
    * baseUrl: string, token: string, action: string, payload: string,
-   * configFiles: Array<{path: string, mode: 'json'|'yaml'|'auto'}>
+   * configFiles: Array<{path: string, mode: 'json'|'yaml'|'auto'}>, logLevel: string
    * }} Parsed options object.
    */
   static parse(args) {
@@ -51,6 +55,7 @@ class CliArgumentsParser {
       action: values.action,
       payload: values.payload,
       configFiles: CliArgumentsParser.#configFiles(tokens),
+      logLevel: values['log-level'],
     };
   }
 
