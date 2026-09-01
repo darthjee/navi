@@ -1,3 +1,3 @@
-FROM darthjee/navi-hey:1.8.2
+FROM darthjee/navi-hey:1.9.0
 
 COPY navi-config.yml /home/node/app/config/navi_config.yml
