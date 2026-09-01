@@ -1,5 +1,6 @@
 import { RequestHandler } from '../common/server/RequestHandler.js';
 import { ForbiddenError } from '../exceptions/http/ForbiddenError.js';
+import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Base class for token-secured request handlers (the `/api/*` namespace).
@@ -34,6 +35,13 @@ class SecuredRequestHandler extends RequestHandler {
    */
   async handle() {
     this.#authorize();
+
+    Logger.debug('Inbound request', {
+      method: this.#request.method,
+      path: this.#request.path,
+      body: this.#request.body,
+    });
+
     return this.process();
   }
 
