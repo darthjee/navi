@@ -1,0 +1,11 @@
+workers:
+  quantity: 5
+resources:
+  widget:
+    - url: https://$NAVI_TEST_INTERP_VAR/widgets
+      status: 200
+    - url: https://$NAVI_TEST_INTERP_MISSING_VAR/other
+      status: 200
+
+include:
+  - included.yml
