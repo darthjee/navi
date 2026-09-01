@@ -120,11 +120,53 @@ class ConfigIncluder {
   #readYaml(filePath, isEntry) {
     try {
       const content = readFileSync(filePath, 'utf8');
-      return YAML.parse(EnvStringResolver.resolve(content));
+      const resolver = new EnvStringResolver(content);
+      const resolved = resolver.resolve();
+      this.#logInterpolation(resolver.matches, filePath);
+
+      return YAML.parse(resolved);
     } catch {
       Logger.error(`Configuration file not found: ${filePath}`);
       throw isEntry ? new ConfigurationFileNotFound(filePath) : new ConfigurationIncludeNotFound(filePath);
     }
+  }
+
+  /**
+   * Emits debug-only interpolation diagnostics for the given file's
+   * `$VAR`/`${VAR}` matches: one line per distinct variable name (deduped —
+   * repeats within a file resolve identically), plus one per-file summary
+   * line. No-op when the active log level is above `debug`.
+   *
+   * @param {Array<{varName: string, defined: boolean, length?: number, hash?: string}>} matches
+   * Per-occurrence resolution data from `EnvStringResolver#resolve`, in match order (not deduped).
+   * @param {string} filePath The absolute path of the file the matches belong to.
+   * @returns {void}
+   * @private
+   */
+  #logInterpolation(matches, filePath) {
+    const uniqueByVarName = new Map();
+    let resolvedCount = 0;
+    let missingCount = 0;
+
+    for (const match of matches) {
+      if (match.defined) resolvedCount += 1;
+      else missingCount += 1;
+
+      if (!uniqueByVarName.has(match.varName)) uniqueByVarName.set(match.varName, match);
+    }
+
+    for (const match of uniqueByVarName.values()) {
+      Logger.debug(`Config interpolation: $${match.varName}`, match.defined
+        ? { path: filePath, defined: true, length: match.length, hash: match.hash }
+        : { path: filePath, defined: false });
+    }
+
+    Logger.debug(`Config interpolation summary: ${filePath}`, {
+      path: filePath,
+      placeholders: matches.length,
+      resolved: resolvedCount,
+      missing: missingCount,
+    });
   }
 }
 
