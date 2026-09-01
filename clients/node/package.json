@@ -1,7 +1,7 @@
 {
   "name": "navi-hey-client",
   "type": "module",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Node.js client for Navi's token-secured /api/* HTTP namespace",
   "readme": "README.md",
   "main": "client.js",

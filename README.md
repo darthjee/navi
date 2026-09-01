@@ -12,9 +12,9 @@ Cache Warmer Tool
 
 **Next Release:** [1.9.1](https://github.com/darthjee/navi/compare/1.9.0...main)
 
-**Client Current Version:** [0.1.2](https://github.com/darthjee/navi/releases/tag/client-0.1.2)
+**Client Current Version:** [0.2.0](https://github.com/darthjee/navi/releases/tag/client-0.2.0)
 
-**Client Next Version:** [0.1.3](https://github.com/darthjee/navi/compare/client-0.1.2...main)
+**Client Next Version:** [0.2.1](https://github.com/darthjee/navi/compare/client-0.2.0...main)
 
 **Worker Current Version:** [1.8.2](https://github.com/darthjee/navi/releases/tag/worker-1.8.2)
 
