@@ -1,0 +1,7 @@
+namespace: included
+resources:
+  gadget:
+    - url: https://$NAVI_TEST_INTERP_VAR/gadgets
+      status: 200
+    - url: https://$NAVI_TEST_INTERP_VAR/gadgets2
+      status: 200

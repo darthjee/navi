@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { EnvStringResolver } from '../../../../../lib/common/utils/env_resolver/EnvStringResolver.js';
 import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
 
@@ -77,6 +78,76 @@ describe('EnvStringResolver', () => {
     describe('when value is a boolean', () => {
       it('coerces it to a string', () => {
         expect(EnvStringResolver.resolve(true)).toEqual('true');
+      });
+    });
+  });
+
+  describe('#resolve', () => {
+    const ENV_VAR = 'NAVI_TEST_MATCH_VAR';
+
+    afterEach(() => {
+      delete process.env[ENV_VAR];
+    });
+
+    describe('matches', () => {
+      it('records a set var as defined, with length and hash', () => {
+        process.env[ENV_VAR] = 'a-value';
+        const expectedHash = createHash('sha256').update('a-value').digest('hex').slice(0, 12);
+
+        const resolver = new EnvStringResolver(`token: $${ENV_VAR}`);
+        resolver.resolve();
+
+        expect(resolver.matches).toEqual([
+          { varName: ENV_VAR, defined: true, length: 7, hash: expectedHash },
+        ]);
+      });
+
+      it('records a set-but-empty var as defined, with length 0', () => {
+        process.env[ENV_VAR] = '';
+
+        const resolver = new EnvStringResolver(`token: $${ENV_VAR}`);
+        resolver.resolve();
+
+        expect(resolver.matches).toEqual([
+          jasmine.objectContaining({ varName: ENV_VAR, defined: true, length: 0 }),
+        ]);
+      });
+
+      it('records an unset var as not defined, without length or hash', () => {
+        spyOn(Logger, 'warn').and.stub();
+
+        const resolver = new EnvStringResolver(`token: $${ENV_VAR}`);
+        resolver.resolve();
+
+        expect(resolver.matches).toEqual([{ varName: ENV_VAR, defined: false }]);
+      });
+
+      it('records one entry per occurrence (not deduped)', () => {
+        process.env[ENV_VAR] = 'value';
+
+        const resolver = new EnvStringResolver(`a: $${ENV_VAR}, b: \${${ENV_VAR}}`);
+        resolver.resolve();
+
+        expect(resolver.matches.length).toBe(2);
+        expect(resolver.matches[0].varName).toBe(ENV_VAR);
+        expect(resolver.matches[1].varName).toBe(ENV_VAR);
+      });
+
+      it('hashes the same value deterministically', () => {
+        process.env[ENV_VAR] = 'stable-value';
+
+        const first = new EnvStringResolver(`$${ENV_VAR}`);
+        first.resolve();
+        const second = new EnvStringResolver(`$${ENV_VAR}`);
+        second.resolve();
+
+        expect(first.matches[0].hash).toBe(second.matches[0].hash);
+      });
+
+      it('starts empty for a fresh instance', () => {
+        const resolver = new EnvStringResolver('namespace: reports');
+
+        expect(resolver.matches).toEqual([]);
       });
     });
   });
