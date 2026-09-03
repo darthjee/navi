@@ -23,6 +23,7 @@ import { JobRetryHandler } from './handlers/jobs/JobRetryHandler.js';
 import { JobsHandler } from './handlers/jobs/JobsHandler.js';
 import { LinksHandler } from './handlers/LinksHandler.js';
 import { LogsHandler } from './handlers/LogsHandler.js';
+import { MemoryHistoryHandler } from './handlers/memory/MemoryHistoryHandler.js';
 import { MemoryStatusHandler } from './handlers/memory/MemoryStatusHandler.js';
 import { SettingsHandler } from './handlers/SettingsHandler.js';
 import { StatsHandler } from './handlers/StatsHandler.js';
@@ -69,6 +70,7 @@ class Router {
       '/job/:id.json':            new HandlerConfig(JobHandler),
       '/engine/status':           new HandlerConfig(EngineStatusHandler),
       '/memory/status.json':      new HandlerConfig(MemoryStatusHandler, [this.#webConfig.memory]),
+      '/memory/history.json':     new HandlerConfig(MemoryHistoryHandler, this.#webConfig.memory?.dataStorePageSize),
       '/logs.json':               new HandlerConfig(LogsHandler, this.#webConfig.logsPageSize),
       '/emissions.json':          new HandlerConfig(EmissionsHandler, this.#webConfig.logsPageSize),
       '/extractions.json':        new HandlerConfig(ExtractionsHandler, this.#webConfig.logsPageSize),
