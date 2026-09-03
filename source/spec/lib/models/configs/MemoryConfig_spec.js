@@ -1,3 +1,4 @@
+import { InvalidMemoryDataStore } from '../../../../lib/exceptions/config/InvalidMemoryDataStore.js';
 import { InvalidMemoryThresholds } from '../../../../lib/exceptions/config/InvalidMemoryThresholds.js';
 import { MemoryConfig } from '../../../../lib/models/configs/MemoryConfig.js';
 
@@ -64,10 +65,40 @@ describe('MemoryConfig', () => {
         expect(config.dataStoreSize).toBe(100);
       });
 
+      it('defaults dataStoreInterval to 5 when none is given', () => {
+        const config = new MemoryConfig();
+
+        expect(config.dataStoreInterval).toBe(5);
+      });
+
+      it('defaults dataStorePageSize to 20 when none is given', () => {
+        const config = new MemoryConfig();
+
+        expect(config.dataStorePageSize).toBe(20);
+      });
+
       it('applies a custom data_store.size', () => {
         const config = new MemoryConfig({ data_store: { size: 250 } });
 
         expect(config.dataStoreSize).toBe(250);
+      });
+
+      it('applies a custom data_store.interval', () => {
+        const config = new MemoryConfig({ data_store: { interval: 10 } });
+
+        expect(config.dataStoreInterval).toBe(10);
+      });
+
+      it('applies a custom data_store.page_size', () => {
+        const config = new MemoryConfig({ data_store: { page_size: 50 } });
+
+        expect(config.dataStorePageSize).toBe(50);
+      });
+
+      it('accepts a fractional data_store.interval', () => {
+        const config = new MemoryConfig({ data_store: { interval: 0.5 } });
+
+        expect(config.dataStoreInterval).toBe(0.5);
       });
 
       it('does not interfere with maximum/thresholds behavior', () => {
@@ -79,6 +110,33 @@ describe('MemoryConfig', () => {
         expect(config.dataStoreSize).toBe(250);
         expect(config.maximum).toEqual(4096);
         expect(config.thresholds).toEqual({ low: 25.0, medium: 40.0, high: 75.0, over: 100.0 });
+      });
+
+      it('throws InvalidMemoryDataStore when interval is 0', () => {
+        expect(() => new MemoryConfig({ data_store: { interval: 0 } }))
+          .toThrowError(InvalidMemoryDataStore);
+      });
+
+      it('throws InvalidMemoryDataStore when interval is negative', () => {
+        expect(() => new MemoryConfig({ data_store: { interval: -5 } }))
+          .toThrowError(InvalidMemoryDataStore);
+      });
+
+      it('throws InvalidMemoryDataStore when interval is NaN', () => {
+        expect(() => new MemoryConfig({ data_store: { interval: NaN } }))
+          .toThrowError(InvalidMemoryDataStore);
+      });
+
+      it('throws InvalidMemoryDataStore when interval is non-numeric', () => {
+        expect(() => new MemoryConfig({ data_store: { interval: 'oops' } }))
+          .toThrowError(InvalidMemoryDataStore);
+      });
+
+      it('does not validate size/page_size, allowing values that would otherwise be nonsensical (deliberate asymmetry with interval)', () => {
+        const config = new MemoryConfig({ data_store: { size: -1, page_size: 0 } });
+
+        expect(config.dataStoreSize).toBe(-1);
+        expect(config.dataStorePageSize).toBe(0);
       });
     });
   });
