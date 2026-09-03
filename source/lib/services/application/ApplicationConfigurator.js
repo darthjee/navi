@@ -4,10 +4,11 @@ import { Config } from '../../models/configs/Config.js';
 import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
+import { MemoryRegistry } from '../../registry/MemoryRegistry.js';
 
 /**
  * ApplicationConfigurator loads the application configuration from disk and
- * bootstraps the log, emission and extraction registries that depend on it.
+ * bootstraps the log, emission, extraction and memory registries that depend on it.
  * @author darthjee
  */
 class ApplicationConfigurator {
@@ -27,6 +28,10 @@ class ApplicationConfigurator {
     const logRegistry = LogRegistry.build({ retention: config.logConfig.size });
     EmissionRegistry.build({ retention: config.emitConfig.size });
     ExtractionRegistry.build({ retention: config.extractionConfig.size });
+
+    if (config.webConfig) {
+      MemoryRegistry.build({ retention: config.webConfig.memory.dataStoreSize });
+    }
 
     return new ConfigStore({
       config,

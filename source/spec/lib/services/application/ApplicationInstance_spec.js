@@ -96,6 +96,7 @@ describe('ApplicationInstance', () => {
       spyOn(ExtractionRegistry, 'clear');
       spyOn(EngineController.prototype, 'buildEngine').and.returnValue(buildFakeEngine());
       spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
+      spyOn(ServerController.prototype, 'buildSampler').and.returnValue(null);
       spyOn(instance, 'enqueueFirstJobs').and.stub();
     });
 

@@ -1,4 +1,5 @@
 import { JobFactory, JobRegistry, WorkersRegistry, Engine } from 'deku-swarm';
+import { MemoryRegistry } from '../../../../lib/registry/MemoryRegistry.js';
 import { WebServer } from '../../../../lib/server/WebServer.js';
 import { Application } from '../../../../lib/services/application/Application.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
@@ -74,6 +75,44 @@ describe('Application web server integration', () => {
 
       expect(webServerStartResolved).toBeTrue();
       expect(runResolved).toBeTrue();
+    });
+  });
+
+  describe('memory sampling', () => {
+    it('samples RSS while running and stops sampling on shutdown', async () => {
+      let resolveWebServerStart;
+      let engine;
+
+      const webServerPromise = new Promise((resolve) => {
+        resolveWebServerStart = resolve;
+      });
+
+      spyOn(WebServer.prototype, 'start').and.returnValue(webServerPromise);
+      spyOn(EngineController.prototype, 'buildEngine').and.callFake(() => {
+        engine = new Engine({
+          jobRegistry: JobRegistry,
+          workersRegistry: WorkersRegistry,
+          keepAlive: true,
+          sleepMs: 1,
+        });
+        return engine;
+      });
+      spyOn(MemoryRegistry, 'add').and.callThrough();
+      spyOn(globalThis, 'clearInterval').and.callThrough();
+
+      const runPromise = app.run();
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(MemoryRegistry.add).toHaveBeenCalled();
+
+      resolveWebServerStart();
+      engine.stop();
+      await runPromise;
+
+      await Application.shutdown();
+
+      expect(globalThis.clearInterval).toHaveBeenCalled();
     });
   });
 });
