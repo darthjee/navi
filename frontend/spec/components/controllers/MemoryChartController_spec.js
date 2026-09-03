@@ -1,6 +1,6 @@
 import { act } from 'react';
-import MemoryChartController from '../../../src/components/elements/controllers/MemoryChartController.jsx';
 import fetchMemoryHistory from '../../../src/clients/MemoryHistoryClient.js';
+import MemoryChartController from '../../../src/components/elements/controllers/MemoryChartController.jsx';
 import noop from '../../../src/utils/noop.js';
 import { mockFetchFailure } from '../../support/fetch.js';
 
