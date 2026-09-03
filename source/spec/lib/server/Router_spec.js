@@ -35,6 +35,14 @@ describe('Router', () => {
       expect(layer.route.methods.get).toBeTrue();
     });
 
+    it('registers GET /memory/history.json', () => {
+      const expressRouter = router.build();
+      const layer = expressRouter.stack.find((entry) => entry.route?.path === '/memory/history.json');
+
+      expect(layer).toBeDefined();
+      expect(layer.route.methods.get).toBeTrue();
+    });
+
     it('registers GET /emissions.json', () => {
       const expressRouter = router.build();
       const layer = expressRouter.stack.find((entry) => entry.route?.path === '/emissions.json');
