@@ -65,6 +65,7 @@ constructs the executor as `(req, res, ...parameters)` only when a matching requ
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
 | `GET` | `/engine/status` | Returns `{ status }` with the current engine status. |
 | `GET` | `/memory/status.json` | Current process RSS against the resolved `web.memory` maximum, plus a derived `status`. |
+| `GET` | `/memory/history.json` | Paginated, oldest-first buffer of recent RSS memory readings (cursor pagination via last_id, same as /logs.json). |
 | `PATCH` | `/engine/pause` | Sets status → `pausing`. Returns 409 if not `running`. |
 | `PATCH` | `/engine/stop` | Sets status → `stopping`, clears queues when workers idle. Returns 409 if not `running`. |
 | `PATCH` | `/engine/continue` | Resumes from `paused`. Returns 409 if not `paused`. |
@@ -120,6 +121,29 @@ Returns the current process's RSS memory usage against the resolved maximum:
 `current` is the process's current RSS, in bytes. `maximum` is the resolved `web.memory.maximum` (see below). `percentage` is `current / maximum * 100`. `status` is derived from `percentage` against `web.memory.thresholds` (`low`, `medium`, `high`, `over`) using **inclusive** (`>=`) boundaries checked from the top down — e.g. `percentage == 50.0` with `medium: 50.0` is already `"medium"`; percentages below `low` still resolve to `"low"`, since it's the floor status and there is no band beneath it.
 
 `maximum` is resolved via a fallback chain, the first source that yields a value wins: **`web.memory.maximum` (config) → cgroup v2 limit (`memory.max`) → cgroup v1 limit (`memory.limit_in_bytes`) → OS total memory (`os.totalmem()`)**. Cgroup v2 reports the literal string `"max"`, and cgroup v1 reports a very large sentinel number, when unbounded — both are treated as "no limit" and fall through to the next source in the chain. `os.totalmem()` never fails, so the chain always resolves to some maximum.
+
+### `GET /memory/history.json`
+
+Returns a paginated, oldest-first slice of the in-memory RSS reading buffer sampled by
+`MemorySampler` (see [Configuration](#configuration)):
+
+```json
+[
+  {
+    "id": 1,
+    "value": 104857600,
+    "percentage": 4.88,
+    "timestamp": "2026-08-30T12:00:00.000Z"
+  }
+]
+```
+
+Pass `?last_id=<id>` to page forward from a known record id (cursor pagination, the same
+semantics as `/logs.json` / `/emissions.json`); an unknown id yields an empty array. `value`
+is the process's RSS, in bytes, at sample time. `percentage` is `value / maximum * 100`,
+relative to the same resolved `web.memory.maximum` used by `/memory/status.json`. `timestamp`
+is an ISO 8601 string. The response is capped at `web.memory.data_store.page_size` entries
+per request.
 
 ### `GET /emissions.json`
 
@@ -304,7 +328,7 @@ web:
     data_store:
       size: 100            # optional; maximum number of memory readings retained in-memory
       interval: 5          # optional; seconds between RSS samples
-      page_size: 20        # optional; max entries a future /memory/history.json returns per request
+      page_size: 20        # optional; max entries /memory/history.json returns per request
 ```
 
 When `enable_shutdown` is `false`, `GET /settings.json` returns 403 and the frontend hides the shutdown button.
@@ -317,9 +341,9 @@ When `idle_timeout` is set to a positive number of seconds, the application auto
 
 `web.memory.thresholds` must be in strictly ascending order (`low < medium < high < over`); boot fails fast with `InvalidMemoryThresholds` when this doesn't hold. `web.memory` (like the rest of `web:`) is only ever parsed when `web.port` is set — without a running web server there's no route to serve it from.
 
-`web.memory.data_store.size` (default `100`) configures the retention limit of an in-memory ring buffer of memory readings, mirroring the log buffer's `size`. `web.memory.data_store.interval` (default `5`) is the number of seconds between RSS samples. `web.memory.data_store.page_size` (default `20`, matching `web.logs_page_size`) bounds how many entries a future `/memory/history.json` endpoint returns per request; nothing reads it yet, exactly as `size` was landed ahead of its consumer. Together, `size` and `interval` determine the retained window: roughly `size × interval` seconds — ~8 minutes at the defaults (`100 × 5s`).
+`web.memory.data_store.size` (default `100`) configures the retention limit of an in-memory ring buffer of memory readings, mirroring the log buffer's `size`. `web.memory.data_store.interval` (default `5`) is the number of seconds between RSS samples. `web.memory.data_store.page_size` (default `20`, matching `web.logs_page_size`) bounds how many entries `GET /memory/history.json` returns per request. Together, `size` and `interval` determine the retained window: roughly `size × interval` seconds — ~8 minutes at the defaults (`100 × 5s`).
 
-A `MemorySampler`, started by `ServerController` alongside the web server, fills this buffer: it takes one immediate sample on boot, then samples `process.memoryUsage().rss` every `interval` seconds for as long as the web server runs, writing into the process-wide `MemoryRegistry`. The **read endpoint** (`/memory/history.json`) that will serve this buffer over HTTP does not exist yet — that's a later sub-issue.
+A `MemorySampler`, started by `ServerController` alongside the web server, fills this buffer: it takes one immediate sample on boot, then samples `process.memoryUsage().rss` every `interval` seconds for as long as the web server runs, writing into the process-wide `MemoryRegistry`. The read endpoint, [`GET /memory/history.json`](#get-memoryhistoryjson), serves this buffer over HTTP.
 
 `interval` is validated at config load: a non-finite or `<= 0` value throws `InvalidMemoryDataStore` and boot fails fast (a bad interval would otherwise busy-loop the sampler's timer). `size` and `page_size` are taken raw, unvalidated, matching the sibling `log.size` / `emit.size` / `extraction.size` keys.
 
