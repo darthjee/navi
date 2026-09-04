@@ -17,3 +17,8 @@
 .text-memory-over-limit {
   color: #6f42c1;
 }
+
+.memory-usage-chart-container {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
