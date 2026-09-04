@@ -3,6 +3,7 @@ import formatBytes from '../../../utils/formatBytes.js';
 import formatPercentage from '../../../utils/formatPercentage.js';
 import ErrorAlert from '../../elements/ErrorAlert.jsx';
 import LoadingSpinner from '../../elements/LoadingSpinner.jsx';
+import MemoryUsageChart from '../../elements/MemoryUsageChart.jsx';
 
 class MemoryStatusHelper {
   static renderLoading() {
@@ -17,14 +18,19 @@ class MemoryStatusHelper {
     const color = colorForMemoryStatus(status, percentage);
 
     return (
-      <div className="card">
-        <div className="card-body">
-          <h5 className={`card-title ${color}`}>Status: {status}</h5>
-          <p className="card-text mb-0">
-            {formatBytes(current)} / {formatBytes(maximum)} ({formatPercentage(percentage)}%)
-          </p>
+      <>
+        <div className="card">
+          <div className="card-body">
+            <h5 className={`card-title ${color}`}>Status: {status}</h5>
+            <p className="card-text mb-0">
+              {formatBytes(current)} / {formatBytes(maximum)} ({formatPercentage(percentage)}%)
+            </p>
+          </div>
         </div>
-      </div>
+        <div className="memory-usage-chart-container">
+          <MemoryUsageChart maximum={maximum} status={status} />
+        </div>
+      </>
     );
   }
 }
