@@ -147,6 +147,15 @@ resources:
             - pages: headers['pages']
             - page_key: page
             - zero_indexed: false
+      parser:
+        type: json_path
+        fields:
+          slug: slug
+          name: name
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-categories
     - url: /categories
       client: oak
       status: 302
