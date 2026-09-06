@@ -19,6 +19,10 @@ clients:
     linkText: Oak Application
     base_url: $OAK_BASE_URL
     timeout: $TIMOUT
+  collector:
+    linkText: Crawl Collector
+    base_url: $COLLECTOR_BASE_URL
+    timeout: $TIMOUT
 resources:
   home:
     - url: /
@@ -104,6 +108,18 @@ resources:
           attribute: href
         - selector: 'script[src]'
           attribute: src
+      parser:
+        type: css
+        match: 'link[href]'
+        fields:
+          rel:
+            attribute: rel
+          href:
+            attribute: href
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-home
 
   oak_user_navigation:
     - url: /user/categories.json
@@ -114,6 +130,14 @@ resources:
     - url: /?ajax=true
       client: oak
       status: 200
+      parser:
+        type: regex
+        match: 'src="/assets/(index-[^"]+\.js)"'
+        field: bundle
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-templates
     - url: /categories?ajax=true
       client: oak
       status: 200
@@ -143,6 +167,15 @@ resources:
             - pages: headers['pages']
             - page_key: page
             - zero_indexed: false
+      parser:
+        type: json_path
+        fields:
+          slug: slug
+          name: name
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-categories
     - url: /categories
       client: oak
       status: 302
@@ -205,6 +238,19 @@ resources:
           parameters:
             id: parsedBody.id
             category_slug: parsedBody.category_slug
+      parser:
+        type: json_path
+        fields:
+          id: id
+          name: name
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-category-items/{:category_slug}?page={:page}
+        body_template:
+          source: oak-category-items
+          category_slug: "{:category_slug}"
+          item: "{:.}"
     - url: /categories/{:category_slug}/items?page={:page}
       client: oak
       status: 302

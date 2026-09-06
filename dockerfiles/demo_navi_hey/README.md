@@ -36,6 +36,9 @@ runtime by navi-hey's own `$VAR` resolver (see
 scripting is needed in the image. The variables it expects:
 
 - `BASE_URL` — base URL of the default target (the `demo_dev_app` service).
+- `COLLECTOR_BASE_URL` — base URL the `collector` client emits extracted
+  items to. Normally set to the same value as `BASE_URL` (the `demo_dev_app`
+  service), whose `POST /collector/:source` endpoint logs each emission.
 - `WORKERS` — number of crawl workers.
 - `RETRY_COOLDOWN` — cooldown (ms) between retries.
 - `MAX_RETRIES` — max retry attempts per resource.
@@ -47,3 +50,27 @@ scripting is needed in the image. The variables it expects:
 All other `ENV` settings from the base `production_navi_hey` image (`PORT`,
 `AUTOSTART`, `IDLE_TIMEOUT`, `API_TOKEN`, `ENABLE_SHUTDOWN`,
 `LOGS_PAGE_SIZE`) still apply and can be overridden the same way.
+
+## Crawl-and-emit example
+
+Beyond cache-warming, the demo config also extracts data from the Oak
+application (`OAK_BASE_URL`) and emits each extracted item to the
+`collector` client (`COLLECTOR_BASE_URL`):
+
+- `oak_categories` — `json_path` parser over the bare-array
+  `GET /categories.json`, mapping `slug` / `name`, emitting each category to
+  `POST /collector/oak-categories`.
+- `oak_paginated_category_items` — `json_path` parser over the bare-array
+  `GET /categories/{slug}/items.json?page={page}`, mapping `id` / `name`,
+  emitting each item to
+  `POST /collector/oak-category-items/{category_slug}?page={page}` with a
+  `body_template` envelope. Runs once per page, alongside the existing
+  `actions` chain.
+- `oak_home` — `css` parser over the SPA shell's `<head>` `<link>` tags,
+  emitting `{ rel, href }` to `POST /collector/oak-home`.
+- `oak_templates` — `regex` parser capturing the hashed JS bundle name from
+  `GET /?ajax=true`, emitting `{ bundle }` to `POST /collector/oak-templates`.
+
+Extraction runs in parallel with the existing cache-warming chains, and
+progress is visible on the demo's Extractions (`/#/extractions`) and
+Emissions (`/#/emissions`) dashboards.
