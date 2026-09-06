@@ -130,6 +130,14 @@ resources:
     - url: /?ajax=true
       client: oak
       status: 200
+      parser:
+        type: regex
+        match: 'src="/assets/(index-[^"]+\.js)"'
+        field: bundle
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-templates
     - url: /categories?ajax=true
       client: oak
       status: 200
