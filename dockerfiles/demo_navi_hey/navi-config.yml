@@ -108,6 +108,18 @@ resources:
           attribute: href
         - selector: 'script[src]'
           attribute: src
+      parser:
+        type: css
+        match: 'link[href]'
+        fields:
+          rel:
+            attribute: rel
+          href:
+            attribute: href
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-home
 
   oak_user_navigation:
     - url: /user/categories.json
