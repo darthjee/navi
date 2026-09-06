@@ -218,6 +218,19 @@ resources:
           parameters:
             id: parsedBody.id
             category_slug: parsedBody.category_slug
+      parser:
+        type: json_path
+        fields:
+          id: id
+          name: name
+      emit:
+        client: collector
+        method: POST
+        url: /collector/oak-category-items/{:category_slug}?page={:page}
+        body_template:
+          source: oak-category-items
+          category_slug: "{:category_slug}"
+          item: "{:.}"
     - url: /categories/{:category_slug}/items?page={:page}
       client: oak
       status: 302
