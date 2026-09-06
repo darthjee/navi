@@ -214,7 +214,7 @@ resources:
 | `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
 | `parser` | Optional. Extracts structured items from the raw response body after a successful response, independently of the resource's own `actions`/`paginated_actions` chaining. |
 | `parser.type` | One of `regex`, `json_path`, `css`. Selects the extraction strategy. |
-| `parser.match` | Meaning depends on `type`: a regex pattern (`regex`), a dot-notation path to the array to extract items from, e.g. `data.items` (`json_path`), or a CSS selector for the repeated container elements (`css`). Required for all three. |
+| `parser.match` | Meaning depends on `type`: a regex pattern (`regex`), a dot-notation path to the array to extract items from, e.g. `data.items` (`json_path`), or a CSS selector for the repeated container elements (`css`). Required for `regex` and `css`. Optional for `json_path`: omitting `match` (the canonical form; `match: ''` and `match: '.'` are accepted aliases with identical behaviour) treats the whole parsed response body as the array of items, with no path navigation. A non-array body in that case raises the same "did not resolve to an array" error as a bad nested path. |
 | `parser.filter` | Optional, `json_path`/`css` only. List of AND'ed conditions a matched item/container must satisfy to be included. `json_path`: each condition is `{ field, equals }` (literal comparison) or `{ field, equals_field }` (compares two fields of the same item; `equals_field` wins when both are given). `css`: each condition is `{ selector, attribute, trim, equals }` (literal, resolved relative to the container) or `{ ..., equals_field: { selector, attribute, trim } }` (field-to-field, both sides resolved relative to the container; `equals_field` wins when both are given). |
 | `parser.fields` | Meaning depends on `type`. `json_path`: a `{ sourceKey: outputKey }` map remapping the matched item's keys into the output item. `css`: a `{ outputKey: { selector, attribute, array, trim } }` map (multi-field mode); each field is resolved relative to the matched container (an absent/empty `selector` means the container itself, `array: true` collects every match instead of just the first). |
 | `parser.field` | `regex`: required, names the single output key populated with the captured value. `css`: fallback single-field mode's output key name, used when `fields` is absent. |
@@ -479,7 +479,7 @@ After a successful response, a resource-request entry may optionally declare a `
 Three parser types are available, each producing the same shape of extracted item(s) regardless of which one is used:
 
 - **`regex`** — applies a regular expression to the raw response body and captures a single field.
-- **`json_path`** — navigates to an array within the parsed JSON body, optionally filters it, and maps selected fields into each extracted item.
+- **`json_path`** — navigates to an array within the parsed JSON body — or, when `match` is omitted, treats the response body's own root as that array — optionally filters it, and maps selected fields into each extracted item.
 - **`css`** — applies a CSS selector to an HTML response body and maps selected fields (and/or attributes) into each extracted item.
 
 See the [Configuration File Fields](#fields) table below for the full field-by-field breakdown of `parser` and `emit`.
@@ -522,6 +522,31 @@ resources:
 ```
 
 For each of the 28 matched items, Navi enqueues one `POST https://majora.example.com/api/miniatures` request with a body built from the mapped fields (`{ inid, name, post_id, bundle }`).
+
+> **Root-level array:** when the response body is itself a JSON array (e.g. `[ { "obj_type": "miniature", … }, … ]`) rather than an object with a `bundleObjs` wrapper key, omit `match` entirely — `match: ''` and `match: '.'` are accepted aliases for the same thing. `fields` stays required and `filter` still applies, exactly as for a nested path; a non-array body raises the same "did not resolve to an array" error as a bad nested path. `regex` and `css` still require `match`.
+
+```yaml
+resources:
+  loot_catalog:
+    - url: /wp-admin/admin-ajax.php?action=GetMyLootsCache
+      status: 200
+      client: lootstudios
+      parser:
+        type: json_path
+        # match omitted — the whole response body is the array of items
+        filter:
+          - field: obj_type
+            equals: miniature
+        fields:
+          obj_inid: inid
+          obj_title: name
+          obj_post_id: post_id
+          bnd_title: bundle
+      emit:
+        client: majora_api
+        method: POST
+        url: /api/miniatures
+```
 
 ### Example: `regex` standalone
 
