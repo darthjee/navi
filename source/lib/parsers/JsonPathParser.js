@@ -2,7 +2,6 @@ import { FieldMapper } from './json_path/FieldMapper.js';
 import { FilterMatcher } from './json_path/FilterMatcher.js';
 import { MatchResolver } from './json_path/MatchResolver.js';
 import { MissingParserFields } from '../exceptions/config/MissingParserFields.js';
-import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
 
 /**
  * @typedef {object} ExtractedItem
@@ -28,8 +27,9 @@ class JsonPathParser {
    * and remapping fields via `attributes.fields`.
    * @param {string} rawBody The raw response body to extract data from (parsed as JSON).
    * @param {object} attributes The parser attributes.
-   * @param {string} attributes.match The dot-notation path (e.g. `data.items`) to the array
-   * to extract items from, resolved against the parsed body.
+   * @param {string} [attributes.match] The dot-notation path (e.g. `data.items`) to the array
+   * to extract items from, resolved against the parsed body. When absent, an empty string, or
+   * exactly `'.'`, the parsed body itself is treated as the array of items (root-array form).
    * @param {Array<object>} [attributes.filter] Optional list of AND'ed conditions an item
    * must satisfy to be included. Each condition is either `{ field, equals }` (literal
    * comparison) or `{ field, equals_field }` (field-to-field comparison, both fields read
@@ -39,13 +39,11 @@ class JsonPathParser {
    * @returns {Array<ExtractedItem>} An array of `{ [outputKey]: value, ... }` items, one per
    * matched item that passes `filter` (or all matched items when `filter` is absent). An empty
    * array when no items match or none pass the filter.
-   * @throws {MissingParserMatch} If `attributes.match` is absent.
    * @throws {MissingParserFields} If `attributes.fields` is absent.
    * @throws {InvalidParserMatch} If `attributes.match` does not resolve to an array within
-   * the parsed body.
+   * the parsed body, or the root-array form is used against a non-array body.
    */
   extract(rawBody, { match, filter, fields } = {}) {
-    if (!match) throw new MissingParserMatch();
     if (!fields) throw new MissingParserFields();
 
     const parsedBody = JSON.parse(rawBody);
