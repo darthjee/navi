@@ -19,6 +19,10 @@ clients:
     linkText: Oak Application
     base_url: $OAK_BASE_URL
     timeout: $TIMOUT
+  collector:
+    linkText: Crawl Collector
+    base_url: $COLLECTOR_BASE_URL
+    timeout: $TIMOUT
 resources:
   home:
     - url: /
