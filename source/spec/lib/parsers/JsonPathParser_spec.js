@@ -1,6 +1,5 @@
 import { InvalidParserMatch } from '../../../lib/exceptions/config/InvalidParserMatch.js';
 import { MissingParserFields } from '../../../lib/exceptions/config/MissingParserFields.js';
-import { MissingParserMatch } from '../../../lib/exceptions/config/MissingParserMatch.js';
 import { JsonPathParser } from '../../../lib/parsers/JsonPathParser.js';
 
 describe('JsonPathParser', () => {
@@ -145,13 +144,64 @@ describe('JsonPathParser', () => {
     });
 
     describe('when attributes.match is absent', () => {
-      it('throws MissingParserMatch', () => {
+      it('extracts and maps fields from a bare top-level array body', () => {
+        const rawBody = JSON.stringify([
+          { slug: 'books', name: 'Books' },
+          { slug: 'movies', name: 'Movies' },
+        ]);
+        const attributes = { fields: { slug: 'category', name: 'label' } };
+
+        expect(parser.extract(rawBody, attributes)).toEqual([
+          { category: 'books', label: 'Books' },
+          { category: 'movies', label: 'Movies' },
+        ]);
+      });
+    });
+
+    describe('when attributes.match is exactly "."', () => {
+      it('extracts and maps fields from a bare top-level array body', () => {
+        const rawBody = JSON.stringify([
+          { slug: 'books', name: 'Books' },
+          { slug: 'movies', name: 'Movies' },
+        ]);
+        const attributes = {
+          match: '.',
+          fields: { slug: 'category', name: 'label' },
+        };
+
+        expect(parser.extract(rawBody, attributes)).toEqual([
+          { category: 'books', label: 'Books' },
+          { category: 'movies', label: 'Movies' },
+        ]);
+      });
+    });
+
+    describe('when a filter is applied to a bare top-level array body', () => {
+      it('returns only items passing the literal and field-to-field conditions', () => {
+        const rawBody = JSON.stringify([
+          { obj_type: 'miniature', bnd_inid: 5, bundle_inid: 5, obj_inid: 1 },
+          { obj_type: 'miniature', bnd_inid: 5, bundle_inid: 6, obj_inid: 2 },
+          { obj_type: 'accessory', bnd_inid: 5, bundle_inid: 5, obj_inid: 3 },
+        ]);
+        const attributes = {
+          filter: [
+            { field: 'obj_type', equals: 'miniature' },
+            { field: 'bnd_inid', equals_field: 'bundle_inid' },
+          ],
+          fields: { obj_inid: 'inid' },
+        };
+
+        expect(parser.extract(rawBody, attributes)).toEqual([{ inid: 1 }]);
+      });
+    });
+
+    describe('when the root body is not an array', () => {
+      it('throws InvalidParserMatch', () => {
         const rawBody = JSON.stringify({ items: [] });
         const attributes = { fields: { id: 'itemId' } };
 
-        expect(() => parser.extract(rawBody, attributes)).toThrowError(
-          MissingParserMatch,
-          'Parser is missing the required "match" field',
+        expect(() => parser.extract(rawBody, attributes)).toThrowMatching(
+          (error) => error instanceof InvalidParserMatch && error.match === '.',
         );
       });
     });
