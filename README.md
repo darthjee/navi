@@ -585,6 +585,17 @@ Both endpoints page with a `?last_id=<id>` cursor and cap each page at `web.logs
 
 See [`docs/agents/future/crawler/flows.md`](https://github.com/darthjee/navi/blob/main/docs/agents/future/crawler/flows.md) for further worked examples, including how extraction/emit interacts with `paginated_actions`.
 
+### See it live
+
+The public [`navi-hey` demo](https://navi-hey-demo.tamanduati.tech/) runs a live crawl-and-emit example alongside its cache-warming: while crawling the Oak application it extracts data from four resources — one per parser type — and emits every item to a `collector` client backed by a logging `POST /collector/:source` endpoint on the demo app.
+
+- `oak_categories` — `json_path` over the bare-array `GET /categories.json` → `POST /collector/oak-categories`.
+- `oak_paginated_category_items` — `json_path` + `body_template`, once per page → `POST /collector/oak-category-items/{category_slug}?page={page}`.
+- `oak_home` — `css` over the SPA shell's `<head>` `<link>` tags → `POST /collector/oak-home`.
+- `oak_templates` — `regex` capturing the hashed JS bundle name → `POST /collector/oak-templates`.
+
+Watch it on the demo's [Extractions](https://navi-hey-demo.tamanduati.tech/#/extractions) and [Emissions](https://navi-hey-demo.tamanduati.tech/#/emissions) dashboards; the full config is at [`dockerfiles/demo_navi_hey/navi-config.yml`](dockerfiles/demo_navi_hey/navi-config.yml).
+
 ---
 
 ## Roadmap

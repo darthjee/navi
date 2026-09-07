@@ -82,6 +82,11 @@ once the `listing` job, all three page jobs, and every emit have settled.
   [Warm a paginated API](paginated-warmup.md).
 - Field references: [Paginated Actions](../paginated-actions.md) and
   [Emit Configuration](../emit-configuration.md).
+- This exact pattern — `paginated_actions` plus a `parser`/`emit` on the page
+  resource — runs live in the public
+  [`navi-hey` demo](https://navi-hey-demo.tamanduati.tech/) as
+  `oak_paginated_category_items`, emitting each item per page to
+  `POST /collector/oak-category-items/{category_slug}?page={page}`.
 
 ---
 [← Back to Samples](../samples.md)
