@@ -1,8 +1,8 @@
 // Integration tests: exercises the full application stack including the 404 middleware.
 import request from 'supertest';
 import buildApp from '../app.js';
-import { Logger } from '../lib/common/utils/logging/Logger.js';
 import { FixturesUtils } from './support/utils/FixturesUtils.js';
+import { Logger } from '../lib/common/utils/logging/Logger.js';
 
 const app = buildApp(FixturesUtils.loadYamlFixture('data.yml'));
 
