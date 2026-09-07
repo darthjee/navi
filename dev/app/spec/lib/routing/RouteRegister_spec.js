@@ -98,7 +98,7 @@ describe('RouteRegister', () => {
       const register = new RouteRegister(express());
       register.register('/categories.json', new HandlerConfig(ContentHandler, ['/categories.json', data]));
       register.register('/categories/:id.json', new HandlerConfig(ContentHandler, ['/categories/:id.json', data]));
-      expect(register.routes()).toEqual(['/categories.json', '/categories/:id.json']);
+      expect(register.routes()).toEqual(['get /categories.json', 'get /categories/:id.json']);
     });
 
     it('returns an empty array before any routes are registered', () => {
@@ -109,7 +109,38 @@ describe('RouteRegister', () => {
     it('includes redirect handler routes', () => {
       const register = new RouteRegister(express());
       register.register('/categories', { handle: () => {} });
-      expect(register.routes()).toEqual(['/categories']);
+      expect(register.routes()).toEqual(['get /categories']);
+    });
+
+    it('stores a POST registration under its composite "post /…" key', () => {
+      const register = new RouteRegister(express());
+      register.register('/collector/:source', { handle: () => {} }, 'post');
+      expect(register.routes()).toEqual(['post /collector/:source']);
+    });
+  });
+
+  describe('with an explicit method', () => {
+    it('binds the route on the given HTTP method', async () => {
+      const app = express();
+      const register = new RouteRegister(app);
+      const handler = { handle: (_req, res) => res.status(201).json({ ok: true }) };
+      register.register('/collect', handler, 'post');
+      const res = await request(app).post('/collect');
+      expect(res.status).toBe(201);
+      expect(res.body).toEqual({ ok: true });
+    });
+
+    it('scopes the duplicate guard by method', () => {
+      const register = new RouteRegister(express());
+      register.register('/x', { handle: () => {} }, 'get');
+      expect(() => register.register('/x', { handle: () => {} }, 'post')).not.toThrow();
+    });
+
+    it('throws when the same method/route pair is registered twice', () => {
+      const register = new RouteRegister(express());
+      register.register('/x', { handle: () => {} }, 'post');
+      expect(() => register.register('/x', { handle: () => {} }, 'post'))
+        .toThrowError('RouteRegister: duplicate route "/x"');
     });
   });
 });

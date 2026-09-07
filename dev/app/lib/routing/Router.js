@@ -1,11 +1,13 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express, { Router as ExpressRouter } from 'express';
+import { COLLECTOR_ROUTES } from './collector_routes.config.js';
 import { REDIRECT_ROUTES } from './redirect_routes.config.js';
 import RouteRegister from './RouteRegister.js';
 import { ROUTES } from './routes.config.js';
 import { HandlerConfig } from '../common/server/HandlerConfig.js';
 import CollectionHandler from '../handlers/CollectionHandler.js';
+import CollectorHandler from '../handlers/CollectorHandler.js';
 import ContentHandler from '../handlers/ContentHandler.js';
 import IndexHandler from '../handlers/IndexHandler.js';
 import RedirectHandler from '../handlers/RedirectHandler.js';
@@ -46,6 +48,10 @@ class Router {
 
     REDIRECT_ROUTES.forEach(({ route, target }) => {
       register.register(route, new HandlerConfig(RedirectHandler, [target]));
+    });
+
+    COLLECTOR_ROUTES.forEach(({ route, method }) => {
+      register.register(route, new HandlerConfig(CollectorHandler), method);
     });
 
     router.use(express.static(staticDir));

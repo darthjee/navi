@@ -16,6 +16,7 @@ const buildApp = (data, failureRate = 0) => {
   const simulator = new FailureSimulator(failureRate);
   app.use(morgan('combined'));
   app.use((req, res, next) => simulator.handle(req, res, next));
+  app.use(express.json({ limit: '1mb' }));
   app.use(new Router(data).build());
   app.use((_req, res) => notFound(res));
   return app;

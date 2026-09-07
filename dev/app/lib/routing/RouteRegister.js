@@ -1,8 +1,9 @@
 /**
- * Unified registry that registers GET routes on an Express router.
+ * Unified registry that registers routes on an Express router.
  *
  * Any object that implements `handle(req, res)` can be registered —
- * including {@link HandlerConfig} instances.
+ * including {@link HandlerConfig} instances. Each registration targets a
+ * single HTTP method (defaulting to `get`).
  */
 class RouteRegister {
   #router;
@@ -17,21 +18,23 @@ class RouteRegister {
   }
 
   /**
-   * Registers a GET route wired to the given handler.
+   * Registers a route wired to the given handler for the given HTTP method.
    * @param {string} route - Express route pattern.
    * @param {{ handle(req: object, res: object): void }} handler - Any object with a `handle(req, res)` method.
-   * @throws {Error} If the same route pattern has already been registered.
+   * @param {string} [method='get'] - HTTP method to bind (e.g. `'get'`, `'post'`).
+   * @throws {Error} If the same method/route pair has already been registered.
    */
-  register(route, handler) {
-    if (this.#routes.includes(route)) {
+  register(route, handler, method = 'get') {
+    const key = `${method} ${route}`;
+    if (this.#routes.includes(key)) {
       throw new Error(`RouteRegister: duplicate route "${route}"`);
     }
-    this.#routes.push(route);
-    this.#router.get(route, (req, res) => handler.handle(req, res));
+    this.#routes.push(key);
+    this.#router[method](route, (req, res) => handler.handle(req, res));
   }
 
   /**
-   * Returns a copy of the registered route patterns in registration order.
+   * Returns a copy of the registered `"<method> <route>"` keys in registration order.
    * @returns {string[]}
    */
   routes() {

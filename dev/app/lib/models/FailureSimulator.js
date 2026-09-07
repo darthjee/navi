@@ -1,5 +1,6 @@
 const STATIC_ROOT = '/';
 const STATIC_ASSETS_PREFIX = '/assets/';
+const COLLECTOR_PREFIX = '/collector/';
 
 /**
  * Express middleware that randomly fails HTTP requests at a configurable rate.
@@ -16,13 +17,13 @@ class FailureSimulator {
 
   /**
    * Express middleware. Responds with 502 at the configured failure rate; otherwise calls next().
-   * Requests to `/` and `/assets/*` are always passed through without failure injection.
+   * Requests to `/`, `/assets/*` and `/collector/*` are always passed through without failure injection.
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    * @param {import('express').NextFunction} next
    */
   handle(req, res, next) {
-    if (this.#isStaticPath(req.path)) {
+    if (this.#isExemptPath(req.path)) {
       return next();
     }
 
@@ -34,12 +35,15 @@ class FailureSimulator {
   }
 
   /**
-   * Returns true if the given path is a static route that should be exempt from failure injection.
+   * Returns true if the given path is exempt from failure injection
+   * (the static root, static assets, or the collector endpoint).
    * @param {string} path
    * @returns {boolean}
    */
-  #isStaticPath(path) {
-    return path === STATIC_ROOT || path.startsWith(STATIC_ASSETS_PREFIX);
+  #isExemptPath(path) {
+    return path === STATIC_ROOT
+      || path.startsWith(STATIC_ASSETS_PREFIX)
+      || path.startsWith(COLLECTOR_PREFIX);
   }
 }
 
