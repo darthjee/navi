@@ -64,4 +64,6 @@ If `emit` had no `body_template`, the bare item (`{ "id": 1, "name": "Widget" }`
 
 **Related sample:** [Emit every extracted item to an external endpoint](samples/emit-extracted-items.md), [Reshape the emitted body with a template](samples/emit-body-template.md)
 
+**See it live:** the public [`navi-hey` demo](https://navi-hey-demo.tamanduati.tech/) emits extracted items from four Oak resources — one per parser type — to a `collector` client backed by a logging endpoint on the demo app; watch it on the [Emissions dashboard](https://navi-hey-demo.tamanduati.tech/#/emissions).
+
 [← Back to How to Use Navi](../how_to_use_navi.md)
