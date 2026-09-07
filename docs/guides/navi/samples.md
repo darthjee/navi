@@ -19,9 +19,9 @@ section links to the matching feature guide for the full field reference.
 
 ## Crawling
 
-- [Emit every extracted item to an external endpoint](samples/emit-extracted-items.md) — send each extracted item to an external endpoint.
-- [Reshape the emitted body with a template](samples/emit-body-template.md) — reshape the emitted item with `body_template`.
-- [Crawl every page and emit every item](samples/paginated-crawl-emit.md) — crawl every page and emit every item.
+- [Emit every extracted item to an external endpoint](samples/emit-extracted-items.md) — extract items from a JSON listing with a `json_path` parser and `POST` each one to an external endpoint.
+- [Reshape the emitted body with a template](samples/emit-body-template.md) — extract items with a `json_path` parser, then reshape each one with `emit.body_template` before sending.
+- [Crawl every page and emit every item](samples/paginated-crawl-emit.md) — fan out one request per page, extract each page's items with a `json_path` parser, and emit every one.
 - [See it live: the `navi-hey` demo](https://navi-hey-demo.tamanduati.tech/) — the public `navi-hey` demo crawls the Oak app and emits every extracted item (four resources, one per parser type) to a `collector` endpoint, watchable on its [Extractions](https://navi-hey-demo.tamanduati.tech/#/extractions) and [Emissions](https://navi-hey-demo.tamanduati.tech/#/emissions) dashboards.
 
 [← Back to How to Use Navi](../how_to_use_navi.md)
