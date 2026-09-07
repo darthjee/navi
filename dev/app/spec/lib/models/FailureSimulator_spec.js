@@ -66,6 +66,18 @@ describe('FailureSimulator', () => {
         expect(res.status).not.toHaveBeenCalled();
       });
     });
+
+    describe('for a collector path (/collector/x)', () => {
+      it('calls next without failing', () => {
+        simulator.handle({ path: '/collector/x' }, res, next);
+        expect(next).toHaveBeenCalled();
+      });
+
+      it('does not respond with 502', () => {
+        simulator.handle({ path: '/collector/x' }, res, next);
+        expect(res.status).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('#handle — failureRate = 0.5', () => {
