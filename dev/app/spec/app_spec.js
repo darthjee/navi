@@ -1,6 +1,7 @@
 // Integration tests: exercises the full application stack including the 404 middleware.
 import request from 'supertest';
 import buildApp from '../app.js';
+import { Logger } from '../lib/common/utils/logging/Logger.js';
 import { FixturesUtils } from './support/utils/FixturesUtils.js';
 
 const app = buildApp(FixturesUtils.loadYamlFixture('data.yml'));
@@ -101,6 +102,30 @@ describe('GET /categories/:id/items/:item_id.json', () => {
   });
 });
 
+describe('POST /collector/:source', () => {
+  beforeEach(() => {
+    spyOn(Logger, 'info');
+  });
+
+  it('responds with 204 and an empty body', async () => {
+    const res = await request(app)
+      .post('/collector/oak-categories')
+      .send({ items: [{ id: 1 }] });
+    expect(res.status).toBe(204);
+    expect(res.body).toEqual({});
+  });
+
+  it('logs the received emission', async () => {
+    await request(app)
+      .post('/collector/oak-categories')
+      .send({ items: [{ id: 1 }] });
+    expect(Logger.info).toHaveBeenCalledWith(
+      'CollectorHandler: received emission',
+      { source: 'oak-categories', body: { items: [{ id: 1 }] } }
+    );
+  });
+});
+
 describe('unmatched routes', () => {
   it('returns 404', async () => {
     const res = await request(app).get('/unknown');
@@ -129,5 +154,13 @@ describe('with failureRate = 1', () => {
   it('does not fail on GET /', async () => {
     const res = await request(failingApp).get('/');
     expect(res.status).not.toBe(502);
+  });
+
+  it('does not fail on POST /collector/:source', async () => {
+    spyOn(Logger, 'info');
+    const res = await request(failingApp)
+      .post('/collector/x')
+      .send({ items: [] });
+    expect(res.status).toBe(204);
   });
 });
