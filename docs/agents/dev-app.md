@@ -12,7 +12,7 @@ navi_app ──► navi_proxy (tent, :3010) ──► navi_dev_app (:3020/:80)
 
 **Stack:** Node.js (ES Modules), Express 4, js-yaml
 
-**Entrypoint:** `server.js` reads `data.yml`, builds the Express app, and starts listening on port 80. `app.js` exports `buildApp(data)` and is imported by both `server.js` and the test suite.
+**Entrypoint:** `server.js` reads `data.yml`, builds the Express app, and starts listening on port 80. `app.js` exports `buildApp(data)` and is imported by both `server.js` and the test suite. `app.js` also registers `express.json({ limit: '1mb' })` ahead of routing (after the `FailureSimulator` middleware) so body-reading routes such as `POST /collector/:source` get a populated `req.body`.
 
 ### Structure
 
@@ -27,19 +27,21 @@ dev/app/
 │   │   └── JsonConfig.js       # Wraps raw JSON/YAML config data
 │   ├── handlers/
 │   │   ├── CollectionHandler.js    # Lists all items in a category
+│   │   ├── CollectorHandler.js     # Logs POST /collector/:source emissions, responds 204
 │   │   ├── ContentHandler.js       # Data-fetching handler (extends RequestHandler)
-│   │   ├── IndexRequestHandler.js  # Serves the SPA index.html
+│   │   ├── IndexHandler.js         # Serves the SPA index.html
 │   │   ├── RedirectHandler.js      # Issues HTTP 302 to hash-based SPA routes
 │   │   └── not_found.js            # Sends a 404 JSON response
 │   ├── models/
 │   │   ├── DataNavigator.js        # Traverses the in-memory data structure by steps
-│   │   ├── FailureSimulator.js     # Simulates configurable request failures
+│   │   ├── FailureSimulator.js     # Simulates configurable request failures (exempts `/`, `/assets/`, `/collector/` via `#isExemptPath`)
 │   │   ├── RedirectLocation.js     # Builds redirect location from template + params
 │   │   └── Serializer.js           # Projects data objects to a set of allowed attributes
 │   ├── routing/
 │   │   ├── RouteParamsExtractor.js # Converts route + params into navigation steps
-│   │   ├── RouteRegister.js        # Registers any RequestHandler subclass on the router
+│   │   ├── RouteRegister.js        # Registers any RequestHandler subclass on the router (method-aware; `method` defaults to `'get'`)
 │   │   ├── Router.js               # Builds Express router with all routes registered
+│   │   ├── collector_routes.config.js # Collector (emit target) route definitions — `method: 'post'`
 │   │   ├── redirect_routes.config.js # Redirect route definitions
 │   │   └── routes.config.js        # JSON API route definitions
 │   ├── common/                     # Mounted from source/lib/common
@@ -66,7 +68,10 @@ dev/app/
 | GET | `/categories/:id.json` | Single category or 404 |
 | GET | `/categories/:id/items.json` | Items in a category or 404 |
 | GET | `/categories/:id/items/:item_id.json` | Single item or 404 |
+| POST | `/collector/:source` | Logs `{ source, body }` via the shared `Logger`, responds `204` with no body — no persistence, no read-back, no `:source` validation. Exempt from `FailureSimulator`. |
 | `*` | `/*` | 404 `{error: "Not found"}` |
+
+`RouteRegister.register(route, handler, method = 'get')` is method-aware: route-config entries may set `method: 'post'`. The collector route is driven from `lib/routing/collector_routes.config.js` and wired in `Router.build()` before the static / SPA catch-all `use()` calls.
 
 ### Data (`data.yml`)
 
