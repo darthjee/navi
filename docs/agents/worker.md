@@ -4,6 +4,8 @@
 
 The worker subsystem is the queue-and-pool machinery that turns enqueued `Job`s into executed work: a fixed-size pool of `Worker`s pulled from `WorkersRegistry`, a set of typed job queues managed by `JobRegistry`, and an `Engine` loop that ties the two together via `WorkersAllocator`. It ships as a standalone, generic npm package — `deku-swarm` (`worker/`) — with no domain knowledge of HTTP, caching, or resources; `source/` consumes it as a regular dependency (`"deku-swarm": "file:../worker"` in `source/package.json`, `import { ... } from 'deku-swarm'` everywhere it's used). For a narrative, step-by-step account of the same loop from Navi's side, see [Engine and Workers](flow/engine-and-workers.md). This document instead gives a class-by-class architectural reference for the package, plus a map of what stayed in Navi and how the two sides connect.
 
+> [`worker/lib/README.md`](../../worker/lib/README.md) is a one-line index of `worker/lib/`'s immediate subfolders; this page is the class-by-class reference.
+
 ## Core classes
 
 ### `Worker` (`worker/lib/background/Worker.js`)

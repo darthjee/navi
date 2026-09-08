@@ -61,6 +61,19 @@ If the file grows too large, split it into a hub + subfolder (see `docs/agents/f
 and `docs/agents/future/crawler/` for an example), the same pattern used by `architecture.md`,
 `flow.md`, and `contributing.md`.
 
+### Module-level READMEs
+
+The large source trees carry a co-located `README.md` that indexes their immediate
+children in one line each and links to the fuller `docs/agents/` page:
+
+| Tree | Index | Full reference |
+|------|-------|----------------|
+| `source/lib/` | [`source/lib/README.md`](source/lib/README.md) | [`docs/agents/architecture/source-layout.md`](docs/agents/architecture/source-layout.md) |
+| `worker/lib/` | [`worker/lib/README.md`](worker/lib/README.md) | [`docs/agents/worker.md`](docs/agents/worker.md) |
+| `frontend/src/` | [`frontend/src/README.md`](frontend/src/README.md) | [`docs/agents/frontend.md`](docs/agents/frontend.md) |
+
+These indexes stay terse — new narrative goes in the `docs/agents/` page, not the README.
+
 ## Engineering Standards
 
 - All source code, comments, documentation, and PRs must be written in English.

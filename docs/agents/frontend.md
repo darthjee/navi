@@ -17,6 +17,8 @@ The frontend is a React SPA that provides a real-time monitoring dashboard for N
 
 ## Source layout
 
+> [`frontend/src/README.md`](../../frontend/src/README.md) is a one-line index of `frontend/src/`'s immediate children; this page is the full reference.
+
 ```
 frontend/
 ├── src/
