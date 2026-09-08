@@ -1,5 +1,5 @@
-import { AppError } from '../../../../lib/common/exceptions/AppError.js';
-import { InvalidEmitCooldown } from '../../../../lib/exceptions/config/InvalidEmitCooldown.js';
+import { AppError } from '../../../../../lib/common/exceptions/AppError.js';
+import { InvalidEmitCooldown } from '../../../../../lib/exceptions/config/emit/InvalidEmitCooldown.js';
 
 describe('InvalidEmitCooldown', () => {
   let error;

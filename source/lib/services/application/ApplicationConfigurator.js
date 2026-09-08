@@ -1,5 +1,5 @@
 import { ConfigStore } from './ConfigStore.js';
-import { ConfigurationFileNotProvided } from '../../exceptions/config/ConfigurationFileNotProvided.js';
+import { ConfigurationFileNotProvided } from '../../exceptions/config/file/ConfigurationFileNotProvided.js';
 import { Config } from '../../models/configs/Config.js';
 import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../registry/ExtractionRegistry.js';

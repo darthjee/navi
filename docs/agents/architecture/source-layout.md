@@ -42,8 +42,8 @@ AppError (base — exceptions/)
 ├── NullResponse (request/)
 ├── MissingActionResource (registry/)
 ├── MissingMappingVariable (registry/)
-├── ConfigurationFileNotFound (config/)
-├── ConfigurationFileNotProvided (config/)
+├── ConfigurationFileNotFound (config/file/)
+├── ConfigurationFileNotProvided (config/file/)
 ├── ConflictError (http/)
 ├── ForbiddenError (http/)
 └── NotFoundError (http/)
@@ -53,7 +53,12 @@ Subfolders:
 
 - `exceptions/` — `AppError` (shared base class, stays at root)
 - `exceptions/http/` — HTTP/server errors: `ConflictError`, `ForbiddenError`, `NotFoundError`
-- `exceptions/config/` — Config errors: `ConfigurationFileNotFound`, `ConfigurationFileNotProvided`, `MissingClientsConfig`, `MissingResourceConfig`, `MissingTopLevelConfgKey`
+- `exceptions/config/` — Config errors, split into sub-domains:
+  - flat — `MissingClientsConfig`, `MissingResourceConfig`, `MissingTopLevelConfgKey`
+  - `exceptions/config/emit/` — `InvalidEmitBodyTemplate`, `InvalidEmitCooldown`, `InvalidEmitHeaders`, `InvalidEmitMethod`, `InvalidEmitRetries`, `MissingEmitUrl`
+  - `exceptions/config/parser/` — `InvalidParserMatch`, `InvalidParserType`, `MissingParserField`, `MissingParserFields`, `MissingParserMatch`
+  - `exceptions/config/memory/` — `InvalidMemoryDataStore`, `InvalidMemoryThresholds`
+  - `exceptions/config/file/` — `ConfigurationFileNotFound`, `ConfigurationFileNotProvided`, `ConfigurationIncludeNotFound`
 - `exceptions/request/` — Network/response errors: `InvalidHtmlResponseBody`, `InvalidResponseBody`, `NullResponse`, `RequestFailed`
 - `exceptions/registry/` — Registry/lookup errors: `ClientNotFound`, `ItemNotFound`, `MissingActionResource`, `MissingMappingVariable`, `ResourceNotFound`
 

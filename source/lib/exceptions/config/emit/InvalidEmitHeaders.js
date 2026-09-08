@@ -1,4 +1,4 @@
-import { AppError } from '../../common/exceptions/AppError.js';
+import { AppError } from '../../../common/exceptions/AppError.js';
 
 /**
  * Thrown when an `emit` config entry declares a `headers` value that is not a plain

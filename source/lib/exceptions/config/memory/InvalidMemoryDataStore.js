@@ -1,4 +1,4 @@
-import { AppError } from '../../common/exceptions/AppError.js';
+import { AppError } from '../../../common/exceptions/AppError.js';
 
 /**
  * Thrown when a `web.memory.data_store.interval` config value is not a

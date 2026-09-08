@@ -1,4 +1,4 @@
-import { InvalidParserType } from '../../../../lib/exceptions/config/InvalidParserType.js';
+import { InvalidParserType } from '../../../../lib/exceptions/config/parser/InvalidParserType.js';
 import { ResourceRequestParser } from '../../../../lib/models/request/ResourceRequestParser.js';
 
 describe('ResourceRequestParser', () => {

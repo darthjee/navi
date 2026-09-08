@@ -1,5 +1,5 @@
-import { AppError } from '../../../../lib/common/exceptions/AppError.js';
-import { InvalidEmitRetries } from '../../../../lib/exceptions/config/InvalidEmitRetries.js';
+import { AppError } from '../../../../../lib/common/exceptions/AppError.js';
+import { InvalidEmitRetries } from '../../../../../lib/exceptions/config/emit/InvalidEmitRetries.js';
 
 describe('InvalidEmitRetries', () => {
   let error;

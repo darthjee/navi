@@ -1,5 +1,5 @@
-import { AppError } from '../../../../lib/common/exceptions/AppError.js';
-import { InvalidMemoryThresholds } from '../../../../lib/exceptions/config/InvalidMemoryThresholds.js';
+import { AppError } from '../../../../../lib/common/exceptions/AppError.js';
+import { InvalidMemoryThresholds } from '../../../../../lib/exceptions/config/memory/InvalidMemoryThresholds.js';
 
 describe('InvalidMemoryThresholds', () => {
   let error;

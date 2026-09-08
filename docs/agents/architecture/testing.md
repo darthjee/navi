@@ -8,6 +8,9 @@ source/spec/
     enqueuers/
     exceptions/
       config/
+        emit/
+        memory/
+        file/
       http/
       registry/
       request/

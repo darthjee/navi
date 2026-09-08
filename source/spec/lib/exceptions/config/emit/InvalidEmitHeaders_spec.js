@@ -1,5 +1,5 @@
-import { AppError } from '../../../../lib/common/exceptions/AppError.js';
-import { InvalidEmitHeaders } from '../../../../lib/exceptions/config/InvalidEmitHeaders.js';
+import { AppError } from '../../../../../lib/common/exceptions/AppError.js';
+import { InvalidEmitHeaders } from '../../../../../lib/exceptions/config/emit/InvalidEmitHeaders.js';
 
 describe('InvalidEmitHeaders', () => {
   let error;

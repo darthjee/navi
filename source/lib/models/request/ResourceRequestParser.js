@@ -1,4 +1,4 @@
-import { InvalidParserType } from '../../exceptions/config/InvalidParserType.js';
+import { InvalidParserType } from '../../exceptions/config/parser/InvalidParserType.js';
 
 /**
  * The set of supported `parser.type` values.

@@ -1,5 +1,5 @@
-import { MissingParserField } from '../../exceptions/config/MissingParserField.js';
-import { MissingParserMatch } from '../../exceptions/config/MissingParserMatch.js';
+import { MissingParserField } from '../../exceptions/config/parser/MissingParserField.js';
+import { MissingParserMatch } from '../../exceptions/config/parser/MissingParserMatch.js';
 
 /**
  * AttributesValidator validates the `match`/`field` attributes required by

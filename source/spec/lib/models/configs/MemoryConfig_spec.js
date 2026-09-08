@@ -1,5 +1,5 @@
-import { InvalidMemoryDataStore } from '../../../../lib/exceptions/config/InvalidMemoryDataStore.js';
-import { InvalidMemoryThresholds } from '../../../../lib/exceptions/config/InvalidMemoryThresholds.js';
+import { InvalidMemoryDataStore } from '../../../../lib/exceptions/config/memory/InvalidMemoryDataStore.js';
+import { InvalidMemoryThresholds } from '../../../../lib/exceptions/config/memory/InvalidMemoryThresholds.js';
 import { MemoryConfig } from '../../../../lib/models/configs/MemoryConfig.js';
 
 describe('MemoryConfig', () => {

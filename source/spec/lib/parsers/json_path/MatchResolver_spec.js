@@ -1,4 +1,4 @@
-import { InvalidParserMatch } from '../../../../lib/exceptions/config/InvalidParserMatch.js';
+import { InvalidParserMatch } from '../../../../lib/exceptions/config/parser/InvalidParserMatch.js';
 import { MatchResolver } from '../../../../lib/parsers/json_path/MatchResolver.js';
 
 describe('MatchResolver', () => {

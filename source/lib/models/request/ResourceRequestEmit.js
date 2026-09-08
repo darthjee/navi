@@ -1,12 +1,12 @@
 import { BodyTemplateRenderer } from './BodyTemplateRenderer.js';
 import { ClientReference } from './ClientReference.js';
 import { UrlTokenResolver } from './UrlTokenResolver.js';
-import { InvalidEmitBodyTemplate } from '../../exceptions/config/InvalidEmitBodyTemplate.js';
-import { InvalidEmitCooldown } from '../../exceptions/config/InvalidEmitCooldown.js';
-import { InvalidEmitHeaders } from '../../exceptions/config/InvalidEmitHeaders.js';
-import { InvalidEmitMethod } from '../../exceptions/config/InvalidEmitMethod.js';
-import { InvalidEmitRetries } from '../../exceptions/config/InvalidEmitRetries.js';
-import { MissingEmitUrl } from '../../exceptions/config/MissingEmitUrl.js';
+import { InvalidEmitBodyTemplate } from '../../exceptions/config/emit/InvalidEmitBodyTemplate.js';
+import { InvalidEmitCooldown } from '../../exceptions/config/emit/InvalidEmitCooldown.js';
+import { InvalidEmitHeaders } from '../../exceptions/config/emit/InvalidEmitHeaders.js';
+import { InvalidEmitMethod } from '../../exceptions/config/emit/InvalidEmitMethod.js';
+import { InvalidEmitRetries } from '../../exceptions/config/emit/InvalidEmitRetries.js';
+import { MissingEmitUrl } from '../../exceptions/config/emit/MissingEmitUrl.js';
 
 /**
  * The value types accepted for an individual `emit.headers` entry.

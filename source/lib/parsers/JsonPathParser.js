@@ -1,7 +1,7 @@
 import { FieldMapper } from './json_path/FieldMapper.js';
 import { FilterMatcher } from './json_path/FilterMatcher.js';
 import { MatchResolver } from './json_path/MatchResolver.js';
-import { MissingParserFields } from '../exceptions/config/MissingParserFields.js';
+import { MissingParserFields } from '../exceptions/config/parser/MissingParserFields.js';
 
 /**
  * @typedef {object} ExtractedItem

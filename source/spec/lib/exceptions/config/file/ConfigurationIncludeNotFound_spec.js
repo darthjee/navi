@@ -1,5 +1,5 @@
-import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/ConfigurationFileNotFound.js';
-import { ConfigurationIncludeNotFound } from '../../../../lib/exceptions/config/ConfigurationIncludeNotFound.js';
+import { ConfigurationFileNotFound } from '../../../../../lib/exceptions/config/file/ConfigurationFileNotFound.js';
+import { ConfigurationIncludeNotFound } from '../../../../../lib/exceptions/config/file/ConfigurationIncludeNotFound.js';
 
 describe('ConfigurationIncludeNotFound', () => {
   let error;

@@ -1,5 +1,5 @@
-import { AppError } from '../../../../lib/common/exceptions/AppError.js';
-import { InvalidMemoryDataStore } from '../../../../lib/exceptions/config/InvalidMemoryDataStore.js';
+import { AppError } from '../../../../../lib/common/exceptions/AppError.js';
+import { InvalidMemoryDataStore } from '../../../../../lib/exceptions/config/memory/InvalidMemoryDataStore.js';
 
 describe('InvalidMemoryDataStore', () => {
   let error;

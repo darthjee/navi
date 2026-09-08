@@ -1,5 +1,5 @@
-import { InvalidMemoryDataStore } from '../../exceptions/config/InvalidMemoryDataStore.js';
-import { InvalidMemoryThresholds } from '../../exceptions/config/InvalidMemoryThresholds.js';
+import { InvalidMemoryDataStore } from '../../exceptions/config/memory/InvalidMemoryDataStore.js';
+import { InvalidMemoryThresholds } from '../../exceptions/config/memory/InvalidMemoryThresholds.js';
 import { MemoryMaximumResolver } from '../../utils/memory/MemoryMaximumResolver.js';
 
 const DEFAULT_THRESHOLDS = { low: 25.0, medium: 50.0, high: 75.0, over: 100.0 };

@@ -1,6 +1,6 @@
 import { InvalidHtmlResponseBody } from '../../../lib/common/exceptions/request/InvalidHtmlResponseBody.js';
-import { MissingParserField } from '../../../lib/exceptions/config/MissingParserField.js';
-import { MissingParserMatch } from '../../../lib/exceptions/config/MissingParserMatch.js';
+import { MissingParserField } from '../../../lib/exceptions/config/parser/MissingParserField.js';
+import { MissingParserMatch } from '../../../lib/exceptions/config/parser/MissingParserMatch.js';
 import { CssSelectorParser } from '../../../lib/parsers/CssSelectorParser.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 

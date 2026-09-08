@@ -1,4 +1,4 @@
-import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
+import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/file/ConfigurationFileNotProvided.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';

@@ -1,9 +1,9 @@
-import { InvalidEmitBodyTemplate } from '../../../../lib/exceptions/config/InvalidEmitBodyTemplate.js';
-import { InvalidEmitCooldown } from '../../../../lib/exceptions/config/InvalidEmitCooldown.js';
-import { InvalidEmitHeaders } from '../../../../lib/exceptions/config/InvalidEmitHeaders.js';
-import { InvalidEmitMethod } from '../../../../lib/exceptions/config/InvalidEmitMethod.js';
-import { InvalidEmitRetries } from '../../../../lib/exceptions/config/InvalidEmitRetries.js';
-import { MissingEmitUrl } from '../../../../lib/exceptions/config/MissingEmitUrl.js';
+import { InvalidEmitBodyTemplate } from '../../../../lib/exceptions/config/emit/InvalidEmitBodyTemplate.js';
+import { InvalidEmitCooldown } from '../../../../lib/exceptions/config/emit/InvalidEmitCooldown.js';
+import { InvalidEmitHeaders } from '../../../../lib/exceptions/config/emit/InvalidEmitHeaders.js';
+import { InvalidEmitMethod } from '../../../../lib/exceptions/config/emit/InvalidEmitMethod.js';
+import { InvalidEmitRetries } from '../../../../lib/exceptions/config/emit/InvalidEmitRetries.js';
+import { MissingEmitUrl } from '../../../../lib/exceptions/config/emit/MissingEmitUrl.js';
 import { ResourceRequestEmit } from '../../../../lib/models/request/ResourceRequestEmit.js';
 
 describe('ResourceRequestEmit', () => {
