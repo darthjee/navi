@@ -24,4 +24,4 @@ COPY dockerfiles/production_navi_hey/config/menu.yml /home/node/app/config/menu.
 
 USER node
 
-CMD navi-hey -c $NAVI_CONFIG
+CMD navi-hey -c $NAVI_CONFIG -m $NAVI_MENU
