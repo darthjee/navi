@@ -23,6 +23,8 @@ navi/
 All application source code lives under the `source/` directory.
 The main library is organized into subdirectories under `source/lib/`:
 
+> A co-located [`source/lib/README.md`](../../../source/lib/README.md) gives a one-line index of each immediate subfolder; this page is the full breakdown.
+
 ### `exceptions/`
 
 Custom error classes following a strict inheritance hierarchy.
