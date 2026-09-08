@@ -20,6 +20,8 @@ source/spec/
       request/
       response/
     registry/
+      instances/
+      namespace/
     serializers/
     server/
       handlers/

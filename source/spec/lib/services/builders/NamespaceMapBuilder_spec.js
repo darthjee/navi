@@ -3,7 +3,7 @@ import { MissingResourceConfig } from '../../../../lib/exceptions/config/Missing
 import { ClientNotFound } from '../../../../lib/exceptions/registry/ClientNotFound.js';
 import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
-import { Namespace } from '../../../../lib/registry/Namespace.js';
+import { Namespace } from '../../../../lib/registry/namespace/Namespace.js';
 import { NamespaceMapBuilder } from '../../../../lib/services/builders/NamespaceMapBuilder.js';
 import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 

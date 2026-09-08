@@ -1,5 +1,5 @@
-import { ExtractionStore } from '../utils/extractions/ExtractionStore.js';
-import { LogFilter } from '../common/utils/logging/LogFilter.js';
+import { ExtractionStore } from '../../utils/extractions/ExtractionStore.js';
+import { LogFilter } from '../../common/utils/logging/LogFilter.js';
 
 /**
  * Holds a single ExtractionStore for the ExtractionRegistry singleton. Exposes a write
@@ -39,7 +39,7 @@ class ExtractionRegistryInstance {
   /**
    * Records a new extraction.
    * @param {object} details - Extraction parameters forwarded to ExtractionStore.recordExtraction.
-   * @returns {import('../utils/extractions/ExtractionRecord.js').ExtractionRecord} The created record.
+   * @returns {import('../../utils/extractions/ExtractionRecord.js').ExtractionRecord} The created record.
    */
   recordExtraction(details) {
     return this.#store.recordExtraction(details);
@@ -49,7 +49,7 @@ class ExtractionRegistryInstance {
    * Gets extraction records oldest-first, optionally filtered to entries newer than lastId.
    * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only records newer than this ID.
-   * @returns {Array<import('../utils/extractions/ExtractionRecord.js').ExtractionRecord>} Array of records.
+   * @returns {Array<import('../../utils/extractions/ExtractionRecord.js').ExtractionRecord>} Array of records.
    */
   getRecords({ lastId } = {}) {
     return new LogFilter(this.#store.getRecords()).filter({ lastId });
@@ -58,7 +58,7 @@ class ExtractionRegistryInstance {
   /**
    * Gets a specific extraction record by ID.
    * @param {number} id - The record ID to look up.
-   * @returns {import('../utils/extractions/ExtractionRecord.js').ExtractionRecord|undefined} The record or undefined.
+   * @returns {import('../../utils/extractions/ExtractionRecord.js').ExtractionRecord|undefined} The record or undefined.
    */
   getRecordById(id) {
     return this.#store.getRecordById(id);

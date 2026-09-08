@@ -1,4 +1,4 @@
-import { MemoryRegistryInstance } from './MemoryRegistryInstance.js';
+import { MemoryRegistryInstance } from './instances/MemoryRegistryInstance.js';
 
 /**
  * MemoryRegistry is a static singleton facade for the application's process-wide

@@ -1,8 +1,8 @@
-import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
-import { Namespace } from '../../../lib/registry/Namespace.js';
-import { ResourceRegistry } from '../../../lib/registry/ResourceRegistry.js';
-import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
+import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
+import { Namespace } from '../../../../lib/registry/namespace/Namespace.js';
+import { ResourceRegistry } from '../../../../lib/registry/ResourceRegistry.js';
+import { ClientFactory } from '../../../support/factories/ClientFactory.js';
+import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 
 describe('Namespace', () => {
   describe('#constructor', () => {

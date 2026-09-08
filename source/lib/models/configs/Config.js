@@ -2,7 +2,7 @@ import { EmitConfig } from './EmitConfig.js';
 import { ExtractionConfig } from './ExtractionConfig.js';
 import { LogConfig } from './LogConfig.js';
 import { NamespaceNotFound } from '../../exceptions/registry/NamespaceNotFound.js';
-import { NamespaceMap } from '../../registry/NamespaceMap.js';
+import { NamespaceMap } from '../../registry/namespace/NamespaceMap.js';
 import { ResourceRegistry } from '../../registry/ResourceRegistry.js';
 import { ConfigLoader } from '../../services/config/ConfigLoader.js';
 

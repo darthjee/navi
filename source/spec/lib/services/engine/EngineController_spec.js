@@ -2,7 +2,7 @@ import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
 import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { EngineState } from '../../../../lib/services/engine/EngineState.js';

@@ -2,7 +2,7 @@ import { JobRegistry } from 'deku-swarm';
 import { ResourceRequestCollector } from './ResourceRequestCollector.js';
 import { NamespaceNotFound } from '../exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../exceptions/registry/ResourceNotFound.js';
-import { NamespaceMap } from '../registry/NamespaceMap.js';
+import { NamespaceMap } from '../registry/namespace/NamespaceMap.js';
 
 const DEFAULT_NAMESPACE = 'default';
 

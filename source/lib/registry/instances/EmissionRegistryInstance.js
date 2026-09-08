@@ -1,5 +1,5 @@
-import { EmissionStore } from '../utils/emissions/EmissionStore.js';
-import { LogFilter } from '../common/utils/logging/LogFilter.js';
+import { EmissionStore } from '../../utils/emissions/EmissionStore.js';
+import { LogFilter } from '../../common/utils/logging/LogFilter.js';
 
 /**
  * Holds a single EmissionStore for the EmissionRegistry singleton. Exposes write helpers
@@ -48,7 +48,7 @@ class EmissionRegistryInstance {
   /**
    * Records a new emission.
    * @param {object} details - Emission parameters forwarded to EmissionStore.recordEmission.
-   * @returns {import('../utils/emissions/EmissionRecord.js').EmissionRecord} The created record.
+   * @returns {import('../../utils/emissions/EmissionRecord.js').EmissionRecord} The created record.
    */
   recordEmission(details) {
     return this.#store.recordEmission(details);
@@ -58,7 +58,7 @@ class EmissionRegistryInstance {
    * Gets emission records oldest-first, optionally filtered to entries newer than lastId.
    * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only records newer than this ID.
-   * @returns {Array<import('../utils/emissions/EmissionRecord.js').EmissionRecord>} Array of records.
+   * @returns {Array<import('../../utils/emissions/EmissionRecord.js').EmissionRecord>} Array of records.
    */
   getRecords({ lastId } = {}) {
     return new LogFilter(this.#store.getRecords()).filter({ lastId });
@@ -67,7 +67,7 @@ class EmissionRegistryInstance {
   /**
    * Gets a specific emission record by ID.
    * @param {number} id - The record ID to look up.
-   * @returns {import('../utils/emissions/EmissionRecord.js').EmissionRecord|undefined} The record or undefined.
+   * @returns {import('../../utils/emissions/EmissionRecord.js').EmissionRecord|undefined} The record or undefined.
    */
   getRecordById(id) {
     return this.#store.getRecordById(id);

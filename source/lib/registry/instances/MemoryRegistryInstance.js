@@ -1,5 +1,5 @@
-import { LogFilter } from '../common/utils/logging/LogFilter.js';
-import { MemoryDataStore } from '../utils/memory/MemoryDataStore.js';
+import { LogFilter } from '../../common/utils/logging/LogFilter.js';
+import { MemoryDataStore } from '../../utils/memory/MemoryDataStore.js';
 
 /**
  * Holds a single MemoryDataStore for the MemoryRegistry singleton. Exposes a write
@@ -31,7 +31,7 @@ class MemoryRegistryInstance {
    * Records a new memory reading.
    * @param {number} value - The raw RSS reading, in bytes.
    * @param {number} percentage - `value` as a percentage of the configured memory maximum.
-   * @returns {import('../utils/memory/MemoryData.js').MemoryData} The created memory entry.
+   * @returns {import('../../utils/memory/MemoryData.js').MemoryData} The created memory entry.
    */
   add(value, percentage) {
     return this.#store.add(value, percentage);
@@ -47,7 +47,7 @@ class MemoryRegistryInstance {
    * from the full history.
    * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only entries newer than this ID.
-   * @returns {Array<import('../utils/memory/MemoryData.js').MemoryData>} Array of entries, oldest-first.
+   * @returns {Array<import('../../utils/memory/MemoryData.js').MemoryData>} Array of entries, oldest-first.
    */
   getEntries({ lastId } = {}) {
     return new LogFilter(this.#store.getEntries()).filter({ lastId });

@@ -1,5 +1,5 @@
-import { ClientRegistry } from './ClientRegistry.js';
-import { ResourceRegistry } from './ResourceRegistry.js';
+import { ClientRegistry } from '../ClientRegistry.js';
+import { ResourceRegistry } from '../ResourceRegistry.js';
 
 /**
  * Namespace groups together the resources and clients contributed by one or more

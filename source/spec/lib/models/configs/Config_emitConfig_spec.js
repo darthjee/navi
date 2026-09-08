@@ -1,6 +1,6 @@
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { EmitConfig } from '../../../../lib/models/configs/EmitConfig.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
 
 describe('Config', () => {
   afterEach(() => {

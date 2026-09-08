@@ -1,6 +1,6 @@
 import { JobRegistry } from 'deku-swarm';
-import { Namespace } from '../../../lib/registry/Namespace.js';
-import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
+import { Namespace } from '../../../lib/registry/namespace/Namespace.js';
+import { NamespaceMap } from '../../../lib/registry/namespace/NamespaceMap.js';
 import { ResourceEnqueuer } from '../../../lib/utils/ResourceEnqueuer.js';
 import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';

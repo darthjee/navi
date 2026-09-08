@@ -3,7 +3,7 @@ import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { MemoryRegistry } from '../../../lib/registry/MemoryRegistry.js';
-import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../lib/registry/namespace/NamespaceMap.js';
 import { Application } from '../../../lib/services/application/Application.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 

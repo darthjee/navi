@@ -106,6 +106,10 @@ Concrete `Job` subclasses:
 
 `NamedRegistry` base class for named-lookup collections; `ResourceRegistry` and `ClientRegistry` extend it (throwing `ResourceNotFound` / `ClientNotFound` on miss). `LogRegistry` is a standalone singleton façade that fans out log calls to a `ConsoleLogger` and a `BufferedLogger`, and exposes filtered log query methods.
 
+- flat — the public `*Registry` classes: `ClientRegistry`, `EmissionRegistry`, `ExtractionRegistry`, `LogRegistry`, `MemoryRegistry`, `ParserRegistry`, `ResourceRegistry`
+- `registry/instances/` — per-registry singleton holders: `EmissionRegistryInstance`, `ExtractionRegistryInstance`, `LogRegistryInstance`, `MemoryRegistryInstance`
+- `registry/namespace/` — namespace primitives: `NamedRegistry` (base class), `Namespace`, `NamespaceMap`
+
 ### `utils/`
 
 Shared low-level utilities with no domain knowledge:

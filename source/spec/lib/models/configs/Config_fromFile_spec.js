@@ -5,7 +5,7 @@ import { ExtractionConfig } from '../../../../lib/models/configs/ExtractionConfi
 import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
 import { LogConfig } from '../../../../lib/models/configs/LogConfig.js';
 import { WorkersConfig } from '../../../../lib/models/configs/WorkersConfig.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
 import { ResourceRegistry } from '../../../../lib/registry/ResourceRegistry.js';
 import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';

@@ -1,5 +1,5 @@
-import { MemoryRegistryInstance } from '../../../lib/registry/MemoryRegistryInstance.js';
-import { MemoryDataStore } from '../../../lib/utils/memory/MemoryDataStore.js';
+import { MemoryRegistryInstance } from '../../../../lib/registry/instances/MemoryRegistryInstance.js';
+import { MemoryDataStore } from '../../../../lib/utils/memory/MemoryDataStore.js';
 
 describe('MemoryRegistryInstance', () => {
   let instance;

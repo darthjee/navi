@@ -1,4 +1,4 @@
-import { LogRegistryInstance } from './LogRegistryInstance.js';
+import { LogRegistryInstance } from './instances/LogRegistryInstance.js';
 
 /**
  * LogRegistry is a static singleton facade for the application's buffered log publisher.

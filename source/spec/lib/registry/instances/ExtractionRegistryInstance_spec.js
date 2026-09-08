@@ -1,5 +1,5 @@
-import { ExtractionRegistryInstance } from '../../../lib/registry/ExtractionRegistryInstance.js';
-import { ExtractionStore } from '../../../lib/utils/extractions/ExtractionStore.js';
+import { ExtractionRegistryInstance } from '../../../../lib/registry/instances/ExtractionRegistryInstance.js';
+import { ExtractionStore } from '../../../../lib/utils/extractions/ExtractionStore.js';
 
 describe('ExtractionRegistryInstance', () => {
   let instance;

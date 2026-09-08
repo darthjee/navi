@@ -1,5 +1,5 @@
 import { AppError } from '../../../common/exceptions/AppError.js';
-import { NamespaceMap } from '../../../registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../registry/namespace/NamespaceMap.js';
 import { Application } from '../../../services/application/Application.js';
 import { ResourceEnqueuer } from '../../../utils/ResourceEnqueuer.js';
 import { SecuredRequestHandler } from '../../SecuredRequestHandler.js';

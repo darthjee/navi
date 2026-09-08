@@ -1,6 +1,6 @@
 import { ClientNotFound } from '../../../../../lib/exceptions/registry/ClientNotFound.js';
 import { ResourceNotFound } from '../../../../../lib/exceptions/registry/ResourceNotFound.js';
-import { NamespaceMap } from '../../../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../../../lib/registry/namespace/NamespaceMap.js';
 import { ApiConfigHandler } from '../../../../../lib/server/handlers/api/ApiConfigHandler.js';
 import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
 import { Application } from '../../../../../lib/services/application/Application.js';

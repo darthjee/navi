@@ -1,10 +1,10 @@
-import { ClientNotFound } from '../../../lib/exceptions/registry/ClientNotFound.js';
-import { NamespaceNotFound } from '../../../lib/exceptions/registry/NamespaceNotFound.js';
-import { ResourceNotFound } from '../../../lib/exceptions/registry/ResourceNotFound.js';
-import { Namespace } from '../../../lib/registry/Namespace.js';
-import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
-import { ClientFactory } from '../../support/factories/ClientFactory.js';
-import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
+import { ClientNotFound } from '../../../../lib/exceptions/registry/ClientNotFound.js';
+import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
+import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
+import { Namespace } from '../../../../lib/registry/namespace/Namespace.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
+import { ClientFactory } from '../../../support/factories/ClientFactory.js';
+import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 
 describe('NamespaceMap', () => {
   let defaultResource;

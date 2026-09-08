@@ -1,6 +1,6 @@
 import { Config } from '../../../../lib/models/configs/Config.js';
-import { Namespace } from '../../../../lib/registry/Namespace.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { Namespace } from '../../../../lib/registry/namespace/Namespace.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
 import { ResourceFactory } from '../../../support/factories/ResourceFactory.js';
 
 describe('Config', () => {

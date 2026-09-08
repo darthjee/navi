@@ -1,8 +1,8 @@
-import { BufferedLogger } from '../common/utils/logging/buffer/BufferedLogger.js';
-import { LogBufferCollection } from '../common/utils/logging/buffer/LogBufferCollection.js';
-import { LogFilter } from '../common/utils/logging/LogFilter.js';
-import { Logger } from '../common/utils/logging/Logger.js';
-import { LoggerGroup } from '../common/utils/logging/LoggerGroup.js';
+import { BufferedLogger } from '../../common/utils/logging/buffer/BufferedLogger.js';
+import { LogBufferCollection } from '../../common/utils/logging/buffer/LogBufferCollection.js';
+import { LogFilter } from '../../common/utils/logging/LogFilter.js';
+import { Logger } from '../../common/utils/logging/Logger.js';
+import { LoggerGroup } from '../../common/utils/logging/LoggerGroup.js';
 
 /**
  * Holds a LoggerGroup (Logger + BufferedLogger) for the LogRegistry singleton.
@@ -69,7 +69,7 @@ class LogRegistryInstance {
   /**
    * Gets a specific log by ID.
    * @param {number} id - The log entry ID to look up.
-   * @returns {import('../common/utils/logging/Log.js').Log|undefined} The matching log entry, or undefined if not found.
+   * @returns {import('../../common/utils/logging/Log.js').Log|undefined} The matching log entry, or undefined if not found.
    */
   getLogById(id) {
     return this.#bufferedLogger.getLogById(id);
@@ -80,7 +80,7 @@ class LogRegistryInstance {
    * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
    *   Returns an empty array if the ID is not found.
-   * @returns {Array<import('../common/utils/logging/Log.js').Log>} Array of log entries.
+   * @returns {Array<import('../../common/utils/logging/Log.js').Log>} Array of log entries.
    */
   getLogs({ lastId } = {}) {
     return new LogFilter(this.bufferedLogger.getLogs()).filter({ lastId });
@@ -92,7 +92,7 @@ class LogRegistryInstance {
    * @param {string|number} jobId - The job ID to look up logs for.
    * @param {object} [options={}] - Query options.
    * @param {number|string} [options.lastId] - When provided, returns only logs newer than this ID.
-   * @returns {Array<import('../common/utils/logging/Log.js').Log>} Array of log entries.
+   * @returns {Array<import('../../common/utils/logging/Log.js').Log>} Array of log entries.
    */
   getLogsByJobId(jobId, { lastId } = {}) {
     return new LogFilter(this.#jobLogs.getLogs(jobId)).filter({ lastId });
@@ -101,7 +101,7 @@ class LogRegistryInstance {
   /**
    * Gets logs stored in the per-worker buffer for the given worker ID.
    * @param {string|number} workerId - The worker ID to look up logs for.
-   * @returns {Array<import('../common/utils/logging/Log.js').Log>} Array of log entries.
+   * @returns {Array<import('../../common/utils/logging/Log.js').Log>} Array of log entries.
    */
   getLogsByWorkerId(workerId) {
     return this.#workerLogs.getLogs(workerId);
@@ -110,7 +110,7 @@ class LogRegistryInstance {
   /**
    * Gets logs filtered by level.
    * @param {string} level - The log level to filter by.
-   * @returns {Array<import('../common/utils/logging/Log.js').Log>} Array of log entries matching the level.
+   * @returns {Array<import('../../common/utils/logging/Log.js').Log>} Array of log entries matching the level.
    */
   getLogsByLevel(level) {
     return this.#bufferedLogger.getLogsByLevel(level);

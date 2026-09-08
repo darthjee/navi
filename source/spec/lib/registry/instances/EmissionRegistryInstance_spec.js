@@ -1,5 +1,5 @@
-import { EmissionRegistryInstance } from '../../../lib/registry/EmissionRegistryInstance.js';
-import { EmissionStore } from '../../../lib/utils/emissions/EmissionStore.js';
+import { EmissionRegistryInstance } from '../../../../lib/registry/instances/EmissionRegistryInstance.js';
+import { EmissionStore } from '../../../../lib/utils/emissions/EmissionStore.js';
 
 describe('EmissionRegistryInstance', () => {
   let instance;
