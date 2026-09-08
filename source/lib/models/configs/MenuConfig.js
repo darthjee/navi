@@ -210,12 +210,11 @@ class MenuConfig {
    * @returns {MenuEntry} The built entry.
    */
   static #customEntry(raw) {
-    if (!this.DEFAULT_ROUTES.includes(raw.route)) {
+    if (!this.DEFAULT_ROUTES.includes(raw.route) || 'text' in raw) {
       return MenuEntry.fromObject(raw);
     }
 
-    const text = 'text' in raw ? raw.text : this.defaultLabel(raw.route);
-    return new MenuEntry({ route: raw.route, text });
+    return MenuEntry.fromObject(raw, this.defaultLabel(raw.route));
   }
 
   /**
