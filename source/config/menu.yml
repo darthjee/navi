@@ -1,5 +1,36 @@
-entries:
-  - route: /logs
-    text: Logs
-  - route: /memory/status
-    text: Memory
+# Navi internal navigation menu — stock template.
+#
+# This file ships fully commented out. With no active `entries` key Navi falls
+# back to its built-in defaults (Logs + Memory), so the menu below is unchanged
+# until you uncomment something.
+#
+# Operator entries are MERGED after the built-in defaults: defaults first (in
+# their shipped order), then your entries in file order. Copy this file, edit it,
+# and point Navi at it with `-m` / `--menu` / `NAVI_MENU`.
+#
+# ----------------------------------------------------------------------------
+# entries:
+#   # A plain added entry — internal SPA path plus the text shown in the menu.
+#   - route: /dashboard
+#     text: Dashboard
+#
+#   # An external link — any absolute http(s) URL is allowed as a route.
+#   - route: https://status.example.com
+#     text: Status page
+#
+#   # Re-listing a default route (/logs or /memory/status) repositions that
+#   # default here instead of duplicating it. Omit `text` to keep the shipped
+#   # label ("Logs" / "Memory"); supply `text` to override it.
+#   - route: /logs
+#     text: Application logs
+#
+#   # `hidden: true` on a default route removes just that default. The hidden
+#   # entry itself never renders. It is only valid on a default route.
+#   - route: /memory/status
+#     hidden: true
+#
+# # Top-level sibling of `entries`. `defaults: false` drops BOTH built-in
+# # defaults, so only your entries render — the only way to empty the menu.
+# # A non-boolean value is ignored (treated as true) with a warning.
+# defaults: false
+# ----------------------------------------------------------------------------
