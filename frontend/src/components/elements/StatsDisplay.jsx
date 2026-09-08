@@ -30,9 +30,6 @@ function StatsDisplay({ stats }) {
         <StatItem label="Failed" value={emissions.failed} variant="warning" to="/emissions" />
         <StatItem label="Dead" value={emissions.dead} variant="dark" to="/emissions" />
       </div>
-      <div className="vr mx-1" />
-      <StatItem label="Logs" variant="info" to="/logs" />
-      <StatItem label="Memory" variant="info" to="/memory/status" />
     </div>
   );
 }

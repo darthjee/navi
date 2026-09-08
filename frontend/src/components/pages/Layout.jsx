@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import EngineControls from '../elements/EngineControls.jsx';
 import LinksMenu from '../elements/LinksMenu.jsx';
+import MenuMenu from '../elements/MenuMenu.jsx';
 import StatsHeader from '../elements/StatsHeader.jsx';
 
 function Layout() {
@@ -8,6 +9,7 @@ function Layout() {
     <div className="container mt-4">
       <div className="d-flex align-items-center gap-3 mb-2">
         <h1 className="mb-0">Navi — Cache Warmer</h1>
+        <MenuMenu />
         <LinksMenu />
       </div>
       <StatsHeader />

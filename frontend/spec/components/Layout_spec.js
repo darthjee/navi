@@ -76,6 +76,27 @@ describe('Layout', () => {
     });
   });
 
+  describe('when the menu config has entries', () => {
+    beforeEach(async () => {
+      spyOn(globalThis, 'fetch').and.callFake((url) => {
+        if (url === '/menu.json') {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ entries: [{ route: '/logs', text: 'Logs' }] }),
+          });
+        }
+        return new Promise(noop);
+      });
+      await renderLayout(root);
+      await flushAsync();
+    });
+
+    it('mounts the menu dropdown toggle', () => {
+      const buttons = Array.from(container.querySelectorAll('button'));
+      expect(buttons.some((b) => b.textContent.includes('Menu'))).toBe(true);
+    });
+  });
+
   describe('with page-specific content', () => {
     beforeEach(async () => {
       spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
