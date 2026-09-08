@@ -77,7 +77,11 @@ Data containers mapping YAML config to typed instances. Most expose `fromObject(
 Subfolders:
 
 - `models/configs/` — configuration models: `Config`, `FailureConfig`, `LogConfig`, `PaginationConfig`, `WebConfig`, `WorkersConfig`
-- `models/request/` — request models: `AssetRequest`, `Resource`, `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestPaginatedAction`
+- `models/request/` — request models:
+  - flat — `AssetRequest`, `ClientReference`, `Resource`
+  - `models/request/resource_request/` — `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestEmit`, `ResourceRequestPaginatedAction`, `ResourceRequestParser`
+  - `models/request/renderers/` — `BodyTemplateRenderer`, `TemplateStringRenderer`
+  - `models/request/tokens/` — `TokenResolver`, `UrlTokenResolver`
 - `models/response/` — response-parsing models: `ParametersMapper`, `PathResolver`, `PathSegmentTraverser`, `ResponseParser`, `ResponseWrapper`
 
 `Job`/`Worker`, the registries (`JobRegistry`/`WorkersRegistry`), their factories, `Engine`, `WorkersAllocator`, the collection primitives, and the generic `Factory`/`IdGenerator` utilities all live in the separate `worker/` package (`deku-swarm`), not under `source/lib/`. See [Worker Subsystem](../worker.md) for their class-by-class reference; `source/` only consumes them via `import { ... } from 'deku-swarm'`.

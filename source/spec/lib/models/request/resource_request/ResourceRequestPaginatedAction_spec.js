@@ -1,12 +1,12 @@
 import { JobRegistry } from 'deku-swarm';
-import { MissingActionResource } from '../../../../lib/exceptions/registry/MissingActionResource.js';
-import { MissingMappingVariable } from '../../../../lib/exceptions/registry/MissingMappingVariable.js';
-import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
-import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
-import { ResourceRequestPaginatedAction } from '../../../../lib/models/request/ResourceRequestPaginatedAction.js';
-import { Application } from '../../../../lib/services/application/Application.js';
-import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
-import { ResourceActionUtils } from '../../../support/utils/ResourceActionUtils.js';
+import { MissingActionResource } from '../../../../../lib/exceptions/registry/MissingActionResource.js';
+import { MissingMappingVariable } from '../../../../../lib/exceptions/registry/MissingMappingVariable.js';
+import { NamespaceNotFound } from '../../../../../lib/exceptions/registry/NamespaceNotFound.js';
+import { ResourceNotFound } from '../../../../../lib/exceptions/registry/ResourceNotFound.js';
+import { ResourceRequestPaginatedAction } from '../../../../../lib/models/request/resource_request/ResourceRequestPaginatedAction.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
+import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';
+import { ResourceActionUtils } from '../../../../support/utils/ResourceActionUtils.js';
 
 const pagination = [{ pages: 'parsedBody.total_pages', page_key: 'page' }];
 const responseWrapper = {

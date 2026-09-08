@@ -1,5 +1,5 @@
-import { InvalidParserType } from '../../../../lib/exceptions/config/parser/InvalidParserType.js';
-import { ResourceRequestParser } from '../../../../lib/models/request/ResourceRequestParser.js';
+import { InvalidParserType } from '../../../../../lib/exceptions/config/parser/InvalidParserType.js';
+import { ResourceRequestParser } from '../../../../../lib/models/request/resource_request/ResourceRequestParser.js';
 
 describe('ResourceRequestParser', () => {
   describe('constructor', () => {

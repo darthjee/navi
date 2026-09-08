@@ -1,4 +1,4 @@
-import { UrlTokenResolver } from '../../../../lib/models/request/UrlTokenResolver.js';
+import { UrlTokenResolver } from '../../../../../lib/models/request/tokens/UrlTokenResolver.js';
 
 describe('UrlTokenResolver', () => {
   describe('.resolve', () => {

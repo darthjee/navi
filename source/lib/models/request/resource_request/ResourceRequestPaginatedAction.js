@@ -1,11 +1,11 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
-import { MissingActionResource } from '../../exceptions/registry/MissingActionResource.js';
-import { LogRegistry } from '../../registry/LogRegistry.js';
-import { NamespaceMap as DefaultNamespaceMap } from '../../registry/namespace/NamespaceMap.js';
-import { Application } from '../../services/application/Application.js';
-import { PageRange } from '../configs/PageRange.js';
-import { PaginationConfig } from '../configs/PaginationConfig.js';
-import { ParametersMapper } from '../response/ParametersMapper.js';
+import { MissingActionResource } from '../../../exceptions/registry/MissingActionResource.js';
+import { LogRegistry } from '../../../registry/LogRegistry.js';
+import { NamespaceMap as DefaultNamespaceMap } from '../../../registry/namespace/NamespaceMap.js';
+import { Application } from '../../../services/application/Application.js';
+import { PageRange } from '../../configs/PageRange.js';
+import { PaginationConfig } from '../../configs/PaginationConfig.js';
+import { ParametersMapper } from '../../response/ParametersMapper.js';
 
 /**
  * Represents a single paginated action to execute after a successful resource request response.

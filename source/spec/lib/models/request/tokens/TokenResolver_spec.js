@@ -1,4 +1,4 @@
-import { TokenResolver } from '../../../../lib/models/request/TokenResolver.js';
+import { TokenResolver } from '../../../../../lib/models/request/tokens/TokenResolver.js';
 
 describe('TokenResolver', () => {
   describe('.resolve', () => {

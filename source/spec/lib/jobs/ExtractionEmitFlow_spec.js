@@ -5,7 +5,7 @@ import { EmitJob } from '../../../lib/jobs/EmitJob.js';
 import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
 import { PaginatedActionProcessingJob } from '../../../lib/jobs/PaginatedActionProcessingJob.js';
 import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
-import { ResourceRequest } from '../../../lib/models/request/ResourceRequest.js';
+import { ResourceRequest } from '../../../lib/models/request/resource_request/ResourceRequest.js';
 import { JsonPathParser } from '../../../lib/parsers/JsonPathParser.js';
 import { RegexParser } from '../../../lib/parsers/RegexParser.js';
 import { Namespace } from '../../../lib/registry/namespace/Namespace.js';

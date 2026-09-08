@@ -1,17 +1,17 @@
 import { JobRegistry } from 'deku-swarm';
-import { AssetRequest } from '../../../../lib/models/request/AssetRequest.js';
-import { ResourceRequest } from '../../../../lib/models/request/ResourceRequest.js';
-import { ResourceRequestEmit } from '../../../../lib/models/request/ResourceRequestEmit.js';
-import { ResourceRequestParser } from '../../../../lib/models/request/ResourceRequestParser.js';
-import { ResponseWrapper } from '../../../../lib/models/response/ResponseWrapper.js';
-import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { Application } from '../../../../lib/services/application/Application.js';
-import { AssetRequestFactory } from '../../../support/factories/AssetRequestFactory.js';
-import { ClientRegistryFactory } from '../../../support/factories/ClientRegistryFactory.js';
-import { ResourceRequestActionFactory } from '../../../support/factories/ResourceRequestActionFactory.js';
-import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
-import { LoggerUtils } from '../../../support/utils/LoggerUtils.js';
-import { RegistryCleanupUtils } from '../../../support/utils/RegistryCleanupUtils.js';
+import { AssetRequest } from '../../../../../lib/models/request/AssetRequest.js';
+import { ResourceRequest } from '../../../../../lib/models/request/resource_request/ResourceRequest.js';
+import { ResourceRequestEmit } from '../../../../../lib/models/request/resource_request/ResourceRequestEmit.js';
+import { ResourceRequestParser } from '../../../../../lib/models/request/resource_request/ResourceRequestParser.js';
+import { ResponseWrapper } from '../../../../../lib/models/response/ResponseWrapper.js';
+import { LogRegistry } from '../../../../../lib/registry/LogRegistry.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
+import { AssetRequestFactory } from '../../../../support/factories/AssetRequestFactory.js';
+import { ClientRegistryFactory } from '../../../../support/factories/ClientRegistryFactory.js';
+import { ResourceRequestActionFactory } from '../../../../support/factories/ResourceRequestActionFactory.js';
+import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';
+import { LoggerUtils } from '../../../../support/utils/LoggerUtils.js';
+import { RegistryCleanupUtils } from '../../../../support/utils/RegistryCleanupUtils.js';
 
 const buildResponseWrapper = (data) => new ResponseWrapper({ data, headers: {} });
 

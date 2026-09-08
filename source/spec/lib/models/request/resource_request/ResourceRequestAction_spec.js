@@ -1,14 +1,14 @@
 import { JobRegistry } from 'deku-swarm';
-import { MissingActionResource } from '../../../../lib/exceptions/registry/MissingActionResource.js';
-import { MissingMappingVariable } from '../../../../lib/exceptions/registry/MissingMappingVariable.js';
-import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
-import { ResourceNotFound } from '../../../../lib/exceptions/registry/ResourceNotFound.js';
-import { ResourceRequestAction } from '../../../../lib/models/request/ResourceRequestAction.js';
-import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { Application } from '../../../../lib/services/application/Application.js';
-import { ResourceRequestActionFactory } from '../../../support/factories/ResourceRequestActionFactory.js';
-import { ResourceRequestFactory } from '../../../support/factories/ResourceRequestFactory.js';
-import { ResourceActionUtils } from '../../../support/utils/ResourceActionUtils.js';
+import { MissingActionResource } from '../../../../../lib/exceptions/registry/MissingActionResource.js';
+import { MissingMappingVariable } from '../../../../../lib/exceptions/registry/MissingMappingVariable.js';
+import { NamespaceNotFound } from '../../../../../lib/exceptions/registry/NamespaceNotFound.js';
+import { ResourceNotFound } from '../../../../../lib/exceptions/registry/ResourceNotFound.js';
+import { ResourceRequestAction } from '../../../../../lib/models/request/resource_request/ResourceRequestAction.js';
+import { LogRegistry } from '../../../../../lib/registry/LogRegistry.js';
+import { Application } from '../../../../../lib/services/application/Application.js';
+import { ResourceRequestActionFactory } from '../../../../support/factories/ResourceRequestActionFactory.js';
+import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';
+import { ResourceActionUtils } from '../../../../support/utils/ResourceActionUtils.js';
 
 const responseWrapper = {
   parsedBody: { id: 1, name: 'Electronics' },

@@ -1,4 +1,4 @@
-import { TemplateStringRenderer } from '../../../../lib/models/request/TemplateStringRenderer.js';
+import { TemplateStringRenderer } from '../../../../../lib/models/request/renderers/TemplateStringRenderer.js';
 
 describe('TemplateStringRenderer', () => {
   describe('.render', () => {

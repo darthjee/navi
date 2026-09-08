@@ -1,4 +1,4 @@
-import { ResourceRequest } from './ResourceRequest.js';
+import { ResourceRequest } from './resource_request/ResourceRequest.js';
 
 /**
  * Resource class represents a resource with a name and associated resource requests.

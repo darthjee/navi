@@ -1,4 +1,4 @@
-import { BodyTemplateRenderer } from '../../../../lib/models/request/BodyTemplateRenderer.js';
+import { BodyTemplateRenderer } from '../../../../../lib/models/request/renderers/BodyTemplateRenderer.js';
 
 describe('BodyTemplateRenderer', () => {
   describe('.render', () => {

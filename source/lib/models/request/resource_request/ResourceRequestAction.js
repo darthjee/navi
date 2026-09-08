@@ -1,9 +1,9 @@
 import { JobRegistry as DefaultJobRegistry } from 'deku-swarm';
-import { MissingActionResource } from '../../exceptions/registry/MissingActionResource.js';
-import { LogRegistry } from '../../registry/LogRegistry.js';
-import { NamespaceMap as DefaultNamespaceMap } from '../../registry/namespace/NamespaceMap.js';
-import { Application } from '../../services/application/Application.js';
-import { ParametersMapper } from '../response/ParametersMapper.js';
+import { MissingActionResource } from '../../../exceptions/registry/MissingActionResource.js';
+import { LogRegistry } from '../../../registry/LogRegistry.js';
+import { NamespaceMap as DefaultNamespaceMap } from '../../../registry/namespace/NamespaceMap.js';
+import { Application } from '../../../services/application/Application.js';
+import { ParametersMapper } from '../../response/ParametersMapper.js';
 
 /**
  * Represents a single action to execute after a successful resource request response.

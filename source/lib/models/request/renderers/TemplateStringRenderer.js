@@ -1,4 +1,4 @@
-import { TokenResolver } from './TokenResolver.js';
+import { TokenResolver } from '../tokens/TokenResolver.js';
 
 /**
  * TemplateStringRenderer renders a single template string against an item, resolving

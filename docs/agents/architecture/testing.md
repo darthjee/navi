@@ -18,6 +18,9 @@ source/spec/
     models/
       configs/
       request/
+        resource_request/
+        renderers/
+        tokens/
       response/
     registry/
       instances/
