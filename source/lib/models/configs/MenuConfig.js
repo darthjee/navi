@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import YAML from 'yaml';
+import { MenuEntry } from './MenuEntry.js';
 import { EnvStringResolver } from '../../common/utils/env_resolver/EnvStringResolver.js';
 import { Logger } from '../../common/utils/logging/Logger.js';
 import { MenuConfigurationInvalid } from '../../exceptions/config/MenuConfigurationInvalid.js';
-import { MenuEntry } from './MenuEntry.js';
 
 /**
  * Loads and validates the internal navigation menu configuration file into a

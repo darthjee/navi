@@ -33,25 +33,9 @@ class MenuEntry {
    * @returns {{ valid: boolean, reason: (string|undefined) }} Validation outcome.
    */
   static validate(entry) {
-    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
-      return { valid: false, reason: 'entry must be a mapping' };
-    }
+    const reason = this.#firstReason(entry);
 
-    const unknownKey = Object.keys(entry).find((key) => !ALLOWED_KEYS.includes(key));
-    if (unknownKey) return { valid: false, reason: `unknown key "${unknownKey}"` };
-
-    const routeReason = this.#validateRoute(entry.route);
-    if (routeReason) return { valid: false, reason: routeReason };
-
-    if ('text' in entry && (typeof entry.text !== 'string' || entry.text.length === 0)) {
-      return { valid: false, reason: 'text must be a non-empty string' };
-    }
-
-    if ('hidden' in entry && typeof entry.hidden !== 'boolean') {
-      return { valid: false, reason: 'hidden must be a boolean' };
-    }
-
-    return { valid: true, reason: undefined };
+    return reason ? { valid: false, reason } : { valid: true, reason: undefined };
   }
 
   /**
@@ -69,6 +53,49 @@ class MenuEntry {
    */
   toJSON() {
     return { route: this.route, text: this.text };
+  }
+
+  /**
+   * Returns the first validation failure reason for a raw entry, or undefined
+   * when the entry is valid.
+   * @param {*} entry - The raw entry to validate.
+   * @returns {(string|undefined)} The first failure reason, or undefined.
+   */
+  static #firstReason(entry) {
+    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+      return 'entry must be a mapping';
+    }
+
+    const unknownKey = Object.keys(entry).find((key) => !ALLOWED_KEYS.includes(key));
+    if (unknownKey) return `unknown key "${unknownKey}"`;
+
+    return this.#validateRoute(entry.route)
+      ?? this.#validateText(entry)
+      ?? this.#validateHidden(entry);
+  }
+
+  /**
+   * Validates the optional `text` field of a raw entry.
+   * @param {object} entry - The raw entry.
+   * @returns {(string|undefined)} A reason string when invalid, otherwise undefined.
+   */
+  static #validateText(entry) {
+    if (!('text' in entry)) return undefined;
+    if (typeof entry.text !== 'string' || entry.text.length === 0) {
+      return 'text must be a non-empty string';
+    }
+    return undefined;
+  }
+
+  /**
+   * Validates the optional `hidden` field of a raw entry.
+   * @param {object} entry - The raw entry.
+   * @returns {(string|undefined)} A reason string when invalid, otherwise undefined.
+   */
+  static #validateHidden(entry) {
+    if (!('hidden' in entry)) return undefined;
+    if (typeof entry.hidden !== 'boolean') return 'hidden must be a boolean';
+    return undefined;
   }
 
   /**
