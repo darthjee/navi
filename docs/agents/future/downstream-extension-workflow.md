@@ -635,8 +635,10 @@ Run this when bumping `FROM darthjee/navi-hey:<tag>` (or the pulled `image:` tag
   this workflow targets.
 - **IMPL-5 (#805)** — turns §7 into the `spec/fixtures/extensions/` fixture and
   performs the two `source/package.json` / Dockerfile follow-ups recorded in §1.
-- **SPEC-6 (#800)** — the downstream test harness; coordinates with §7.2 on the
-  two example tests.
+- [`downstream-extension-tests.md`](downstream-extension-tests.md) — **SPEC-6
+  (#800)**; the downstream Jasmine test harness and its dedicated image.
+  Supersedes §7.2's `node --test` / `vitest` examples with Jasmine versions and
+  renames the spec files to `*_spec.js` / `*_spec.jsx`.
 - **CLEAN-1 (#807)** — deletes this document once the feature ships.
 </content>
 </invoke>
