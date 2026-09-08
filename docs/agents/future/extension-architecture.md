@@ -832,6 +832,9 @@ Same posture as the Backend's deferred list. Each gets its own
   descriptor shapes from the Backend and Frontend sections. SPEC-5 also settles
   the canonical backend handler base-class import specifier
   (`navi-hey/extension`).
+- **SPEC-6 (#800)** — [`downstream-extension-tests.md`](downstream-extension-tests.md);
+  the downstream Jasmine test harness and its dedicated `navi-hey-test` image,
+  built on the mounted-folder layout and descriptor shapes fixed here.
 - **IMPL-3 (#803)** — implements the Backend section.
 - **IMPL-4 (#804)** — implements the Frontend section; spans `frontend/` and
   `source/`.
