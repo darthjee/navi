@@ -76,7 +76,7 @@ Data containers mapping YAML config to typed instances. Most expose `fromObject(
 
 Subfolders:
 
-- `models/configs/` — configuration models: `Config`, `FailureConfig`, `LogConfig`, `PaginationConfig`, `WebConfig`, `WorkersConfig`
+- `models/configs/` — configuration models: `Config`, `EmitConfig`, `ExtractionConfig`, `FailureConfig`, `Link`, `LogConfig`, `MemoryConfig`, `PageRange`, `PaginationConfig`, `WebConfig`, `WorkersConfig`. Kept flat: cohesive peer value objects around the `Config` aggregate; 11 files, no natural sub-domain large enough to warrant a folder.
 - `models/request/` — request models:
   - flat — `AssetRequest`, `ClientReference`, `Resource`
   - `models/request/resource_request/` — `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestEmit`, `ResourceRequestPaginatedAction`, `ResourceRequestParser`
