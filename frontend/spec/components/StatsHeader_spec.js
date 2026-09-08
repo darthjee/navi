@@ -90,24 +90,19 @@ describe('StatsHeader', () => {
       expect(hrefs).toContain('/jobs/dead');
     });
 
-    it('renders the Logs button', () => {
-      expect(state.container.textContent).toContain('Logs');
+    it('does not render a Logs stat card', () => {
+      expect(state.container.textContent).not.toContain('Logs');
     });
 
-    it('links the Logs button to /logs', () => {
+    it('does not render a Memory stat card', () => {
+      expect(state.container.textContent).not.toContain('Memory');
+    });
+
+    it('does not link to /logs or /memory/status', () => {
       const links = Array.from(state.container.querySelectorAll('a'));
       const hrefs = links.map((a) => a.getAttribute('href'));
-      expect(hrefs).toContain('/logs');
-    });
-
-    it('renders the Memory button', () => {
-      expect(state.container.textContent).toContain('Memory');
-    });
-
-    it('links the Memory button to /memory/status', () => {
-      const links = Array.from(state.container.querySelectorAll('a'));
-      const hrefs = links.map((a) => a.getAttribute('href'));
-      expect(hrefs).toContain('/memory/status');
+      expect(hrefs).not.toContain('/logs');
+      expect(hrefs).not.toContain('/memory/status');
     });
   });
 
