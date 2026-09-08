@@ -25,6 +25,7 @@ import { LinksHandler } from './handlers/LinksHandler.js';
 import { LogsHandler } from './handlers/LogsHandler.js';
 import { MemoryHistoryHandler } from './handlers/memory/MemoryHistoryHandler.js';
 import { MemoryStatusHandler } from './handlers/memory/MemoryStatusHandler.js';
+import { MenuHandler } from './handlers/MenuHandler.js';
 import { SettingsHandler } from './handlers/SettingsHandler.js';
 import { StatsHandler } from './handlers/StatsHandler.js';
 import { PathValidator } from './PathValidator.js';
@@ -42,14 +43,17 @@ const assetsValidator = new PathValidator(assetsDir);
  */
 class Router {
   #webConfig;
+  #menuConfig;
 
   /**
    * Creates a new Router instance.
    * @param {object} [options={}] - Constructor options.
    * @param {object} [options.webConfig={}] - Web configuration, used by handlers that need it.
+   * @param {Array<import('../models/configs/MenuEntry.js').MenuEntry>} [options.menuConfig=[]] - Internal navigation menu entries.
    */
-  constructor({ webConfig = {} } = {}) {
+  constructor({ webConfig = {}, menuConfig = [] } = {}) {
     this.#webConfig = webConfig;
+    this.#menuConfig = menuConfig;
   }
 
   /**
@@ -75,6 +79,7 @@ class Router {
       '/emissions.json':          new HandlerConfig(EmissionsHandler, this.#webConfig.logsPageSize),
       '/extractions.json':        new HandlerConfig(ExtractionsHandler, this.#webConfig.logsPageSize),
       '/links.json':              new HandlerConfig(LinksHandler, [this.#webConfig.links]),
+      '/menu.json':               new HandlerConfig(MenuHandler, [this.#menuConfig]),
       '/':                        new HandlerConfig(IndexHandler),
       '/assets/*path':            new HandlerConfig(AssetsHandler, [assetsDir, assetsValidator]),
     };
