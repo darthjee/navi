@@ -18,6 +18,7 @@ Four integration modes are covered:
 ## Table of Contents
 
 - [Prerequisites](./navi/prerequisites.md) — YAML config file structure, top-level keys, and field reference table.
+- [Configuration Schema](./navi/configuration-schema.md) — full YAML field-by-field reference for every config key.
 - [Option A — Docker image (`darthjee/navi-hey`)](./navi/option-a-docker-image.md) — Using the `darthjee/navi-hey` Docker image in a CI step.
 - [Option B — Node.js image with `navi-hey` installed](./navi/option-b-nodejs-image.md) — Installing and running the `navi-hey` npm package in a Node.js CI image.
 - [Option C — CircleCI executor image](./navi/option-c-circleci-executor.md) — Using `darthjee/navi-hey:latest` directly as the CircleCI executor image.
