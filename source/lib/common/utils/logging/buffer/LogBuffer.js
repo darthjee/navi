@@ -1,4 +1,4 @@
-import { LogFactory } from './LogFactory.js';
+import { LogFactory } from '../LogFactory.js';
 
 /**
  * LogBuffer manages a limited collection of log entries with automatic retention.
@@ -26,7 +26,7 @@ class LogBuffer {
    * @param {string} level - The log level.
    * @param {string} message - The log message.
    * @param {object} [attributes={}] - Optional structured metadata for the log entry.
-   * @returns {import('./Log.js').Log} The created log entry.
+   * @returns {import('../Log.js').Log} The created log entry.
    */
   add(level, message, attributes = {}) {
     const log = this.#factory.build(level, message, attributes);
@@ -68,7 +68,7 @@ class LogBuffer {
 
   /**
    * Appends an existing Log instance to the buffer, respecting the retention limit.
-   * @param {import('./Log.js').Log} log - The Log instance to append.
+   * @param {import('../Log.js').Log} log - The Log instance to append.
    * @returns {void}
    */
   push(log) {
@@ -80,7 +80,7 @@ class LogBuffer {
 
   /**
    * Returns the most recently added log, or undefined if the buffer is empty.
-   * @returns {import('./Log.js').Log|undefined} The most recently added log entry, or undefined.
+   * @returns {import('../Log.js').Log|undefined} The most recently added log entry, or undefined.
    */
   get latestLog() {
     return this.#logs[0];

@@ -1,4 +1,4 @@
-import { BaseLogger } from './BaseLogger.js';
+import { BaseLogger } from '../BaseLogger.js';
 import { LogBuffer } from './LogBuffer.js';
 
 /**
@@ -32,7 +32,7 @@ class BufferedLogger extends BaseLogger {
 
   /**
    * Returns the most recently added log, or undefined if the buffer is empty.
-   * @returns {import('./Log.js').Log|undefined} The most recently added log entry, or undefined.
+   * @returns {import('../Log.js').Log|undefined} The most recently added log entry, or undefined.
    */
   get latestLog() {
     return this.#buffer.latestLog;
@@ -40,7 +40,7 @@ class BufferedLogger extends BaseLogger {
 
   /**
    * Gets all logs from the buffer.
-   * @returns {Array<import('./Log.js').Log>} Array of log entries.
+   * @returns {Array<import('../Log.js').Log>} Array of log entries.
    */
   getLogs() {
     return this.#buffer.getLogs();
@@ -49,7 +49,7 @@ class BufferedLogger extends BaseLogger {
   /**
    * Gets a specific log by ID.
    * @param {number} id - The log ID to find.
-   * @returns {import('./Log.js').Log|undefined} The log entry or undefined if not found.
+   * @returns {import('../Log.js').Log|undefined} The log entry or undefined if not found.
    */
   getLogById(id) {
     return this.#buffer.getLogById(id);
@@ -58,7 +58,7 @@ class BufferedLogger extends BaseLogger {
   /**
    * Gets logs filtered by level.
    * @param {string} level - The log level to filter by.
-   * @returns {Array<import('./Log.js').Log>} Array of log entries matching the level.
+   * @returns {Array<import('../Log.js').Log>} Array of log entries matching the level.
    */
   getLogsByLevel(level) {
     return this.#buffer.getLogsByLevel(level);

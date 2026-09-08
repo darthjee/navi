@@ -105,7 +105,7 @@ Concrete `Job` subclasses:
 
 Shared low-level utilities with no domain knowledge:
 
-- **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*` (including `LogContext` — Navi-specific logging, wired into `deku-swarm`'s `Worker` via an injected `loggerFactory`).
+- **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*` (including `LogContext` — Navi-specific logging, wired into `deku-swarm`'s `Worker` via an injected `loggerFactory`; the buffer trio `BufferedLogger`/`LogBuffer`/`LogBufferCollection` sits under `logging/buffer/`).
 - **`common/server/`** — shared server base classes consumed by both `source/` and `dev/app/`: `RequestHandler` (abstract base).
 - **`utils/generators/`** — `IncrementalIdGenerator` (`IdGenerator`/`UUidGenerator` moved to `worker/lib/generators/`, part of `deku-swarm`).
 - **`utils/`** (flat) — `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing), `ResourceEnqueuer` (calls `deku-swarm`'s `JobRegistry.enqueue()` from outside the package).

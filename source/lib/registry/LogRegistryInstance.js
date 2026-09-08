@@ -1,5 +1,5 @@
-import { BufferedLogger } from '../common/utils/logging/BufferedLogger.js';
-import { LogBufferCollection } from '../common/utils/logging/LogBufferCollection.js';
+import { BufferedLogger } from '../common/utils/logging/buffer/BufferedLogger.js';
+import { LogBufferCollection } from '../common/utils/logging/buffer/LogBufferCollection.js';
 import { LogFilter } from '../common/utils/logging/LogFilter.js';
 import { Logger } from '../common/utils/logging/Logger.js';
 import { LoggerGroup } from '../common/utils/logging/LoggerGroup.js';
