@@ -12,17 +12,20 @@ class ConfigStore {
   #config;
   #bufferedLogger;
   #entryFilePath;
+  #menuConfig;
 
   /**
    * @param {object} params - The config-load output.
    * @param {Config} params.config - The parsed configuration model.
    * @param {BufferedLogger} params.bufferedLogger - The buffered logger created for this config.
    * @param {string} params.entryFilePath - The path to the entry configuration file, stored verbatim.
+   * @param {Array<import('../../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The parsed internal navigation menu entries.
    */
-  constructor({ config, bufferedLogger, entryFilePath }) {
+  constructor({ config, bufferedLogger, entryFilePath, menuConfig = [] }) {
     this.#config = config;
     this.#bufferedLogger = bufferedLogger;
     this.#entryFilePath = entryFilePath;
+    this.#menuConfig = menuConfig;
   }
 
   /**
@@ -48,6 +51,14 @@ class ConfigStore {
    */
   get entryFilePath() {
     return this.#entryFilePath;
+  }
+
+  /**
+   * Gets the parsed internal navigation menu entries.
+   * @returns {Array<import('../../models/configs/MenuEntry.js').MenuEntry>} The menu entries.
+   */
+  get menuConfig() {
+    return this.#menuConfig;
   }
 }
 

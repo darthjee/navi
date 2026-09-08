@@ -1,6 +1,7 @@
 import http from 'http';
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import { MenuEntry } from '../../../lib/models/configs/MenuEntry.js';
 import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
@@ -37,6 +38,36 @@ describe('WebServer', () => {
         const result = WebServer.build({ webConfig });
         expect(result instanceof WebServer).toBeTrue();
       });
+    });
+  });
+
+  describe('menu config threading', () => {
+    it('serves the configured menu entries at GET /menu.json', async () => {
+      const webConfig = new WebConfig({ port: 19995 });
+      const menuConfig = [
+        new MenuEntry({ route: '/custom', text: 'Custom' }),
+        new MenuEntry({ route: '/logs' }),
+      ];
+      const server = WebServer.build({ webConfig, menuConfig });
+      const serverPromise = server.start();
+
+      const body = await new Promise((resolve, reject) => {
+        http.get('http://localhost:19995/menu.json', (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => resolve(data));
+        }).on('error', reject);
+      });
+
+      expect(JSON.parse(body)).toEqual({
+        entries: [
+          { route: '/custom', text: 'Custom' },
+          { route: '/logs', text: '/logs' },
+        ],
+      });
+
+      server.shutdown();
+      await serverPromise;
     });
   });
 

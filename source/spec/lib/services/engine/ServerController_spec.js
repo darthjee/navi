@@ -43,8 +43,18 @@ describe('ServerController', () => {
 
       const controller = ServerController.build({ webConfig: { port: 1234 } });
 
-      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 } });
+      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig: [] });
       expect(controller.start()).toBe('start-result');
+    });
+
+    it('forwards menuConfig to buildWebServer', () => {
+      const menuConfig = [{ route: '/logs', text: 'Logs' }];
+      spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
+      spyOn(ServerController.prototype, 'buildSampler').and.returnValue(buildFakeSampler());
+
+      ServerController.build({ webConfig: { port: 1234 }, menuConfig });
+
+      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig });
     });
 
     it('calls buildSampler and wraps its result', () => {

@@ -38,4 +38,17 @@ describe('ConfigStore', () => {
       expect(relativeStore.entryFilePath).toBe('../foo/./bar/navi.yml');
     });
   });
+
+  describe('#menuConfig', () => {
+    it('defaults to an empty list when not provided', () => {
+      expect(store.menuConfig).toEqual([]);
+    });
+
+    it('returns the menu entries passed to the constructor', () => {
+      const menuConfig = [{ route: '/logs', text: 'Logs' }];
+      const menuStore = new ConfigStore({ config, bufferedLogger, entryFilePath, menuConfig });
+
+      expect(menuStore.menuConfig).toBe(menuConfig);
+    });
+  });
 });

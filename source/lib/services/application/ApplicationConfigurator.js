@@ -1,6 +1,7 @@
 import { ConfigStore } from './ConfigStore.js';
 import { ConfigurationFileNotProvided } from '../../exceptions/config/file/ConfigurationFileNotProvided.js';
 import { Config } from '../../models/configs/Config.js';
+import { MenuConfig } from '../../models/configs/MenuConfig.js';
 import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
@@ -15,16 +16,19 @@ class ApplicationConfigurator {
   /**
    * Loads the configuration from the specified file path and builds the log registry.
    * @param {string} configPath - The path to the configuration file.
+   * @param {string} [menuPath] - The path to the menu configuration file.
    * @throws {ConfigurationFileNotProvided} If the configuration file path is not provided.
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
-   * @returns {ConfigStore} The loaded config, its buffered logger, and the entry file path.
+   * @throws {MenuConfigurationInvalid} If the menu configuration file cannot be parsed.
+   * @returns {ConfigStore} The loaded config, its buffered logger, the entry file path, and the menu entries.
    */
-  load(configPath) {
+  load(configPath, menuPath) {
     if (!configPath) {
       throw new ConfigurationFileNotProvided();
     }
 
     const config = Config.fromFile(configPath);
+    const menuConfig = menuPath ? MenuConfig.fromFile(menuPath) : [];
     const logRegistry = LogRegistry.build({ retention: config.logConfig.size });
     EmissionRegistry.build({ retention: config.emitConfig.size });
     ExtractionRegistry.build({ retention: config.extractionConfig.size });
@@ -37,6 +41,7 @@ class ApplicationConfigurator {
       config,
       bufferedLogger: logRegistry.bufferedLogger,
       entryFilePath: configPath,
+      menuConfig,
     });
   }
 }

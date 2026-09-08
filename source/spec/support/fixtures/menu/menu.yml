@@ -1,0 +1,4 @@
+entries:
+  - route: /custom
+    text: Custom
+  - route: /logs

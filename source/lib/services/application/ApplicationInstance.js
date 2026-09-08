@@ -45,12 +45,14 @@ class ApplicationInstance {
   /**
    * Loads the configuration from the specified file path.
    * @param {string} configPath - The path to the configuration file.
+   * @param {string} [menuPath] - The path to the menu configuration file.
    * @throws {ConfigurationFileNotProvided} If the configuration file path is not provided.
    * @throws {ConfigurationFileNotFound} If the configuration file is not found at the specified path.
+   * @throws {MenuConfigurationInvalid} If the menu configuration file cannot be parsed.
    * @returns {void}
    */
-  loadConfig(configPath) {
-    this.#configStore = this.#configurator.load(configPath);
+  loadConfig(configPath, menuPath) {
+    this.#configStore = this.#configurator.load(configPath, menuPath);
     this.#registriesBuilder.build({ config: this.config });
   }
 
@@ -71,7 +73,10 @@ class ApplicationInstance {
       reporter: this.#reporter,
       shouldAutostart: this.#shouldAutostart(),
     });
-    this.#serverController = ServerController.build({ webConfig: this.config.webConfig });
+    this.#serverController = ServerController.build({
+      webConfig: this.config.webConfig,
+      menuConfig: this.#configStore.menuConfig,
+    });
     this.#engineController.serverController = this.#serverController;
 
     if (this.#shouldAutostart()) {

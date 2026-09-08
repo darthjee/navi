@@ -27,11 +27,12 @@ class ServerController {
    * `MemorySampler` (which is only built alongside a `WebServer`).
    * @param {object} params - Build parameters.
    * @param {object} [params.webConfig] - The web configuration object.
+   * @param {Array<import('../../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
    * @returns {ServerController} The built ServerController instance, never `null`.
    */
-  static build({ webConfig }) {
+  static build({ webConfig, menuConfig = [] }) {
     const controller = new ServerController();
-    controller.#webServer = controller.buildWebServer({ webConfig });
+    controller.#webServer = controller.buildWebServer({ webConfig, menuConfig });
     controller.#sampler = controller.buildSampler({ webConfig });
     return controller;
   }
@@ -40,10 +41,11 @@ class ServerController {
    * Builds and returns a WebServer if web configuration is present, otherwise null.
    * @param {object} params - Build parameters.
    * @param {object} [params.webConfig] - The web configuration object.
+   * @param {Array<import('../../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
    * @returns {WebServer|null} The created WebServer instance or null.
    */
-  buildWebServer({ webConfig }) {
-    return WebServer.build({ webConfig });
+  buildWebServer({ webConfig, menuConfig = [] }) {
+    return WebServer.build({ webConfig, menuConfig });
   }
 
   /**
