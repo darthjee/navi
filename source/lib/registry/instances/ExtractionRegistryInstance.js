@@ -1,5 +1,5 @@
-import { ExtractionStore } from '../../utils/extractions/ExtractionStore.js';
 import { LogFilter } from '../../common/utils/logging/LogFilter.js';
+import { ExtractionStore } from '../../utils/extractions/ExtractionStore.js';
 
 /**
  * Holds a single ExtractionStore for the ExtractionRegistry singleton. Exposes a write

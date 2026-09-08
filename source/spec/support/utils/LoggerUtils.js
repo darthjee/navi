@@ -1,5 +1,5 @@
-import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 
 /**
  * Test utility for suppressing console and Logger output during specs.

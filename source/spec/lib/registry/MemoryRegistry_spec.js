@@ -1,5 +1,5 @@
-import { MemoryRegistry } from '../../../lib/registry/MemoryRegistry.js';
 import { MemoryRegistryInstance } from '../../../lib/registry/instances/MemoryRegistryInstance.js';
+import { MemoryRegistry } from '../../../lib/registry/MemoryRegistry.js';
 
 describe('MemoryRegistry', () => {
   afterEach(() => {
