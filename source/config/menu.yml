@@ -1,0 +1,5 @@
+entries:
+  - route: /logs
+    text: Logs
+  - route: /memory/status
+    text: Memory
