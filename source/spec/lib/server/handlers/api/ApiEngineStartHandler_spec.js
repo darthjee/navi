@@ -1,7 +1,7 @@
 import { JobRegistry } from 'deku-swarm';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
-import { Namespace } from '../../../../../lib/registry/Namespace.js';
-import { NamespaceMap } from '../../../../../lib/registry/NamespaceMap.js';
+import { Namespace } from '../../../../../lib/registry/namespace/Namespace.js';
+import { NamespaceMap } from '../../../../../lib/registry/namespace/NamespaceMap.js';
 import { ApiEngineStartHandler } from '../../../../../lib/server/handlers/api/ApiEngineStartHandler.js';
 import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
 import { Application } from '../../../../../lib/services/application/Application.js';

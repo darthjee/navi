@@ -2,8 +2,8 @@ import { FieldsMapper } from './css_selector_parser/FieldsMapper.js';
 import { FilterMatcher } from './css_selector_parser/FilterMatcher.js';
 import { ValueResolver } from './css_selector_parser/ValueResolver.js';
 import { HtmlRootParser } from '../common/utils/parser/HtmlRootParser.js';
-import { MissingParserField } from '../exceptions/config/MissingParserField.js';
-import { MissingParserMatch } from '../exceptions/config/MissingParserMatch.js';
+import { MissingParserField } from '../exceptions/config/parser/MissingParserField.js';
+import { MissingParserMatch } from '../exceptions/config/parser/MissingParserMatch.js';
 
 /**
  * CssSelectorParser extracts a list of mapped items from a raw HTML response body,

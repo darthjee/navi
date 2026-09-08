@@ -1,6 +1,6 @@
 import { RequestHandler } from '../../common/server/RequestHandler.js';
 import { Link } from '../../models/configs/Link.js';
-import { NamespaceMap } from '../../registry/NamespaceMap.js';
+import { NamespaceMap } from '../../registry/namespace/NamespaceMap.js';
 import { LinksSerializer } from '../../serializers/LinksSerializer.js';
 
 const DEFAULT_NAMESPACE = 'default';

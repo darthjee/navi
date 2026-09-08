@@ -1,7 +1,7 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
 
 describe('Router', () => {
   let router;

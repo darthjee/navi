@@ -1,6 +1,6 @@
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { ExtractionConfig } from '../../../../lib/models/configs/ExtractionConfig.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
 
 describe('Config', () => {
   afterEach(() => {

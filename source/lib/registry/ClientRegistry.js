@@ -1,4 +1,4 @@
-import { NamedRegistry } from './NamedRegistry.js';
+import { NamedRegistry } from './namespace/NamedRegistry.js';
 import { ClientNotFound } from '../exceptions/registry/ClientNotFound.js';
 
 /**

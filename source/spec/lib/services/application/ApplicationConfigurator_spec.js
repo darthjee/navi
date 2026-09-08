@@ -1,10 +1,10 @@
-import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/ConfigurationFileNotProvided.js';
+import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/file/ConfigurationFileNotProvided.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { MemoryRegistry } from '../../../../lib/registry/MemoryRegistry.js';
-import { NamespaceMap } from '../../../../lib/registry/NamespaceMap.js';
+import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js';
 import { ApplicationConfigurator } from '../../../../lib/services/application/ApplicationConfigurator.js';
 import { ConfigStore } from '../../../../lib/services/application/ConfigStore.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';

@@ -1,7 +1,7 @@
+import { Logger } from '../common/utils/logging/Logger.js';
 import { ConflictError } from '../exceptions/http/ConflictError.js';
 import { ForbiddenError } from '../exceptions/http/ForbiddenError.js';
 import { NotFoundError } from '../exceptions/http/NotFoundError.js';
-import { Logger } from '../utils/logging/Logger.js';
 
 /**
  * Registers a route on an Express router by binding the handler's handle method.

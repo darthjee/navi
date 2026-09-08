@@ -1,4 +1,4 @@
-import { InvalidParserMatch } from '../../exceptions/config/InvalidParserMatch.js';
+import { InvalidParserMatch } from '../../exceptions/config/parser/InvalidParserMatch.js';
 
 /**
  * MatchResolver navigates a dot-notation `match` path against a parsed JSON

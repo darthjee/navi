@@ -1,6 +1,6 @@
 import { ClientFactory } from './ClientFactory.js';
-import { Namespace } from '../../../lib/registry/Namespace.js';
-import { NamespaceMap } from '../../../lib/registry/NamespaceMap.js';
+import { Namespace } from '../../../lib/registry/namespace/Namespace.js';
+import { NamespaceMap } from '../../../lib/registry/namespace/NamespaceMap.js';
 
 /**
  * Factory for creating NamespaceMap instances in tests.

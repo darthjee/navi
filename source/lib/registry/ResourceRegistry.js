@@ -1,4 +1,4 @@
-import { NamedRegistry } from './NamedRegistry.js';
+import { NamedRegistry } from './namespace/NamedRegistry.js';
 import { ResourceNotFound } from '../exceptions/registry/ResourceNotFound.js';
 
 /**

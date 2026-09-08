@@ -1,5 +1,5 @@
-import { Namespace } from '../../registry/Namespace.js';
-import { NamespaceMap } from '../../registry/NamespaceMap.js';
+import { Namespace } from '../../registry/namespace/Namespace.js';
+import { NamespaceMap } from '../../registry/namespace/NamespaceMap.js';
 import { ConfigParser } from '../config/ConfigParser.js';
 
 /**

@@ -1,4 +1,4 @@
-import { EmissionRegistryInstance } from './EmissionRegistryInstance.js';
+import { EmissionRegistryInstance } from './instances/EmissionRegistryInstance.js';
 
 /**
  * EmissionRegistry is a static singleton facade for the application's EmitJob emission

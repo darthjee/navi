@@ -1,5 +1,5 @@
-import { InvalidParserMatch } from '../../../lib/exceptions/config/InvalidParserMatch.js';
-import { MissingParserFields } from '../../../lib/exceptions/config/MissingParserFields.js';
+import { InvalidParserMatch } from '../../../lib/exceptions/config/parser/InvalidParserMatch.js';
+import { MissingParserFields } from '../../../lib/exceptions/config/parser/MissingParserFields.js';
 import { JsonPathParser } from '../../../lib/parsers/JsonPathParser.js';
 
 describe('JsonPathParser', () => {

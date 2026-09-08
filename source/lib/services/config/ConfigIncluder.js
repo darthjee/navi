@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import YAML from 'yaml';
 import { EnvStringResolver } from '../../common/utils/env_resolver/EnvStringResolver.js';
-import { ConfigurationFileNotFound } from '../../exceptions/config/ConfigurationFileNotFound.js';
-import { ConfigurationIncludeNotFound } from '../../exceptions/config/ConfigurationIncludeNotFound.js';
-import { Logger } from '../../utils/logging/Logger.js';
+import { Logger } from '../../common/utils/logging/Logger.js';
+import { ConfigurationFileNotFound } from '../../exceptions/config/file/ConfigurationFileNotFound.js';
+import { ConfigurationIncludeNotFound } from '../../exceptions/config/file/ConfigurationIncludeNotFound.js';
 
 /**
  * ConfigIncluder recursively resolves the `include:` chain starting from an entry

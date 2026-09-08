@@ -1,4 +1,4 @@
-import { ExtractionRegistryInstance } from './ExtractionRegistryInstance.js';
+import { ExtractionRegistryInstance } from './instances/ExtractionRegistryInstance.js';
 
 /**
  * ExtractionRegistry is a static singleton facade for the application's ExtractionJob

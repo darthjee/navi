@@ -1,4 +1,4 @@
-import { ResourceRequestEmit } from '../../../lib/models/request/ResourceRequestEmit.js';
+import { ResourceRequestEmit } from '../../../lib/models/request/resource_request/ResourceRequestEmit.js';
 
 /**
  * Factory for creating ResourceRequestEmit instances in tests.

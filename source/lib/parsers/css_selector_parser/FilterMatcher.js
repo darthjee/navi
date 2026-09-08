@@ -1,5 +1,5 @@
 import { ConditionMatcher } from './ConditionMatcher.js';
-import { Logger } from '../../utils/logging/Logger.js';
+import { Logger } from '../../common/utils/logging/Logger.js';
 
 /**
  * FilterMatcher evaluates a list of AND'ed CSS parser conditions against a DOM

@@ -1,4 +1,4 @@
-import { ResourceRequest } from '../../../lib/models/request/ResourceRequest.js';
+import { ResourceRequest } from '../../../lib/models/request/resource_request/ResourceRequest.js';
 
 /**
  * Factory for creating ResourceRequest instances in tests.

@@ -8,6 +8,9 @@ source/spec/
     enqueuers/
     exceptions/
       config/
+        emit/
+        memory/
+        file/
       http/
       registry/
       request/
@@ -15,8 +18,13 @@ source/spec/
     models/
       configs/
       request/
+        resource_request/
+        renderers/
+        tokens/
       response/
     registry/
+      instances/
+      namespace/
     serializers/
     server/
       handlers/
@@ -25,10 +33,11 @@ source/spec/
     common/
       utils/
         env_resolver/
+        logging/
+          buffer/
       server/
     services/
     utils/
-      logging/
       generators/
       ResourceRequestCollector_spec.js
   support/              ← shared test helpers (factories, dummies, fixtures)

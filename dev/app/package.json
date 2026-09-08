@@ -35,7 +35,8 @@
   "jasmine": {
     "spec_dir": "spec",
     "spec_files": [
-      "**/*[sS]pec.js"
+      "**/*[sS]pec.js",
+      "!lib/common/utils/logging/**"
     ]
   },
   "c8": {

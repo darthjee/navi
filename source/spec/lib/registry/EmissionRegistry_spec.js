@@ -1,5 +1,5 @@
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
-import { EmissionRegistryInstance } from '../../../lib/registry/EmissionRegistryInstance.js';
+import { EmissionRegistryInstance } from '../../../lib/registry/instances/EmissionRegistryInstance.js';
 
 describe('EmissionRegistry', () => {
   const emission = (overrides = {}) => ({

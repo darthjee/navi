@@ -42,8 +42,8 @@ AppError (base — exceptions/)
 ├── NullResponse (request/)
 ├── MissingActionResource (registry/)
 ├── MissingMappingVariable (registry/)
-├── ConfigurationFileNotFound (config/)
-├── ConfigurationFileNotProvided (config/)
+├── ConfigurationFileNotFound (config/file/)
+├── ConfigurationFileNotProvided (config/file/)
 ├── ConflictError (http/)
 ├── ForbiddenError (http/)
 └── NotFoundError (http/)
@@ -53,7 +53,12 @@ Subfolders:
 
 - `exceptions/` — `AppError` (shared base class, stays at root)
 - `exceptions/http/` — HTTP/server errors: `ConflictError`, `ForbiddenError`, `NotFoundError`
-- `exceptions/config/` — Config errors: `ConfigurationFileNotFound`, `ConfigurationFileNotProvided`, `MissingClientsConfig`, `MissingResourceConfig`, `MissingTopLevelConfgKey`
+- `exceptions/config/` — Config errors, split into sub-domains:
+  - flat — `MissingClientsConfig`, `MissingResourceConfig`, `MissingTopLevelConfgKey`
+  - `exceptions/config/emit/` — `InvalidEmitBodyTemplate`, `InvalidEmitCooldown`, `InvalidEmitHeaders`, `InvalidEmitMethod`, `InvalidEmitRetries`, `MissingEmitUrl`
+  - `exceptions/config/parser/` — `InvalidParserMatch`, `InvalidParserType`, `MissingParserField`, `MissingParserFields`, `MissingParserMatch`
+  - `exceptions/config/memory/` — `InvalidMemoryDataStore`, `InvalidMemoryThresholds`
+  - `exceptions/config/file/` — `ConfigurationFileNotFound`, `ConfigurationFileNotProvided`, `ConfigurationIncludeNotFound`
 - `exceptions/request/` — Network/response errors: `InvalidHtmlResponseBody`, `InvalidResponseBody`, `NullResponse`, `RequestFailed`
 - `exceptions/registry/` — Registry/lookup errors: `ClientNotFound`, `ItemNotFound`, `MissingActionResource`, `MissingMappingVariable`, `ResourceNotFound`
 
@@ -71,8 +76,12 @@ Data containers mapping YAML config to typed instances. Most expose `fromObject(
 
 Subfolders:
 
-- `models/configs/` — configuration models: `Config`, `FailureConfig`, `LogConfig`, `PaginationConfig`, `WebConfig`, `WorkersConfig`
-- `models/request/` — request models: `AssetRequest`, `Resource`, `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestPaginatedAction`
+- `models/configs/` — configuration models: `Config`, `EmitConfig`, `ExtractionConfig`, `FailureConfig`, `Link`, `LogConfig`, `MemoryConfig`, `PageRange`, `PaginationConfig`, `WebConfig`, `WorkersConfig`. Kept flat: cohesive peer value objects around the `Config` aggregate; 11 files, no natural sub-domain large enough to warrant a folder.
+- `models/request/` — request models:
+  - flat — `AssetRequest`, `ClientReference`, `Resource`
+  - `models/request/resource_request/` — `ResourceRequest`, `ResourceRequestAction`, `ResourceRequestEmit`, `ResourceRequestPaginatedAction`, `ResourceRequestParser`
+  - `models/request/renderers/` — `BodyTemplateRenderer`, `TemplateStringRenderer`
+  - `models/request/tokens/` — `TokenResolver`, `UrlTokenResolver`
 - `models/response/` — response-parsing models: `ParametersMapper`, `PathResolver`, `PathSegmentTraverser`, `ResponseParser`, `ResponseWrapper`
 
 `Job`/`Worker`, the registries (`JobRegistry`/`WorkersRegistry`), their factories, `Engine`, `WorkersAllocator`, the collection primitives, and the generic `Factory`/`IdGenerator` utilities all live in the separate `worker/` package (`deku-swarm`), not under `source/lib/`. See [Worker Subsystem](../worker.md) for their class-by-class reference; `source/` only consumes them via `import { ... } from 'deku-swarm'`.
@@ -101,13 +110,16 @@ Concrete `Job` subclasses:
 
 `NamedRegistry` base class for named-lookup collections; `ResourceRegistry` and `ClientRegistry` extend it (throwing `ResourceNotFound` / `ClientNotFound` on miss). `LogRegistry` is a standalone singleton façade that fans out log calls to a `ConsoleLogger` and a `BufferedLogger`, and exposes filtered log query methods.
 
+- flat — the public `*Registry` classes: `ClientRegistry`, `EmissionRegistry`, `ExtractionRegistry`, `LogRegistry`, `MemoryRegistry`, `ParserRegistry`, `ResourceRegistry`
+- `registry/instances/` — per-registry singleton holders: `EmissionRegistryInstance`, `ExtractionRegistryInstance`, `LogRegistryInstance`, `MemoryRegistryInstance`
+- `registry/namespace/` — namespace primitives: `NamedRegistry` (base class), `Namespace`, `NamespaceMap`
+
 ### `utils/`
 
 Shared low-level utilities with no domain knowledge:
 
-- **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*`.
+- **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*` (including `LogContext` — Navi-specific logging, wired into `deku-swarm`'s `Worker` via an injected `loggerFactory`; the buffer trio `BufferedLogger`/`LogBuffer`/`LogBufferCollection` sits under `logging/buffer/`).
 - **`common/server/`** — shared server base classes consumed by both `source/` and `dev/app/`: `RequestHandler` (abstract base).
-- **`utils/logging/`** — compatibility re-exports to `common/utils/logging/*`, plus `LogContext` (Navi-specific logging, wired into `deku-swarm`'s `Worker` via an injected `loggerFactory`).
 - **`utils/generators/`** — `IncrementalIdGenerator` (`IdGenerator`/`UUidGenerator` moved to `worker/lib/generators/`, part of `deku-swarm`).
 - **`utils/`** (flat) — `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing), `ResourceEnqueuer` (calls `deku-swarm`'s `JobRegistry.enqueue()` from outside the package).
 

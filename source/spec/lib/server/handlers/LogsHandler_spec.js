@@ -1,7 +1,7 @@
 import { RequestHandler } from '../../../../lib/common/server/RequestHandler.js';
+import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { LogsHandler } from '../../../../lib/server/handlers/LogsHandler.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
 
 describe("describe('LogsHandler'", () => {
   let res;

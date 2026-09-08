@@ -1,5 +1,5 @@
-import { MissingParserField } from '../../../lib/exceptions/config/MissingParserField.js';
-import { MissingParserMatch } from '../../../lib/exceptions/config/MissingParserMatch.js';
+import { MissingParserField } from '../../../lib/exceptions/config/parser/MissingParserField.js';
+import { MissingParserMatch } from '../../../lib/exceptions/config/parser/MissingParserMatch.js';
 import { RegexParser } from '../../../lib/parsers/RegexParser.js';
 
 describe('RegexParser', () => {

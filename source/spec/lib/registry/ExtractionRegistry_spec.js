@@ -1,5 +1,5 @@
 import { ExtractionRegistry } from '../../../lib/registry/ExtractionRegistry.js';
-import { ExtractionRegistryInstance } from '../../../lib/registry/ExtractionRegistryInstance.js';
+import { ExtractionRegistryInstance } from '../../../lib/registry/instances/ExtractionRegistryInstance.js';
 
 describe('ExtractionRegistry', () => {
   const extraction = (overrides = {}) => ({

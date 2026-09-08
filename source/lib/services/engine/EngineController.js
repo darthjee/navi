@@ -2,7 +2,7 @@ import { Engine, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
-import { NamespaceMap } from '../../registry/NamespaceMap.js';
+import { NamespaceMap } from '../../registry/namespace/NamespaceMap.js';
 import { ConfigIncluder } from '../config/ConfigIncluder.js';
 
 const DEFAULT_POLL_SLEEP_MS = 10;
