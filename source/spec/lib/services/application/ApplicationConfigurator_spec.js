@@ -88,8 +88,9 @@ describe('ApplicationConfigurator', () => {
 
         expect(result.menuConfig.every((entry) => entry instanceof MenuEntry)).toBe(true);
         expect(result.menuConfig.map((entry) => entry.toJSON())).toEqual([
+          { route: '/memory/status', text: 'Memory' },
           { route: '/custom', text: 'Custom' },
-          { route: '/logs', text: '/logs' },
+          { route: '/logs', text: 'Logs' },
         ]);
       });
 

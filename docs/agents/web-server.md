@@ -394,19 +394,55 @@ throws"), defaulting to `config/menu.yml` (exported as `DEFAULT_MENU_FILE` from
 and invokes `navi-hey -c $NAVI_CONFIG -m $NAVI_MENU`.
 
 ```yaml
+# Top-level sibling of `entries`. `defaults: false` drops both shipped
+# defaults; omit it (or set `true`) to keep them.
+defaults: true
 entries:
-  - route: /logs
-    text: Logs
-  - route: /memory/status
-    text: Memory
+  - route: /dashboard
+    text: Dashboard
+  - route: https://status.example.com
+    text: Status page
 ```
 
 `${VAR}` / `$VAR` interpolation works inside the file (same `EnvStringResolver`
 used for the main config). The file is parsed once at startup
 (`MenuConfig.fromFile`) and the resulting `MenuEntry[]` is threaded to `Router`
-as a plain value alongside `webConfig`. A missing or blank file falls back to the
-built-in Logs + Memory menu, so a deployment that deletes the shipped
+as a plain value alongside `webConfig`. A missing or blank file — or one that is
+fully commented out (the shipped `config/menu.yml` is exactly that) — falls back
+to the built-in Logs + Memory menu, so a deployment that deletes the shipped
 `config/menu.yml` still gets a working menu.
+
+`MenuConfig` resolves the whole render list at load time; `GET /menu.json` only
+ever sees the final, ordered result. The operator levers:
+
+- **Merge with defaults.** Operator `entries` are appended *after* the shipped
+  Logs + Memory defaults: defaults first (shipped order), then custom entries in
+  file order.
+- **`defaults: false`.** A top-level boolean sibling of `entries`. `false` drops
+  **both** shipped defaults, so only operator entries render — this is the only
+  way to reach an empty menu. A non-boolean value is ignored with a
+  `Logger.warn` and treated as `true`.
+- **`entries: []`.** With `defaults` absent or `true`, an explicit empty list
+  still renders Logs + Memory (an empty custom list, not a wipe). This reverses
+  the earlier behaviour where `entries: []` produced an empty menu.
+- **`hidden: true`.** On an entry whose `route` matches a shipped default
+  (`/logs`, `/memory/status`) it removes just that default; the `hidden` entry
+  itself never renders. On any other `route` it is dropped with a `Logger.warn`
+  (a no-op).
+- **Repositioning a default.** A non-hidden custom entry whose `route` matches a
+  shipped default pulls that default out of the default block and renders it at
+  the custom entry's file position — never duplicated. A supplied `text`
+  overrides the default label; an omitted `text` keeps the shipped label
+  (`Logs` / `Memory`), not the route.
+- **First-wins de-duplication by `route`.** Evaluated over the merged
+  render-order list: the first occurrence of a `route` wins and every later
+  entry with the same `route` is dropped with a `Logger.warn` whose indices
+  count positions in the merged list. Reusing a default's *text* on a different
+  `route` is allowed and silent — only `route` is an identity.
+
+Individual malformed entries are dropped with a `Logger.warn` (keyed by their raw
+`entries` index). Unparseable YAML, or an `entries` value that is present but not
+a list, still fails fast at startup with `MenuConfigurationInvalid`.
 
 ### `emit.size`
 

@@ -1,4 +1,5 @@
 import MenuDropdownHelper from './helpers/MenuDropdownHelper.jsx';
+import './MenuDropdown.css';
 
 function MenuDropdown({ containerRef, open, setOpen, entries }) {
   return (

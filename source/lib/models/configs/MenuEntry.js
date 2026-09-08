@@ -20,11 +20,17 @@ class MenuEntry {
 
   /**
    * Creates a MenuEntry instance from a YAML mapping entry.
+   *
+   * `MenuConfig` owns the reposition / label logic and may pass an already
+   * resolved `text` (e.g. a shipped default label) that wins over `entry.text`.
+   * `hidden` is intentionally not carried onto the instance — its meaning is
+   * applied in `MenuConfig`.
    * @param {object} entry - A mapping with `route`, optional `text`, optional `hidden`.
+   * @param {string} [resolvedText] - A resolved display text that wins over `entry.text`.
    * @returns {MenuEntry} The parsed MenuEntry instance.
    */
-  static fromObject(entry) {
-    return new MenuEntry({ route: entry.route, text: entry.text });
+  static fromObject(entry, resolvedText) {
+    return new MenuEntry({ route: entry.route, text: resolvedText ?? entry.text });
   }
 
   /**

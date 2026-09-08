@@ -12,7 +12,7 @@ const entries = [
 describe('MenuDropdown', () => {
   const state = useContainer();
 
-  const render = async (open) => {
+  const render = async (open, entryList = entries) => {
     const setOpen = jasmine.createSpy('setOpen');
     const containerRef = { current: null };
     await act(async () => {
@@ -20,7 +20,7 @@ describe('MenuDropdown', () => {
         createElement(
           MemoryRouter,
           null,
-          createElement(MenuDropdown, { containerRef, open, setOpen, entries })
+          createElement(MenuDropdown, { containerRef, open, setOpen, entries: entryList })
         )
       );
     });
@@ -61,6 +61,27 @@ describe('MenuDropdown', () => {
 
     it('sets aria-expanded to true', () => {
       expect(state.container.querySelector('button').getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('adds the scroll hook class to the panel', () => {
+      expect(state.container.querySelector('ul').classList.contains('menu-dropdown-panel')).toBe(true);
+    });
+  });
+
+  describe('when open with many entries', () => {
+    const manyEntries = Array.from({ length: 25 }, (_, index) => ({
+      text: `Entry ${index}`,
+      route: `/entry-${index}`,
+    }));
+
+    beforeEach(async () => { await render(true, manyEntries); });
+
+    it('renders every entry without a client-side cap', () => {
+      expect(state.container.querySelectorAll('a').length).toBe(manyEntries.length);
+    });
+
+    it('keeps the scroll hook class on the panel', () => {
+      expect(state.container.querySelector('ul').classList.contains('menu-dropdown-panel')).toBe(true);
     });
   });
 

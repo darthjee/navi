@@ -72,6 +72,32 @@ describe('MenuMenu', () => {
     });
   });
 
+  describe('when fetch returns many entries', () => {
+    const manyEntries = Array.from({ length: 25 }, (_, index) => ({
+      text: `Entry ${index}`,
+      route: `/entry-${index}`,
+    }));
+
+    mockFetchSuccess({ entries: manyEntries });
+
+    beforeEach(async () => {
+      await renderMenu(state.root);
+      await flushAsync();
+      await act(async () => {
+        state.container.querySelector('button').click();
+      });
+    });
+
+    it('passes every entry through unchanged', () => {
+      expect(state.container.querySelectorAll('a').length).toBe(manyEntries.length);
+    });
+
+    it('preserves the entry order', () => {
+      const texts = Array.from(state.container.querySelectorAll('a')).map((a) => a.textContent);
+      expect(texts).toEqual(manyEntries.map((entry) => entry.text));
+    });
+  });
+
   describe('when fetch fails', () => {
     mockFetchFailure(503);
 

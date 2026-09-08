@@ -134,6 +134,13 @@ in-app and closes the dropdown; an external `route` (`https?://…`) becomes an
 `<a target="_blank" rel="noreferrer">`, like `LinksDropdownItem`. When
 `GET /menu.json` returns no entries, `MenuMenu` renders nothing.
 
+The entry list is fully resolved server-side (merge with defaults,
+`defaults: false`, per-entry `hidden`, repositioning, and de-duplication); the
+frontend renders `entries` verbatim and in order, applying no cap, sort, or
+de-dup. The `MenuDropdown` panel scrolls via the `menu-dropdown-panel` class
+(`max-height` + `overflow-y: auto`) so a long operator menu does not overflow the
+viewport; `LinksDropdown` is unchanged.
+
 ## Job status → colour mapping
 
 | Status | Bootstrap variant |

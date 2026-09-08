@@ -30,6 +30,21 @@ describe('MenuEntry', () => {
       const entry = MenuEntry.fromObject({ route: '/logs' });
       expect(entry.text).toEqual('/logs');
     });
+
+    it('uses the resolved text override when provided', () => {
+      const entry = MenuEntry.fromObject({ route: '/logs' }, 'Logs');
+      expect(entry.text).toEqual('Logs');
+    });
+
+    it('prefers the resolved text override over the entry text', () => {
+      const entry = MenuEntry.fromObject({ route: '/logs', text: 'Raw' }, 'Resolved');
+      expect(entry.text).toEqual('Resolved');
+    });
+
+    it('falls back to the entry text when the override is undefined', () => {
+      const entry = MenuEntry.fromObject({ route: '/logs', text: 'Raw' }, undefined);
+      expect(entry.text).toEqual('Raw');
+    });
   });
 
   describe('#toJSON', () => {

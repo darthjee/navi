@@ -1,0 +1,4 @@
+.menu-dropdown-panel {
+  max-height: calc(100vh - 4rem); /* ≈ viewport minus the navbar */
+  overflow-y: auto;
+}
