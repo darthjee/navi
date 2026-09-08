@@ -431,4 +431,9 @@ A custom entry may point at a route that IMPL-3 / IMPL-4 (#803 / #804) register
   ordering, per-entry validation, duplicate/collision handling, scrolling panel).
 - **IMPL-3 / IMPL-4 (#803 / #804)** — the separate extra-internal-routes track a
   custom entry may target.
+- **SPEC-5 (#799)** — the downstream-developer extension workflow
+  ([`downstream-extension-workflow.md`](downstream-extension-workflow.md) and the
+  [`docs/guides/navi/extending-navi.md`](../../guides/navi/extending-navi.md)
+  guide) shows adding a `config/menu.yml` `{ route, text }` entry for an extension
+  route, and relies on SPEC-4's client-side auto-append of extension entries.
 - **CLEAN-1 (#807)** — deletes this document once the feature ships.

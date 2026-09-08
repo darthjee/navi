@@ -28,5 +28,6 @@ Four integration modes are covered:
 - [Extraction Configuration](./navi/extraction-configuration.md) — Extracting structured items from a response with a required `parser:` block (`regex` / `json_path` / `css`), consumed by `emit`.
 - [Emit Configuration](./navi/emit-configuration.md) — Sending extracted items onward to an external endpoint with `emit`, including reshaping the body with `body_template`.
 - [Splitting Configuration Across Files](./navi/splitting-configuration.md) — Using `include` and `namespace` to organize config across multiple files.
+- [Extending Navi with Your Own Routes and Pages](./navi/extending-navi.md) — Adding custom backend routes and frontend pages to the stock image via a mounted, opt-in extensions volume.
 - [Samples](./navi/samples.md) — end-to-end, copy-paste recipes for cache warm-up and crawling.
 - [Reference](./navi/reference.md) — CLI flags, environment variable substitution, and headless vs. web UI mode.

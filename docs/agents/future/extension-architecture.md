@@ -31,8 +31,12 @@ Implementation issues:
 - **IMPL-4 (#804)** — implements the Frontend section. It spans `frontend/`
   (bootstrap fetch, router wiring, error boundary, `index.html` import map) and
   `source/` (two new handlers wired into `Router.build()`).
-- **SPEC-5 (#799)** and the Dockerfiles — reference the volume target and env var
-  names fixed here.
+- **SPEC-5 (#799)** — the downstream-developer workflow,
+  [`downstream-extension-workflow.md`](downstream-extension-workflow.md), and the
+  permanent user guide
+  [`docs/guides/navi/extending-navi.md`](../../guides/navi/extending-navi.md).
+  Reuses the volume target and env var names fixed here; the security warning, the
+  reload limitation, and the external-React build snippet move to that guide.
 - **CLEAN-1 (#807)** — deletes this document once the feature ships.
 
 ---
@@ -338,8 +342,9 @@ isn't there" is an operator deployment error, not a soft-degrade.
 - **Primary control is the opt-in flag.** A stock image with
   `NAVI_EXTENSIONS_ENABLED` unset never touches the folder even if a volume is
   mounted.
-- **User-doc requirement.** The user guide (SPEC-5 / #799 and the how-to)
-  **must** carry a plain-language warning, e.g.:
+- **User-doc requirement.** The user guide
+  ([`docs/guides/navi/extending-navi.md`](../../guides/navi/extending-navi.md),
+  SPEC-5 / #799) **must** carry a plain-language warning, e.g.:
 
   > Enabling extensions runs arbitrary JavaScript that you mount into the
   > container, in the same process as Navi, with no isolation. Only mount code
@@ -718,8 +723,11 @@ tree.
   via the import map — to the host copy at runtime.
 - `React.lazy` remains available to extensions for code-splitting their own
   component; it resolves against the same single React.
-- The SPEC-5 (#799) user guide must document the "build React as external" step
-  and provide a copy-pasteable Vite config snippet.
+- The SPEC-5 (#799) user guide
+  ([`docs/guides/navi/extending-navi.md`](../../guides/navi/extending-navi.md))
+  documents the "build React as external" step and carries the copy-pasteable
+  Vite config snippet; the downstream-developer walkthrough is
+  [`downstream-extension-workflow.md`](downstream-extension-workflow.md).
 
 ### Failure mode
 
@@ -783,10 +791,12 @@ frontend**:
    (page load). Changing a bundle takes effect on the next full page load; there
    is no hot-reload. `PATCH /engine/reload` does not affect extensions.
 
-This is the concrete input to SPEC-5 (#799), which turns it into user-facing docs
-and reuses the route names (`/extensions/frontend.json`,
-`/extensions/frontend/*`) and the env / volume names fixed in the Shared
-contract.
+This is the concrete input to SPEC-5 (#799) —
+[`downstream-extension-workflow.md`](downstream-extension-workflow.md) and the
+[`docs/guides/navi/extending-navi.md`](../../guides/navi/extending-navi.md)
+guide — which turn it into user-facing docs and reuse the route names
+(`/extensions/frontend.json`, `/extensions/frontend/*`) and the env / volume names
+fixed in the Shared contract.
 
 ### Deferred / out of scope
 
@@ -811,10 +821,17 @@ Same posture as the Backend's deferred list. Each gets its own
   sections.
 - **SPEC-4 (#798)** — the frontend half; added the [`## Frontend`](#frontend)
   section above, built on the Shared contract.
-- **SPEC-5 (#799)** — user-facing docs; must carry the security warning and the
-  reload limitation, reuse the env / volume names fixed above, and reuse the
-  `/extensions/frontend.json` + `/extensions/frontend/*` route names and the
-  "build React as external" step from the Frontend section.
+- **SPEC-5 (#799)** — the downstream-developer view, split across the transient
+  [`downstream-extension-workflow.md`](downstream-extension-workflow.md) (project
+  layout, build tooling, image/compose wiring, worked example, upgrade checklist)
+  and the permanent guide
+  [`docs/guides/navi/extending-navi.md`](../../guides/navi/extending-navi.md) (the
+  security warning, the reload limitation, and the copy-pasteable external-React
+  build snippet). Both reuse the env / volume names fixed above, the
+  `/extensions/frontend.json` + `/extensions/frontend/*` route names, and the
+  descriptor shapes from the Backend and Frontend sections. SPEC-5 also settles
+  the canonical backend handler base-class import specifier
+  (`navi-hey/extension`).
 - **IMPL-3 (#803)** — implements the Backend section.
 - **IMPL-4 (#804)** — implements the Frontend section; spans `frontend/` and
   `source/`.
