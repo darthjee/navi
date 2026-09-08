@@ -22,6 +22,13 @@ const DEFAULT_LABELS = {
  *   `entries: []` merges an empty custom list (defaults still render).
  * - A top-level `defaults: false` empties the shipped default block; a
  *   non-boolean `defaults` is ignored with a `Logger.warn` and treated as `true`.
+ * - `hidden: true` on a known default route suppresses that default; on any
+ *   other route it is dropped with a `Logger.warn`.
+ * - A non-hidden custom entry re-listing a known default route repositions that
+ *   default to the custom file position (its `text`, or the shipped label when
+ *   omitted).
+ * - Duplicate routes in the merged render list are dropped first-wins with a
+ *   `Logger.warn`.
  * - A YAML parse failure, or an `entries` value that is present but not a list,
  *   throws {@link MenuConfigurationInvalid} (fail-fast at startup).
  * - Individual malformed entries are dropped with a `Logger.warn`.
@@ -90,7 +97,7 @@ class MenuConfig {
     const defaultBlock = this.#resolveDefaultBlock(parsed);
     const rawEntries = hasEntries ? parsed.entries : [];
 
-    return this.#merge(defaultBlock, rawEntries);
+    return this.#resolve(defaultBlock, rawEntries);
   }
 
   /**
@@ -127,31 +134,111 @@ class MenuConfig {
   }
 
   /**
-   * Merges the shipped default block with the operator-supplied entries.
+   * Runs the full SPEC-2 resolution pipeline: validate, partition `hidden`,
+   * reposition re-listed defaults, merge, then first-wins de-dup.
    * @param {Array<MenuEntry>} defaultBlock - The shipped default block.
    * @param {Array<*>} rawEntries - The raw `entries` list.
-   * @returns {Array<MenuEntry>} The merged menu entries, in render order.
+   * @returns {Array<MenuEntry>} The resolved menu entries, in render order.
    */
-  static #merge(defaultBlock, rawEntries) {
-    return [...defaultBlock, ...this.#buildEntries(rawEntries)];
+  static #resolve(defaultBlock, rawEntries) {
+    const valid = this.#collectValid(rawEntries);
+    const { suppressed, visible } = this.#partitionHidden(valid);
+    const repositioned = new Set(
+      visible.map((raw) => raw.route).filter((route) => this.DEFAULT_ROUTES.includes(route)),
+    );
+    const keptDefaults = defaultBlock.filter(
+      (entry) => !suppressed.has(entry.route) && !repositioned.has(entry.route),
+    );
+    const customBlock = visible.map((raw) => this.#customEntry(raw));
+
+    return this.#dedupe([...keptDefaults, ...customBlock]);
   }
 
   /**
-   * Validates each raw entry, dropping and warning on invalid ones.
+   * Validates each raw entry, dropping and warning on invalid ones. The
+   * `entries`-array index is kept for the warning wording.
    * @param {Array<*>} rawEntries - The raw `entries` list.
-   * @returns {Array<MenuEntry>} The valid entries as models, in order.
+   * @returns {Array<{ entry: object, index: number }>} The valid raw entries.
    */
-  static #buildEntries(rawEntries) {
-    return rawEntries.reduce((entries, rawEntry, index) => {
-      const { valid, reason } = MenuEntry.validate(rawEntry);
+  static #collectValid(rawEntries) {
+    return rawEntries.reduce((valid, rawEntry, index) => {
+      const { valid: ok, reason } = MenuEntry.validate(rawEntry);
 
-      if (!valid) {
+      if (!ok) {
         Logger.warn(`[menu] skipping invalid entry at index ${index}: ${reason}`);
-        return entries;
+        return valid;
       }
 
-      entries.push(MenuEntry.fromObject(rawEntry));
-      return entries;
+      valid.push({ entry: rawEntry, index });
+      return valid;
+    }, []);
+  }
+
+  /**
+   * Partitions the valid raw entries into suppressed default routes and the
+   * visible entries, warning on `hidden` used on a non-default route.
+   * @param {Array<{ entry: object, index: number }>} valid - The valid raw entries.
+   * @returns {{ suppressed: Set<string>, visible: Array<object> }} The partition.
+   */
+  static #partitionHidden(valid) {
+    const suppressed = new Set();
+
+    const visible = valid.reduce((list, { entry, index }) => {
+      if (entry.hidden !== true) {
+        list.push(entry);
+        return list;
+      }
+
+      if (this.DEFAULT_ROUTES.includes(entry.route)) {
+        suppressed.add(entry.route);
+        return list;
+      }
+
+      Logger.warn(
+        `[menu] skipping entry at index ${index}: "hidden" is only valid on a default route`,
+      );
+      return list;
+    }, []);
+
+    return { suppressed, visible };
+  }
+
+  /**
+   * Builds a {@link MenuEntry} from a visible raw entry, restoring the shipped
+   * label when a re-listed default omits its `text`.
+   * @param {object} raw - The visible raw entry.
+   * @returns {MenuEntry} The built entry.
+   */
+  static #customEntry(raw) {
+    if (!this.DEFAULT_ROUTES.includes(raw.route)) {
+      return MenuEntry.fromObject(raw);
+    }
+
+    const text = 'text' in raw ? raw.text : this.defaultLabel(raw.route);
+    return new MenuEntry({ route: raw.route, text });
+  }
+
+  /**
+   * First-wins de-dup over the merged render-order list. Indices in the warning
+   * count positions in that merged list, not the raw file.
+   * @param {Array<MenuEntry>} merged - The merged render-order list.
+   * @returns {Array<MenuEntry>} The survivors, in order.
+   */
+  static #dedupe(merged) {
+    const firstIndex = new Map();
+
+    return merged.reduce((kept, entry, index) => {
+      if (firstIndex.has(entry.route)) {
+        Logger.warn(
+          `[menu] skipping duplicate entry at index ${index}: `
+          + `route "${entry.route}" already defined at index ${firstIndex.get(entry.route)}`,
+        );
+        return kept;
+      }
+
+      firstIndex.set(entry.route, index);
+      kept.push(entry);
+      return kept;
     }, []);
   }
 }
