@@ -10,7 +10,7 @@ import { CssSelectorParser } from '../../parsers/CssSelectorParser.js';
 import { JsonPathParser } from '../../parsers/JsonPathParser.js';
 import { RegexParser } from '../../parsers/RegexParser.js';
 import { ParserRegistry } from '../../registry/ParserRegistry.js';
-import { LogContext } from '../../utils/logging/LogContext.js';
+import { LogContext } from '../../common/utils/logging/LogContext.js';
 
 /**
  * RegistriesBuilder bootstraps the job factory, job registry, and workers

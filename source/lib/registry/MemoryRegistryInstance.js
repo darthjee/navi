@@ -1,4 +1,4 @@
-import { LogFilter } from '../utils/logging/LogFilter.js';
+import { LogFilter } from '../common/utils/logging/LogFilter.js';
 import { MemoryDataStore } from '../utils/memory/MemoryDataStore.js';
 
 /**

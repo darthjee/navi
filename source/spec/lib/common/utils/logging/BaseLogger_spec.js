@@ -1,4 +1,4 @@
-import { BaseLogger } from '../../../../lib/utils/logging/BaseLogger.js';
+import { BaseLogger } from '../../../../../lib/common/utils/logging/BaseLogger.js';
 
 const levelMatrix = [
   ['debug', { debug: true, info: true, warn: true, error: true }],

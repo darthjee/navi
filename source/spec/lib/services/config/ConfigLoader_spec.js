@@ -2,7 +2,7 @@ import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/Con
 import { NamespaceNotFound } from '../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { WorkersConfig } from '../../../../lib/models/configs/WorkersConfig.js';
 import { ConfigLoader } from '../../../../lib/services/config/ConfigLoader.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
+import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
 
 describe('ConfigLoader', () => {

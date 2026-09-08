@@ -1,5 +1,5 @@
 import { FilterMatcher } from '../../../../lib/parsers/css_selector_parser/FilterMatcher.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
+import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 
 describe('FilterMatcher', () => {
   describe('#matches', () => {

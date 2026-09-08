@@ -1,6 +1,6 @@
-import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
-import { LogContext } from '../../../../lib/utils/logging/LogContext.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
+import { LogRegistry } from '../../../../../lib/registry/LogRegistry.js';
+import { LogContext } from '../../../../../lib/common/utils/logging/LogContext.js';
+import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
 
 describe('LogContext', () => {
   let ctx;

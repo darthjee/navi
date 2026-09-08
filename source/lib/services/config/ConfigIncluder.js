@@ -4,7 +4,7 @@ import YAML from 'yaml';
 import { EnvStringResolver } from '../../common/utils/env_resolver/EnvStringResolver.js';
 import { ConfigurationFileNotFound } from '../../exceptions/config/ConfigurationFileNotFound.js';
 import { ConfigurationIncludeNotFound } from '../../exceptions/config/ConfigurationIncludeNotFound.js';
-import { Logger } from '../../utils/logging/Logger.js';
+import { Logger } from '../../common/utils/logging/Logger.js';
 
 /**
  * ConfigIncluder recursively resolves the `include:` chain starting from an entry

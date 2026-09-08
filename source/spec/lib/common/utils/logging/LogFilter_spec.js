@@ -1,4 +1,4 @@
-import { LogFilter } from '../../../../lib/utils/logging/LogFilter.js';
+import { LogFilter } from '../../../../../lib/common/utils/logging/LogFilter.js';
 
 describe('LogFilter', () => {
   const makeLogs = (...ids) => ids.map(id => ({ id, message: `msg-${id}` }));

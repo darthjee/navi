@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { ConsoleLogger } from '../../../../lib/utils/logging/ConsoleLogger.js';
+import { ConsoleLogger } from '../../../../../lib/common/utils/logging/ConsoleLogger.js';
 
 describe('ConsoleLogger', () => {
   let logger;

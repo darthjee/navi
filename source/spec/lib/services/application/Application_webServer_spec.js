@@ -3,7 +3,7 @@ import { MemoryRegistry } from '../../../../lib/registry/MemoryRegistry.js';
 import { WebServer } from '../../../../lib/server/WebServer.js';
 import { Application } from '../../../../lib/services/application/Application.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
+import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 import { DummyJobFactory } from '../../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../../support/dummies/factories/DummyWorkerFactory.js';
 import { DummyJob } from '../../../support/dummies/models/DummyJob.js';

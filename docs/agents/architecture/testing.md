@@ -25,10 +25,10 @@ source/spec/
     common/
       utils/
         env_resolver/
+        logging/
       server/
     services/
     utils/
-      logging/
       generators/
       ResourceRequestCollector_spec.js
   support/              ← shared test helpers (factories, dummies, fixtures)

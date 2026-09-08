@@ -4,7 +4,7 @@ import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { WebServer } from '../../../lib/server/WebServer.js';
-import { Logger } from '../../../lib/utils/logging/Logger.js';
+import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 
 describe('WebServer', () => {
   beforeEach(() => {

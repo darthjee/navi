@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { LoggerGroup } from '../../../../lib/utils/logging/LoggerGroup.js';
+import { LoggerGroup } from '../../../../../lib/common/utils/logging/LoggerGroup.js';
 
 describe('LoggerGroup', () => {
   let loggerA;

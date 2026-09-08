@@ -1,4 +1,4 @@
-import { Log } from '../../../../lib/utils/logging/Log.js';
+import { Log } from '../../../../../lib/common/utils/logging/Log.js';
 
 describe('Log', () => {
   let log;

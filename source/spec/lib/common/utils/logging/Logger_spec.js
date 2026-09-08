@@ -1,6 +1,6 @@
-import { Logger } from '../../../../lib/utils/logging/Logger.js';
-import { LoggerGroup } from '../../../../lib/utils/logging/LoggerGroup.js';
-import { LoggerUtils } from '../../../support/utils/LoggerUtils.js';
+import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
+import { LoggerGroup } from '../../../../../lib/common/utils/logging/LoggerGroup.js';
+import { LoggerUtils } from '../../../../support/utils/LoggerUtils.js';
 
 describe('Logger', () => {
   beforeEach(() => {

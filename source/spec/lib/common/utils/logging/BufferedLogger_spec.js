@@ -1,4 +1,4 @@
-import { BufferedLogger } from '../../../../lib/utils/logging/BufferedLogger.js';
+import { BufferedLogger } from '../../../../../lib/common/utils/logging/BufferedLogger.js';
 
 describe('BufferedLogger', () => {
   let logger;

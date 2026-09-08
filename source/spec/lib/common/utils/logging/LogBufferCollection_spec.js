@@ -1,5 +1,5 @@
-import { LogBuffer } from '../../../../lib/utils/logging/LogBuffer.js';
-import { LogBufferCollection } from '../../../../lib/utils/logging/LogBufferCollection.js';
+import { LogBuffer } from '../../../../../lib/common/utils/logging/LogBuffer.js';
+import { LogBufferCollection } from '../../../../../lib/common/utils/logging/LogBufferCollection.js';
 
 describe('LogBufferCollection', () => {
   let collection;
