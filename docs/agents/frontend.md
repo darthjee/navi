@@ -30,7 +30,9 @@ frontend/
 │   │   ├── EngineClient.js       # GET /engine/status + PATCH /engine/*
 │   │   ├── MemoryStatusClient.js # GET /memory/status.json
 │   │   ├── EmissionsClient.js    # GET /emissions.json (?last_id= cursor)
-│   │   └── ExtractionsClient.js  # GET /extractions.json (?last_id= cursor)
+│   │   ├── ExtractionsClient.js  # GET /extractions.json (?last_id= cursor)
+│   │   ├── LinksClient.js        # GET /links.json (external links dropdown)
+│   │   └── MenuClient.js         # GET /menu.json (internal nav dropdown; Logs, Memory, operator entries)
 │   ├── constants/
 │   │   └── jobStatus.js          # Status → Bootstrap color variant mapping
 │   └── components/
@@ -58,8 +60,15 @@ frontend/
 │           ├── JobDetails.jsx
 │           ├── ReadyCountdown.jsx
 │           ├── Logs.jsx
-│           ├── controllers/
-│           └── helpers/
+│           ├── LinksMenu.jsx      # external links dropdown (GET /links.json)
+│           ├── LinksDropdown.jsx
+│           ├── LinksDropdownItem.jsx
+│           ├── MenuMenu.jsx       # internal nav dropdown (GET /menu.json)
+│           ├── MenuDropdown.jsx
+│           ├── MenuDropdownItem.jsx
+│           ├── controllers/       # incl. LinksMenuController.jsx, MenuMenuController.jsx
+│           └── helpers/           # incl. LinksMenuHelper.jsx, LinksDropdownHelper.jsx,
+│                                  #       MenuMenuHelper.jsx, MenuDropdownHelper.jsx
 ├── spec/
 ├── vite.config.js
 └── eslint.config.mjs
@@ -95,6 +104,8 @@ Components live in either `components/pages/` (full page views registered as rou
 
 ```
 Layout
+├── MenuMenu       (internal nav dropdown — data-driven from GET /menu.json)
+├── LinksMenu      (external links dropdown — GET /links.json)
 ├── StatsHeader    (auto-refresh every 5 s)
 │   └── StatsDisplay
 │       ├── StatItem         (workers: idle, busy)
@@ -111,6 +122,17 @@ Layout
     ├── Emissions        (route: /emissions — last_id cursor poll, ~1 s)
     └── Extractions      (route: /extractions — joins /extractions.json + /emissions.json, ~5 s)
 ```
+
+`Layout` renders two independent header dropdowns: `LinksMenu` (external links,
+`GET /links.json`) and `MenuMenu` (internal navigation, `GET /menu.json`). The
+internal menu — Logs, Memory, and any operator-configured entries — is now
+data-driven from `GET /menu.json` (backed by `config/menu.yml`) rather than
+hard-coded as `StatItem` cards in `StatsDisplay`. The Logs and Memory routes are
+unchanged and still reachable. `MenuDropdownItem` renders each entry by shape:
+an internal `route` (`/…`) becomes a `react-router-dom` `<Link>` that navigates
+in-app and closes the dropdown; an external `route` (`https?://…`) becomes an
+`<a target="_blank" rel="noreferrer">`, like `LinksDropdownItem`. When
+`GET /menu.json` returns no entries, `MenuMenu` renders nothing.
 
 ## Job status → colour mapping
 

@@ -74,10 +74,11 @@ class Application {
   /**
    * Loads the configuration from the specified file path.
    * @param {string} configPath - The path to the configuration file.
+   * @param {string} [menuPath] - The path to the menu configuration file.
    * @returns {void}
    */
-  static loadConfig(configPath) {
-    return Application.#getInstance().loadConfig(configPath);
+  static loadConfig(configPath, menuPath) {
+    return Application.#getInstance().loadConfig(configPath, menuPath);
   }
 
   /**

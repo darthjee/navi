@@ -67,6 +67,30 @@ describe('StatsDisplay', () => {
     });
   });
 
+  describe('the Logs and Memory entries', () => {
+    beforeEach(async () => {
+      await renderStatsDisplay(state.root, { stats });
+    });
+
+    it('does not render a Logs stat card', () => {
+      expect(state.container.textContent).not.toContain('Logs');
+    });
+
+    it('does not render a Memory stat card', () => {
+      expect(state.container.textContent).not.toContain('Memory');
+    });
+
+    it('does not link to the /logs page', () => {
+      const hrefs = Array.from(state.container.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+      expect(hrefs).not.toContain('/logs');
+    });
+
+    it('does not link to the /memory/status page', () => {
+      const hrefs = Array.from(state.container.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+      expect(hrefs).not.toContain('/memory/status');
+    });
+  });
+
   describe('with zero emission counts', () => {
     beforeEach(async () => {
       await renderStatsDisplay(state.root, {

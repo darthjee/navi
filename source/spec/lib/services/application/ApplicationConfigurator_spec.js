@@ -1,5 +1,7 @@
 import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/file/ConfigurationFileNotProvided.js';
+import { MenuConfigurationInvalid } from '../../../../lib/exceptions/config/MenuConfigurationInvalid.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
+import { MenuEntry } from '../../../../lib/models/configs/MenuEntry.js';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
@@ -54,6 +56,10 @@ describe('ApplicationConfigurator', () => {
         expect(result.entryFilePath).toBe(configPath);
       });
 
+      it('defaults menuConfig to an empty list when no menu path is given', () => {
+        expect(result.menuConfig).toEqual([]);
+      });
+
       it('builds the emission registry', () => {
         expect(() => EmissionRegistry.getRecords()).not.toThrow();
       });
@@ -71,6 +77,28 @@ describe('ApplicationConfigurator', () => {
       const result = configurator.load(FixturesUtils.getFixturePath('config/sample_config_with_log.yml'));
 
       expect(result.bufferedLogger.retention).toBe(50);
+    });
+
+    describe('when a menu file path is given', () => {
+      it('loads the menu entries into the ConfigStore', () => {
+        const result = configurator.load(
+          FixturesUtils.getFixturePath('config/sample_config.yml'),
+          FixturesUtils.getFixturePath('menu/menu.yml'),
+        );
+
+        expect(result.menuConfig.every((entry) => entry instanceof MenuEntry)).toBe(true);
+        expect(result.menuConfig.map((entry) => entry.toJSON())).toEqual([
+          { route: '/custom', text: 'Custom' },
+          { route: '/logs', text: '/logs' },
+        ]);
+      });
+
+      it('aborts with MenuConfigurationInvalid when the menu file is malformed', () => {
+        expect(() => configurator.load(
+          FixturesUtils.getFixturePath('config/sample_config.yml'),
+          FixturesUtils.getFixturePath('menu/menu_invalid.yml'),
+        )).toThrowError(MenuConfigurationInvalid);
+      });
     });
 
     describe('when the config file has a web: section', () => {

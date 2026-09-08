@@ -15,11 +15,12 @@ class WebServer {
   /**
    * @param {object} params - Options for initializing the WebServer.
    * @param {object} params.webConfig - The web configuration object.
+   * @param {Array<import('../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
    */
-  constructor({ webConfig }) {
+  constructor({ webConfig, menuConfig = [] }) {
     this.#port = webConfig.port;
     this.#app = express();
-    this.#app.use(new Router({ webConfig }).build());
+    this.#app.use(new Router({ webConfig, menuConfig }).build());
   }
 
   /**
@@ -54,11 +55,12 @@ class WebServer {
    * Factory method. Returns a WebServer when webConfig is present, null otherwise.
    * @param {object} params - Options for building the WebServer.
    * @param {object|null} params.webConfig - The web configuration object.
+   * @param {Array<import('../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
    * @returns {WebServer|null} A WebServer instance if webConfig is provided, otherwise null.
    */
-  static build({ webConfig }) {
+  static build({ webConfig, menuConfig = [] }) {
     if (!webConfig) return null;
-    return new WebServer({ webConfig });
+    return new WebServer({ webConfig, menuConfig });
   }
 }
 

@@ -21,6 +21,7 @@ source/lib/server/
     ├── JobsFilter.js
     ├── LinksHandler.js
     ├── LogsHandler.js
+    ├── MenuHandler.js
     ├── SettingsHandler.js
     ├── StatsHandler.js
     ├── api/
@@ -61,6 +62,7 @@ constructs the executor as `(req, res, ...parameters)` only when a matching requ
 | `GET` | `/emissions.json` | Crawler emission tracking: aggregate counters plus a paginated ring buffer of per-emission records. |
 | `GET` | `/extractions.json` | Crawler extraction tracking: `counts.extracted` plus a paginated ring buffer of per-extraction records. |
 | `GET` | `/links.json` | Configured `web.links` plus one link per client (`base_url` and `linkText`/client name). |
+| `GET` | `/menu.json` | Internal navigation menu entries from the menu config file (`{ route, text }` list); defaults to Logs + Memory. |
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
 | `GET` | `/engine/status` | Returns `{ status }` with the current engine status. |
@@ -104,6 +106,36 @@ Names refer to entries in the config's top-level `resources:` map. If the body i
 ```
 
 A resource is skipped (never partially enqueued) when its name isn't found in the registry (`not_found`), when any of its requests needs parameters that weren't supplied (`needs_params`), or when any of its requests is marked `disabled: true` / `enabled: false` (`disabled`). When the body is empty/omitted, `enqueued` and `skippedResources` are always empty — the default bulk enqueue works at the request level, not by resource name.
+
+### `GET /menu.json`
+
+Returns the internal navigation menu, loaded from the menu config file (see
+[Configuration](#configuration)):
+
+```json
+{
+  "entries": [
+    { "route": "/logs", "text": "Logs" },
+    { "route": "/memory/status", "text": "Memory" }
+  ]
+}
+```
+
+`entries` is always present and is emitted in file (render) order. Each entry has
+exactly `route` (a non-empty, whitespace-free string that either starts with `/`
+or matches `^https?://`) and `text` (the server always populates it, defaulting
+to `route` when the file omits it, mirroring how `Link` defaults `text` to
+`url`). `hidden` is accepted and type-checked in the file but is never
+serialized.
+
+An absent, empty, or whitespace-only menu file — or a document with no `entries`
+key — yields the two defaults above (`/logs` "Logs", `/memory/status` "Memory")
+from an in-code fallback constant. An explicit `entries: []` yields
+`{ "entries": [] }`. Malformed individual entries are dropped server-side with a
+`Logger.warn` and never reach the response. A file-level parse failure (invalid
+YAML, or an `entries` value that is present but not a list) is fail-fast: startup
+aborts with `MenuConfigurationInvalid`, matching the `ConfigIncluder` posture on
+a broken main config.
 
 ### `GET /memory/status.json`
 
@@ -280,6 +312,8 @@ does the same for `EmissionRecord` entries in the `emissions` array of `GET /emi
 (`id`, `extractionId`, `status`, `url`, `method`, `httpStatus`, `error`, `itemRef`, `timestamp`);
 **`ExtractionSerializer`** does the same for `ExtractionRecord` entries in the `extractions`
 array of `GET /extractions.json` (`id`, `parserType`, `originUrl`, `itemCount`, `timestamp`).
+**`MenuSerializer`** flattens `MenuEntry` instances (`route`, `text`) for the `entries` array
+of `GET /menu.json`.
 
 **`JobIndexSerializer`** (list view):
 
@@ -348,6 +382,31 @@ A `MemorySampler`, started by `ServerController` alongside the web server, fills
 `interval` is validated at config load: a non-finite or `<= 0` value throws `InvalidMemoryDataStore` and boot fails fast (a bad interval would otherwise busy-loop the sampler's timer). `size` and `page_size` are taken raw, unvalidated, matching the sibling `log.size` / `emit.size` / `extraction.size` keys.
 
 `data_store.*` is **boot-time only**: reloading configuration (`PATCH /engine/reload`) re-merges namespace config into the running instance but does not rebuild registries or restart `ServerController`, so a live reload never re-cadences the sampler or resizes the buffer — same as `log.size` / `emit.size`. Changing these values requires a full restart.
+
+### Menu configuration (`-m` / `--menu`)
+
+The internal navigation menu served by [`GET /menu.json`](#get-menujson) is
+driven by a dedicated file, separate from the main config and **not** part of the
+`Config` model. `bin/navi.js` accepts `-m <path>` / `--menu=<path>` (mirroring
+`-c` / `--config` in every respect, including "flag supplied without a value
+throws"), defaulting to `config/menu.yml` (exported as `DEFAULT_MENU_FILE` from
+`ArgumentsParser`). The production Docker image sets `ENV NAVI_MENU=./config/menu.yml`
+and invokes `navi-hey -c $NAVI_CONFIG -m $NAVI_MENU`.
+
+```yaml
+entries:
+  - route: /logs
+    text: Logs
+  - route: /memory/status
+    text: Memory
+```
+
+`${VAR}` / `$VAR` interpolation works inside the file (same `EnvStringResolver`
+used for the main config). The file is parsed once at startup
+(`MenuConfig.fromFile`) and the resulting `MenuEntry[]` is threaded to `Router`
+as a plain value alongside `webConfig`. A missing or blank file falls back to the
+built-in Logs + Memory menu, so a deployment that deletes the shipped
+`config/menu.yml` still gets a working menu.
 
 ### `emit.size`
 

@@ -2,6 +2,7 @@ import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/file/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/file/ConfigurationFileNotProvided.js';
+import { MenuConfigurationInvalid } from '../../../../lib/exceptions/config/MenuConfigurationInvalid.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { Application } from '../../../../lib/services/application/Application.js';
 import { DummyJobFactory } from '../../../support/dummies/factories/DummyJobFactory.js';
@@ -94,6 +95,22 @@ describe('Application', () => {
 
     it('throws ConfigurationFileNotProvided when config file is omitted', () => {
       expect(() => app.loadConfig()).toThrowError(ConfigurationFileNotProvided);
+    });
+
+    it('loads the menu file when a menu path is given', () => {
+      app.loadConfig(
+        FixturesUtils.getFixturePath('config/sample_config.yml'),
+        FixturesUtils.getFixturePath('menu/menu.yml'),
+      );
+
+      expect(app.config).toBeInstanceOf(Config);
+    });
+
+    it('aborts with MenuConfigurationInvalid when the menu file is malformed', () => {
+      expect(() => app.loadConfig(
+        FixturesUtils.getFixturePath('config/sample_config.yml'),
+        FixturesUtils.getFixturePath('menu/menu_invalid.yml'),
+      )).toThrowError(MenuConfigurationInvalid);
     });
   });
 

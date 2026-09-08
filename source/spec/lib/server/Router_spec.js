@@ -1,5 +1,6 @@
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import { MenuEntry } from '../../../lib/models/configs/MenuEntry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Router } from '../../../lib/server/Router.js';
 
@@ -41,6 +42,25 @@ describe('Router', () => {
 
       expect(layer).toBeDefined();
       expect(layer.route.methods.get).toBeTrue();
+    });
+
+    it('registers GET /menu.json', () => {
+      const expressRouter = router.build();
+      const layer = expressRouter.stack.find((entry) => entry.route?.path === '/menu.json');
+
+      expect(layer).toBeDefined();
+      expect(layer.route.methods.get).toBeTrue();
+    });
+
+    it('routes GET /menu.json to a handler built from the menu config', () => {
+      const menuConfig = [new MenuEntry({ route: '/logs', text: 'Logs' })];
+      const expressRouter = new Router({ menuConfig }).build();
+      const layer = expressRouter.stack.find((entry) => entry.route?.path === '/menu.json');
+      const res = { json: jasmine.createSpy('json') };
+
+      layer.route.stack[0].handle({}, res);
+
+      expect(res.json).toHaveBeenCalledWith({ entries: [{ route: '/logs', text: 'Logs' }] });
     });
 
     it('registers GET /emissions.json', () => {
