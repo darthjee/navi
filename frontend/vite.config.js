@@ -7,7 +7,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-dom/client', 'react-router-dom'],
+          'react-vendor': [
+            'react',
+            'react-dom',
+            'react-dom/client',
+            'react-router-dom',
+            'react/jsx-runtime',
+            'react/jsx-dev-runtime',
+          ],
         },
         chunkFileNames: (chunkInfo) =>
           chunkInfo.name === 'react-vendor'
