@@ -22,7 +22,7 @@ The frontend is a React SPA that provides a real-time monitoring dashboard for N
 ```
 frontend/
 ├── src/
-│   ├── main.jsx                  # React entrypoint; router setup
+│   ├── main.jsx                  # React entrypoint; async bootstrap (awaits loadExtensions) then router setup
 │   ├── clients/                  # API client modules (pure fetch)
 │   │   ├── StatsClient.js        # GET /stats.json (includes emissions block)
 │   │   ├── JobsClient.js         # GET /jobs/:status.json
@@ -32,7 +32,10 @@ frontend/
 │   │   ├── EmissionsClient.js    # GET /emissions.json (?last_id= cursor)
 │   │   ├── ExtractionsClient.js  # GET /extractions.json (?last_id= cursor)
 │   │   ├── LinksClient.js        # GET /links.json (external links dropdown)
-│   │   └── MenuClient.js         # GET /menu.json (internal nav dropdown; Logs, Memory, operator entries)
+│   │   └── MenuClient.js         # GET /menu.json → { entries, hidden } (internal nav dropdown; hidden filters extension menu entries)
+│   ├── extensions/               # Runtime loading of externally built extension bundles
+│   │   ├── loadExtensions.js     # fetch /extensions/frontend.json → import() each bundle → validate { path, text, component }
+│   │   └── ExtensionErrorBoundary.jsx  # inline-alert boundary around the extension route subtree
 │   ├── constants/
 │   │   └── jobStatus.js          # Status → Bootstrap color variant mapping
 │   └── components/
@@ -100,6 +103,14 @@ Components live in either `components/pages/` (full page views registered as rou
 | `/emissions` | `Emissions` | Live emission feed (counts strip + status filter). |
 | `/extractions` | `Extractions` | Per-crawl chain: resource → parser → items → emits sent → emit status. |
 
+Extension routes from mounted bundles are appended **after** the stock routes,
+nested inside the `Layout` `<Outlet>` and wrapped in `ExtensionErrorBoundary`, so
+a throwing extension page shows an inline alert rather than blanking the navbar or
+stock pages. Each extension route is reached at `#<path>` (e.g. `#/ext/reports`)
+like any stock route. When no extension is mounted — `GET /extensions/frontend.json`
+returns `{ bundles: [] }` — the rendered router tree is byte-for-byte identical to
+the stock-only tree.
+
 ## Component hierarchy
 
 ```
@@ -140,6 +151,43 @@ frontend renders `entries` verbatim and in order, applying no cap, sort, or
 de-dup. The `MenuDropdown` panel scrolls via the `menu-dropdown-panel` class
 (`max-height` + `overflow-y: auto`) so a long operator menu does not overflow the
 viewport; `LinksDropdown` is unchanged.
+
+## Extensions
+
+The SPA can load extra pages contributed by externally built bundles that Navi
+serves from a mounted folder. At boot, `main.jsx` awaits `loadExtensions()`
+before the single `createRoot(...).render(...)`:
+
+1. Fetch `GET /extensions/frontend.json` (with a ~2 s `AbortController` timeout).
+   Any network error, non-2xx, bad JSON, or timeout → warn and treat as
+   `{ bundles: [] }`. The endpoint never 404s.
+2. For each descriptor in `bundles` (order is significant — lexicographic by
+   filename), if `css` is set append a deduped `<link rel="stylesheet">`, then
+   `import(/* @vite-ignore */ src)` the bundle `.js` served from
+   `GET /extensions/frontend/*path`.
+3. The bundle's `default` export must be an array of `{ path, text, component }`
+   where `path` is a non-empty, whitespace-free, `/`-prefixed string, `text` is a
+   non-empty string, and `component` is a function. Invalid bundles or
+   descriptors are skipped with a `console.warn`; the rest still load
+   (skip-and-warn, never throw).
+4. Surviving descriptors become nested `<Route>`s (see Routing) and their
+   `{ route: path, text }` are appended to the `MenuMenu` entries after the
+   `/menu.json` `entries`, deduped by route, minus any route listed in the
+   `/menu.json` `hidden` array. A failure in either source leaves the other's
+   entries intact. `loadExtensions()` memoises its work so `main.jsx` and
+   `MenuMenuController` share one fetch/import pass.
+
+Extension bundles are built separately and must reuse the host's React instance.
+`vite.config.js` emits a fixed, unhashed `assets/react-vendor.js` chunk
+(`manualChunks` + `chunkFileNames`) containing `react`, `react-dom`,
+`react-dom/client`, and `react-router-dom`, and `index.html` carries an
+`importmap` pointing those four bare specifiers at that file so a bundle's
+runtime `import 'react'` resolves to the same module instance.
+
+See [`docs/agents/web-server.md`](web-server.md) for the `/extensions/frontend*`
+routes and the `/menu.json` `hidden` array, and
+[`docs/agents/future/extension-architecture.md`](future/extension-architecture.md)
+`## Frontend` for the full specification.
 
 ## Job status → colour mapping
 
