@@ -23,7 +23,12 @@ RUN /bin/bash yarn_builder.sh
 # FINAL IMAGE
 FROM base
 ENV HOME_DIR /home/node
+ENV NAVI_EXTENSIONS_DIR=/navi/extensions
 
 COPY --chown=node:node --from=builder /home/node/yarn/new/ /usr/local/share/.cache/yarn/v6/
+
+USER root
+RUN mkdir -p /navi/node_modules \
+ && ln -s /home/node/app /navi/node_modules/navi-hey
 
 USER node
