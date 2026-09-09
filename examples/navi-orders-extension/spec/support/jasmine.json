@@ -1,9 +1,0 @@
-{
-  "spec_dir": "tests",
-  "spec_files": [
-    "**/*[sS]pec.{js,jsx}"
-  ],
-  "helpers": [
-    "../spec/support/dom.js"
-  ]
-}

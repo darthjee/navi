@@ -1,4 +1,4 @@
-.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client build-extension-example-image smoke-extensions
+.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client build-extension-example-image smoke-extensions build-navi-hey-test build-image-navi-hey-test release-navi-hey-test test-extension-harness
 
 PROJECT ?= navi
 COMPOSE ?= docker compose
@@ -13,10 +13,12 @@ DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
 DOCKERFILE_PROD ?= dockerfiles/production_navi_hey/Dockerfile
 DOCKERFILE_PROD_CLIENT ?= dockerfiles/production_navi_client/Dockerfile
 DOCKERFILE_EXTENSION_EXAMPLE ?= dockerfiles/navi_hey_extension_example/Dockerfile
+DOCKERFILE_NAVI_HEY_TEST ?= dockerfiles/navi-hey-test/Dockerfile
 EXTENSION_EXAMPLE_DIR ?= examples/navi-orders-extension
 EXTENSION_EXAMPLE_IMAGE ?= $(PROJECT)-hey-extension-example
 PROD_IMAGE := darthjee/navi-hey
 CLIENT_IMAGE := darthjee/navi-hey-client
+NAVI_HEY_TEST_IMAGE := darthjee/navi-hey-test
 PLATFORM := linux/amd64
 DOCKER_HUB_SCRIPT ?= /home/scripts/sbin/docker_hub.sh
 
@@ -102,6 +104,27 @@ build-extension-example-image:
 	npm --prefix $(EXTENSION_EXAMPLE_DIR) ci
 	npm --prefix $(EXTENSION_EXAMPLE_DIR) run build
 	docker build -f $(DOCKERFILE_EXTENSION_EXAMPLE) . -t $(EXTENSION_EXAMPLE_IMAGE):latest
+
+build-navi-hey-test:
+	docker build -f $(DOCKERFILE_NAVI_HEY_TEST) . -t $(NAVI_HEY_TEST_IMAGE):latest
+
+build-image-navi-hey-test:
+	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make build-image-navi-hey-test)"; exit 1; fi
+	docker build --platform $(PLATFORM) -f $(DOCKERFILE_NAVI_HEY_TEST) . -t $(NAVI_HEY_TEST_IMAGE):$(TAG) -t $(NAVI_HEY_TEST_IMAGE):latest
+
+release-navi-hey-test:
+	@if [ -z "$(TAG)" ]; then echo "TAG not set (use TAG=<tag> make release-navi-hey-test)"; exit 1; fi
+	$(MAKE) build-image-navi-hey-test TAG=$(TAG)
+	@echo "$$DOCKER_HUB_PASSWORD" | docker login -u "$$DOCKER_HUB_USERNAME" --password-stdin
+	docker push $(NAVI_HEY_TEST_IMAGE):$(TAG)
+	docker push $(NAVI_HEY_TEST_IMAGE):latest
+
+test-extension-harness:
+	$(MAKE) build-navi-hey-test
+	docker run --rm \
+	  -v "$(PWD)/$(EXTENSION_EXAMPLE_DIR)/src:/work/src:ro" \
+	  -v "$(PWD)/$(EXTENSION_EXAMPLE_DIR)/tests:/work/tests:ro" \
+	  $(NAVI_HEY_TEST_IMAGE):latest all
 
 .env:
 	cp .env.sample .env

@@ -1,0 +1,25 @@
+{
+  "all": true,
+  "check-coverage": false,
+  "reporter": [
+    "text",
+    "html",
+    "lcov"
+  ],
+  "extension": [
+    ".js",
+    ".jsx"
+  ],
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx"
+  ],
+  "exclude": [
+    "tests/**",
+    "dist/**",
+    "coverage/**",
+    "node_modules/**",
+    "/navi/**",
+    "/opt/**"
+  ]
+}

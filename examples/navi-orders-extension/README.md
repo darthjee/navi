@@ -30,11 +30,18 @@ dist/
 ## Test
 
 ```bash
-npm ci
 npm test
 ```
 
-Runs the example's own Jasmine suite (`tests/backend/`, `tests/frontend/`).
+runs the Jasmine suite (`tests/backend/`, `tests/frontend/`) **inside the
+`darthjee/navi-hey-test` container** — the script is just
+`docker compose run --rm extension_tests`. No local test toolchain is needed
+(or installed): the image bakes both Navi toolchains and the
+`navi-hey/testing/*` test doubles, and this project's `docker-compose.yml`
+mounts only `src/` and `tests/` into it.
+
+Pin the `darthjee/navi-hey-test` image tag in `docker-compose.yml` to the same
+Navi version your extension image deploys `FROM` — what you test is what runs.
 
 ## Run against Navi
 
@@ -50,4 +57,5 @@ the menu entry.
 
 This project uses **npm** (`npm ci` / `npm run`), not Yarn, on purpose: it is a
 stand-in for a downstream consumer project, which is not bound by Navi's
-repo-wide Yarn rule.
+repo-wide Yarn rule. The local npm toolchain covers only `npm run build` (Vite);
+`npm test` shells out to Docker and needs no `npm ci`.

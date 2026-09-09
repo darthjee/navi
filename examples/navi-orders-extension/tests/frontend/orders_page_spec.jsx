@@ -1,6 +1,6 @@
 import { act } from 'react';
-import { useContainer } from '../../spec/support/dom.js';
-import { mockFetchSuccess } from '../../spec/support/fetch.js';
+import { useContainer } from 'navi-hey/testing/dom.js';
+import { mockFetchSuccess } from 'navi-hey/testing/fetch.js';
 import descriptors from '../../src/frontend/entry.js';
 
 describe('OrdersPage', () => {

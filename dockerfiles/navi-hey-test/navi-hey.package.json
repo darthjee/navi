@@ -1,0 +1,15 @@
+{
+  "name": "navi-hey",
+  "version": "0.0.0-navi-hey-test",
+  "private": true,
+  "type": "module",
+  "description": "Image-baked navi-hey test surface for darthjee/navi-hey-test: the real RequestHandler exposed as `navi-hey/extension` plus the SPEC-6 `navi-hey/testing/*` doubles. Provided only inside the test image; downstream projects depend on the published `navi-hey` package.",
+  "exports": {
+    "./extension": "./lib/common/server/RequestHandler.js",
+    "./testing/axios.js": "./spec/support/utils/AxiosUtils.js",
+    "./testing/logger.js": "./spec/support/utils/LoggerUtils.js",
+    "./testing/dom.js": "./frontend-support/dom.js",
+    "./testing/fetch.js": "./frontend-support/fetch.js",
+    "./package.json": "./package.json"
+  }
+}
