@@ -185,9 +185,7 @@ Extension bundles are built separately and must reuse the host's React instance.
 runtime `import 'react'` resolves to the same module instance.
 
 See [`docs/agents/web-server.md`](web-server.md) for the `/extensions/frontend*`
-routes and the `/menu.json` `hidden` array, and
-[`docs/agents/future/extension-architecture.md`](future/extension-architecture.md)
-`## Frontend` for the full specification.
+routes and the `/menu.json` `hidden` array.
 
 ## Job status → colour mapping
 
