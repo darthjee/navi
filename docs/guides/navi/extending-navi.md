@@ -4,7 +4,7 @@ Extensions let you add your own **backend routes** and **frontend pages** on top
 
 > **Security warning.** Loading an extension runs **arbitrary JavaScript, mounted into the container, in the same process as Navi with no isolation** — full Node privileges, no sandbox, no permission model. The opt-in flag and the operator-controlled volume are the entire trust model. Only mount code you wrote or audited, from a volume you control.
 
-This page is the operator-facing walkthrough. For the container-side loader mechanics (what Navi scans, how descriptors are validated, collision handling), see the extension architecture design doc: [`downstream-extension-workflow.md`](../../agents/future/downstream-extension-workflow.md). To run your extension's own test suite, see [Testing your extension](#testing-your-extension).
+This page is the operator-facing walkthrough. For the container-side loader mechanics (what Navi scans, how descriptors are validated, collision handling), see [`docs/agents/web-server.md`'s Route extensions section](../../agents/web-server.md#route-extensions) (backend) and [`docs/agents/frontend.md`'s Extensions section](../../agents/frontend.md#extensions) (frontend). To run your extension's own test suite, see [Testing your extension](#testing-your-extension).
 
 ### When to use extensions
 
@@ -439,8 +439,6 @@ Without compose: `docker run --rm -v "$PWD/src:/work/src:ro" -v "$PWD/tests:/wor
 **Isolation.** Navi's own `source/spec/` and `frontend/spec/` are **never** enumerated. The backend and frontend suites run as separate `node` processes, so neither suite's globals, helpers, or jsdom window can reach the other. `--coverage` reports only on the author's `src/**`.
 
 **CI hook.** A downstream project wires this as **one job**: build or pull `darthjee/navi-hey-test:<navi-tag>` pinned to the Navi tag its deployment image runs `FROM`, then `docker compose run --rm extension_tests`, on every PR. That job is also where [Upgrading the base image](#upgrading-the-base-image) item 4 is exercised on a Navi bump.
-
-The design rationale (discovery, isolation, the promoted double set) lives in [`downstream-extension-tests.md`](../../agents/future/downstream-extension-tests.md); this section is the durable operator/author reference.
 
 ### Baking the extension into a derived image
 
