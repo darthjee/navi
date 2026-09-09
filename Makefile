@@ -49,6 +49,7 @@ dev-app:
 smoke-extensions: .env
 	$(MAKE) build-dev
 	cd $(EXTENSION_EXAMPLE_DIR) && npm ci && npm run build
+	$(COMPOSE) run --rm --no-deps navi_extensions_app yarn install
 	$(COMPOSE) up -d navi_extensions_app
 	SMOKE_PORT=3040 bash scripts/smoke/extensions.sh; status=$$?; \
 	  $(COMPOSE) down; exit $$status
