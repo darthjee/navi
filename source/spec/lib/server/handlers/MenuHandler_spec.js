@@ -16,7 +16,7 @@ describe('MenuHandler', () => {
 
   describe('#handle', () => {
     describe('when entries are configured', () => {
-      it('responds with serialized entries', () => {
+      it('responds with serialized entries and an empty hidden list', () => {
         const entries = [
           new MenuEntry({ route: '/logs', text: 'Logs' }),
           new MenuEntry({ route: '/memory/status', text: 'Memory' }),
@@ -29,15 +29,33 @@ describe('MenuHandler', () => {
             { route: '/logs', text: 'Logs' },
             { route: '/memory/status', text: 'Memory' },
           ],
+          hidden: [],
         });
       });
     });
 
     describe('when the entry list is empty', () => {
-      it('responds with an empty list', () => {
+      it('responds with an empty list and an empty hidden list', () => {
         new MenuHandler({}, res, []).handle();
 
-        expect(res.json).toHaveBeenCalledWith({ entries: [] });
+        expect(res.json).toHaveBeenCalledWith({ entries: [], hidden: [] });
+      });
+    });
+
+    describe('when some entries are hidden', () => {
+      it('surfaces hidden routes and keeps them out of entries', () => {
+        const entries = [
+          new MenuEntry({ route: '/logs', text: 'Logs' }),
+          new MenuEntry({ route: '/extensions/reports', hidden: true }),
+          new MenuEntry({ route: '/extensions/audit', hidden: true }),
+        ];
+
+        new MenuHandler({}, res, entries).handle();
+
+        expect(res.json).toHaveBeenCalledWith({
+          entries: [{ route: '/logs', text: 'Logs' }],
+          hidden: ['/extensions/reports', '/extensions/audit'],
+        });
       });
     });
 
@@ -47,7 +65,10 @@ describe('MenuHandler', () => {
 
         new HandlerConfig(MenuHandler, [entries]).handle({}, res);
 
-        expect(res.json).toHaveBeenCalledWith({ entries: [{ route: '/logs', text: 'Logs' }] });
+        expect(res.json).toHaveBeenCalledWith({
+          entries: [{ route: '/logs', text: 'Logs' }],
+          hidden: [],
+        });
       });
     });
   });

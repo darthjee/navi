@@ -74,4 +74,26 @@ describe('ExtensionsEnv', () => {
       expect(ExtensionsEnv.backendDir).toBe('/navi/extensions/backend');
     });
   });
+
+  describe('.frontendDir', () => {
+    it('joins the default dir with frontend', () => {
+      delete process.env.NAVI_EXTENSIONS_DIR;
+
+      expect(ExtensionsEnv.frontendDir).toBe('/navi/extensions/frontend');
+    });
+
+    it('joins a custom dir with frontend', () => {
+      process.env.NAVI_EXTENSIONS_DIR = '/custom/ext';
+
+      expect(ExtensionsEnv.frontendDir).toBe(path.join('/custom/ext', 'frontend'));
+    });
+
+    it('is recomputed after process.env mutation', () => {
+      delete process.env.NAVI_EXTENSIONS_DIR;
+      expect(ExtensionsEnv.frontendDir).toBe('/navi/extensions/frontend');
+
+      process.env.NAVI_EXTENSIONS_DIR = '/custom/ext';
+      expect(ExtensionsEnv.frontendDir).toBe(path.join('/custom/ext', 'frontend'));
+    });
+  });
 });

@@ -1,10 +1,11 @@
 import MenuClient from '../../../clients/MenuClient.js';
+import { loadExtensions } from '../../../extensions/loadExtensions.js';
 import noop from '../../../utils/noop.js';
 
 class MenuMenuController {
   static buildEffect(setEntries) {
     return () => {
-      MenuClient.fetchEntries()
+      MenuMenuController.#loadEntries()
         .then(setEntries)
         .catch(noop);
     };
@@ -26,6 +27,21 @@ class MenuMenuController {
       document.addEventListener('mousedown', handler);
       return () => document.removeEventListener('mousedown', handler);
     };
+  }
+
+  static async #loadEntries() {
+    const [{ entries, hidden }, extensions] = await Promise.all([
+      MenuClient.fetchEntries().catch(() => ({ entries: [], hidden: [] })),
+      loadExtensions().catch(() => []),
+    ]);
+
+    const present = new Set(entries.map((e) => e.route));
+    const hiddenSet = new Set(hidden);
+    const extraEntries = extensions
+      .map((d) => ({ route: d.path, text: d.text }))
+      .filter((e) => !present.has(e.route) && !hiddenSet.has(e.route));
+
+    return [...entries, ...extraEntries];
   }
 }
 

@@ -21,11 +21,15 @@ class MenuHandler extends RequestHandler {
   }
 
   /**
-   * Responds with the configured menu entries.
+   * Responds with the configured menu entries plus the always-present `hidden`
+   * array of non-default routes flagged `hidden: true` in the menu file.
    * @returns {void}
    */
   handle() {
-    this.#response.json({ entries: MenuSerializer.serialize(this.#entries) });
+    const visible = this.#entries.filter((entry) => !entry.hidden);
+    const hidden = this.#entries.filter((entry) => entry.hidden).map((entry) => entry.route);
+
+    this.#response.json({ entries: MenuSerializer.serialize(visible), hidden });
   }
 }
 

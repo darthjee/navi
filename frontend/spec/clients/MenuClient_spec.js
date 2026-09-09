@@ -3,12 +3,18 @@ import { mockFetchFailure, mockFetchSuccess } from '../support/fetch.js';
 
 describe('MenuClient', () => {
   describe('.fetchEntries', () => {
-    describe('when the request succeeds with entries', () => {
-      mockFetchSuccess({ entries: [{ route: '/logs', text: 'Logs' }] });
+    describe('when the request succeeds with entries and hidden', () => {
+      mockFetchSuccess({
+        entries: [{ route: '/logs', text: 'Logs' }],
+        hidden: ['/ext/reports'],
+      });
 
-      it('returns the entries array', async () => {
+      it('returns the entries and hidden arrays', async () => {
         const result = await MenuClient.fetchEntries();
-        expect(result).toEqual([{ route: '/logs', text: 'Logs' }]);
+        expect(result).toEqual({
+          entries: [{ route: '/logs', text: 'Logs' }],
+          hidden: ['/ext/reports'],
+        });
       });
 
       it('fetches from /menu.json', async () => {
@@ -17,12 +23,12 @@ describe('MenuClient', () => {
       });
     });
 
-    describe('when the request succeeds without entries key', () => {
+    describe('when the request succeeds without entries or hidden keys', () => {
       mockFetchSuccess({});
 
-      it('returns an empty array', async () => {
+      it('returns empty arrays', async () => {
         const result = await MenuClient.fetchEntries();
-        expect(result).toEqual([]);
+        expect(result).toEqual({ entries: [], hidden: [] });
       });
     });
 

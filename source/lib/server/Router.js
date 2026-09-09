@@ -16,6 +16,8 @@ import { EngineStartHandler } from './handlers/engine/EngineStartHandler.js';
 import { EngineStatusHandler } from './handlers/engine/EngineStatusHandler.js';
 import { EngineStopHandler } from './handlers/engine/EngineStopHandler.js';
 import { ExtractionsHandler } from './handlers/extractions/ExtractionsHandler.js';
+import { FrontendAssetsHandler } from './handlers/FrontendAssetsHandler.js';
+import { FrontendManifestHandler } from './handlers/FrontendManifestHandler.js';
 import { IndexHandler } from './handlers/IndexHandler.js';
 import { JobHandler } from './handlers/jobs/JobHandler.js';
 import { JobLogsHandler } from './handlers/jobs/JobLogsHandler.js';
@@ -62,6 +64,8 @@ const STOCK_ROUTE_KEYS = Object.freeze(new Set([
   'GET /menu.json',
   'GET /',
   'GET /assets/*path',
+  'GET /extensions/frontend.json',
+  'GET /extensions/frontend/*path',
   'PATCH /jobs/:id/retry',
   'PATCH /engine/pause',
   'PATCH /engine/stop',
@@ -123,6 +127,8 @@ class Router {
       '/menu.json':               new HandlerConfig(MenuHandler, [this.#menuConfig]),
       '/':                        new HandlerConfig(IndexHandler),
       '/assets/*path':            new HandlerConfig(AssetsHandler, [assetsDir, assetsValidator]),
+      '/extensions/frontend.json': new HandlerConfig(FrontendManifestHandler),
+      '/extensions/frontend/*path': new HandlerConfig(FrontendAssetsHandler),
     };
 
     const PATCH_ROUTES = {

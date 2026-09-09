@@ -60,7 +60,7 @@ describe('Router', () => {
 
       layer.route.stack[0].handle({}, res);
 
-      expect(res.json).toHaveBeenCalledWith({ entries: [{ route: '/logs', text: 'Logs' }] });
+      expect(res.json).toHaveBeenCalledWith({ entries: [{ route: '/logs', text: 'Logs' }], hidden: [] });
     });
 
     it('registers GET /emissions.json', () => {
@@ -77,6 +77,61 @@ describe('Router', () => {
 
       expect(layer).toBeDefined();
       expect(layer.route.methods.get).toBeTrue();
+    });
+
+    describe('frontend extension routes', () => {
+      const originalEnv = { ...process.env };
+
+      afterEach(() => {
+        process.env = { ...originalEnv };
+      });
+
+      it('registers GET /extensions/frontend.json', () => {
+        const expressRouter = router.build();
+        const layer = expressRouter.stack
+          .find((entry) => entry.route?.path === '/extensions/frontend.json');
+
+        expect(layer).toBeDefined();
+        expect(layer.route.methods.get).toBeTrue();
+      });
+
+      it('registers GET /extensions/frontend/*path', () => {
+        const expressRouter = router.build();
+        const layer = expressRouter.stack
+          .find((entry) => entry.route?.path === '/extensions/frontend/*path');
+
+        expect(layer).toBeDefined();
+        expect(layer.route.methods.get).toBeTrue();
+      });
+
+      it('serves an empty manifest when extensions are disabled', () => {
+        delete process.env.NAVI_EXTENSIONS_ENABLED;
+        const expressRouter = router.build();
+        const layer = expressRouter.stack
+          .find((entry) => entry.route?.path === '/extensions/frontend.json');
+        const res = { json: jasmine.createSpy('json') };
+
+        layer.route.stack[0].handle({}, res);
+
+        expect(res.json).toHaveBeenCalledWith({ bundles: [] });
+      });
+
+      it('404s the asset route when extensions are disabled', () => {
+        delete process.env.NAVI_EXTENSIONS_ENABLED;
+        const expressRouter = router.build();
+        const layer = expressRouter.stack
+          .find((entry) => entry.route?.path === '/extensions/frontend/*path');
+        const json = jasmine.createSpy('json');
+        const res = {
+          sendFile: jasmine.createSpy('sendFile'),
+          status: jasmine.createSpy('status').and.returnValue({ json }),
+        };
+
+        layer.route.stack[0].handle({ method: 'GET', path: '/extensions/frontend/a.js', params: { path: 'a.js' } }, res);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.sendFile).not.toHaveBeenCalled();
+      });
     });
 
     describe('extension routes', () => {

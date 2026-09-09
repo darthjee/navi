@@ -16,11 +16,13 @@ source/lib/server/
 ├── PathValidator.js              # Path-traversal protection
 ├── SecuredRequestHandler.js      # Base class for token-secured `/api/*` handlers
 ├── extensions/
-│   ├── ExtensionsEnv.js            # resolves NAVI_EXTENSIONS_ENABLED / NAVI_EXTENSIONS_DIR
+│   ├── ExtensionsEnv.js            # resolves NAVI_EXTENSIONS_ENABLED / NAVI_EXTENSIONS_DIR / frontendDir
 │   ├── ExtensionModuleValidator.js # validates a mounted module's descriptor array
 │   └── ExtensionRoutesLoader.js    # scans backend/, imports + registers extra routes
 └── handlers/
     ├── AssetsHandler.js
+    ├── FrontendAssetsHandler.js     # serves a mounted frontend/*.js|css bundle
+    ├── FrontendManifestHandler.js   # GET /extensions/frontend.json discovery manifest
     ├── IndexHandler.js
     ├── JobsFilter.js
     ├── LinksHandler.js
@@ -70,7 +72,7 @@ routes — stock routes always win on collision. See [Route extensions](#route-e
 | `GET` | `/emissions.json` | Crawler emission tracking: aggregate counters plus a paginated ring buffer of per-emission records. |
 | `GET` | `/extractions.json` | Crawler extraction tracking: `counts.extracted` plus a paginated ring buffer of per-extraction records. |
 | `GET` | `/links.json` | Configured `web.links` plus one link per client (`base_url` and `linkText`/client name). |
-| `GET` | `/menu.json` | Internal navigation menu entries from the menu config file (`{ route, text }` list); defaults to Logs + Memory. |
+| `GET` | `/menu.json` | Internal navigation menu entries from the menu config file (`{ route, text }` list) plus an always-present `hidden` array of non-default routes flagged `hidden: true`; defaults to Logs + Memory. |
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
 | `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
 | `GET` | `/engine/status` | Returns `{ status }` with the current engine status. |
@@ -82,6 +84,8 @@ routes — stock routes always win on collision. See [Route extensions](#route-e
 | `PATCH` | `/engine/start` | Starts from `stopped`, or pushes resources into an already-`running` engine. Returns 409 if `paused`/`pausing`/`stopping`. See [below](#engine-start-request-and-response) for the body/response shape. |
 | `PATCH` | `/engine/restart` | Stops then restarts (async). Returns 409 if not `running`. |
 | `GET` | `/assets/*path` | Serves built frontend assets; rejects path-traversal with 403. |
+| `GET` | `/extensions/frontend.json` | Discovery manifest for mounted frontend extension bundles; `{ "bundles": [] }` when extensions are disabled or no `frontend/` folder is mounted (never 404). |
+| `GET` | `/extensions/frontend/*path` | Serves a mounted frontend bundle (`*.js`) or stylesheet (`*.css`) straight from `<NAVI_EXTENSIONS_DIR>/frontend/`; 403 on path-traversal, 404 when the feature is disabled or the file is missing. |
 | `GET` | `/` and `*` | Serves `source/static/index.html` (SPA entry + catch-all). |
 | `POST` | `/api/config` | Token-secured. Merges a payload namespace's `resources`/`clients` into the running instance. See [below](#api-namespace). |
 | `POST` | `/api/engine/start` | Token-secured. Same semantics as `PATCH /engine/start`, scoped per namespace via `targets`. See [below](#api-namespace). |
@@ -125,7 +129,8 @@ Returns the internal navigation menu, loaded from the menu config file (see
   "entries": [
     { "route": "/logs", "text": "Logs" },
     { "route": "/memory/status", "text": "Memory" }
-  ]
+  ],
+  "hidden": []
 }
 ```
 
@@ -133,8 +138,14 @@ Returns the internal navigation menu, loaded from the menu config file (see
 exactly `route` (a non-empty, whitespace-free string that either starts with `/`
 or matches `^https?://`) and `text` (the server always populates it, defaulting
 to `route` when the file omits it, mirroring how `Link` defaults `text` to
-`url`). `hidden` is accepted and type-checked in the file but is never
-serialized.
+`url`). `hidden` is accepted and type-checked in the file but is never serialized
+as an entry.
+
+`hidden` is an always-present array (empty when unused) of the non-default
+`route` strings that carried `hidden: true` in the menu file. `hidden: true` on a
+shipped-default route still just suppresses that default (it is *not* listed
+here); on any other route the route is now retained and reported in this array so
+the SPA can drop the matching auto-appended frontend-extension menu entry.
 
 An absent, empty, or whitespace-only menu file — or a document with no `entries`
 key — yields the two defaults above (`/logs` "Logs", `/memory/status` "Memory")
@@ -343,6 +354,32 @@ services:
       - ./my-extensions:/navi/extensions
 ```
 
+### Frontend extensions
+
+The same mount also carries pre-built SPA bundles under
+`<NAVI_EXTENSIONS_DIR>/frontend/` — a **flat, non-recursive** listing of ESM
+`*.js` files, each optionally paired with a sibling `*.css` of the same basename.
+Unlike backend routes there is **no boot-time scan and no code executes in the
+Navi process**: the server only enumerates and streams files.
+
+- **`GET /extensions/frontend.json`** enumerates `frontend/*.js` (lexicographic,
+  non-`.js` siblings ignored) into `{ "bundles": [ { "src": "/extensions/frontend/<name>.js", "css": "/extensions/frontend/<name>.css" } ] }`
+  — `css` only present when the sibling stylesheet exists. Returns
+  `{ "bundles": [] }` (never 404) when `NAVI_EXTENSIONS_ENABLED` is off or no
+  `frontend/` folder is mounted.
+- **`GET /extensions/frontend/*path`** streams one bundle / stylesheet from
+  `ExtensionsEnv.frontendDir`, `PathValidator`-guarded (403 on traversal),
+  404 when the feature is disabled or the file is missing.
+
+Both handlers read `ExtensionsEnv` per request (no caching, no
+`ApplicationInstance` threading) and are registered in `Router.build()` right
+after the stock `GET` map and before `express.static`, so `/extensions/*` never
+falls through to the SPA catch-all. The SPA — not the server — fetches the
+manifest, injects each bundle, and reconciles the resulting menu entries against
+`/menu.json`'s `hidden` array. See `docs/agents/frontend.md` for the SPA-side
+wiring and `docs/agents/future/extension-architecture.md` `## Frontend` for the
+full specification.
+
 ## `/api` namespace
 
 Every `/api/*` route requires a bearer token matching `web.api.token` (see [Configuration](#configuration)), checked by the shared `SecuredRequestHandler` base class: `Authorization: Bearer <web.api.token value>`. A missing/invalid token — or no `web.api.token` configured at all — responds 403. This is a distinct, external-facing namespace from the UI-facing `/engine/*` routes above, reusing the `NamespaceMap.include()`/`NamespaceMapBuilder` runtime-merge machinery to accept config changes without a restart.
@@ -522,8 +559,10 @@ ever sees the final, ordered result. The operator levers:
   the earlier behaviour where `entries: []` produced an empty menu.
 - **`hidden: true`.** On an entry whose `route` matches a shipped default
   (`/logs`, `/memory/status`) it removes just that default; the `hidden` entry
-  itself never renders. On any other `route` it is dropped with a `Logger.warn`
-  (a no-op).
+  itself never renders and is not listed anywhere. On any other `route` the entry
+  still never renders in `entries`, but its `route` is collected (file order,
+  de-duplicated) into `GET /menu.json`'s `hidden` array for the SPA to filter
+  frontend-extension routes against.
 - **Repositioning a default.** A non-hidden custom entry whose `route` matches a
   shipped default pulls that default out of the default block and renders it at
   the custom entry's file position — never duplicated. A supplied `text`

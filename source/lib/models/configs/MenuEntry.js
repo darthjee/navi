@@ -12,10 +12,13 @@ class MenuEntry {
    * @param {object} params - Constructor params.
    * @param {string} params.route - The entry route (internal SPA path or external URL).
    * @param {string} [params.text] - Display text; defaults to the route.
+   * @param {boolean} [params.hidden=false] - Whether this entry is a hidden,
+   *   non-default route surfaced only in `/menu.json`'s `hidden` list.
    */
-  constructor({ route, text }) {
+  constructor({ route, text, hidden = false }) {
     this.route = route;
     this.text = text ?? route;
+    this.hidden = hidden === true;
   }
 
   /**

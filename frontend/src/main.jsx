@@ -9,22 +9,37 @@ import Jobs from './components/pages/Jobs.jsx';
 import Layout from './components/pages/Layout.jsx';
 import LogsPage from './components/pages/LogsPage.jsx';
 import MemoryStatus from './components/pages/MemoryStatus.jsx';
+import ExtensionErrorBoundary from './extensions/ExtensionErrorBoundary.jsx';
+import { loadExtensions } from './extensions/loadExtensions.js';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/logs" replace />} />
-          <Route path="logs" element={<LogsPage />} />
-          <Route path="jobs" element={<Jobs />} />
-          <Route path="jobs/:status" element={<Jobs />} />
-          <Route path="job/:id" element={<Job />} />
-          <Route path="memory/status" element={<MemoryStatus />} />
-          <Route path="emissions" element={<Emissions />} />
-          <Route path="extractions" element={<Extractions />} />
-        </Route>
-      </Routes>
-    </HashRouter>
-  </StrictMode>,
-);
+async function bootstrap() {
+  const extensionRoutes = await loadExtensions();
+
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/logs" replace />} />
+            <Route path="logs" element={<LogsPage />} />
+            <Route path="jobs" element={<Jobs />} />
+            <Route path="jobs/:status" element={<Jobs />} />
+            <Route path="job/:id" element={<Job />} />
+            <Route path="memory/status" element={<MemoryStatus />} />
+            <Route path="emissions" element={<Emissions />} />
+            <Route path="extractions" element={<Extractions />} />
+            {extensionRoutes.length > 0 && (
+              <Route element={<ExtensionErrorBoundary />}>
+                {extensionRoutes.map(({ path, component: C }) => (
+                  <Route key={path} path={path.replace(/^\//, '')} element={<C />} />
+                ))}
+              </Route>
+            )}
+          </Route>
+        </Routes>
+      </HashRouter>
+    </StrictMode>,
+  );
+}
+
+bootstrap();
