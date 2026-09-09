@@ -40,6 +40,13 @@ class ExtensionsEnv {
   static get backendDir() {
     return path.join(ExtensionsEnv.dir, 'backend');
   }
+
+  /**
+   * @returns {string} The `frontend` sub-directory of `dir`.
+   */
+  static get frontendDir() {
+    return path.join(ExtensionsEnv.dir, 'frontend');
+  }
 }
 
 export { ExtensionsEnv };
