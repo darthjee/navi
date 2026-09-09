@@ -127,6 +127,7 @@ describe('MenuMenu', () => {
     mockFetchFailure(503);
 
     beforeEach(async () => {
+      spyOn(console, 'warn');
       await renderMenu(state.root);
       await flushAsync();
     });
