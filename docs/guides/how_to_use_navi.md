@@ -13,6 +13,8 @@ Four integration modes are covered:
 - **Option C** — use `darthjee/navi-hey:latest` as the CircleCI executor image (simplest for CircleCI).
 - **Option D** — host `darthjee/navi-hey` as a long-running server and drive it externally with `navi-hey-client`, without CI waiting for the warm-up run to finish.
 
+To try Navi locally without any of the above — no production build, no CI — see Option E — Development image.
+
 ---
 
 ## Table of Contents
@@ -23,6 +25,7 @@ Four integration modes are covered:
 - [Option B — Node.js image with `navi-hey` installed](./navi/option-b-nodejs-image.md) — Installing and running the `navi-hey` npm package in a Node.js CI image.
 - [Option C — CircleCI executor image](./navi/option-c-circleci-executor.md) — Using `darthjee/navi-hey:latest` directly as the CircleCI executor image.
 - [Option D — Hosted server + `navi-hey-client`](./navi/option-d-hosted-server.md) — Hosting `darthjee/navi-hey` as a long-running server and driving it via `navi-hey-client`, without CI blocking on the warm-up run.
+- [Option E — Development image](./navi/option-e-development-image.md) — Running Navi's own `navi:dev` image locally to try it out or develop against it, without a production build.
 - [Warming HTML pages and their assets](./navi/warming-html-assets.md) — Declaring an `assets` list so Navi also warms CSS/JS referenced by an HTML response.
 - [Paginated Actions](./navi/paginated-actions.md) — Fanning out one request per page with `paginated_actions`.
 - [Extraction Configuration](./navi/extraction-configuration.md) — Extracting structured items from a response with a required `parser:` block (`regex` / `json_path` / `css`), consumed by `emit`.
