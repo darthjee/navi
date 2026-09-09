@@ -18,7 +18,7 @@ Three things switch the mechanism on:
 |---------|-------|
 | `NAVI_EXTENSIONS_ENABLED` | Truthy (`1` / `true` / `yes` / `on`) to load extensions. Unset, empty, or falsey leaves the mechanism inert. |
 | `NAVI_EXTENSIONS_DIR` | Absolute container path Navi scans for extensions. Defaults to `/navi/extensions`. Mount your built folder here (or point this elsewhere). |
-| `NAVI_MENU` (CLI `-m` / `--menu`) | Path to the menu file. Defaults to `config/menu.yml`; the production image defaults it to `/navi/menu.yml`. Mount your own menu file here if you want to control menu position or labels. |
+| `NAVI_MENU` (CLI `-m` / `--menu`) | Path to the menu file (`-m` / `--menu`). Defaults to `./config/menu.yml` (resolved against the image WORKDIR `/home/node/app`). Mount your own menu file there to control menu position or labels. |
 
 A `docker-compose.yml` for the recommended pure bind-mount shape:
 
@@ -29,10 +29,10 @@ services:
     environment:
       NAVI_EXTENSIONS_ENABLED: "true"
       # NAVI_EXTENSIONS_DIR defaults to /navi/extensions
-      # NAVI_MENU defaults to the prod image's /navi/menu.yml
+      # NAVI_MENU defaults to ./config/menu.yml
     volumes:
       - ./dist:/navi/extensions:ro
-      - ./config/menu.yml:/navi/menu.yml:ro
+      - ./config/menu.yml:/home/node/app/config/menu.yml:ro
     ports:
       - "3000:3000"
 ```
@@ -144,6 +144,14 @@ export default [
 
 React, React-DOM, and React-Router **must be externals**. The host `index.html` already loaded exactly one copy of each and exposes them through its import map; bundling your own would create a second React instance and break hooks, context, and `<Routes>` matching the moment your component mounts.
 
+Externalise the **full set of React specifiers**, including the JSX runtimes:
+
+```
+react, react-dom, react-dom/client, react-router-dom, react/jsx-runtime, react/jsx-dev-runtime
+```
+
+`@vitejs/plugin-react` rewrites your JSX to `import { jsx } from "react/jsx-runtime"` (and `react/jsx-dev-runtime` in dev builds), so those two specifiers must be externals too. The host SPA's import map provides both — if you bundle your own copy instead, the browser loads a second React and the page silently fails to mount.
+
 The complete, copy-pasteable `vite build --lib` config:
 
 ```js
@@ -159,6 +167,7 @@ export default defineConfig({
       entry: 'src/frontend/entry.js',
       formats: ['es'],           // Navi loads extension bundles as ESM
       fileName: () => 'orders.js',
+      cssFileName: 'orders',     // emit orders.css, not <pkg-name>.css
     },
     outDir: 'dist/frontend',
     emptyOutDir: true,
@@ -169,15 +178,16 @@ export default defineConfig({
         'react',
         'react-dom',
         'react-dom/client',
-        'react/jsx-runtime',
         'react-router-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
       ],
     },
   },
 });
 ```
 
-The build produces a single ESM file, `dist/frontend/orders.js`. If your component imports CSS and the build emits `dist/frontend/orders.css` (**same basename** as the bundle), Navi injects `<link rel="stylesheet" href="/extensions/frontend/orders.css">` when it loads the bundle. The sibling `.css` file is a convenience — the bundle may inline its styles instead.
+The build produces a single ESM file, `dist/frontend/orders.js`. If your component imports CSS, Vite's library mode would name the stylesheet after the package (`<pkg-name>.css`) by default — `cssFileName: 'orders'` forces it to `dist/frontend/orders.css`, the **same basename** as the bundle. Navi then injects `<link rel="stylesheet" href="/extensions/frontend/orders.css">` when it loads the bundle. The sibling `.css` file is a convenience — the bundle may inline its styles instead.
 
 ### A menu entry
 
@@ -188,7 +198,7 @@ Your route is reachable by URL (`#/ext/orders`) as soon as its bundle loads. A m
 To control position or label, add an explicit entry to `config/menu.yml`:
 
 ```yaml
-# config/menu.yml  — mounted at the menu-file path, NOT inside /navi/extensions
+# config/menu.yml  — mounted over /home/node/app/config/menu.yml, NOT inside /navi/extensions
 entries:
   - route: /ext/orders
     text: Orders
@@ -225,27 +235,50 @@ entries:
 
 **`vite.config.js`** — the complete file from [A frontend page](#a-frontend-page).
 
-**`package.json`** (extension project):
+**`package.json`** (extension project) — mirrors
+[`examples/navi-orders-extension/package.json`](../../../examples/navi-orders-extension/package.json):
 
 ```json
 {
   "name": "navi-orders-extension",
   "private": true,
   "type": "module",
+  "description": "SPEC-5 worked example: an Orders extension for the stock darthjee/navi-hey image (backend route + frontend page + menu entry).",
   "scripts": {
-    "build": "vite build && mkdir -p dist/backend && cp src/backend/*.js dist/backend/"
+    "build": "vite build && mkdir -p dist/backend && cp src/backend/*.js dist/backend/",
+    "test": "node --import ./spec/support/loader.js node_modules/.bin/jasmine --config=spec/support/jasmine.json"
   },
+  "author": "darthjee",
+  "license": "MIT",
   "devDependencies": {
-    "react": "<match base image>",
-    "react-dom": "<match base image>",
-    "react-router-dom": "<match base image>",
-    "vite": "^5",
-    "@vitejs/plugin-react": "^4"
+    "@vitejs/plugin-react": "^5.1.1",
+    "c8": "11.0.0",
+    "esbuild": "^0.28.0",
+    "jasmine": "^5.0.0",
+    "jsdom": "^25.0.0",
+    "navi-hey": "^1.10.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "7.14.2",
+    "vite": "^7.2.4"
   }
 }
 ```
 
-The `build` script is `vite build` (the frontend bundle) **plus** a plain copy of `src/backend/*.js` into `dist/backend/` — no transform on the backend files.
+The `react` / `react-dom` / `react-router-dom` pins mirror the majors in
+[`frontend/package.json`](../../../frontend/package.json) (React 19, React-Router 7) —
+the copy the stock image's SPA already loads. Re-check them whenever you bump the
+base image (see [Upgrading the base image](#upgrading-the-base-image)).
+
+`navi-hey` is a **dev**-only dependency: it provides `navi-hey/extension` (the
+`RequestHandler` base class) so `npm test` can import your backend module
+outside a container. At runtime the class is resolved from the image, not from
+`node_modules`. The in-repo example points it at a tiny local stub
+(`file:./spec/support/navi-hey`, a two-line `RequestHandler`) so its unit tests
+run fully offline; your own project depends on the published `navi-hey` package
+instead.
+
+The `build` script is `vite build` (the frontend bundle) **plus** a plain copy of `src/backend/*.js` into `dist/backend/` — no transform on the backend files. `npm test` runs the example's standalone Jasmine harness (backend handler + frontend page). This example project uses **npm, not Yarn** — it simulates a downstream consumer, which is not bound by Navi's own toolchain choice.
 
 **Built / mounted tree** after `npm run build`:
 
@@ -268,7 +301,7 @@ services:
       NAVI_EXTENSIONS_ENABLED: "true"
     volumes:
       - ./dist:/navi/extensions:ro
-      - ./config/menu.yml:/navi/menu.yml:ro
+      - ./config/menu.yml:/home/node/app/config/menu.yml:ro
     ports:
       - "3000:3000"
 ```
@@ -283,19 +316,25 @@ For testing your extension in isolation — one backend test exercising the hand
 
 ### Baking the extension into a derived image
 
-Instead of a bind-mount you can build a derived image with the extension baked in (immutable deploy artefact, no volume to manage):
+Instead of a bind-mount you can build a derived image with the extension baked in (immutable deploy artefact, no volume to manage). This repo ships a working one at [`dockerfiles/navi_hey_extension_example/Dockerfile`](../../../dockerfiles/navi_hey_extension_example/Dockerfile):
 
 ```dockerfile
-FROM darthjee/navi-hey:<tag>
+ARG NAVI_TAG=latest
+FROM darthjee/navi-hey:${NAVI_TAG}
 
-# COPY the built artefacts to the default mount point — never the source tree.
-COPY dist/ /navi/extensions/
-COPY config/menu.yml /navi/menu.yml
+COPY examples/navi-orders-extension/dist/ /navi/extensions/
+COPY examples/navi-orders-extension/config/menu.yml /home/node/app/config/menu.yml
 
 ENV NAVI_EXTENSIONS_ENABLED=true
 ```
 
-The Navi SPA is still **not** rebuilt — the frontend bundle is the same pre-built ESM file the SPA discovers at boot. Pin `<tag>` to an exact Navi version and run the upgrade checklist below when you bump it. A `docker-compose.yml` for this shape just sets `image:` to the derived tag and drops the two `volumes:` lines.
+- COPY the **built artefacts** to the default mount point (`/navi/extensions/`) — never the source tree.
+- The menu file goes to `/home/node/app/config/menu.yml` (the `NAVI_MENU` default resolved against the image WORKDIR), **not** `/navi/menu.yml`.
+- Build the extension's `dist/` first (`npm ci && npm run build` in the example project); the build context is the repo root.
+
+The Navi SPA is still **not** rebuilt — the frontend bundle is the same pre-built ESM file the SPA discovers at boot. Pin `NAVI_TAG` to an exact Navi version and run the upgrade checklist below when you bump it. A `docker-compose.yml` for this shape just sets `image:` to the derived tag and drops the two `volumes:` lines.
+
+**See it working.** `docker compose up navi_extensions_app` boots the stock dev image with this example mounted on port `3040`, and `make smoke-extensions` asserts the route, the frontend manifest, and the server-side menu entry end to end.
 
 ### Reload limitation
 
@@ -305,7 +344,7 @@ Extensions are **fixed for the process lifetime**. Changing them — new backend
 
 Run this checklist when bumping `FROM darthjee/navi-hey:<tag>` or the pulled `image:` tag:
 
-1. **React / React-Router version alignment.** Read the new image's `index.html` import map (or its `frontend/package.json`) and set your extension project's `react` / `react-dom` / `react-router-dom` devDependencies to the same major/minor, then rebuild the frontend bundle. A mismatch that changes the ESM export surface breaks the externalised imports at runtime.
+1. **React / React-Router version alignment.** Match your extension project's `react` / `react-dom` / `react-router-dom` devDependencies to the majors in the new image's [`frontend/package.json`](../../../frontend/package.json) (currently React 19, React-Router 7) — or read them off the image's `index.html` import map — then rebuild the frontend bundle. A mismatch that changes the ESM export surface breaks the externalised imports at runtime.
 2. **Handler import specifier unchanged.** Confirm `import { RequestHandler } from 'navi-hey/extension'` still resolves in the new image. No `src/backend/**` change is expected between Navi versions.
 3. **Route-name collisions.** Diff your extension's `method + path` set against the new image's stock routes. Stock always wins — a colliding extra is skipped with a warning and silently disappears. Rename the extra if a new stock route now shadows it.
 4. **Re-run your extension's own tests** against the new image, ideally in CI, against a container built `FROM` the new tag.
