@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Marks /opt/navi-hey-test/ as an ESM scope so the reused loader.js / transform_hooks.js run as modules; its node_modules symlink points at the baked frontend install (esbuild)."
+}

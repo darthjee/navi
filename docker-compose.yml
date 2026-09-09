@@ -51,6 +51,21 @@ services:
     depends_on: [base_build]
     command: /bin/bash
 
+  # Downstream extension test harness (dockerfiles/navi-hey-test/). Built and run
+  # by the Makefile `build-navi-hey-test` / `test-extension-harness` targets and
+  # the matching CI job; profile-gated so it never starts with `docker compose up`.
+  # The example's own compose file (examples/navi-orders-extension/) is separate.
+  navi_hey_test:
+    build:
+      context: .
+      dockerfile: dockerfiles/navi-hey-test/Dockerfile
+    image: navi-hey-test:dev
+    working_dir: /work
+    profiles: ["extension-tests"]
+    volumes:
+      - ./examples/navi-orders-extension/src:/work/src:ro
+      - ./examples/navi-orders-extension/tests:/work/tests:ro
+
   navi_proxy:
     image: darthjee/tent:0.10.0
     depends_on: [navi_dev_app, navi_dev_frontend]
