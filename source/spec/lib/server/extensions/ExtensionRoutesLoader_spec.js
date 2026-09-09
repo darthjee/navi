@@ -111,6 +111,18 @@ describe('ExtensionRoutesLoader', () => {
   });
 
   describe('with a module that throws on import', () => {
+    // Written at runtime (never committed) so a module that throws at load time
+    // is not a hazard for the `jasmine spec/**/*.js` file glob.
+    const badPath = path.join(FIXTURES, 'broken-import/backend/bad.js');
+
+    beforeAll(() => {
+      fs.writeFileSync(badPath, "throw new Error('boom');\n");
+    });
+
+    afterAll(() => {
+      fs.rmSync(badPath, { force: true });
+    });
+
     beforeEach(() => {
       enable('broken-import');
     });
