@@ -308,7 +308,7 @@ who does nothing still gets an **Orders** item in the menu dropdown.
 label:
 
 ```yaml
-# config/menu.yml  — mounted at the menu-file path, NOT inside /navi/extensions
+# config/menu.yml  — mounted over /home/node/app/config/menu.yml, NOT inside /navi/extensions
 entries:
   - route: /ext/orders
     text: Orders
@@ -349,13 +349,17 @@ services:
     environment:
       NAVI_EXTENSIONS_ENABLED: "true"
       # NAVI_EXTENSIONS_DIR defaults to /navi/extensions
-      # NAVI_MENU defaults to the prod image's /navi/menu.yml
+      # NAVI_MENU defaults to ./config/menu.yml (resolved against WORKDIR /home/node/app)
     volumes:
       - ./dist:/navi/extensions:ro
-      - ./config/menu.yml:/navi/menu.yml:ro
+      - ./config/menu.yml:/home/node/app/config/menu.yml:ro
     ports:
       - "3000:3000"
 ```
+
+The production image already ships `ENV NAVI_MENU=./config/menu.yml`
+(`dockerfiles/production_navi_hey/Dockerfile`), which resolves to
+`/home/node/app/config/menu.yml` — mount your menu file there.
 
 - `:ro` — Navi only ever reads the folder.
 - The host folder is the operator's, matching the existing `docker_volumes/`
@@ -373,7 +377,7 @@ FROM darthjee/navi-hey:<tag>
 
 # COPY the built artefacts to the default mount point
 COPY dist/ /navi/extensions/
-COPY config/menu.yml /navi/menu.yml
+COPY config/menu.yml /home/node/app/config/menu.yml
 
 ENV NAVI_EXTENSIONS_ENABLED=true
 ```
@@ -526,7 +530,7 @@ services:
       NAVI_EXTENSIONS_ENABLED: "true"
     volumes:
       - ./dist:/navi/extensions:ro
-      - ./config/menu.yml:/navi/menu.yml:ro
+      - ./config/menu.yml:/home/node/app/config/menu.yml:ro
     ports:
       - "3000:3000"
 ```
