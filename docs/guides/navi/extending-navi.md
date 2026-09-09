@@ -4,7 +4,7 @@ Extensions let you add your own **backend routes** and **frontend pages** on top
 
 > **Security warning.** Loading an extension runs **arbitrary JavaScript, mounted into the container, in the same process as Navi with no isolation** — full Node privileges, no sandbox, no permission model. The opt-in flag and the operator-controlled volume are the entire trust model. Only mount code you wrote or audited, from a volume you control.
 
-This page is the operator-facing walkthrough. For the container-side loader mechanics (what Navi scans, how descriptors are validated, collision handling) and the downstream test harness, see the extension architecture design doc: [`downstream-extension-workflow.md`](../../agents/future/downstream-extension-workflow.md).
+This page is the operator-facing walkthrough. For the container-side loader mechanics (what Navi scans, how descriptors are validated, collision handling), see the extension architecture design doc: [`downstream-extension-workflow.md`](../../agents/future/downstream-extension-workflow.md). To run your extension's own test suite, see [Testing your extension](#testing-your-extension).
 
 ### When to use extensions
 
@@ -246,17 +246,12 @@ entries:
   "description": "SPEC-5 worked example: an Orders extension for the stock darthjee/navi-hey image (backend route + frontend page + menu entry).",
   "scripts": {
     "build": "vite build && mkdir -p dist/backend && cp src/backend/*.js dist/backend/",
-    "test": "node --import ./spec/support/loader.js node_modules/.bin/jasmine --config=spec/support/jasmine.json"
+    "test": "docker compose run --rm extension_tests"
   },
   "author": "darthjee",
   "license": "MIT",
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.1",
-    "c8": "11.0.0",
-    "esbuild": "^0.28.0",
-    "jasmine": "^5.0.0",
-    "jsdom": "^25.0.0",
-    "navi-hey": "^1.10.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "7.14.2",
@@ -270,15 +265,15 @@ The `react` / `react-dom` / `react-router-dom` pins mirror the majors in
 the copy the stock image's SPA already loads. Re-check them whenever you bump the
 base image (see [Upgrading the base image](#upgrading-the-base-image)).
 
-`navi-hey` is a **dev**-only dependency: it provides `navi-hey/extension` (the
-`RequestHandler` base class) so `npm test` can import your backend module
-outside a container. At runtime the class is resolved from the image, not from
-`node_modules`. The in-repo example points it at a tiny local stub
-(`file:./spec/support/navi-hey`, a two-line `RequestHandler`) so its unit tests
-run fully offline; your own project depends on the published `navi-hey` package
-instead.
+The extension's Jasmine suite does **not** run from `node_modules`: `npm test` is
+just `docker compose run --rm extension_tests`, which runs the specs inside the
+prebuilt `darthjee/navi-hey-test` image. That image provides `navi-hey/extension`
+(the `RequestHandler` base class, byte-identical to what the runtime resolves)
+and the `navi-hey/testing/*` doubles, so the project carries **no** test
+toolchain in `devDependencies` — only what `npm run build` (Vite) needs. See
+[Testing your extension](#testing-your-extension).
 
-The `build` script is `vite build` (the frontend bundle) **plus** a plain copy of `src/backend/*.js` into `dist/backend/` — no transform on the backend files. `npm test` runs the example's standalone Jasmine harness (backend handler + frontend page). This example project uses **npm, not Yarn** — it simulates a downstream consumer, which is not bound by Navi's own toolchain choice.
+The `build` script is `vite build` (the frontend bundle) **plus** a plain copy of `src/backend/*.js` into `dist/backend/` — no transform on the backend files. `npm test` runs the Jasmine suite (backend handler + frontend page) inside the `darthjee/navi-hey-test` container. This example project uses **npm, not Yarn** — it simulates a downstream consumer, which is not bound by Navi's own toolchain choice.
 
 **Built / mounted tree** after `npm run build`:
 
@@ -291,28 +286,161 @@ dist/
     orders.css         # emitted from the OrdersPage.css import
 ```
 
-**`docker-compose.yml`:**
+**`docker-compose.yml`** — the checked-in file runs the [test suite](#testing-your-extension), not a server; it reads identically to:
 
 ```yaml
+# Runs this extension's Jasmine suite inside the shipped darthjee/navi-hey-test
+# image. `npm test` is `docker compose run --rm extension_tests`; only src/ and
+# tests/ are mounted in, so no local test toolchain is needed.
 services:
-  navi:
-    image: darthjee/navi-hey:latest
-    environment:
-      NAVI_EXTENSIONS_ENABLED: "true"
+  extension_tests:
+    image: darthjee/navi-hey-test:latest   # pin to the darthjee/navi-hey tag your extension deploys FROM
     volumes:
-      - ./dist:/navi/extensions:ro
-      - ./config/menu.yml:/home/node/app/config/menu.yml:ro
-    ports:
-      - "3000:3000"
+      - ./src:/work/src:ro
+      - ./tests:/work/tests:ro
+      # - ./dist:/navi/extensions:ro   # optional built-output parity check
 ```
 
-**At runtime:**
+To run the *built* extension against a live Navi, use the bind-mount shape from [Enabling extensions](#enabling-extensions); the in-repo example is wired as the repo-root `navi_extensions_app` service (`docker compose up navi_extensions_app`), which mounts `dist/` at `/navi/extensions` and `config/menu.yml` over the image menu with `NAVI_EXTENSIONS_ENABLED=true`.
+
+**At runtime (deployed against Navi):**
 
 1. On server start Navi reads `/navi/extensions/backend/`, imports `orders.js`, registers `GET /ext/orders/summary.json`, and logs the boot audit line.
 2. On SPA boot the dashboard fetches `/extensions/frontend.json`, lazy-loads `/extensions/frontend/orders.js`, mounts `#/ext/orders` inside the stock layout, injects `orders.css`, and appends **Orders** to the menu.
 3. With `NAVI_EXTENSIONS_ENABLED` unset the same image serves the same SPA with no `/ext/orders` route, no `/ext/orders/summary.json`, and no menu entry.
 
-For testing your extension in isolation — one backend test exercising the handler, one frontend test rendering the component — see the design doc's worked example and the downstream test harness referenced from [`downstream-extension-workflow.md`](../../agents/future/downstream-extension-workflow.md).
+For testing your extension in isolation — one backend spec exercising the handler, one frontend spec rendering the page — see [Testing your extension](#testing-your-extension) below.
+
+### Testing your extension
+
+`darthjee/navi-hey-test` is a prebuilt image that bundles Navi's Jasmine toolchain (backend **and** frontend), the jsdom / esbuild frontend setup, and a set of reusable Navi test doubles. An extension project runs its own suite by mounting `src/` and `tests/` into it — **no local test toolchain, no `npm ci` for tests**.
+
+**Image & tags.** `darthjee/navi-hey-test`, published with two tags: `:<git-tag>` — the `darthjee/navi-hey` (Navi) version tag your extension image deploys `FROM` — and `:latest`. Pin the tag your extension deploys `FROM`: the image bakes the same `RequestHandler`, the same React / React-Router majors, and the same doubles that Navi version ships, so what you test is what runs.
+
+**Project layout.** Specs live in the extension project, next to the source they exercise — never in the built `dist/`:
+
+```
+navi-orders-extension/
+  src/
+    backend/orders.js
+    frontend/OrdersPage.jsx
+    frontend/OrdersPage.css
+    frontend/entry.js
+  tests/
+    backend/orders_spec.js          # tests/backend/**/*_[sS]pec.js
+    frontend/orders_page_spec.jsx   # tests/frontend/**/*_[sS]pec.@(js|jsx)
+  docker-compose.yml
+```
+
+- Specs import straight from `src/` — **no build step runs first**.
+- The default `all` run expects specs in both `tests/backend/` and `tests/frontend/`; a backend-only or frontend-only extension uses the `backend` / `frontend` subcommand instead.
+- The image `WORKDIR` is `/work`; `src/` mounts at `/work/src`, `tests/` at `/work/tests` (both read-only).
+
+**`tests/backend/orders_spec.js`** — drive the handler directly with a fake `req` / `res`, exactly as Navi's own handler specs do:
+
+```js
+import routes from '../../src/backend/orders.js';
+
+describe('orders backend extension', () => {
+  it('declares GET /ext/orders/summary.json', () => {
+    const [route] = routes;
+    expect(route.method).toBe('GET');
+    expect(route.path).toBe('/ext/orders/summary.json');
+  });
+
+  it('writes a JSON summary', () => {
+    let body;
+    const response = { json: (payload) => { body = payload; } };
+    new routes[0].handler({}, response).handle();
+    expect(body.service).toBe('orders-extension');
+    expect(typeof body.pending).toBe('number');
+  });
+});
+```
+
+**`tests/frontend/orders_page_spec.jsx`** — render the page with `useContainer` + a mocked `fetch`:
+
+```jsx
+import { act } from 'react';
+import { useContainer } from 'navi-hey/testing/dom.js';
+import { mockFetchSuccess } from 'navi-hey/testing/fetch.js';
+import descriptors from '../../src/frontend/entry.js';
+
+describe('OrdersPage', () => {
+  const state = useContainer();
+  mockFetchSuccess({ pending: 3, service: 'orders-extension' });
+
+  it('exposes the /ext/orders descriptor', () => {
+    expect(descriptors[0].path).toBe('/ext/orders');
+    expect(descriptors[0].text).toBe('Orders');
+  });
+
+  it('renders the pending-order count', async () => {
+    const OrdersPage = descriptors[0].component;
+
+    await act(async () => {
+      state.root.render(<OrdersPage />);
+    });
+
+    expect(state.container.textContent).toContain('3 pending order(s)');
+  });
+});
+```
+
+`useContainer()` installs the jsdom globals and hands back a fresh React root per example; `mockFetchSuccess` / `mockFetchFailure` each register a `beforeEach` that stubs `globalThis.fetch` — call them at `describe` level, as the spec above does.
+
+**Test doubles.** These specifiers resolve **inside the image only**. Treat them as quasi-public API — they are pinned to the image tag and may change between Navi versions (re-run the suite on every bump):
+
+| Import | What it gives |
+|--------|---------------|
+| `import { RequestHandler } from 'navi-hey/extension'` | The exact base class the runtime resolves (byte-identical), same specifier as production |
+| `import { useContainer } from 'navi-hey/testing/dom.js'` | `useContainer()` — installs the jsdom globals, hands back a per-example React root |
+| `import { mockFetchSuccess, mockFetchFailure } from 'navi-hey/testing/fetch.js'` | `mockFetchSuccess(data)` / `mockFetchFailure(status)` — register a `describe`-level `beforeEach` that spies `globalThis.fetch` |
+| `import { AxiosUtils } from 'navi-hey/testing/axios.js'` | `AxiosUtils.stubGet` / `.stubPost` / `.stubPut` / `.stubPatch` (+ `.stub*Rejection`) static helpers — stub outbound `axios` calls a handler makes |
+| `import { LoggerUtils } from 'navi-hey/testing/logger.js'` | `LoggerUtils.stubLoggerMethods()` / `.stubConsoleMethods()` static helpers — silence, or assert on, `Logger` / `console` output |
+
+**Running it.** The extension project's `docker-compose.yml`:
+
+```yaml
+# Runs this extension's Jasmine suite inside the shipped darthjee/navi-hey-test
+# image. `npm test` is `docker compose run --rm extension_tests`; only src/ and
+# tests/ are mounted in, so no local test toolchain is needed.
+services:
+  extension_tests:
+    image: darthjee/navi-hey-test:latest   # pin to the darthjee/navi-hey tag your extension deploys FROM
+    volumes:
+      - ./src:/work/src:ro
+      - ./tests:/work/tests:ro
+      # - ./dist:/navi/extensions:ro   # optional built-output parity check
+```
+
+and the `package.json` script:
+
+```json
+"scripts": {
+  "test": "docker compose run --rm extension_tests"
+}
+```
+
+`docker compose run --rm extension_tests` (or `npm test`) runs the **default `all`** subcommand. Pass another as the service command to override it:
+
+| Command | Behaviour |
+|---------|-----------|
+| `all` _(default)_ | backend suite, then frontend suite, as **two separate `node` processes**; non-zero exit if either fails |
+| `backend` | backend suite only |
+| `frontend` | frontend suite only |
+| `lint` | `eslint` over the mounted `src/` + `tests/` |
+| `sh` | interactive shell in the image |
+
+Add `--coverage` to `all` / `backend` / `frontend` to wrap the run in `c8`, with coverage scoped to your `src/**` only — e.g. `docker compose run --rm extension_tests backend --coverage`.
+
+Without compose: `docker run --rm -v "$PWD/src:/work/src:ro" -v "$PWD/tests:/work/tests:ro" darthjee/navi-hey-test:<navi-tag>`.
+
+**Isolation.** Navi's own `source/spec/` and `frontend/spec/` are **never** enumerated. The backend and frontend suites run as separate `node` processes, so neither suite's globals, helpers, or jsdom window can reach the other. `--coverage` reports only on the author's `src/**`.
+
+**CI hook.** A downstream project wires this as **one job**: build or pull `darthjee/navi-hey-test:<navi-tag>` pinned to the Navi tag its deployment image runs `FROM`, then `docker compose run --rm extension_tests`, on every PR. That job is also where [Upgrading the base image](#upgrading-the-base-image) item 4 is exercised on a Navi bump.
+
+The design rationale (discovery, isolation, the promoted double set) lives in [`downstream-extension-tests.md`](../../agents/future/downstream-extension-tests.md); this section is the durable operator/author reference.
 
 ### Baking the extension into a derived image
 
@@ -344,10 +472,10 @@ Extensions are **fixed for the process lifetime**. Changing them — new backend
 
 Run this checklist when bumping `FROM darthjee/navi-hey:<tag>` or the pulled `image:` tag:
 
-1. **React / React-Router version alignment.** Match your extension project's `react` / `react-dom` / `react-router-dom` devDependencies to the majors in the new image's [`frontend/package.json`](../../../frontend/package.json) (currently React 19, React-Router 7) — or read them off the image's `index.html` import map — then rebuild the frontend bundle. A mismatch that changes the ESM export surface breaks the externalised imports at runtime.
+1. **React / React-Router version alignment.** Match your extension project's `react` / `react-dom` / `react-router-dom` devDependencies to the majors in the new image's [`frontend/package.json`](../../../frontend/package.json) (currently React 19, React-Router 7) — or read them off the image's `index.html` import map — then rebuild the frontend bundle. A mismatch that changes the ESM export surface breaks the externalised imports at runtime. The matching `darthjee/navi-hey-test` tag pins those same majors, so item 4 catches a drift you missed here.
 2. **Handler import specifier unchanged.** Confirm `import { RequestHandler } from 'navi-hey/extension'` still resolves in the new image. No `src/backend/**` change is expected between Navi versions.
 3. **Route-name collisions.** Diff your extension's `method + path` set against the new image's stock routes. Stock always wins — a colliding extra is skipped with a warning and silently disappears. Rename the extra if a new stock route now shadows it.
-4. **Re-run your extension's own tests** against the new image, ideally in CI, against a container built `FROM` the new tag.
+4. **Re-run your extension's own tests** through [`darthjee/navi-hey-test`](#testing-your-extension) retagged to the new Navi version — `docker compose run --rm extension_tests`, ideally as the one CI job described in [Testing your extension](#testing-your-extension).
 5. **Restart, don't reload.** Deploying new extension code — or a new base image — means a container restart, not `PATCH /engine/reload`.
 
 [← Back to How to Use Navi](../how_to_use_navi.md)
