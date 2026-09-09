@@ -15,6 +15,10 @@ source/lib/server/
 ├── RouteRegister.js              # Wraps handlers; maps exceptions to HTTP status codes
 ├── PathValidator.js              # Path-traversal protection
 ├── SecuredRequestHandler.js      # Base class for token-secured `/api/*` handlers
+├── extensions/
+│   ├── ExtensionsEnv.js            # resolves NAVI_EXTENSIONS_ENABLED / NAVI_EXTENSIONS_DIR
+│   ├── ExtensionModuleValidator.js # validates a mounted module's descriptor array
+│   └── ExtensionRoutesLoader.js    # scans backend/, imports + registers extra routes
 └── handlers/
     ├── AssetsHandler.js
     ├── IndexHandler.js
@@ -54,6 +58,10 @@ source/lib/server/
 Routes are declared declaratively in `Router.js` as a map of path → `HandlerConfig` instance.
 `HandlerConfig` holds the executor class and any extra constructor parameters, and lazily
 constructs the executor as `(req, res, ...parameters)` only when a matching request arrives.
+
+When `NAVI_EXTENSIONS_ENABLED` is truthy, additional `GET` / `PATCH` / `POST` routes are
+loaded from `<NAVI_EXTENSIONS_DIR>/backend/*.js` at boot and registered *after* the stock
+routes — stock routes always win on collision. See [Route extensions](#route-extensions).
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -247,6 +255,93 @@ shared with `/logs.json` and `/emissions.json`). Pass `?last_id=<id>` to page fo
 known record id; an unknown id yields an empty `extractions` list. The store is sized by the
 top-level `extraction.size` config key (default 100). Both the ring buffer and the counter
 reset when the engine stops.
+
+## Route extensions
+
+An operator can mount a folder of extra route handlers that Navi loads and registers at
+boot, without forking. The mechanism is off by default and has **no YAML key and no
+`WebConfig` field** — it is driven entirely by two environment variables, read straight
+from `process.env` through `ExtensionsEnv`:
+
+- **`NAVI_EXTENSIONS_ENABLED`** — enabled only when the trimmed, lower-cased value is one
+  of `1`, `true`, `yes`, `on`. Anything else (including unset) leaves the feature off.
+- **`NAVI_EXTENSIONS_DIR`** — absolute path to the mount, default `/navi/extensions`.
+
+### Mounted layout
+
+Backend handlers live in `<NAVI_EXTENSIONS_DIR>/backend/*.js`, a **flat, non-recursive**
+listing (nested directories are ignored, not an error), loaded in lexicographic filename
+order. A non-`.js` sibling is ignored silently.
+
+### Module contract
+
+Each file default-exports (or exports as `routes`) an array of descriptors:
+
+```js
+import { RequestHandler } from 'navi-hey/extension';
+
+class HealthHandler extends RequestHandler {
+  constructor(req, res) { super(); this.res = res; }
+  handle() { this.res.json({ status: 'ok' }); }
+}
+
+export default [
+  { method: 'GET', path: '/ext/health', handler: HealthHandler },
+];
+```
+
+- `method` — `GET`, `PATCH` or `POST` (case-insensitive).
+- `path` — a non-empty, `/`-prefixed, whitespace-free string.
+- `handler` — a `RequestHandler` subclass, imported as
+  `import { RequestHandler } from 'navi-hey/extension'`. It is instantiated
+  `new handler(req, res)` per request and its `handle()` is invoked with the same
+  `RouteRegister` guarantees as stock handlers (`ForbiddenError` → 403,
+  `NotFoundError` → 404, anything else → 500). Extension routes are **public** — there is
+  no token wiring in v1.
+
+### Error handling
+
+A module that fails to import, does not export a descriptor array, or contains an invalid
+descriptor is **skipped with a `Logger.warn`** — the server still comes up with the stock
+routes and every other valid extension. The one fatal case: when the feature is enabled
+but `NAVI_EXTENSIONS_DIR` is unset / missing / not a directory, boot **fails fast** with
+`ExtensionsDirectoryMissing`, matching the `MenuConfigurationInvalid` posture.
+
+### Collisions
+
+A descriptor whose `"<METHOD> <path>"` key matches a built-in Navi route is dropped with a
+warning ("path is a built-in Navi route"); stock always wins. When two extension files
+declare the same key, the lexicographically-first file wins and the later one is dropped
+with a warning naming the winner. Collisions are never fatal. After the scan, one audit
+line is emitted:
+
+```
+[extensions] loaded 2 backend route(s): GET /ext/health (a_health.js), POST /ext/reindex (b_reindex.js)
+```
+
+### Security posture
+
+The opt-in flag is the only control. Extension code is **operator-owned and runs
+in-process — it is not sandboxed**. `PathValidator` only prevents the `backend/` scan from
+following a symlink out of the mounted folder; it does not constrain what a loaded module
+can do.
+
+### Lifetime
+
+Extensions are scanned exactly once, at boot. `PATCH /engine/reload` does **not** re-scan —
+the route set is fixed for the process lifetime, so picking up added/changed/removed
+extension files requires a container restart.
+
+### Compose example
+
+```yaml
+services:
+  navi_app:
+    environment:
+      NAVI_EXTENSIONS_ENABLED: "true"
+    volumes:
+      - ./my-extensions:/navi/extensions
+```
 
 ## `/api` namespace
 
