@@ -64,6 +64,7 @@ describe('WebServer', () => {
           { route: '/custom', text: 'Custom' },
           { route: '/logs', text: '/logs' },
         ],
+        hidden: [],
       });
 
       server.shutdown();

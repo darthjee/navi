@@ -23,7 +23,9 @@ const DEFAULT_LABELS = {
  * - A top-level `defaults: false` empties the shipped default block; a
  *   non-boolean `defaults` is ignored with a `Logger.warn` and treated as `true`.
  * - `hidden: true` on a known default route suppresses that default; on any
- *   other route it is dropped with a `Logger.warn`.
+ *   other route the route is retained and reported through `/menu.json`'s
+ *   `hidden` list (as a {@link MenuEntry} flagged `hidden`) so the SPA can
+ *   filter extension routes against it.
  * - A non-hidden custom entry re-listing a known default route repositions that
  *   default to the custom file position (its `text`, or the shipped label when
  *   omitted).
@@ -142,7 +144,7 @@ class MenuConfig {
    */
   static #resolve(defaultBlock, rawEntries) {
     const valid = this.#collectValid(rawEntries);
-    const { suppressed, visible } = this.#partitionHidden(valid);
+    const { suppressed, visible, hiddenRoutes } = this.#partitionHidden(valid);
     const repositioned = new Set(
       visible.map((raw) => raw.route).filter((route) => this.DEFAULT_ROUTES.includes(route)),
     );
@@ -150,8 +152,9 @@ class MenuConfig {
       (entry) => !suppressed.has(entry.route) && !repositioned.has(entry.route),
     );
     const customBlock = visible.map((raw) => this.#customEntry(raw));
+    const hiddenBlock = hiddenRoutes.map((route) => new MenuEntry({ route, hidden: true }));
 
-    return this.#dedupe([...keptDefaults, ...customBlock]);
+    return [...this.#dedupe([...keptDefaults, ...customBlock]), ...hiddenBlock];
   }
 
   /**
@@ -175,15 +178,17 @@ class MenuConfig {
   }
 
   /**
-   * Partitions the valid raw entries into suppressed default routes and the
-   * visible entries, warning on `hidden` used on a non-default route.
+   * Partitions the valid raw entries into suppressed default routes, the visible
+   * entries, and the hidden non-default routes surfaced through `/menu.json`.
    * @param {Array<{ entry: object, index: number }>} valid - The valid raw entries.
-   * @returns {{ suppressed: Set<string>, visible: Array<object> }} The partition.
+   * @returns {{ suppressed: Set<string>, visible: Array<object>, hiddenRoutes: Array<string> }}
+   *   The partition. `hiddenRoutes` is in file order and de-duplicated.
    */
   static #partitionHidden(valid) {
     const suppressed = new Set();
+    const hidden = new Set();
 
-    const visible = valid.reduce((list, { entry, index }) => {
+    const visible = valid.reduce((list, { entry }) => {
       if (entry.hidden !== true) {
         list.push(entry);
         return list;
@@ -194,13 +199,11 @@ class MenuConfig {
         return list;
       }
 
-      Logger.warn(
-        `[menu] skipping entry at index ${index}: "hidden" is only valid on a default route`,
-      );
+      hidden.add(entry.route);
       return list;
     }, []);
 
-    return { suppressed, visible };
+    return { suppressed, visible, hiddenRoutes: [...hidden] };
   }
 
   /**

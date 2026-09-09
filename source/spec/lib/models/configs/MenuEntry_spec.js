@@ -16,6 +16,23 @@ describe('MenuEntry', () => {
         expect(entry.text).toEqual('/logs');
       });
     });
+
+    describe('hidden flag', () => {
+      it('defaults to false', () => {
+        const entry = new MenuEntry({ route: '/logs' });
+        expect(entry.hidden).toBe(false);
+      });
+
+      it('is true when passed true', () => {
+        const entry = new MenuEntry({ route: '/logs', hidden: true });
+        expect(entry.hidden).toBe(true);
+      });
+
+      it('coerces a non-true value to false', () => {
+        const entry = new MenuEntry({ route: '/logs', hidden: 'yes' });
+        expect(entry.hidden).toBe(false);
+      });
+    });
   });
 
   describe('.fromObject', () => {

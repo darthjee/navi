@@ -113,7 +113,7 @@ precedent to reuse).
 |---|---|---|
 | `route` | yes | non-empty string; either starts with `/` (internal route) or is an absolute `http(s)://` URL (external). No whitespace. |
 | `text` | no | non-empty string; the visible label. Defaults to `route` when omitted (mirrors `Link.fromObject()` defaulting `text` to `url`). |
-| `hidden` | no | boolean; only meaningful when `route` matches a known default — see [Operator-supplied entries](#operator-supplied-entries). |
+| `hidden` | no | boolean; on a known-default `route` it suppresses that default. On any other `route` it is retained and surfaced through `/menu.json`'s `hidden` list — see [Operator-supplied entries](#operator-supplied-entries). |
 
 `icon`, `group`, and `order` are **out of scope** (deferred by #796 — see
 [Rendering limits](#rendering-limits)). A bare string entry shorthand is **not**
@@ -151,11 +151,13 @@ an operator has something concrete to copy and edit.
   modeled on `LinksSerializer`, emits:
 
   ```json
-  { "entries": [ { "route": "/logs", "text": "Logs" }, { "route": "/memory/status", "text": "Memory" } ] }
+  { "entries": [ { "route": "/logs", "text": "Logs" }, { "route": "/memory/status", "text": "Memory" } ], "hidden": [] }
   ```
 
-  `hidden` and `defaults` are resolved during load, not serialized — the response
-  is the final render list, in render order.
+  `defaults` is resolved during load, not serialized — `entries` is the final
+  render list, in render order. `hidden` is an always-present array of the
+  non-default `route` strings that carried `hidden: true` in the menu file (empty
+  when there are none); the SPA filters mounted extension routes against it.
 
 Rationale for a separate endpoint over extending `/links.json`: the two surfaces
 have different response shapes (`{ url, text }` vs `{ route, text }`) and different
@@ -273,8 +275,10 @@ entries:
     text: Dashboard
 ```
 
-Resulting menu: **Logs, Dashboard**. `hidden: true` on a `route` that is not a known
-default is a no-op (skip-and-warn — see [Validation](#validation)).
+Resulting menu: **Logs, Dashboard**. `hidden: true` on a `route` that is **not** a
+known default no longer warns and drops the entry — the route is retained and
+reported in `/menu.json`'s `hidden` array (never as a visible entry) so the SPA
+can filter mounted extension routes against it.
 
 There is **no `order` key** and no "insert default at position N" syntax in v1. The
 three levers above (append, `defaults: false`, per-entry `hidden`) plus repositioning
@@ -316,7 +320,7 @@ Applied **per entry**, after the file as a whole has parsed successfully.
 |---|---|---|
 | `route` | yes | non-empty string; either starts with `/` (internal route) or is an absolute `http(s)://` URL (external). No whitespace. |
 | `text` | no | non-empty string; defaults to `route` when omitted. |
-| `hidden` | no | boolean; only meaningful when `route` matches a known default. |
+| `hidden` | no | boolean; on a known-default `route` it suppresses that default, on any other `route` it is reported in `/menu.json`'s `hidden` list. |
 
 **Malformed individual entry ⇒ skip-and-warn.** An entry that fails the table above
 (missing `route`, `route` not a string, `route` with whitespace, `hidden` not a

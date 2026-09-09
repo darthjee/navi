@@ -60,7 +60,7 @@ describe('Router', () => {
 
       layer.route.stack[0].handle({}, res);
 
-      expect(res.json).toHaveBeenCalledWith({ entries: [{ route: '/logs', text: 'Logs' }] });
+      expect(res.json).toHaveBeenCalledWith({ entries: [{ route: '/logs', text: 'Logs' }], hidden: [] });
     });
 
     it('registers GET /emissions.json', () => {

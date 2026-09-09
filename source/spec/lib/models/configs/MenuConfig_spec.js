@@ -154,7 +154,7 @@ describe('MenuConfig', () => {
     });
 
     describe('when hidden is true on a non-default route', () => {
-      it('drops the entry with a warning and leaves the rest intact', () => {
+      it('keeps the visible entries and appends the hidden route as a flagged entry', () => {
         spyOn(Logger, 'warn').and.stub();
 
         const path = write([
@@ -165,10 +165,32 @@ describe('MenuConfig', () => {
           '    text: Beta',
         ]);
 
-        expect(rendered(path)).toEqual([LOGS, MEMORY, { route: '/beta', text: 'Beta' }]);
-        expect(Logger.warn).toHaveBeenCalledWith(
-          '[menu] skipping entry at index 0: "hidden" is only valid on a default route',
+        const entries = MenuConfig.fromFile(path);
+        const visible = entries.filter((entry) => !entry.hidden);
+        const hidden = entries.filter((entry) => entry.hidden);
+
+        expect(visible.map((entry) => entry.toJSON()))
+          .toEqual([LOGS, MEMORY, { route: '/beta', text: 'Beta' }]);
+        expect(hidden.map((entry) => entry.route)).toEqual(['/alpha']);
+        expect(Logger.warn).not.toHaveBeenCalledWith(
+          jasmine.stringMatching(/hidden.*only valid on a default route/),
         );
+      });
+
+      it('de-duplicates repeated hidden non-default routes in file order', () => {
+        const path = write([
+          'entries:',
+          '  - route: /gamma',
+          '    hidden: true',
+          '  - route: /alpha',
+          '    hidden: true',
+          '  - route: /gamma',
+          '    hidden: true',
+        ]);
+
+        const hidden = MenuConfig.fromFile(path).filter((entry) => entry.hidden);
+
+        expect(hidden.map((entry) => entry.route)).toEqual(['/gamma', '/alpha']);
       });
     });
 
