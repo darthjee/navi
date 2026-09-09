@@ -78,6 +78,18 @@ This brings up the monitoring web UI immediately at `http://localhost:3000`, and
 | `WORKERS_SLEEP` | `500` | `workers.sleep` |
 | `MAX_RETRIES` | `3` | `workers.max-retries` |
 
+A few loader/CLI controls (not packed-config fields) round out the surface:
+
+| Env var | Default | Meaning |
+|---------|---------|---------|
+| `NAVI_EXTENSIONS_ENABLED` | unset (off) | Load extra backend routes + frontend pages from the extensions mount. Truthy = `1`/`true`/`yes`/`on`. |
+| `NAVI_EXTENSIONS_DIR` | `/navi/extensions` | Mount point scanned for `backend/` and `frontend/` subtrees. |
+| `NAVI_MENU` | `./config/menu.yml` | Menu config file (`-m` / `--menu`). |
+
+### Extending Navi
+
+Add your own backend routes and dashboard pages on top of the stock image without forking it — build a small project, mount its `dist/` folder, and set `NAVI_EXTENSIONS_ENABLED=true`. See [Extending Navi with Your Own Routes and Pages](docs/guides/navi/extending-navi.md), and [Configuring the Internal Navigation Menu](docs/guides/navi/configuring-the-menu.md) to customise the nav menu.
+
 For example, to change the exposed port:
 
 ```bash
