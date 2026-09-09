@@ -1,4 +1,4 @@
-.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client
+.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client build-extension-example-image
 
 PROJECT ?= navi
 COMPOSE ?= docker compose
@@ -12,6 +12,9 @@ DOCKERFILE_DEV ?= dockerfiles/dev_navi_hey/Dockerfile
 DOCKERFILE_DEV_APP ?= dockerfiles/dev_app/Dockerfile
 DOCKERFILE_PROD ?= dockerfiles/production_navi_hey/Dockerfile
 DOCKERFILE_PROD_CLIENT ?= dockerfiles/production_navi_client/Dockerfile
+DOCKERFILE_EXTENSION_EXAMPLE ?= dockerfiles/navi_hey_extension_example/Dockerfile
+EXTENSION_EXAMPLE_DIR ?= examples/navi-orders-extension
+EXTENSION_EXAMPLE_IMAGE ?= $(PROJECT)-hey-extension-example
 PROD_IMAGE := darthjee/navi-hey
 CLIENT_IMAGE := darthjee/navi-hey-client
 PLATFORM := linux/amd64
@@ -85,6 +88,11 @@ release-client:
 
 update-description-client:
 	/bin/sh $(DOCKER_HUB_SCRIPT) login_and_push_description $(CLIENT_IMAGE) DOCKERHUB_DESCRIPTION_CLIENT.md
+
+build-extension-example-image:
+	npm --prefix $(EXTENSION_EXAMPLE_DIR) ci
+	npm --prefix $(EXTENSION_EXAMPLE_DIR) run build
+	docker build -f $(DOCKERFILE_EXTENSION_EXAMPLE) . -t $(EXTENSION_EXAMPLE_IMAGE):latest
 
 .env:
 	cp .env.sample .env
