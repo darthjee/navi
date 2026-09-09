@@ -1,4 +1,4 @@
-.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client build-extension-example-image
+.PHONY: help setup dev tests build-dev build build-httpd build-image release update-description dev-app-up build-client build-image-client release-client update-description-client build-extension-example-image smoke-extensions
 
 PROJECT ?= navi
 COMPOSE ?= docker compose
@@ -45,6 +45,13 @@ tests:
 
 dev-app:
 	$(COMPOSE) run --rm $(DEV_SERVICE) $(DEV_SHELL)
+
+smoke-extensions: .env
+	$(MAKE) build-dev
+	cd $(EXTENSION_EXAMPLE_DIR) && npm ci && npm run build
+	$(COMPOSE) up -d navi_extensions_app
+	SMOKE_PORT=3040 bash scripts/smoke/extensions.sh; status=$$?; \
+	  $(COMPOSE) down; exit $$status
 
 dev-app-up:
 	$(COMPOSE) up navi_dev_app navi_proxy
