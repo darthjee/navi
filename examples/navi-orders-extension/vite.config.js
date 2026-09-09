@@ -4,7 +4,12 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    lib: { entry: 'src/frontend/entry.js', formats: ['es'], fileName: () => 'orders.js' },
+    lib: {
+      entry: 'src/frontend/entry.js',
+      formats: ['es'],
+      fileName: () => 'orders.js',
+      cssFileName: 'orders',
+    },
     outDir: 'dist/frontend',
     emptyOutDir: true,
     rollupOptions: {
