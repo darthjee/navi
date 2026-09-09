@@ -4,6 +4,17 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-dom/client', 'react-router-dom'],
+        },
+        chunkFileNames: (chunkInfo) =>
+          chunkInfo.name === 'react-vendor'
+            ? 'assets/react-vendor.js'
+            : 'assets/[name]-[hash].js',
+      },
+    },
   },
   server: {
     port: 8080,
