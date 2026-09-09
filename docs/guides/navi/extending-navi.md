@@ -460,7 +460,7 @@ ENV NAVI_EXTENSIONS_ENABLED=true
 
 The Navi SPA is still **not** rebuilt — the frontend bundle is the same pre-built ESM file the SPA discovers at boot. Pin `NAVI_TAG` to an exact Navi version and run the upgrade checklist below when you bump it. A `docker-compose.yml` for this shape just sets `image:` to the derived tag and drops the two `volumes:` lines.
 
-**See it working.** `docker compose up navi_extensions_app` boots the stock dev image with this example mounted on port `3040`, and `make smoke-extensions` asserts the route, the frontend manifest, and the server-side menu entry end to end.
+**See it working.** `docker compose up navi_extensions_app` boots the stock dev image with this example mounted on port `3040`, and `make smoke-extensions` asserts the route, the frontend manifest, and the server-side menu entry end to end. See [Option E — Development image](./option-e-development-image.md) for how to run this image outside of the extensions workflow.
 
 ### Reload limitation
 
