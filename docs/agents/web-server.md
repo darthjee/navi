@@ -377,8 +377,7 @@ after the stock `GET` map and before `express.static`, so `/extensions/*` never
 falls through to the SPA catch-all. The SPA — not the server — fetches the
 manifest, injects each bundle, and reconciles the resulting menu entries against
 `/menu.json`'s `hidden` array. See `docs/agents/frontend.md` for the SPA-side
-wiring and `docs/agents/future/extension-architecture.md` `## Frontend` for the
-full specification.
+wiring.
 
 ## `/api` namespace
 
