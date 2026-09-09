@@ -7,10 +7,17 @@ class HealthHandler extends RequestHandler {
   /**
    * @param {object} _req - The Express request.
    * @param {object} res - The Express response.
+   */
+  constructor(_req, res) {
+    super();
+    this.res = res;
+  }
+
+  /**
    * @returns {void}
    */
-  handle(_req, res) {
-    res.json({ status: 'ok' });
+  handle() {
+    this.res.json({ status: 'ok' });
   }
 }
 

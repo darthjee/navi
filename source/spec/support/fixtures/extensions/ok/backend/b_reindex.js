@@ -7,10 +7,17 @@ class ReindexHandler extends RequestHandler {
   /**
    * @param {object} _req - The Express request.
    * @param {object} res - The Express response.
+   */
+  constructor(_req, res) {
+    super();
+    this.res = res;
+  }
+
+  /**
    * @returns {Promise<void>} Resolves once the response is sent.
    */
-  async handle(_req, res) {
-    res.json({ reindexed: true });
+  async handle() {
+    this.res.json({ reindexed: true });
   }
 }
 

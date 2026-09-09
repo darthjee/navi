@@ -28,11 +28,12 @@ class ServerController {
    * @param {object} params - Build parameters.
    * @param {object} [params.webConfig] - The web configuration object.
    * @param {Array<import('../../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
+   * @param {Array<{ method: string, path: string, handler: Function }>} [params.extensionRoutes=[]] - Validated, collision-filtered backend extension route descriptors.
    * @returns {ServerController} The built ServerController instance, never `null`.
    */
-  static build({ webConfig, menuConfig = [] }) {
+  static build({ webConfig, menuConfig = [], extensionRoutes = [] }) {
     const controller = new ServerController();
-    controller.#webServer = controller.buildWebServer({ webConfig, menuConfig });
+    controller.#webServer = controller.buildWebServer({ webConfig, menuConfig, extensionRoutes });
     controller.#sampler = controller.buildSampler({ webConfig });
     return controller;
   }
@@ -42,10 +43,11 @@ class ServerController {
    * @param {object} params - Build parameters.
    * @param {object} [params.webConfig] - The web configuration object.
    * @param {Array<import('../../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
+   * @param {Array<{ method: string, path: string, handler: Function }>} [params.extensionRoutes=[]] - Validated, collision-filtered backend extension route descriptors.
    * @returns {WebServer|null} The created WebServer instance or null.
    */
-  buildWebServer({ webConfig, menuConfig = [] }) {
-    return WebServer.build({ webConfig, menuConfig });
+  buildWebServer({ webConfig, menuConfig = [], extensionRoutes = [] }) {
+    return WebServer.build({ webConfig, menuConfig, extensionRoutes });
   }
 
   /**

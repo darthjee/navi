@@ -7,10 +7,17 @@ class SurvivorHandler extends RequestHandler {
   /**
    * @param {object} _req - The Express request.
    * @param {object} res - The Express response.
+   */
+  constructor(_req, res) {
+    super();
+    this.res = res;
+  }
+
+  /**
    * @returns {void}
    */
-  handle(_req, res) {
-    res.json({ ok: true });
+  handle() {
+    this.res.json({ ok: true });
   }
 }
 

@@ -71,6 +71,37 @@ describe('WebServer', () => {
     });
   });
 
+  describe('extension routes threading', () => {
+    it('serves a threaded extension descriptor', async () => {
+      const webConfig = new WebConfig({ port: 19994 });
+      class PingHandler {
+        constructor(_req, res) {
+          this.res = res;
+        }
+
+        handle() {
+          this.res.json({ pong: true });
+        }
+      }
+      const extensionRoutes = [{ method: 'GET', path: '/ext/ping.json', handler: PingHandler }];
+      const server = WebServer.build({ webConfig, extensionRoutes });
+      const serverPromise = server.start();
+
+      const body = await new Promise((resolve, reject) => {
+        http.get('http://localhost:19994/ext/ping.json', (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => resolve(data));
+        }).on('error', reject);
+      });
+
+      expect(JSON.parse(body)).toEqual({ pong: true });
+
+      server.shutdown();
+      await serverPromise;
+    });
+  });
+
   describe('#start', () => {
     it('returns a Promise that resolves when the server closes', async () => {
       const webConfig = new WebConfig({ port: 19999 });
