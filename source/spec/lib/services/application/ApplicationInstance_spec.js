@@ -2,6 +2,8 @@ import { JobRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
+import { ExtensionRoutesLoader } from '../../../../lib/server/extensions/ExtensionRoutesLoader.js';
+import { STOCK_ROUTE_KEYS } from '../../../../lib/server/Router.js';
 import { ApplicationInstance } from '../../../../lib/services/application/ApplicationInstance.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { ServerController } from '../../../../lib/services/engine/ServerController.js';
@@ -122,6 +124,28 @@ describe('ApplicationInstance', () => {
 
         expect(engine.pause).toHaveBeenCalled();
         expect(instance.enqueueFirstJobs).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('backend route-handler extensions', () => {
+      it('loads them with the stock route keys and threads the result to ServerController', async () => {
+        const extensionRoutes = [{ method: 'GET', path: '/ext/x', handler: class {} }];
+        spyOn(ExtensionRoutesLoader, 'load').and.resolveTo(extensionRoutes);
+        spyOn(ServerController, 'build').and.callThrough();
+
+        await instance.run();
+
+        expect(ExtensionRoutesLoader.load).toHaveBeenCalledWith({ stockRouteKeys: STOCK_ROUTE_KEYS });
+        expect(ServerController.build).toHaveBeenCalledWith(jasmine.objectContaining({ extensionRoutes }));
+      });
+
+      it('boots normally when the loader resolves an empty list', async () => {
+        spyOn(ExtensionRoutesLoader, 'load').and.resolveTo([]);
+        spyOn(ServerController, 'build').and.callThrough();
+
+        await instance.run();
+
+        expect(ServerController.build).toHaveBeenCalledWith(jasmine.objectContaining({ extensionRoutes: [] }));
       });
     });
   });

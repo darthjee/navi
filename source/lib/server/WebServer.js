@@ -16,11 +16,12 @@ class WebServer {
    * @param {object} params - Options for initializing the WebServer.
    * @param {object} params.webConfig - The web configuration object.
    * @param {Array<import('../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
+   * @param {Array<{ method: string, path: string, handler: Function }>} [params.extensionRoutes=[]] - Validated, collision-filtered backend extension route descriptors.
    */
-  constructor({ webConfig, menuConfig = [] }) {
+  constructor({ webConfig, menuConfig = [], extensionRoutes = [] }) {
     this.#port = webConfig.port;
     this.#app = express();
-    this.#app.use(new Router({ webConfig, menuConfig }).build());
+    this.#app.use(new Router({ webConfig, menuConfig, extensionRoutes }).build());
   }
 
   /**
@@ -56,11 +57,12 @@ class WebServer {
    * @param {object} params - Options for building the WebServer.
    * @param {object|null} params.webConfig - The web configuration object.
    * @param {Array<import('../models/configs/MenuEntry.js').MenuEntry>} [params.menuConfig=[]] - The internal navigation menu entries.
+   * @param {Array<{ method: string, path: string, handler: Function }>} [params.extensionRoutes=[]] - Validated, collision-filtered backend extension route descriptors.
    * @returns {WebServer|null} A WebServer instance if webConfig is provided, otherwise null.
    */
-  static build({ webConfig, menuConfig = [] }) {
+  static build({ webConfig, menuConfig = [], extensionRoutes = [] }) {
     if (!webConfig) return null;
-    return new WebServer({ webConfig, menuConfig });
+    return new WebServer({ webConfig, menuConfig, extensionRoutes });
   }
 }
 

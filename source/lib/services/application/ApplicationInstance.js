@@ -1,6 +1,8 @@
 import { ApplicationConfigurator } from './ApplicationConfigurator.js';
 import { ResourceQueueFacade } from './ResourceQueueFacade.js';
 import { StartupCoordinator } from './StartupCoordinator.js';
+import { ExtensionRoutesLoader } from '../../server/extensions/ExtensionRoutesLoader.js';
+import { STOCK_ROUTE_KEYS } from '../../server/Router.js';
 import { RegistriesBuilder } from '../builders/RegistriesBuilder.js';
 import { EngineController } from '../engine/EngineController.js';
 import { EngineState } from '../engine/EngineState.js';
@@ -59,6 +61,13 @@ class ApplicationInstance {
   /**
    * Starts the application by building the engine, web server, enqueueing initial jobs, and starting both.
    * After the engine finishes, checks the dead-job ratio against the configured failure threshold.
+   *
+   * Backend route-handler extensions are loaded once here (before the server is
+   * built) via `ExtensionRoutesLoader.load`. `load()` runs regardless of whether
+   * a web config is present: when there is none, `ServerController.build`
+   * produces a `null` web server and the (usually empty) `extensionRoutes` are
+   * simply unused.
+   * @throws {ExtensionsDirectoryMissing} When extensions are enabled but the mounted directory is absent.
    * @returns {Promise<void>}
    */
   async run() {
@@ -73,9 +82,13 @@ class ApplicationInstance {
       reporter: this.#reporter,
       shouldAutostart: this.#shouldAutostart(),
     });
+    const extensionRoutes = await ExtensionRoutesLoader.load({
+      stockRouteKeys: STOCK_ROUTE_KEYS,
+    });
     this.#serverController = ServerController.build({
       webConfig: this.config.webConfig,
       menuConfig: this.#configStore.menuConfig,
+      extensionRoutes,
     });
     this.#engineController.serverController = this.#serverController;
 

@@ -5,6 +5,11 @@
   "description": "Navi cache warmer CLI",
   "readme": "README.md",
   "main": "index.js",
+  "exports": {
+    ".": "./bin/navi.js",
+    "./extension": "./lib/common/server/RequestHandler.js",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "navi-hey": "bin/navi.js"
   },

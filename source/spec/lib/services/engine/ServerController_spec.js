@@ -20,6 +20,18 @@ describe('ServerController', () => {
     });
   });
 
+  describe('#buildWebServer', () => {
+    it('forwards extensionRoutes to WebServer.build', () => {
+      const controller = new ServerController();
+      const extensionRoutes = [{ method: 'GET', path: '/ext/x', handler: class {} }];
+      spyOn(WebServer, 'build').and.returnValue(null);
+
+      controller.buildWebServer({ webConfig: { port: 1234 }, extensionRoutes });
+
+      expect(WebServer.build).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig: [], extensionRoutes });
+    });
+  });
+
   describe('.build', () => {
     describe('when webConfig is undefined', () => {
       it('returns a ServerController instance', () => {
@@ -43,7 +55,7 @@ describe('ServerController', () => {
 
       const controller = ServerController.build({ webConfig: { port: 1234 } });
 
-      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig: [] });
+      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig: [], extensionRoutes: [] });
       expect(controller.start()).toBe('start-result');
     });
 
@@ -54,7 +66,17 @@ describe('ServerController', () => {
 
       ServerController.build({ webConfig: { port: 1234 }, menuConfig });
 
-      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig });
+      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig, extensionRoutes: [] });
+    });
+
+    it('forwards extensionRoutes to buildWebServer', () => {
+      const extensionRoutes = [{ method: 'GET', path: '/ext/x', handler: class {} }];
+      spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
+      spyOn(ServerController.prototype, 'buildSampler').and.returnValue(buildFakeSampler());
+
+      ServerController.build({ webConfig: { port: 1234 }, extensionRoutes });
+
+      expect(ServerController.prototype.buildWebServer).toHaveBeenCalledWith({ webConfig: { port: 1234 }, menuConfig: [], extensionRoutes });
     });
 
     it('calls buildSampler and wraps its result', () => {

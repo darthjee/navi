@@ -38,22 +38,63 @@ const assetsDir = path.join(staticDir, 'assets');
 const assetsValidator = new PathValidator(assetsDir);
 
 /**
+ * Frozen set of every built-in `"<METHOD> <path>"` route key. Config-independent,
+ * so it lives at module scope even though the per-request handler maps in
+ * `build()` cannot. `ApplicationInstance` passes this into
+ * `ExtensionRoutesLoader.load({ stockRouteKeys })` so extension routes that clash
+ * with a stock route are dropped. Kept in sync with `build()` by a drift-guard
+ * spec.
+ * @type {Set<string>}
+ */
+const STOCK_ROUTE_KEYS = Object.freeze(new Set([
+  'GET /settings.json',
+  'GET /stats.json',
+  'GET /jobs/:status.json',
+  'GET /jobs/:job_id/logs.json',
+  'GET /job/:id.json',
+  'GET /engine/status',
+  'GET /memory/status.json',
+  'GET /memory/history.json',
+  'GET /logs.json',
+  'GET /emissions.json',
+  'GET /extractions.json',
+  'GET /links.json',
+  'GET /menu.json',
+  'GET /',
+  'GET /assets/*path',
+  'PATCH /jobs/:id/retry',
+  'PATCH /engine/pause',
+  'PATCH /engine/stop',
+  'PATCH /engine/continue',
+  'PATCH /engine/start',
+  'PATCH /engine/restart',
+  'PATCH /engine/reload',
+  'PATCH /engine/shutdown',
+  'POST /api/config',
+  'POST /api/engine/start',
+  'POST /api/engine/stop',
+]));
+
+/**
  * Builds the Express router with all application routes.
  * @author darthjee
  */
 class Router {
   #webConfig;
   #menuConfig;
+  #extensionRoutes;
 
   /**
    * Creates a new Router instance.
    * @param {object} [options={}] - Constructor options.
    * @param {object} [options.webConfig={}] - Web configuration, used by handlers that need it.
    * @param {Array<import('../models/configs/MenuEntry.js').MenuEntry>} [options.menuConfig=[]] - Internal navigation menu entries.
+   * @param {Array<{ method: string, path: string, handler: Function }>} [options.extensionRoutes=[]] - Validated, collision-filtered backend extension route descriptors.
    */
-  constructor({ webConfig = {}, menuConfig = [] } = {}) {
+  constructor({ webConfig = {}, menuConfig = [], extensionRoutes = [] } = {}) {
     this.#webConfig = webConfig;
     this.#menuConfig = menuConfig;
+    this.#extensionRoutes = extensionRoutes;
   }
 
   /**
@@ -113,6 +154,8 @@ class Router {
       register.registerPost({ route, handler });
     });
 
+    this.#registerExtensionRoutes(register);
+
     router.use(express.static(staticDir));
 
     router.use((_req, res) => {
@@ -121,6 +164,23 @@ class Router {
 
     return router;
   }
+
+  /**
+   * Registers the validated, collision-filtered backend extension descriptors on
+   * the router. Input is trusted — the loader has already checked method, path
+   * and collisions.
+   * @param {RouteRegister} register - The route register bound to the Express router.
+   * @returns {void}
+   */
+  #registerExtensionRoutes(register) {
+    this.#extensionRoutes.forEach(({ method, path: route, handler }) => {
+      const config = new HandlerConfig(handler);
+
+      if (method === 'GET') register.register({ route, handler: config });
+      else if (method === 'PATCH') register.registerPatch({ route, handler: config });
+      else register.registerPost({ route, handler: config });
+    });
+  }
 }
 
-export { Router };
+export { Router, STOCK_ROUTE_KEYS };
