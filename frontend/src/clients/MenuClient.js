@@ -1,7 +1,9 @@
 class MenuClient {
   /**
-   * Fetches the configured internal menu entries from the server.
-   * @returns {Promise<Array<{route: string, text: string}>>} A promise resolving to an array of menu entries.
+   * Fetches the configured internal menu from the server.
+   * @returns {Promise<{entries: Array<{route: string, text: string}>, hidden: string[]}>}
+   *   A promise resolving to the menu entries plus the list of routes the
+   *   operator hid from the extension menu merge.
    */
   static fetchEntries() {
     return fetch('/menu.json')
@@ -15,7 +17,10 @@ class MenuClient {
   }
 
   static #buildResponseHandler(data) {
-    return data.entries ?? [];
+    return {
+      entries: data.entries ?? [],
+      hidden: data.hidden ?? [],
+    };
   }
 }
 
