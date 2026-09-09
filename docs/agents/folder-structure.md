@@ -9,6 +9,7 @@
 | `dev/` | Sample apps and services used to exercise Navi in local development (dev backend, dev frontend, and two reverse proxies). |
 | `clients/` | Client packages for Navi's token-secured `/api/*` HTTP namespace, one subfolder per supported language. |
 | `worker/` | `deku-swarm`: the generic queue-and-pool worker package consumed by `source/`. |
+| `examples/` | Standalone worked-example projects that demonstrate building on top of Navi (owned by `guide`); the first entry is `navi-orders-extension/`. |
 | `dockerfiles/` | Dockerfiles for each service image (dev app, dev frontend, dev proxies, production build). |
 | `docker_volumes/` | Development/runtime data mounted into containers via `docker-compose.yml`. |
 | `scripts/` | Shell utilities for CI, release, and version bumping. |

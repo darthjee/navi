@@ -1,0 +1,18 @@
+# Minimal Navi config for exercising the extension in isolation.
+#
+# `web.autostart: false` keeps the cache-warmer idle — the smoke test only needs
+# the web server up to serve the extension route, the frontend manifest, and the
+# menu. `clients` / `resources` are required top-level keys, so a no-op pair is
+# provided; nothing is ever fetched.
+web:
+  port: 3000
+  autostart: false
+workers:
+  quantity: 1
+clients:
+  default:
+    base_url: http://localhost:3000
+resources:
+  noop:
+    - url: /
+      status: 200

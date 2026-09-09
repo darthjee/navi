@@ -1,0 +1,2 @@
+.orders-summary { font-weight: 600; }
+.orders-error   { color: var(--bs-danger, #dc3545); }
