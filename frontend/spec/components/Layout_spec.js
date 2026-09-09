@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Layout from '../../src/components/pages/Layout.jsx';
+import { resetExtensionsCache } from '../../src/extensions/loadExtensions.js';
 import noop from '../../src/utils/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
@@ -26,6 +27,7 @@ describe('Layout', () => {
   let root;
 
   beforeEach(() => {
+    resetExtensionsCache();
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -84,6 +86,9 @@ describe('Layout', () => {
             ok: true,
             json: () => Promise.resolve({ entries: [{ route: '/logs', text: 'Logs' }] }),
           });
+        }
+        if (url === '/extensions/frontend.json') {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve({ bundles: [] }) });
         }
         return new Promise(noop);
       });
