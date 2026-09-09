@@ -1,0 +1,23 @@
+{
+  "name": "navi-orders-extension",
+  "private": true,
+  "type": "module",
+  "description": "SPEC-5 worked example: an Orders extension for the stock darthjee/navi-hey image (backend route + frontend page + menu entry).",
+  "scripts": {
+    "build": "vite build && mkdir -p dist/backend && cp src/backend/*.js dist/backend/",
+    "test": "node --import ./spec/support/loader.js node_modules/.bin/jasmine --config=spec/support/jasmine.json"
+  },
+  "author": "darthjee",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "c8": "11.0.0",
+    "esbuild": "^0.28.0",
+    "jasmine": "^5.0.0",
+    "jsdom": "^25.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "7.14.2",
+    "vite": "^7.2.4"
+  }
+}
