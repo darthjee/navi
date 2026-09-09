@@ -31,8 +31,8 @@ class MenuMenuController {
 
   static async #loadEntries() {
     const [{ entries, hidden }, extensions] = await Promise.all([
-      MenuClient.fetchEntries(),
-      loadExtensions(),
+      MenuClient.fetchEntries().catch(() => ({ entries: [], hidden: [] })),
+      loadExtensions().catch(() => []),
     ]);
 
     const present = new Set(entries.map((e) => e.route));

@@ -1,17 +1,25 @@
 const MANIFEST_URL = '/extensions/frontend.json';
 const FETCH_TIMEOUT_MS = 2000;
 
-const fetchManifest = async () => {
+const fetchManifest = () => {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let timer;
 
-  try {
-    const res = await fetch(MANIFEST_URL, { signal: controller.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } finally {
-    clearTimeout(timer);
-  }
+  const timeout = new Promise((_resolve, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error('extensions manifest fetch timed out'));
+    }, FETCH_TIMEOUT_MS);
+    if (typeof timer.unref === 'function') timer.unref();
+  });
+
+  const request = fetch(MANIFEST_URL, { signal: controller.signal })
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    });
+
+  return Promise.race([request, timeout]).finally(() => clearTimeout(timer));
 };
 
 const appendStylesheet = (href) => {
@@ -90,5 +98,13 @@ let promise;
  * @returns {Promise<Array<{path: string, text: string, component: Function}>>}
  */
 export const loadExtensions = () => (promise ??= doLoad());
+
+/**
+ * Clears the memoised result so the next `loadExtensions()` call re-runs the
+ * fetch and imports. Intended for tests and hot-module reloads.
+ */
+export const resetExtensionsCache = () => {
+  promise = undefined;
+};
 
 export default loadExtensions;
