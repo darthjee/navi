@@ -146,6 +146,10 @@ source/docs
 docker_volumes/proxy_cache
 docker_volumes/node_modules*
 docker_volumes/static/*
+docker_volumes/extensions/backend/*
+docker_volumes/extensions/frontend/*
+!docker_volumes/extensions/backend/.gitkeep
+!docker_volumes/extensions/frontend/.gitkeep
 dev/proxy/static/assets/*
 dev/proxy/static/index.html
 dev/app/static

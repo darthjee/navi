@@ -21,25 +21,30 @@ services:
     container_name: navi_app
     depends_on: [base_build, navi_proxy]
     command: tail -f /dev/null
-    # To exercise mounted route-handler and frontend extensions locally, add:
-    #   environment:
-    #     NAVI_EXTENSIONS_ENABLED: "true"
-    #   volumes:
-    #     - ./source:/home/node/app
-    #     - ./worker:/home/node/worker
-    #     - ./docker_volumes/config:/home/node/app/config
-    #     - ./docker_volumes/node_modules:/home/node/app/node_modules
-    #     - ./docker_volumes/extensions:/navi/extensions
-    # One volume, two subtrees:
-    #   ./docker_volumes/extensions/backend/*.js   Express route handlers
-    #   ./docker_volumes/extensions/frontend/*.js  pre-built ESM bundles
-    #                                              (+ optional sibling *.css)
-    # (the volumes list must repeat the *base mounts, since a per-service
-    #  volumes: key overrides the merged one rather than extending it).
+    # For the mounted route-handler / frontend extension workflow see
+    # docs/guides/navi/extending-navi.md (exercised by navi_extensions_app below).
     ports:
       - 0.0.0.0:3000:3000
     links:
       - navi_proxy:remote_host
+
+  navi_extensions_app:
+    <<: *base
+    container_name: navi_extensions_app
+    depends_on: [base_build]
+    working_dir: /home/node/app
+    command: node bin/navi.js -c config/navi_config.yml -m config/menu.yml
+    environment:
+      NAVI_EXTENSIONS_ENABLED: "true"
+    volumes:
+      - ./source:/home/node/app
+      - ./worker:/home/node/worker
+      - ./docker_volumes/config:/home/node/app/config
+      - ./docker_volumes/node_modules:/home/node/app/node_modules
+      - ./examples/navi-orders-extension/dist:/navi/extensions:ro
+      - ./examples/navi-orders-extension/config/menu.yml:/home/node/app/config/menu.yml:ro
+    ports:
+      - 0.0.0.0:3040:3000
 
   navi_tests:
     <<: *base
