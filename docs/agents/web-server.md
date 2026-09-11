@@ -415,22 +415,44 @@ Same start/enqueue semantics as `PATCH /engine/start`, but scoped per namespace 
 {
   "targets": [
     { "namespace": "reports", "resources": ["categories"] },
-    { "namespace": "billing" }
+    { "namespace": "billing" },
+    {
+      "namespace": "crawler",
+      "parameters": { "region": "eu", "slug": "default" },
+      "resources": [
+        "collection",
+        { "name": "collection", "parameters": { "slug": "tidal-aberrations" } },
+        { "name": "bundle", "parameters": { "slug": "x", "region": "us" } }
+      ]
+    }
   ]
 }
 ```
 
-Each entry names one namespace and, optionally, specific resource names within it — omitting `resources` for an entry enqueues every param-free resource in that namespace (mirroring the boot-time default, scoped to the namespace). Omitting `targets` entirely falls back to today's default-namespace behavior (top-level `resources`, as `PATCH /engine/start` already accepts). The response aggregates every target's `enqueued`/`skippedResources` into the same flat shape `PATCH /engine/start` already uses:
+Each entry names one namespace and, optionally, specific resource names within it — omitting `resources` for an entry enqueues every param-free resource in that namespace (mirroring the boot-time default, scoped to the namespace, and unaffected by a target-level `parameters` default — bulk enqueue stays param-free-only). Omitting `targets` entirely falls back to today's default-namespace behavior (top-level `resources`, as `PATCH /engine/start` already accepts).
+
+A `resources[]` entry may also be an object `{ "name": "<resource>", "parameters": { ... } }` supplying `{:token}` values for that one enqueue, resolved at call time — no need to push a one-off resource definition via `POST /api/config`. A target may additionally carry a target-level `parameters` object, a default map for every resource in that target; a per-resource `parameters` map is shallow-merged **over** that default (per-resource wins on key conflict), and a bare-string entry receives the target-level map as-is. In the example above: the first `collection` resolves against `{region: eu, slug: default}`; the second `collection` against `{region: eu, slug: tidal-aberrations}`; `bundle` against `{region: us, slug: x}`. Repeating the same resource name with different `parameters` is how one resource is enqueued against several values in a single request — there is no `parameters_list` shorthand.
+
+Parameter values must be a `string`, `number`, `boolean`, or `null`; `null` (and an absent key) means "missing", while an empty string is a present value and is substituted as-is. Object/array values respond 400. The merged map rides through the same `parameters`-consuming machinery a chained action's mapped parameters already use — the request `url`, `emit.url`, the `parameters.*` path-expression namespace available to downstream `actions`, and `paginated_actions`' page merge — with no new substitution sites. It does **not** reach `emit.body_template` (resolves against the extracted item) or client `headers` (no substitution mechanism there). Values are substituted verbatim into the URL, not URL-encoded, matching config-time chaining; the token-secured caller is responsible for sanitizing any untrusted input it forwards.
+
+Extra keys with no matching `{:token}` anywhere in the resource are accepted silently, ignored for URL substitution, and still threaded into the enqueued job's `parameters` (so a downstream `action` can still read them) — required for the target-level-default pattern to be useful even against a param-free resource.
+
+The response aggregates every target's `enqueued`/`skippedResources` into the same flat shape `PATCH /engine/start` already uses:
 
 ```json
 {
   "status": "running",
-  "enqueued": ["categories"],
-  "skippedResources": [{ "name": "missing_resource", "reason": "not_found" }]
+  "enqueued": ["categories", "collection", "collection", "bundle"],
+  "skippedResources": [
+    { "name": "missing_resource", "reason": "not_found" },
+    { "name": "collection", "reason": "needs_params", "parameters": { "slug": "b" } }
+  ]
 }
 ```
 
-Malformed `targets` (missing/non-string `namespace`, or a non-array-of-strings `resources`) responds 400. `ConflictError` (409) applies exactly as it does for `PATCH /engine/start` when the engine is `paused`/`pausing`/`stopping`.
+`enqueued` stays a plain `string[]`, one entry per accepted resource entry — duplicates allowed, no parameters echoed, byte-identical to today for callers that don't use this feature. `skippedResources` entries gain an optional `parameters` key, present only when the skipped entry carried a merged parameter map — echoing exactly what was evaluated against the token gate. `needs_params` (an existing reason, not a new one) now also covers "the resource still has an unresolved `{:token}` after target-level and per-resource `parameters` were merged in" — resource-level all-or-nothing, same as today: if any request in the resource still has an unresolved token after the merge, the whole entry is skipped.
+
+Malformed `targets` responds 400 with `{ "error": "<message>" }` and nothing enqueued — this now also covers a non-plain-object target-level `parameters`, and a `resources[]` entry that is neither a non-empty string nor a well-formed `{ name, parameters? }` object (a required non-blank `name`, and, if present, a `parameters` map passing the value-type check above; unknown keys on the object are ignored). `ConflictError` (409) applies exactly as it does for `PATCH /engine/start` when the engine is `paused`/`pausing`/`stopping`.
 
 ### `POST /api/engine/stop`
 
