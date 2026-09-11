@@ -237,7 +237,7 @@ class ResourceRequest {
     const matches = this.url.matchAll(/\{:(\w+)\}/g);
 
     for (const [, key] of matches) {
-      if (!Object.prototype.hasOwnProperty.call(parameters, key) || parameters[key] == null) {
+      if (!Object.prototype.hasOwnProperty.call(parameters, key) || parameters[key] === null) {
         return true;
       }
     }
