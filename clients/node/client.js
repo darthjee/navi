@@ -90,7 +90,14 @@ class NaviClient {
    * running instance, scoped per namespace via `targets`.
    *
    * @param {object} [payload={}] The request body (`targets`), or `{}` to
-   * fall back to the instance's default-namespace behavior.
+   * fall back to the instance's default-namespace behavior. Each `targets[]`
+   * entry may carry a target-level `parameters` default (a plain object) and
+   * `resources[]` entries may be either a bare string (unchanged) or an
+   * object `{ name, parameters }` supplying per-resource `{:token}` values
+   * for that one enqueue call, e.g.
+   * `{ namespace: 'crawler', parameters: { region: 'eu' }, resources: [{ name: 'collection', parameters: { slug: 'tidal-aberrations' } }] }`.
+   * This package requires no changes to support it: the payload is forwarded
+   * to the engine as-is, with no client-side validation or merging.
    * @returns {Promise<object>} The parsed JSON response body (`status`, `enqueued`, `skippedResources`).
    * @throws {ApiRequestFailed} If the request fails or the response status is >= 400.
    */

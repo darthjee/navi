@@ -116,22 +116,57 @@ class ApiEngineStartHandler extends SecuredRequestHandler {
    */
   #validTarget(target) {
     if (!target || typeof target.namespace !== 'string' || !target.namespace.trim()) return false;
+    if (target.parameters !== undefined && !this.#validParameters(target.parameters)) return false;
     if (target.resources === undefined) return true;
 
-    return Array.isArray(target.resources) && target.resources.every((name) => typeof name === 'string');
+    return Array.isArray(target.resources) && target.resources.every((entry) => this.#validResourceEntry(entry));
+  }
+
+  /**
+   * Validates a single `resources[]` entry: either a bare string (unchanged, including
+   * an empty string), or a plain object with a non-blank `name` and, if present, a
+   * `parameters` value that passes `#validParameters`. Unknown keys are ignored.
+   * @param {*} entry - The candidate resource entry.
+   * @returns {boolean} True when the entry is well-formed.
+   * @private
+   */
+  #validResourceEntry(entry) {
+    if (typeof entry === 'string') return true;
+
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+    if (typeof entry.name !== 'string' || !entry.name.trim()) return false;
+
+    return entry.parameters === undefined || this.#validParameters(entry.parameters);
+  }
+
+  /**
+   * Validates a parameter map: a plain object (not an array, not null) whose every
+   * value is a string, number, boolean, or null.
+   * @param {*} value - The candidate parameters value.
+   * @returns {boolean} True when the value is a well-formed parameter map.
+   * @private
+   */
+  #validParameters(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+
+    return Object.values(value).every((paramValue) => (
+      paramValue === null || ['string', 'number', 'boolean'].includes(typeof paramValue)
+    ));
   }
 
   /**
    * Aggregates the per-target enqueue results into one flat `{ enqueued, skippedResources }`.
-   * @param {Array<{namespace: string, resources: Array<string>|undefined}>} targets - The targets to enqueue.
+   * @param {Array<{namespace: string, resources: Array<string|object>|undefined, parameters: object|undefined}>} targets - The targets to enqueue.
    * @param {{enqueued: Array<string>, skippedResources: Array<object>}} [seed] - Initial accumulator.
    * @returns {{enqueued: Array<string>, skippedResources: Array<object>}} The aggregated result.
    * @private
    */
   #aggregate(targets, seed = { enqueued: [], skippedResources: [] }) {
-    return targets.reduce((acc, { namespace, resources }) => {
+    return targets.reduce((acc, { namespace, resources, parameters }) => {
       const enqueuer = new ResourceEnqueuer(namespace);
-      const result = resources === undefined ? enqueuer.enqueueAll() : enqueuer.enqueue(resources);
+      const result = resources === undefined
+        ? enqueuer.enqueueAll()
+        : enqueuer.enqueue(resources, { parameters: parameters ?? {} });
 
       return {
         enqueued: [...acc.enqueued, ...result.enqueued],

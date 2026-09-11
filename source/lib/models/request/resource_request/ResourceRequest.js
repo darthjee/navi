@@ -226,6 +226,26 @@ class ResourceRequest {
   }
 
   /**
+   * Returns true if the URL template contains at least one {:placeholder} token
+   * whose key is absent or null in the given parameters. An empty string is
+   * considered a present value and does not count as unresolved. Extra keys in
+   * parameters with no matching token are irrelevant to this check.
+   * @param {object} [parameters={}] Key-value map of URL parameters.
+   * @returns {boolean} true if at least one token remains unresolved, false otherwise.
+   */
+  hasUnresolvedTokens(parameters = {}) {
+    const matches = this.url.matchAll(/\{:(\w+)\}/g);
+
+    for (const [, key] of matches) {
+      if (!Object.prototype.hasOwnProperty.call(parameters, key) || parameters[key] === null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Creates a list of ResourceRequest instances from an array of objects.
    * @param {Array<{ url: string, status: number }>} array list of objects with attributes to create a new ResourceRequest
    * @param {object} [options={}] optional options to assign to each ResourceRequest
