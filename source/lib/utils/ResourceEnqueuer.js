@@ -24,15 +24,20 @@ class ResourceEnqueuer {
   }
 
   /**
-   * Enqueues the given resource names.
-   * @param {Array<string>} names - Resource names to enqueue.
-   * @returns {{enqueued: Array<string>, skippedResources: Array<{name: string, reason: string}>}} The enqueued names and any skipped resources.
+   * Enqueues the given resource entries.
+   * @param {Array<string|{name: string, parameters?: object}>} entries - Resource names to
+   * enqueue, either as bare names or as objects carrying per-resource parameter overrides.
+   * @param {object} [options={}] Enqueue options.
+   * @param {object} [options.parameters={}] Target-level default parameter map, merged
+   * underneath each entry's own `parameters` (per-resource values win on key conflict).
+   * @returns {{enqueued: Array<string>, skippedResources: Array<{name: string, reason: string, parameters?: object}>}} The enqueued names and any skipped resources.
    */
-  enqueue(names) {
+  enqueue(entries, { parameters: targetParameters = {} } = {}) {
     const enqueued = [];
     const skippedResources = [];
 
-    names.forEach((name) => {
+    entries.forEach((entry) => {
+      const { name, parameters: merged } = this.#normalizeEntry(entry, targetParameters);
       const resource = this.#findResource(name);
 
       if (!resource) {
@@ -45,13 +50,15 @@ class ResourceEnqueuer {
         return;
       }
 
-      if (resource.resourceRequests.some((request) => request.needsParams())) {
-        skippedResources.push({ name, reason: 'needs_params' });
+      if (resource.resourceRequests.some((request) => request.hasUnresolvedTokens(merged))) {
+        const skipped = { name, reason: 'needs_params' };
+        if (Object.keys(merged).length > 0) skipped.parameters = merged;
+        skippedResources.push(skipped);
         return;
       }
 
       resource.resourceRequests.forEach((resourceRequest) => {
-        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: merged });
       });
       enqueued.push(name);
     });
@@ -77,6 +84,24 @@ class ResourceEnqueuer {
     }
 
     return { enqueued: [], skippedResources: [] };
+  }
+
+  /**
+   * Normalizes a resource entry into its resolved name and merged parameter map.
+   * A bare string entry inherits the target-level parameters as-is; an object
+   * entry's own `parameters` are shallow-merged on top of the target-level
+   * defaults, with the per-resource value winning on key conflict.
+   * @param {string|{name: string, parameters?: object}} entry - The raw resource entry.
+   * @param {object} targetParameters - The target-level default parameter map.
+   * @returns {{name: string, parameters: object}} The resolved name and merged parameters.
+   * @private
+   */
+  #normalizeEntry(entry, targetParameters) {
+    if (typeof entry === 'string') {
+      return { name: entry, parameters: targetParameters };
+    }
+
+    return { name: entry.name, parameters: { ...targetParameters, ...entry.parameters } };
   }
 
   /**

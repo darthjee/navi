@@ -126,6 +126,120 @@ describe('ResourceEnqueuer', () => {
       expect(JobRegistry.enqueue).not.toHaveBeenCalled();
       expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'home_page', reason: 'not_found' }] });
     });
+
+    describe('with per-entry and target-level parameters', () => {
+      let categoryRequest;
+      let categoriesResource;
+
+      beforeEach(() => {
+        categoryRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
+        categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
+        NamespaceMap.build({ default: new Namespace({ name: 'default', resources: { categories: categoriesResource } }) });
+      });
+
+      it('enqueues with the merged parameters when an entry object satisfies its tokens', () => {
+        const result = new ResourceEnqueuer().enqueue([{ name: 'categories', parameters: { id: 1 } }]);
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: categoryRequest, parameters: { id: 1 } },
+        );
+        expect(result).toEqual({ enqueued: ['categories'], skippedResources: [] });
+      });
+
+      it('merges a target-level default underneath a per-resource override, per-resource winning on conflict', () => {
+        const result = new ResourceEnqueuer().enqueue(
+          [{ name: 'categories', parameters: { id: 2 } }],
+          { parameters: { id: 1, extra: 'value' } },
+        );
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: categoryRequest, parameters: { id: 2, extra: 'value' } },
+        );
+        expect(result).toEqual({ enqueued: ['categories'], skippedResources: [] });
+      });
+
+      it('skips as needs_params, echoing the merged parameters, when a required token is still missing after the merge', () => {
+        const result = new ResourceEnqueuer().enqueue(
+          [{ name: 'categories', parameters: { unrelated: 'value' } }],
+        );
+
+        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+        expect(result).toEqual({
+          enqueued: [],
+          skippedResources: [{ name: 'categories', reason: 'needs_params', parameters: { unrelated: 'value' } }],
+        });
+      });
+
+      it('does not echo a parameters key when no parameters were supplied at all', () => {
+        const result = new ResourceEnqueuer().enqueue(['categories']);
+
+        expect(result).toEqual({
+          enqueued: [],
+          skippedResources: [{ name: 'categories', reason: 'needs_params' }],
+        });
+      });
+
+      it('applies the target-level default as-is to a bare-string entry', () => {
+        const result = new ResourceEnqueuer().enqueue(['categories'], { parameters: { id: 7 } });
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: categoryRequest, parameters: { id: 7 } },
+        );
+        expect(result).toEqual({ enqueued: ['categories'], skippedResources: [] });
+      });
+
+      it('threads extra parameter keys with no matching token into the enqueued job parameters', () => {
+        const result = new ResourceEnqueuer().enqueue(
+          [{ name: 'categories', parameters: { id: 1, unrelated: 'value' } }],
+        );
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: categoryRequest, parameters: { id: 1, unrelated: 'value' } },
+        );
+        expect(result).toEqual({ enqueued: ['categories'], skippedResources: [] });
+      });
+
+      it('enqueues two separate jobs and pushes the name twice when the same resource repeats with different parameters', () => {
+        const result = new ResourceEnqueuer().enqueue([
+          { name: 'categories', parameters: { id: 1 } },
+          { name: 'categories', parameters: { id: 2 } },
+        ]);
+
+        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: categoryRequest, parameters: { id: 1 } },
+        );
+        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+          'ResourceRequestJob',
+          { resourceRequest: categoryRequest, parameters: { id: 2 } },
+        );
+        expect(result).toEqual({ enqueued: ['categories', 'categories'], skippedResources: [] });
+      });
+
+      it('still skips as not_found even when parameters are supplied for an unknown name', () => {
+        const result = new ResourceEnqueuer().enqueue([{ name: 'missing', parameters: { id: 1 } }]);
+
+        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+        expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'missing', reason: 'not_found' }] });
+      });
+
+      it('still skips as disabled even when parameters are supplied and would satisfy the tokens', () => {
+        const disabledRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json', disabled: true });
+        const disabledResource = ResourceFactory.build({ name: 'disabled', resourceRequests: [disabledRequest] });
+        NamespaceMap.reset();
+        NamespaceMap.build({ default: new Namespace({ name: 'default', resources: { disabled: disabledResource } }) });
+
+        const result = new ResourceEnqueuer().enqueue([{ name: 'disabled', parameters: { id: 1 } }]);
+
+        expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+        expect(result).toEqual({ enqueued: [], skippedResources: [{ name: 'disabled', reason: 'disabled' }] });
+      });
+    });
   });
 
   describe('#enqueueAll', () => {
@@ -158,6 +272,24 @@ describe('ResourceEnqueuer', () => {
       const result = new ResourceEnqueuer('missing_namespace').enqueueAll();
 
       expect(JobRegistry.enqueue).not.toHaveBeenCalled();
+      expect(result).toEqual({ enqueued: [], skippedResources: [] });
+    });
+
+    it('stays param-free-only, ignoring a target-level parameters argument', () => {
+      const homePageRequest = ResourceRequestFactory.build({ url: '/' });
+      const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
+      const categoryRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
+      const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
+      NamespaceMap.build({
+        default: new Namespace({
+          name: 'default',
+          resources: { home_page: homePageResource, categories: categoriesResource },
+        }),
+      });
+
+      const result = new ResourceEnqueuer().enqueueAll({ parameters: { id: 1 } });
+
+      expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith('ResourceRequestJob', { resourceRequest: homePageRequest, parameters: {} });
       expect(result).toEqual({ enqueued: [], skippedResources: [] });
     });
   });
