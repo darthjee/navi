@@ -182,6 +182,38 @@ describe('ApiEngineStartHandler', () => {
           });
         });
       });
+
+      describe('and targets carries an object-form resource with parameters', () => {
+        let collectionRequest;
+
+        beforeEach(() => {
+          collectionRequest = ResourceRequestFactory.build({ url: '/bundle/{:slug}/' });
+          const collectionResource = ResourceFactory.build({ name: 'collection', resourceRequests: [collectionRequest] });
+
+          NamespaceMap.build({
+            default: new Namespace({ name: 'default' }),
+            reports: new Namespace({ name: 'reports', resources: { collection: collectionResource } }),
+          });
+
+          spyOn(Application, 'start').and.returnValue(Promise.resolve(undefined));
+        });
+
+        it('enqueues the resource with the given parameters and responds with running status', async () => {
+          const req = {
+            body: {
+              targets: [{ namespace: 'reports', resources: [{ name: 'collection', parameters: { slug: 'x' } }] }],
+            },
+          };
+
+          await new ApiEngineStartHandler(req, res, 'token').process();
+
+          expect(JobRegistry.enqueue).toHaveBeenCalledWith(
+            'ResourceRequestJob',
+            { resourceRequest: collectionRequest, parameters: { slug: 'x' } },
+          );
+          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['collection'], skippedResources: [] });
+        });
+      });
     });
 
     describe('when the engine is running', () => {
@@ -328,6 +360,56 @@ describe('ApiEngineStartHandler', () => {
             enqueued: [],
             skippedResources: [{ name: 'categories', reason: 'needs_params' }],
           });
+        });
+
+        it('enqueues one and skips the other when the same resource name repeats with satisfying and missing parameters', async () => {
+          const req = {
+            body: {
+              targets: [{
+                namespace: 'reports',
+                resources: [
+                  { name: 'categories', parameters: { id: 1 } },
+                  { name: 'categories', parameters: { other: 'value' } },
+                ],
+              }],
+            },
+          };
+
+          await new ApiEngineStartHandler(req, res, 'token').process();
+
+          expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+            'ResourceRequestJob',
+            { resourceRequest: categoryRequest, parameters: { id: 1 } },
+          );
+          expect(res.json).toHaveBeenCalledWith({
+            status: 'running',
+            enqueued: ['categories'],
+            skippedResources: [{ name: 'categories', reason: 'needs_params', parameters: { other: 'value' } }],
+          });
+        });
+
+        it('threads extra parameter keys through to a request with no {:token} at all', async () => {
+          const homePageRequest = ResourceRequestFactory.build({ url: '/' });
+          const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
+          NamespaceMap.reset();
+          NamespaceMap.build({
+            default: new Namespace({ name: 'default' }),
+            reports: new Namespace({ name: 'reports', resources: { home_page: homePageResource } }),
+          });
+
+          const req = {
+            body: {
+              targets: [{ namespace: 'reports', resources: [{ name: 'home_page', parameters: { unrelated: 'value' } }] }],
+            },
+          };
+
+          await new ApiEngineStartHandler(req, res, 'token').process();
+
+          expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
+            'ResourceRequestJob',
+            { resourceRequest: homePageRequest, parameters: { unrelated: 'value' } },
+          );
+          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['home_page'], skippedResources: [] });
         });
       });
     });
