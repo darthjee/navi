@@ -300,6 +300,98 @@ describe('ResourceRequest', () => {
     });
   });
 
+  describe('#hasUnresolvedTokens', () => {
+    [
+      {
+        description: 'when the URL has no placeholders',
+        url: '/categories.json',
+        parameters: {},
+        expected: false,
+      },
+      {
+        description: 'when a single placeholder is present as a non-empty string',
+        url: '/bundle/{:slug}/',
+        parameters: { slug: 'shoes' },
+        expected: false,
+      },
+      {
+        description: 'when a single placeholder is present as an empty string',
+        url: '/bundle/{:slug}/',
+        parameters: { slug: '' },
+        expected: false,
+      },
+      {
+        description: 'when a single placeholder is present as a number',
+        url: '/categories/{:id}.json',
+        parameters: { id: 1 },
+        expected: false,
+      },
+      {
+        description: 'when a single placeholder is present as a boolean',
+        url: '/categories/{:active}.json',
+        parameters: { active: false },
+        expected: false,
+      },
+      {
+        description: 'when a single placeholder is absent',
+        url: '/categories/{:id}.json',
+        parameters: {},
+        expected: true,
+      },
+      {
+        description: 'when a single placeholder is explicitly null',
+        url: '/categories/{:id}.json',
+        parameters: { id: null },
+        expected: true,
+      },
+      {
+        description: 'when one of multiple placeholders is satisfied and the other is not',
+        url: '/categories/{:cat}/items/{:item}',
+        parameters: { cat: 5 },
+        expected: true,
+      },
+      {
+        description: 'when all placeholders are satisfied',
+        url: '/categories/{:cat}/items/{:item}',
+        parameters: { cat: 5, item: 3 },
+        expected: false,
+      },
+      {
+        description: 'when extra unrelated keys are given alongside a satisfied placeholder',
+        url: '/categories/{:id}.json',
+        parameters: { id: 1, unrelated: 'value' },
+        expected: false,
+      },
+      {
+        description: 'when extra unrelated keys are given but the placeholder is absent',
+        url: '/categories/{:id}.json',
+        parameters: { unrelated: 'value' },
+        expected: true,
+      },
+      {
+        description: 'when called without arguments and the URL has a placeholder',
+        url: '/categories/{:id}.json',
+        expected: true,
+      },
+    ].forEach(({ description, url, parameters, expected }) => {
+      it(`returns ${expected} ${description}`, () => {
+        const request = ResourceRequestFactory.build({ url });
+        expect(request.hasUnresolvedTokens(parameters)).toBe(expected);
+      });
+    });
+
+    it('is equivalent to needsParams() when called with no parameters', () => {
+      [
+        '/categories.json',
+        '/categories/{:id}.json',
+        '/categories/{:id}/items/{:item_id}',
+      ].forEach((url) => {
+        const request = ResourceRequestFactory.build({ url });
+        expect(request.hasUnresolvedTokens()).toBe(request.needsParams());
+      });
+    });
+  });
+
   describe('#enqueueActions', () => {
     let action;
     let request;
