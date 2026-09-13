@@ -241,6 +241,85 @@ describe('ResourceRequestEmit', () => {
     });
   });
 
+  describe('#disabled', () => {
+    [
+      { description: 'when neither enabled nor disabled is given', attrs: {}, expected: false },
+      { description: 'when enabled is true', attrs: { enabled: true }, expected: false },
+      { description: 'when enabled is false', attrs: { enabled: false }, expected: true },
+      { description: 'when enabled is true and disabled is not given', attrs: { enabled: true }, expected: false },
+      { description: 'when disabled is true', attrs: { disabled: true }, expected: true },
+      { description: 'when disabled is false', attrs: { disabled: false }, expected: false },
+      { description: 'when disabled is true and enabled is not given', attrs: { disabled: true }, expected: true },
+      {
+        description: 'when enabled is true and disabled is true (disabled wins)',
+        attrs: { enabled: true, disabled: true },
+        expected: true,
+      },
+      {
+        description: 'when enabled is true and disabled is false',
+        attrs: { enabled: true, disabled: false },
+        expected: false,
+      },
+      {
+        description: 'when enabled is false and disabled is true',
+        attrs: { enabled: false, disabled: true },
+        expected: true,
+      },
+      {
+        description: 'when enabled is false and disabled is false',
+        attrs: { enabled: false, disabled: false },
+        expected: true,
+      },
+    ].forEach(({ description, attrs, expected }) => {
+      it(`returns ${expected} ${description}`, () => {
+        const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', ...attrs });
+
+        expect(emit.disabled).toBe(expected);
+      });
+    });
+
+    describe('when enabled/disabled are given non-boolean values', () => {
+      [
+        { description: 'enabled is null', attrs: { enabled: null } },
+        { description: 'enabled is an empty string', attrs: { enabled: '' } },
+        { description: 'enabled is an arbitrary string', attrs: { enabled: 'false' } },
+        { description: 'disabled is null', attrs: { disabled: null } },
+        { description: 'disabled is an empty string', attrs: { disabled: '' } },
+        { description: 'disabled is an arbitrary string', attrs: { disabled: 'true' } },
+      ].forEach(({ description, attrs }) => {
+        it(`does not trip either check when ${description}`, () => {
+          const emit = new ResourceRequestEmit({ method: 'POST', url: '/emit', ...attrs });
+
+          expect(emit.disabled).toBe(false);
+        });
+      });
+    });
+
+    describe('validation of method/url/headers/body_template', () => {
+      it('still throws MissingEmitUrl when url is missing, regardless of disabled: true', () => {
+        expect(() => new ResourceRequestEmit({ method: 'POST', disabled: true }))
+          .toThrowMatching((error) => error instanceof MissingEmitUrl);
+      });
+
+      it('still throws InvalidEmitMethod when method is invalid, regardless of enabled: false', () => {
+        expect(() => new ResourceRequestEmit({ method: 'GET', url: '/emit', enabled: false }))
+          .toThrowMatching((error) => error instanceof InvalidEmitMethod);
+      });
+
+      it('still throws InvalidEmitHeaders when headers are invalid, regardless of disabled: true', () => {
+        expect(() => new ResourceRequestEmit({
+          method: 'POST', url: '/emit', headers: 'nope', disabled: true,
+        })).toThrowMatching((error) => error instanceof InvalidEmitHeaders);
+      });
+
+      it('still throws InvalidEmitBodyTemplate when body_template is invalid, regardless of enabled: false', () => {
+        expect(() => new ResourceRequestEmit({
+          method: 'POST', url: '/emit', body_template: 'nope', enabled: false,
+        })).toThrowMatching((error) => error instanceof InvalidEmitBodyTemplate);
+      });
+    });
+  });
+
   describe('#resolveBody', () => {
     describe('when no body_template is configured', () => {
       it('returns the item unchanged', () => {

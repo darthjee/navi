@@ -33,6 +33,7 @@ class ResourceRequestEmit {
   #cooldown;
   #headers;
   #bodyTemplate;
+  #disabled;
 
   /**
    * @param {object} attributes ResourceRequestEmit attributes.
@@ -55,8 +56,12 @@ class ResourceRequestEmit {
    * to wrap/re-shape the extracted item before it is sent as the emit request body. `{:key}`
    * / `{:nested.path}` tokens are resolved against the item; `{:.}` refers to the whole item.
    * When omitted, the bare item is sent as the body (current behavior).
+   * @param {boolean} [attributes.enabled] Whether this emit is enabled. Defaults to enabled
+   * when omitted. Ignored when `disabled` is `true`.
+   * @param {boolean} [attributes.disabled] Whether this emit is disabled. Takes precedence
+   * over `enabled` when `true`.
    */
-  constructor({ client, method, url, status, retries, cooldown, headers, body_template: bodyTemplate }) {
+  constructor({ client, method, url, status, retries, cooldown, headers, body_template: bodyTemplate, enabled, disabled }) {
     if (!EMIT_METHODS.includes(method)) throw new InvalidEmitMethod(method);
     if (!url) throw new MissingEmitUrl();
     if (retries !== undefined && (typeof retries !== 'number' || retries < 0)) throw new InvalidEmitRetries(retries);
@@ -69,6 +74,7 @@ class ResourceRequestEmit {
     this.#cooldown = cooldown;
     this.#headers = this.#parseHeaders(headers);
     this.#bodyTemplate = this.#parseBodyTemplate(bodyTemplate);
+    this.#disabled = disabled === true || enabled === false;
 
     this.method = method;
     this.url = url;
@@ -125,6 +131,16 @@ class ResourceRequestEmit {
    */
   get bodyTemplate() {
     return this.#bodyTemplate;
+  }
+
+  /**
+   * Returns whether this emit is disabled, i.e. it must not be enqueued. This emit is
+   * disabled when `disabled: true` was given (regardless of `enabled`), or when
+   * `enabled: false` was given. Otherwise it is enabled (the default).
+   * @returns {boolean} True if this emit is disabled.
+   */
+  get disabled() {
+    return this.#disabled;
   }
 
   /**

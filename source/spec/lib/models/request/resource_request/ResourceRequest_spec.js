@@ -522,7 +522,7 @@ describe('ResourceRequest', () => {
       expect(ResourceRequestFactory.build().hasEmit()).toBeFalse();
     });
 
-    it('returns true when an emit is configured', () => {
+    it('returns true when an emit is configured and effectively enabled (no enabled/disabled given)', () => {
       const request = new ResourceRequest({
         url: '/',
         status: 200,
@@ -530,6 +530,36 @@ describe('ResourceRequest', () => {
       });
 
       expect(request.hasEmit()).toBeTrue();
+    });
+
+    it('returns true when an emit is configured with enabled: true', () => {
+      const request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        emit: { method: 'POST', url: 'https://example.com/items', enabled: true },
+      });
+
+      expect(request.hasEmit()).toBeTrue();
+    });
+
+    it('returns false when an emit is configured with disabled: true', () => {
+      const request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        emit: { method: 'POST', url: 'https://example.com/items', disabled: true },
+      });
+
+      expect(request.hasEmit()).toBeFalse();
+    });
+
+    it('returns false when an emit is configured with enabled: false', () => {
+      const request = new ResourceRequest({
+        url: '/',
+        status: 200,
+        emit: { method: 'POST', url: 'https://example.com/items', enabled: false },
+      });
+
+      expect(request.hasEmit()).toBeFalse();
     });
   });
 
