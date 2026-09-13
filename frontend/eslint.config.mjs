@@ -7,6 +7,21 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
+// Stub plugin registering `no-unsanitized/method` as a *known* (but unimplemented
+// and disabled) rule id. This repo does not use eslint-plugin-no-unsanitized, but
+// `src/extensions/loadExtensions.js` carries an
+// `// eslint-disable-next-line no-unsanitized/method` comment aimed at Codacy's
+// own ESLint-based scan (which does load that plugin and flags the dynamic
+// `import()` there). Without this stub, ESLint's flat config treats a disable
+// comment referencing an unregistered rule as a hard configuration error. With
+// it registered (but never enabled), the comment is simply reported as an
+// unused disable directive (a warning, not an error) for this repo's own lint.
+const noUnsanitizedStub = {
+  rules: {
+    method: { create: () => ({}) },
+  },
+};
+
 export default [
   {
     ignores: ['node_modules/**/*.js', 'dist/**/*.js', 'report/**'],
@@ -20,6 +35,7 @@ export default [
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       'import': importPlugin,
+      'no-unsanitized': noUnsanitizedStub,
     },
     languageOptions: {
       ecmaVersion: 'latest',
