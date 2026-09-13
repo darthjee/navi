@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+// Invariant: the path is built solely from the hardcoded relative literal
+// '../index.html' and import.meta.url — no variable/user input is involved.
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 const indexHtml = readFileSync(
   fileURLToPath(new URL('../index.html', import.meta.url)),
   'utf-8',
