@@ -2,6 +2,9 @@
   "name": "navi-dev-frontend",
   "type": "module",
   "version": "1.0.0",
+  "resolutions": {
+    "form-data": "^4.0.6"
+  },
   "scripts": {
     "build": "vite build",
     "server": "vite dev --host 0.0.0.0 --port 8080",
