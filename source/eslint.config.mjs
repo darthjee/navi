@@ -8,6 +8,23 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import sortClassMembers from 'eslint-plugin-sort-class-members';
 import globals from 'globals';
 
+// Stub plugin registering `security/detect-non-literal-fs-filename` as a
+// *known* (but unimplemented and disabled) rule id. This package does not
+// use eslint-plugin-security, but
+// `spec/support/utils/FixturesUtils.js` carries an
+// `// eslint-disable-next-line security/detect-non-literal-fs-filename`
+// comment aimed at Codacy's own ESLint-based scan (which does load that
+// plugin and flags the non-literal `readFileSync()` path there). Without
+// this stub, ESLint's flat config treats a disable comment referencing an
+// unregistered rule as a hard configuration error. With it registered (but
+// never enabled), the comment is simply reported as an unused disable
+// directive (a warning, not an error) for this package's own lint.
+const securityStub = {
+  rules: {
+    'detect-non-literal-fs-filename': { create: () => ({}) },
+  },
+};
+
 export default [
   {
     ignores: ['node_modules/**/*.js', 'dist/**/*.js', 'report/**', 'docs/**'],
@@ -22,6 +39,7 @@ export default [
       jsdoc,
       'import': importPlugin,
       'sort-class-members': sortClassMembers,
+      security: securityStub,
     },
     languageOptions: {
       ecmaVersion: 'latest',

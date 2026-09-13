@@ -22,6 +22,22 @@ const noUnsanitizedStub = {
   },
 };
 
+// Stub plugin registering `security/detect-non-literal-fs-filename` as a
+// *known* (but unimplemented and disabled) rule id. This repo does not use
+// eslint-plugin-security, but `spec/index_html_importmap_spec.js` carries an
+// `// eslint-disable-next-line security/detect-non-literal-fs-filename`
+// comment aimed at Codacy's own ESLint-based scan (which does load that
+// plugin and flags the non-literal `readFileSync()` path there). Without
+// this stub, ESLint's flat config treats a disable comment referencing an
+// unregistered rule as a hard configuration error. With it registered (but
+// never enabled), the comment is simply reported as an unused disable
+// directive (a warning, not an error) for this repo's own lint.
+const securityStub = {
+  rules: {
+    'detect-non-literal-fs-filename': { create: () => ({}) },
+  },
+};
+
 export default [
   {
     ignores: ['node_modules/**/*.js', 'dist/**/*.js', 'report/**'],
@@ -36,6 +52,7 @@ export default [
       'react-refresh': reactRefresh,
       'import': importPlugin,
       'no-unsanitized': noUnsanitizedStub,
+      security: securityStub,
     },
     languageOptions: {
       ecmaVersion: 'latest',
