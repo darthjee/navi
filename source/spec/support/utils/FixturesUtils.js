@@ -9,6 +9,10 @@ class FixturesUtils {
 
   static loadFixture(file) {
     const filePath = this.getFixturePath(file);
+    // Invariant: `filePath` is always derived from a literal fixture filename
+    // supplied by the calling spec code itself — never from external/user
+    // input — so it is not attacker-controllable.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     return readFileSync(filePath, 'utf8');
   }
 
