@@ -15,6 +15,8 @@ class ResourceRequestEmitFactory {
    * @param {number} [params.cooldown] - Optional per-resource cooldown override.
    * @param {object} [params.headers] - Optional map of extra HTTP headers for this emit.
    * @param {object|Array} [params.body_template] - Optional body template for this emit.
+   * @param {boolean} [params.enabled] - Optional `enabled` flag for this emit.
+   * @param {boolean} [params.disabled] - Optional `disabled` flag for this emit.
    * @returns {ResourceRequestEmit} A new ResourceRequestEmit instance.
    */
   static build({
@@ -26,9 +28,11 @@ class ResourceRequestEmitFactory {
     cooldown = undefined,
     headers = undefined,
     body_template: bodyTemplate = undefined,
+    enabled = undefined,
+    disabled = undefined,
   } = {}) {
     return new ResourceRequestEmit({
-      client, method, url, status, retries, cooldown, headers, body_template: bodyTemplate,
+      client, method, url, status, retries, cooldown, headers, body_template: bodyTemplate, enabled, disabled,
     });
   }
 }

@@ -8,11 +8,13 @@ treated as structured data to extract:
 1. `ExtractionJob` resolves the parser implementation from `ParserRegistry` by `parser.type`
    (`regex` or `json_path`) and calls `parserImpl.extract(rawBody, parser.attributes)`,
    producing an array of `ExtractedItem`s (flat `{ field: value }` objects).
-2. When the resource also declares `emit`, `ExtractionJob` delegates to
-   `new EmitEnqueuer(items, emit, parameters, jobRegistry).enqueue()`, which enqueues one
-   `EmitJob` per extracted item, forwarding the resource's `emit` config and the original
-   request's `parameters` (the same ones already threaded into actions/paginated actions).
-   When `emit` is absent, the extracted items are only logged — no jobs are enqueued.
+2. When the resource also declares `emit` — and `ResourceRequest#hasEmit()` resolves it as
+   enabled, i.e. the emit's own `enabled`/`disabled` flags don't resolve it disabled —
+   `ExtractionJob` delegates to `new EmitEnqueuer(items, emit, parameters, jobRegistry).enqueue()`,
+   which enqueues one `EmitJob` per extracted item, forwarding the resource's `emit` config and
+   the original request's `parameters` (the same ones already threaded into actions/paginated
+   actions). When `emit` is absent, or declared but resolved disabled, the extracted items are
+   only logged — no jobs are enqueued.
 3. `EmitJob` resolves `emit.url` against `parameters` (the same `{:placeholder}` substitution
    used for regular resource requests) and sends the extracted item as the JSON body via
    `Client.emit(method, url, item, status, logContext)`.

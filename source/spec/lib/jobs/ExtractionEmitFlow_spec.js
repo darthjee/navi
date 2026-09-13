@@ -180,6 +180,57 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
     });
   });
 
+  describe('Disabled emit (parser present, emit.disabled: true)', () => {
+    const rawBody = '<html><body class="page page-id-42 postid-880433 logged-in"></body></html>';
+
+    let resourceRequest;
+    let job;
+
+    beforeEach(() => {
+      resourceRequest = new ResourceRequest({
+        url: '/bundle/tidal-aberrations/?logged-in',
+        status: 200,
+        clientName: 'lootstudios',
+        parser: {
+          type: 'regex',
+          match: 'postid-(\\d+)',
+          field: 'post_id',
+        },
+        emit: {
+          client: 'majora_api',
+          method: 'POST',
+          url: '/api/bundles/resolve',
+          disabled: true,
+        },
+      });
+
+      job = new ResourceRequestJob({ id: 'top', resourceRequest, parameters: {}, clients });
+
+      AxiosUtils.stubGet(200, rawBody);
+      AxiosUtils.stubPost(200, {});
+    });
+
+    it('still extracts but never enqueues an EmitJob nor calls the emit HTTP boundary', async () => {
+      await job.perform(logContext);
+
+      const enqueued = JobRegistry.jobsByStatus('enqueued');
+      const extractionJob = enqueued.find((job_) => job_ instanceof ExtractionJob);
+      expect(extractionJob).toBeInstanceOf(ExtractionJob);
+
+      await extractionJob.perform(logContext);
+
+      expect(extractionJob.lastError).toBeUndefined();
+      expect(logContext.debug).toHaveBeenCalledWith(
+        jasmine.stringMatching(/extracted 1 item\(s\)/),
+        { items: [{ post_id: '880433' }] },
+      );
+
+      const emitJobs = JobRegistry.jobsByStatus('enqueued').filter((job_) => job_ instanceof EmitJob);
+      expect(emitJobs.length).toBe(0);
+      expect(axios.post).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Only-actions resource (no parser)', () => {
     let resourceRequest;
     let job;

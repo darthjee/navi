@@ -198,11 +198,12 @@ class ResourceRequest {
   }
 
   /**
-   * Returns true when the resource request declares a follow-up emit configuration.
-   * @returns {boolean} True if emit is configured.
+   * Returns true when the resource request declares a follow-up emit configuration
+   * that is not itself disabled (via the emit's own `enabled`/`disabled` flags).
+   * @returns {boolean} True if emit is configured and enabled.
    */
   hasEmit() {
-    return !!this.emit;
+    return !!this.emit && !this.emit.disabled;
   }
 
   /**
