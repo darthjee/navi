@@ -49,6 +49,13 @@ const loadBundleDescriptors = async (bundle) => {
 
   let mod;
   try {
+    // Invariant: `bundle.src` is always built server-side by
+    // FrontendManifestHandler (source/lib/server/handlers/FrontendManifestHandler.js)
+    // from a fs.readdirSync() listing of the deployer-mounted
+    // `<NAVI_EXTENSIONS_DIR>/frontend/` folder (source/lib/server/extensions/ExtensionsEnv.js)
+    // — never from request query/body/header input — so it is not
+    // attacker-controllable through any HTTP surface this app exposes.
+    // eslint-disable-next-line no-unsanitized/method
     mod = await import(/* @vite-ignore */ bundle.src);
   } catch (err) {
     console.warn('[extensions] skipping', bundle.src, err);
