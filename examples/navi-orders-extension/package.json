@@ -5,7 +5,8 @@
   "description": "SPEC-5 worked example: an Orders extension for the stock darthjee/navi-hey image (backend route + frontend page + menu entry).",
   "scripts": {
     "build": "vite build && mkdir -p dist/backend && cp src/backend/*.js dist/backend/",
-    "test": "docker compose run --rm extension_tests"
+    "test": "docker compose run --rm extension_tests",
+    "lint": "stylelint --config ../../.stylelintrc.json 'src/**/*.css'"
   },
   "author": "darthjee",
   "license": "MIT",
@@ -14,6 +15,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "7.14.2",
+    "stylelint": "^16.26.0",
     "vite": "^7.2.4"
   }
 }
