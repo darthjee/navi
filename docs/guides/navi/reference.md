@@ -3,13 +3,13 @@
 For the full field-by-field breakdown of every YAML config key, see
 [Configuration Schema](configuration-schema.md).
 
-### CLI flags
+## CLI flags
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--config=<path>` | `-c <path>` | `config/navi_config.yml` | Path to the YAML configuration file. |
 
-### Production Docker image configuration
+## Production Docker image configuration
 
 `dockerfiles/production_navi_hey/Dockerfile` packs a minimal, production-ready config (`config/web.yml`) into the `darthjee/navi-hey` image, so `docker run -p 3000:3000 darthjee/navi-hey:latest` works with zero volume mounts (see [Option A — Docker image](option-a-docker-image.md)). The image ships no `resources:`/`clients:` — add those afterwards through the Navi client/API. Every setting the packed config exposes is a Dockerfile `ENV`, overridable at `docker run`/compose time without editing or rebuilding the image:
 
@@ -33,7 +33,7 @@ For example, to change the exposed port:
 docker run -p 8080:8080 -e PORT=8080 darthjee/navi-hey:latest
 ```
 
-### Environment variables in client configuration
+## Environment variables in client configuration
 
 Both `base_url` and header values support environment variable substitution at load time using `$VAR` or `${VAR}` syntax:
 
@@ -50,7 +50,7 @@ clients:
 
 If a referenced variable is not set, it is replaced with an empty string and a warning is logged. Pass the variables to the process in the usual way for your environment (e.g. `env` in Docker, `environment` in GitHub Actions / CircleCI).
 
-### Headless vs. web UI mode
+## Headless vs. web UI mode
 
 Navi can optionally serve a real-time monitoring web UI. To enable it, add a `web:` section to your configuration:
 

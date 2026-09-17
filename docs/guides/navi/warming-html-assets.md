@@ -11,7 +11,7 @@ Each entry in `assets` specifies:
 - **`client`** *(optional)* — named client to use when fetching the asset. Defaults to `default`.
 - **`status`** *(optional)* — expected HTTP status code for asset fetches. Defaults to `200`.
 
-### Example
+## Example
 
 ```yaml
 clients:
@@ -33,7 +33,7 @@ When Navi fetches `/`, it parses the HTML body and extracts the `href` attribute
 `<link rel="stylesheet">` element and the `src` attribute from every `<script src="…">` element.
 Each discovered URL is then fetched as an independent job that follows the standard retry/dead path.
 
-#### URL resolution
+### URL resolution
 
 Asset URLs are resolved to absolute form before being fetched:
 
@@ -43,7 +43,7 @@ Asset URLs are resolved to absolute form before being fetched:
 | `//cdn.example.com/app.css` (protocol-relative) | Prepended with `https:`. |
 | `/assets/app.css` (root-relative) | Concatenated with the client's `base_url`. |
 
-#### Using a separate CDN client
+### Using a separate CDN client
 
 If your assets are served from a CDN with different headers or a different base URL, define a
 dedicated client and reference it in the asset rule:
@@ -67,7 +67,7 @@ resources:
           client: cdn
 ```
 
-#### Combining `assets` and `actions`
+### Combining `assets` and `actions`
 
 A resource may declare both `assets` and `actions`. Both are processed independently after
 a successful response — `assets` for HTML asset extraction and `actions` for JSON response

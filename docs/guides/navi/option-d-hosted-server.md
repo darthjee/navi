@@ -2,7 +2,7 @@
 
 Use this option when Navi is already hosted elsewhere as a long-running server (its own deployment, not spun up per CI run) and you just need a CI step to trigger a warm-up on it via `navi-hey-client`. Unlike Options A/B/C — where the CI step runs Navi headlessly and blocks until the warm-up run finishes — this CI step only *triggers* the warm-up; it does not wait for it to complete.
 
-### Hosting the server
+## Hosting the server
 
 ```bash
 docker run -p 3000:3000 -e API_TOKEN=$TOKEN -e IDLE_TIMEOUT=0 darthjee/navi-hey:latest
@@ -15,7 +15,7 @@ Two env vars matter for this flow:
 
 See the [`darthjee/navi-hey` Docker Hub page](https://hub.docker.com/r/darthjee/navi-hey) and [Reference](./reference.md) for the rest of the env vars.
 
-### Driving it with `navi-hey-client`
+## Driving it with `navi-hey-client`
 
 Two invocation patterns, depending on your CI setup:
 
@@ -44,7 +44,7 @@ Two invocation patterns, depending on your CI setup:
 
 The image always ships a current version of the client (`npm install -g navi-hey-client@${CLIENT_VERSION}`, defaulting to `latest`).
 
-### Example client call
+## Example client call
 
 Push a config, then start the engine on the hosted instance:
 

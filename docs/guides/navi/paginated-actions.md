@@ -19,7 +19,7 @@ The parameters passed to each paginated request are merged in this order (later 
 
 If a `parameters` path expression can't be resolved against the response (e.g. a missing header), that one paginated action fails — no pages are enqueued for it, the failure is logged, and it goes straight to the dead-letter/failed-job tracking with no retry. Other resources and other paginated actions are unaffected. This is the same error handling `actions`' `parameters` already has.
 
-### Example
+## Example
 
 ```yaml
 resources:
@@ -43,7 +43,7 @@ If `/categories.json` returns `{ "pagination": { "pages": 3 } }` with a `X-Per-P
 
 `paginated_actions` and `actions` may coexist on the same resource — both are processed independently after a successful response.
 
-### Capping pages with `max_page`
+## Capping pages with `max_page`
 
 Sometimes you don't want to warm every page a `paginated_actions` caller reports — just the first few, most-likely-to-be-hit ones. `max_page` caps this from the **target** resource's side, independent of who calls it:
 

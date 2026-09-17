@@ -10,7 +10,7 @@ This page is the operator-facing reference for that file. It is separate from th
 main warm-up configuration (`navi_config.yml`) — the menu file is its own
 document with its own schema.
 
-### Where the file lives
+## Where the file lives
 
 | Setting | Value |
 |---------|-------|
@@ -48,7 +48,7 @@ startup rather than booting with a broken menu. Individual entries that are
 malformed (missing `route`, wrong types) are dropped at load time with a warning
 and never reach the UI.
 
-### Entry shape
+## Entry shape
 
 `entries` is a list of objects:
 
@@ -66,7 +66,7 @@ entries:
     text: Status page
 ```
 
-### Adding entries
+## Adding entries
 
 Operator `entries` are **appended after** the shipped defaults: Logs and Memory
 first, in that order, then your entries in file order.
@@ -84,7 +84,7 @@ Resolved menu: **Logs, Memory, Dashboard, Reports**.
 An explicit `entries: []` (with `defaults` absent or `true`) is not a wipe — it
 just means "no custom entries", so the menu still shows Logs + Memory.
 
-### `defaults: false` — drop the shipped entries
+## `defaults: false` — drop the shipped entries
 
 `defaults` is a top-level boolean, a sibling of `entries`. Setting it to `false`
 removes **both** shipped defaults; only your entries render.
@@ -102,7 +102,7 @@ Resolved menu: **Dashboard** only.
 an empty menu. A non-boolean `defaults` value is ignored with a warning and
 treated as `true`.
 
-### Hiding a default
+## Hiding a default
 
 To drop just one shipped default while keeping the other, add an entry with its
 `route` and `hidden: true`:
@@ -121,7 +121,7 @@ only suppresses the matching default (`/logs` or `/memory/status`).
 `hidden: true` on any other `route` is a no-op: the entry is dropped with a
 warning and nothing else changes.
 
-### Repositioning and relabelling a default
+## Repositioning and relabelling a default
 
 Re-list a default's `route` as a normal (non-hidden) entry to pull it out of the
 leading defaults block and render it at that entry's file position instead — it
@@ -148,7 +148,7 @@ entries:
 
 Resolved menu: **Memory, Activity log**.
 
-### Duplicate routes
+## Duplicate routes
 
 De-duplication runs over the final merged list, in render order: the **first**
 occurrence of a `route` wins, and every later entry with the same `route` is
@@ -161,7 +161,7 @@ dropped with a warning such as:
 Only `route` is an identity. Two entries may share the same `text` on different
 routes — that is allowed and not warned about.
 
-### Environment variable interpolation
+## Environment variable interpolation
 
 `${VAR}` and `$VAR` are resolved at load time, using the same resolver as the
 main config. An unset variable becomes an empty string and logs a warning.
@@ -172,7 +172,7 @@ entries:
     text: Metrics
 ```
 
-### What the menu does not do
+## What the menu does not do
 
 - **Long menus scroll.** There is no cap on the number of entries; the dropdown
   panel gains a scrollbar when the list is tall.
@@ -181,7 +181,7 @@ entries:
   first, then file order, with re-listed defaults moving to their listed
   position).
 
-### Pointing at an extension route
+## Pointing at an extension route
 
 A menu entry can target a backend route or frontend page you added through the
 [extensions mechanism](extending-navi.md). Register the route there first, then
