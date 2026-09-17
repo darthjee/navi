@@ -5,6 +5,22 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
+// Stub plugin registering `@typescript-eslint/no-empty-function` as a *known*
+// (but unimplemented and disabled) rule id. This repo does not use
+// @typescript-eslint, but `spec/support/noop.js` carries an
+// `// eslint-disable-next-line @typescript-eslint/no-empty-function` comment
+// aimed at Codacy's own ESLint-based scan (which does load that plugin and
+// flags the intentionally empty arrow function there). Without this stub,
+// ESLint's flat config treats a disable comment referencing an unregistered
+// rule as a hard configuration error. With it registered (but never
+// enabled), the comment is simply reported as an unused disable directive
+// (a warning, not an error) for this repo's own lint.
+const typescriptEslintStub = {
+  rules: {
+    'no-empty-function': { create: () => ({}) },
+  },
+};
+
 export default [
   {
     ignores: ['node_modules/**/*.js', 'dist/**/*.js', 'report/**'],
@@ -16,6 +32,7 @@ export default [
       react,
       'react-hooks': reactHooks,
       'import': importPlugin,
+      '@typescript-eslint': typescriptEslintStub,
     },
     languageOptions: {
       ecmaVersion: 'latest',
