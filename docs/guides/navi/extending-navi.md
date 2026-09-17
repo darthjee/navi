@@ -6,11 +6,11 @@ Extensions let you add your own **backend routes** and **frontend pages** on top
 
 This page is the operator-facing walkthrough. For the container-side loader mechanics (what Navi scans, how descriptors are validated, collision handling), see [`docs/agents/web-server.md`'s Route extensions section](../../agents/web-server.md#route-extensions) (backend) and [`docs/agents/frontend.md`'s Extensions section](../../agents/frontend.md#extensions) (frontend). To run your extension's own test suite, see [Testing your extension](#testing-your-extension).
 
-### When to use extensions
+## When to use extensions
 
 Reach for an extension when you want the stock Navi image plus a little of your own surface — a JSON endpoint that reports on your system, a dashboard page that renders it, a menu link to reach it — and you don't want to maintain a fork or a full rebuild pipeline just for that. Anything larger (custom auth, bundled npm dependencies the image doesn't ship, a rebuilt SPA) is out of scope; extensions deliberately stay small.
 
-### Enabling extensions
+## Enabling extensions
 
 Three things switch the mechanism on:
 
@@ -39,7 +39,7 @@ services:
 
 `:ro` — Navi only ever reads the folder. The whole workflow is: build `dist/`, mount it, set one env var.
 
-### Folder layout
+## Folder layout
 
 The mounted folder has exactly two reserved subtrees, both **flat and non-recursive**:
 
@@ -56,7 +56,7 @@ The mounted folder has exactly two reserved subtrees, both **flat and non-recurs
 - Either subtree may be **absent** — that is an info-level log line, not an error. A backend-only or frontend-only extension is fine.
 - Only files **directly under** `backend/` and `frontend/` are considered; nested directories are ignored.
 
-### A backend route
+## A backend route
 
 Each `backend/*.js` module is an ESM file that default-exports (or named-exports `routes`) an array of `{ method, path, handler }` descriptors:
 
@@ -98,7 +98,7 @@ What the handler inherits, identical to every stock handler:
 
 **No build step for the backend.** `backend/*.js` runs as-is in Navi's Node process: plain ESM, `.js` extension, `import` only. It may import anything the Navi image ships plus its own bundled `.js` siblings — it may **not** pull in npm packages the image does not already carry. The "build" for `backend/` is a straight copy of your source files into `dist/backend/`.
 
-### A frontend page
+## A frontend page
 
 Each `frontend/*.js` bundle default-exports an array of `{ path, text, component }` descriptors:
 
@@ -189,7 +189,7 @@ export default defineConfig({
 
 The build produces a single ESM file, `dist/frontend/orders.js`. If your component imports CSS, Vite's library mode would name the stylesheet after the package (`<pkg-name>.css`) by default — `cssFileName: 'orders'` forces it to `dist/frontend/orders.css`, the **same basename** as the bundle. Navi then injects `<link rel="stylesheet" href="/extensions/frontend/orders.css">` when it loads the bundle. The sibling `.css` file is a convenience — the bundle may inline its styles instead.
 
-### A menu entry
+## A menu entry
 
 Your route is reachable by URL (`#/ext/orders`) as soon as its bundle loads. A menu entry makes it **discoverable**.
 
@@ -210,7 +210,7 @@ entries:
 - **Hide** — `{ route: /ext/orders, hidden: true }` drops the auto-appended entry; the route stays reachable by URL.
 - The menu file and the extensions volume are **separate schemas** — neither validates the other. A menu entry pointing at a route no extension registers renders as an ordinary link that 404s when clicked.
 
-### Worked example
+## Worked example
 
 One backend route, one frontend page, one menu entry — the complete deliverable.
 
@@ -311,7 +311,7 @@ To run the *built* extension against a live Navi, use the bind-mount shape from 
 
 For testing your extension in isolation — one backend spec exercising the handler, one frontend spec rendering the page — see [Testing your extension](#testing-your-extension) below.
 
-### Testing your extension
+## Testing your extension
 
 `darthjee/navi-hey-test` is a prebuilt image that bundles Navi's Jasmine toolchain (backend **and** frontend), the jsdom / esbuild frontend setup, and a set of reusable Navi test doubles. An extension project runs its own suite by mounting `src/` and `tests/` into it — **no local test toolchain, no `npm ci` for tests**.
 
@@ -440,7 +440,7 @@ Without compose: `docker run --rm -v "$PWD/src:/work/src:ro" -v "$PWD/tests:/wor
 
 **CI hook.** A downstream project wires this as **one job**: build or pull `darthjee/navi-hey-test:<navi-tag>` pinned to the Navi tag its deployment image runs `FROM`, then `docker compose run --rm extension_tests`, on every PR. That job is also where [Upgrading the base image](#upgrading-the-base-image) item 4 is exercised on a Navi bump.
 
-### Baking the extension into a derived image
+## Baking the extension into a derived image
 
 Instead of a bind-mount you can build a derived image with the extension baked in (immutable deploy artefact, no volume to manage). This repo ships a working one at [`dockerfiles/navi_hey_extension_example/Dockerfile`](../../../dockerfiles/navi_hey_extension_example/Dockerfile):
 
@@ -462,11 +462,11 @@ The Navi SPA is still **not** rebuilt — the frontend bundle is the same pre-bu
 
 **See it working.** `docker compose up navi_extensions_app` boots the stock dev image with this example mounted on port `3040`, and `make smoke-extensions` asserts the route, the frontend manifest, and the server-side menu entry end to end. See [Option E — Development image](./option-e-development-image.md) for how to run this image outside of the extensions workflow.
 
-### Reload limitation
+## Reload limitation
 
 Extensions are **fixed for the process lifetime**. Changing them — new backend code, a new frontend bundle, or a new base image — requires a **container restart**. `PATCH /engine/reload` re-reads only the warm-up configuration; it does **not** re-scan `NAVI_EXTENSIONS_DIR` and does not affect loaded extensions.
 
-### Upgrading the base image
+## Upgrading the base image
 
 Run this checklist when bumping `FROM darthjee/navi-hey:<tag>` or the pulled `image:` tag:
 

@@ -7,7 +7,7 @@
 Use this option when your CI environment supports Docker.
 Mount your configuration file into the container and run Navi headlessly.
 
-### GitHub Actions
+## GitHub Actions
 
 ```yaml
 jobs:
@@ -25,7 +25,7 @@ jobs:
             node navi.js --config config/navi_config.yml
 ```
 
-### CircleCI
+## CircleCI
 
 ```yaml
 jobs:

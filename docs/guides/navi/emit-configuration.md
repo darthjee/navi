@@ -2,7 +2,7 @@
 
 `emit` declares a follow-up HTTP call that sends onward the items produced by the resource's [`parser`](extraction-configuration.md) — instead of (or in addition to) chaining into another resource via `actions`/`paginated_actions`, each extracted item is sent to an external endpoint. It lives under a resource entry's `emit:` key. `emit` is **not** automatic: it does nothing unless the same resource entry also declares a `parser:` block (see [Extraction Configuration](extraction-configuration.md)) — there is no extraction, and therefore nothing to emit, without one.
 
-### Fields
+## Fields
 
 | Field | Description |
 |-------|-------------|
@@ -15,7 +15,7 @@
 | `emit.headers` | A map of extra HTTP headers to send with this emit request, merged over the client's own headers. Values must be strings, numbers, or booleans. Defaults to no extra headers when omitted. |
 | `emit.enabled` / `emit.disabled` | Optional. Toggles this emit on/off without editing the rest of the resource's config — see [Enabling/Disabling an Emit](#enablingdisabling-an-emit) below. Defaults to enabled when both are omitted. |
 
-### Body Template
+## Body Template
 
 By default, `emit` sends the bare extracted item as the request body, unchanged. `emit.body_template` lets you reshape or wrap that item into a different JSON shape before it's sent — useful for wrapping the item in an envelope, renaming fields, or dropping fields the endpoint doesn't need.
 
@@ -27,7 +27,7 @@ By default, `emit` sends the bare extracted item as the request body, unchanged.
 
 A template string value that is *exactly* one token (nothing else in the string) splices in the real value at that path, preserving its type — object, array, number, boolean, string, or `null`. A token embedded inside a longer string (e.g. `"note {:id} extracted"`) is replaced by the field's value stringified instead. A token whose path doesn't resolve on the item is left as the literal `{:...}` text in the output.
 
-### Enabling/Disabling an Emit
+## Enabling/Disabling an Emit
 
 `emit.enabled` and `emit.disabled` let you toggle a resource's emit on/off without touching the rest of its config. Since every Navi config file already runs through `$VAR`/`${VAR}` environment variable substitution before YAML parsing (see [Reference](reference.md)), pointing one of these keys at an env var reference is enough to flip a resource's emit per environment — no new mechanism, just the same substitution used everywhere else in the config.
 
@@ -52,7 +52,7 @@ Disabling an emit only skips its follow-up HTTP call — the resource's `parser`
 
 > **Not the same as the resource-level `disabled`/`enabled`.** A resource-request entry's own top-level `disabled`/`enabled` (see [Configuration Schema](configuration-schema.md)) is resolved with the identical combination rule, but it gates the *entire request*, excluding it from every enqueue path (startup, manual/API trigger, and as an `actions`/`paginated_actions` target). `emit.enabled`/`emit.disabled` only scopes down to the emit itself — the request still runs and still parses/extracts; only its follow-up emit call is skipped.
 
-#### Example — toggling emit per environment
+### Example — toggling emit per environment
 
 ```yaml
 resources:
@@ -74,7 +74,7 @@ resources:
 
 With `ANALYTICS_EMIT_ENABLED=false` in the environment, `products`' emit is skipped entirely — nothing is ever sent to `analytics_api` — while the resource keeps extracting items normally. Unset the variable (or set it to anything other than the literal text `false`) to fall back to the default, enabled. No edit to the resource's YAML is needed to flip this per environment (e.g. off in staging, on in production).
 
-### Example
+## Example
 
 ```yaml
 resources:

@@ -2,13 +2,13 @@
 
 Use this option when your CI environment already provides a Node.js runtime and you prefer not to use Docker-in-Docker.
 
-### Install and run with npx (no prior install needed)
+## Install and run with npx (no prior install needed)
 
 ```bash
 npx navi-hey --config path/to/navi_config.yml
 ```
 
-### Install globally and run
+## Install globally and run
 
 ```bash
 # npm
@@ -20,7 +20,7 @@ yarn global add navi-hey
 navi-hey --config path/to/navi_config.yml
 ```
 
-### GitHub Actions example
+## GitHub Actions example
 
 ```yaml
 jobs:
@@ -39,7 +39,7 @@ jobs:
         run: npx navi-hey --config navi_config.yml
 ```
 
-### CircleCI example
+## CircleCI example
 
 ```yaml
 jobs:
