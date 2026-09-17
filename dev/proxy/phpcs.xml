@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<ruleset name="NaviDevProxy">
+    <description>
+        PHPCS ruleset for the dev proxy's PHP classes (dev/proxy/middlewares),
+        formalizing the conventions Codacy already checks against this folder:
+        doc comments on every method, "//end methodName()" closing comments,
+        blank-line spacing around methods, explicit boolean comparisons, no
+        inline "if", and bracketed operations.
+    </description>
+
+    <arg name="basepath" value="."/>
+    <arg value="np"/>
+
+    <file>middlewares</file>
+
+    <!-- Require a doc comment (with @param/@return) on every method. -->
+    <rule ref="Squiz.Commenting.FunctionComment"/>
+
+    <!-- Require `//end <methodName>()` / `//end class` closing comments. -->
+    <rule ref="Squiz.Commenting.ClosingDeclarationComment"/>
+
+    <!-- 2 blank lines before/between/after methods within a class. -->
+    <rule ref="Squiz.WhiteSpace.FunctionSpacing">
+        <properties>
+            <property name="spacing" value="2"/>
+            <property name="spacingBeforeFirst" value="2"/>
+            <property name="spacingAfterLast" value="2"/>
+        </properties>
+    </rule>
+
+    <!-- 1 blank line before a method's closing brace. -->
+    <rule ref="Squiz.WhiteSpace.FunctionClosingBraceSpace"/>
+
+    <!-- Explicit `=== true`/`!== false` comparisons instead of implicit truthy checks. -->
+    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>
+
+    <!-- No inline `if` (ternary/elvis) statements. -->
+    <rule ref="Squiz.PHP.DisallowInlineIf"/>
+
+    <!-- Bracketed operations (e.g. `??`) when combined with other operators. -->
+    <rule ref="Squiz.Formatting.OperatorBracket"/>
+</ruleset>

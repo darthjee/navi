@@ -51,17 +51,29 @@ const renderTree = async (root, extensionRoutes, initialPath) => {
   await flushAsync();
 };
 
+// Stubs the extension bundle manifest fetch so tests never hit the network;
+// any other URL is left pending, mirroring a real never-resolving request.
+const stubExtensionsFetch = () => {
+  spyOn(globalThis, 'fetch').and.callFake((url) => {
+    if (url === '/extensions/frontend.json') {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ bundles: [] }) });
+    }
+    return new Promise(noop);
+  });
+};
+
+// Silences the console noise ExtensionErrorBoundary logs when a boundary trips.
+const stubBoundaryConsole = () => {
+  spyOn(console, 'warn');
+  spyOn(console, 'error');
+};
+
 describe('extension routes integration', () => {
   const state = useContainer();
 
   beforeEach(() => {
     resetExtensionsCache();
-    spyOn(globalThis, 'fetch').and.callFake((url) => {
-      if (url === '/extensions/frontend.json') {
-        return Promise.resolve({ ok: true, json: () => Promise.resolve({ bundles: [] }) });
-      }
-      return new Promise(noop);
-    });
+    stubExtensionsFetch();
   });
 
   describe('with a registered extension route', () => {
@@ -90,10 +102,7 @@ describe('extension routes integration', () => {
   describe('when an extension component throws on render', () => {
     const routes = [{ path: '/ext/boom', text: 'Boom', component: Boom }];
 
-    beforeEach(() => {
-      spyOn(console, 'warn');
-      spyOn(console, 'error');
-    });
+    beforeEach(stubBoundaryConsole);
 
     it('shows the inline boundary alert without blanking the layout', async () => {
       await renderTree(state.root, routes, '/ext/boom');

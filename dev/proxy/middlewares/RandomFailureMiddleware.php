@@ -8,14 +8,40 @@ use Tent\Models\Response;
 
 class RandomFailureMiddleware extends Middleware
 {
-    public static function build(array $attributes): self
+
+
+    /**
+     * Builds a new RandomFailureMiddleware instance.
+     *
+     * @param array $_attributes Rule attributes (unused; required by the
+     *                           abstract Middleware::build() signature).
+     *
+     * @return self
+     */
+    public static function build(array $_attributes): self
     {
         return new self();
-    }
 
+    }//end build()
+
+
+    /**
+     * Randomly short-circuits the request with a 502 response, at the rate
+     * configured via the FAILURE_RATE environment variable.
+     *
+     * @param \Tent\Models\ProcessingRequest $request The request being processed.
+     *
+     * @return \Tent\Models\ProcessingRequest
+     */
     public function processRequest(ProcessingRequest $request): ProcessingRequest
     {
-        $rate = (float) (getenv('FAILURE_RATE') ?: 0);
+        $value = getenv('FAILURE_RATE');
+
+        if ($value === false || $value === '') {
+            $value = 0;
+        }
+
+        $rate = (float) $value;
 
         $randomizer = new \Random\Randomizer();
 
@@ -28,5 +54,8 @@ class RandomFailureMiddleware extends Middleware
         }
 
         return $request;
-    }
-}
+
+    }//end processRequest()
+
+
+}//end class

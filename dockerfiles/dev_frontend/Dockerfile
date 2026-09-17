@@ -3,7 +3,7 @@ FROM darthjee/node:0.2.1 as base
 
 USER root
 RUN apt-get update && \
-    apt-get install -y rsync --no-install-recommends && \
+    apt-get install -y rsync=3.2.7-1+deb12u6 --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 USER node
 

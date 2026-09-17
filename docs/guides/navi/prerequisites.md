@@ -1,6 +1,6 @@
 # Prerequisites
 
-### Navi configuration file
+## Navi configuration file
 
 Both options require a YAML configuration file that tells Navi which URLs to warm.
 Create a file (e.g. `navi_config.yml`) with at least a `clients` and a `resources` section.

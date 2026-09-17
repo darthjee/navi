@@ -8,7 +8,7 @@ For a CI-oriented "minimum viable config" walkthrough, see
 and covered in full in [Extraction Configuration](extraction-configuration.md) and
 [Emit Configuration](emit-configuration.md).
 
-### Structure
+## Structure
 
 ```yaml
 workers:
@@ -102,9 +102,9 @@ resources:
       status: 200
 ```
 
-### Fields
+## Fields
 
-#### `workers` / `log` / `failure`
+### `workers` / `log` / `failure`
 
 | Field | Description |
 |-------|-------------|
@@ -115,7 +115,7 @@ resources:
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
 | `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
 
-#### `web`
+### `web`
 
 | Field | Description |
 |-------|-------------|
@@ -126,7 +126,7 @@ resources:
 | `web.memory.maximum` | Optional. Memory ceiling in bytes used to compute the usage percentage exposed by `GET /memory/status.json`. When omitted, resolved automatically via a fallback chain: configured value → cgroup v2 limit → cgroup v1 limit → OS total memory. |
 | `web.memory.thresholds.low` / `.medium` / `.high` / `.over` | Optional. Percentage-of-maximum boundaries used to derive the reported `status` (`low`/`medium`/`high`/`over`), checked from the top down with inclusive (`>=`) boundaries. Default `{low: 25, medium: 50, high: 75, over: 100}`. Must be strictly ascending (`low < medium < high < over`) or the config is rejected at startup. |
 
-#### `clients`
+### `clients`
 
 | Field | Description |
 |-------|-------------|
@@ -134,7 +134,7 @@ resources:
 | `clients.<name>.timeout` | Optional request timeout in milliseconds. Defaults to `5000`. |
 | `clients.<name>.headers` | Optional HTTP headers sent with every request of this client. Header values support environment variable references (`$VAR` or `${VAR}`), resolved at configuration load time. |
 
-#### `resources`
+### `resources`
 
 | Field | Description |
 |-------|-------------|
@@ -160,7 +160,7 @@ resources:
 | `assets[].client` | Named client to use when fetching the asset. Defaults to `default`. |
 | `assets[].status` | Expected HTTP status code for asset fetches. Defaults to `200`. |
 
-#### `parser` / `emit` (crawler)
+### `parser` / `emit` (crawler)
 
 `parser` and `emit` turn Navi into a crawler: `parser` extracts structured items from a
 response body, and `emit` sends each one onward to an external endpoint. Both live under a
@@ -186,7 +186,7 @@ See [Extraction Configuration](extraction-configuration.md) and
 [Emit Configuration](emit-configuration.md) for the full field-by-field breakdown of
 `parser` and `emit`.
 
-### Path-expression namespaces
+## Path-expression namespaces
 
 `actions[].parameters` and `paginated_actions[].parameters` values are path expressions
 resolved against the response wrapper. This is a separate mechanism from `parser` / `emit`.
@@ -206,7 +206,7 @@ resolved against the response wrapper. This is a separate mechanism from `parser
 >
 > **Note:** HTTP response header names are always lowercase after Node.js normalization. Use lowercase keys in path expressions (e.g. `headers['x-total-pages']`), regardless of how the server set them.
 
-### `GET /memory/status.json` response shape
+## `GET /memory/status.json` response shape
 
 `GET /memory/status.json` — unauthenticated, like the other `GET` monitoring endpoints (no `web.api.token` involved). Responds with:
 

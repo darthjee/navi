@@ -4,7 +4,7 @@
 
 Use this option when you want to try Navi out or develop against it locally, without going through a production build. It is not one of the CI/production integration modes (Options A–D) covered in [How to Use Navi](../how_to_use_navi.md) — it's a local trial/dev path.
 
-### Standalone run
+## Standalone run
 
 First-time setup, once:
 
@@ -30,7 +30,7 @@ docker run --rm -p 3000:3000 \
 
 This mirrors the `base`/`navi_app` service shape in `docker-compose.yml` — same image, same mounts, same `3000:3000` port mapping — just run standalone instead of through Compose. It exposes the same web UI / API routes as production Option A; see [Reference](./reference.md).
 
-### `navi_extensions_app`
+## `navi_extensions_app`
 
 `docker-compose.yml` also defines `navi_extensions_app`, which runs this same `navi:dev` image with `NAVI_EXTENSIONS_ENABLED=true` on port `3040`, layering the `examples/navi-orders-extension` example on top of it. It requires building that example first:
 
@@ -46,11 +46,11 @@ docker compose up navi_extensions_app
 
 For the extensions-authoring workflow itself — enabling extensions, folder layout, backend routes, frontend pages, menu entries — see [Extending Navi with Your Own Routes and Pages](./extending-navi.md).
 
-### `navi_app` / `make dev` (not a way to run Navi)
+## `navi_app` / `make dev` (not a way to run Navi)
 
 The same `navi:dev` image also backs the unrelated `navi_app` Compose service, used via `make dev` to open an interactive shell (`yarn test`, `yarn lint`, and so on) — it runs `tail -f /dev/null` and never serves HTTP. See the root [`README.md`](../../../README.md#development)'s Development section for that workflow.
 
-### Ports/routes
+## Ports/routes
 
 | Path | Port | Serves |
 |------|------|--------|
@@ -58,7 +58,7 @@ The same `navi:dev` image also backs the unrelated `navi_app` Compose service, u
 | `navi_extensions_app` | `3040` (host) → `3000` (container) | Same routes, plus the mounted `examples/navi-orders-extension` extension |
 | `navi_app` / `make dev` | none (no `command` server) | Interactive shell only, no HTTP |
 
-### Not to be confused with `dev/`
+## Not to be confused with `dev/`
 
 This guide is about running Navi's own `navi:dev` image. The separate `dev/` folder (`navi_dev_app`, `navi_dev_frontend`, `navi_proxy`, `navi_web_proxy`) is a sample target backend plus Tent reverse proxies used to exercise Navi's cache-warming behavior against a controlled dataset — it is not what this guide covers. See `docs/agents/dev-app.md` and `docs/agents/dev-proxy.md` for that.
 
