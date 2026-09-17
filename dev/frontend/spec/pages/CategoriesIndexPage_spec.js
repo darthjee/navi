@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import CategoriesIndexPage from '../../src/pages/CategoriesIndexPage.jsx';
+import noop from '../support/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
@@ -38,7 +39,7 @@ describe('CategoriesIndexPage', () => {
 
   describe('while loading', () => {
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(() => {}));
+      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
       await render();
     });
 
