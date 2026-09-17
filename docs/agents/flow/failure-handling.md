@@ -1,6 +1,6 @@
 # Failure Handling
 
-## Failure Handling
+## Retry and Exhaustion Lifecycle
 
 1. Job failure counter is incremented; last exception stored.
 2. If not exhausted: `job.applyCooldown(cooldown)` sets `readyBy = Date.now() + cooldown`. Job goes to the `failed` `SortedCollection`.

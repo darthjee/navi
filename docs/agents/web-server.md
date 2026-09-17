@@ -81,7 +81,7 @@ routes — stock routes always win on collision. See [Route extensions](#route-e
 | `PATCH` | `/engine/pause` | Sets status → `pausing`. Returns 409 if not `running`. |
 | `PATCH` | `/engine/stop` | Sets status → `stopping`, clears queues when workers idle. Returns 409 if not `running`. |
 | `PATCH` | `/engine/continue` | Resumes from `paused`. Returns 409 if not `paused`. |
-| `PATCH` | `/engine/start` | Starts from `stopped`, or pushes resources into an already-`running` engine. Returns 409 if `paused`/`pausing`/`stopping`. See [below](#engine-start-request-and-response) for the body/response shape. |
+| `PATCH` | `/engine/start` | Starts from `stopped`, or pushes resources into an already-`running` engine. Returns 409 if `paused`/`pausing`/`stopping`. See [below](#enginestart-request-and-response) for the body/response shape. |
 | `PATCH` | `/engine/restart` | Stops then restarts (async). Returns 409 if not `running`. |
 | `GET` | `/assets/*path` | Serves built frontend assets; rejects path-traversal with 403. |
 | `GET` | `/extensions/frontend.json` | Discovery manifest for mounted frontend extension bundles; `{ "bundles": [] }` when extensions are disabled or no `frontend/` folder is mounted (never 404). |
@@ -310,7 +310,7 @@ export default [
   `NotFoundError` → 404, anything else → 500). Extension routes are **public** — there is
   no token wiring in v1.
 
-### Error handling
+### Extension error handling
 
 A module that fails to import, does not export a descriptor array, or contains an invalid
 descriptor is **skipped with a `Logger.warn`** — the server still comes up with the stock
