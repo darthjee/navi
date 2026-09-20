@@ -1,41 +1,33 @@
-import { Job } from 'deku-swarm';
 import { RequestFailed } from '../../../lib/exceptions/request/RequestFailed.js';
-import { AssetDownloadJob } from '../../../lib/jobs/AssetDownloadJob.js';
+import { AssetDownloadJobFactory } from '../../support/factories/AssetDownloadJobFactory.js';
 import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
+import { JobLifecycleExamples } from '../../support/utils/JobLifecycleExamples.js';
+import { LogContextUtils } from '../../support/utils/LogContextUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 describe('AssetDownloadJob', () => {
   let job;
-  let clientRegistry;
-  let client;
   let logContext;
 
-  const baseUrl = 'https://example.com';
   const assetUrl = 'https://cdn.example.com/app.css';
+  const getJob = () => job;
+  const getLogContext = () => logContext;
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
-    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
-    client = ClientFactory.build({ baseUrl });
-    clientRegistry = NamespaceMapFactory.build({ clients: { default: client } });
-    job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, status: 200, clientRegistry });
+    logContext = LogContextUtils.build();
+    job = AssetDownloadJobFactory.build();
   });
 
   describe('#constructor', () => {
-    it('is an instance of Job', () => {
-      expect(job).toBeInstanceOf(Job);
-    });
-
-    it('stores the id', () => {
-      expect(job.id).toBe('asset-job');
-    });
+    JobLifecycleExamples.identityExamples({ getJob, expectedId: 'asset-job' });
   });
 
   describe('#arguments', () => {
     it('returns url and clientName', () => {
-      job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, client: 'cdn', status: 200, clientRegistry });
+      job = AssetDownloadJobFactory.build({ client: 'cdn' });
       expect(job.arguments).toEqual({ url: assetUrl, clientName: 'cdn' });
     });
 
@@ -56,16 +48,7 @@ describe('AssetDownloadJob', () => {
         await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
       });
 
-      it('clears lastError before performing', async () => {
-        job.lastError = new Error('previous error');
-        await job.perform(logContext);
-        expect(job.lastError).toBeUndefined();
-      });
-
-      it('does not exhaust after a successful attempt', async () => {
-        await job.perform(logContext);
-        expect(job.exhausted()).toBeFalse();
-      });
+      JobLifecycleExamples.successExamples({ getJob, getLogContext });
 
       it('logs debug when performing', async () => {
         await job.perform(logContext);
@@ -76,7 +59,7 @@ describe('AssetDownloadJob', () => {
     describe('when no client name is specified', () => {
       it('falls back to the default client', async () => {
         AxiosUtils.stubGet(200);
-        job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, status: 200, clientRegistry });
+        job = AssetDownloadJobFactory.build();
         await expectAsync(job.perform(logContext)).toBeResolved();
       });
     });
@@ -84,9 +67,9 @@ describe('AssetDownloadJob', () => {
     describe('when a named client is specified', () => {
       it('uses the named client', async () => {
         const cdnClient = ClientFactory.build({ name: 'cdn', baseUrl: 'https://cdn.example.com' });
-        clientRegistry = NamespaceMapFactory.build({ clients: { cdn: cdnClient } });
+        const clientRegistry = NamespaceMapFactory.build({ clients: { cdn: cdnClient } });
         AxiosUtils.stubGet(200);
-        job = new AssetDownloadJob({ id: 'asset-job', url: assetUrl, client: 'cdn', status: 200, clientRegistry });
+        job = AssetDownloadJobFactory.build({ client: 'cdn', clientRegistry });
         await expectAsync(job.perform(logContext)).toBeResolved();
       });
     });
@@ -110,13 +93,7 @@ describe('AssetDownloadJob', () => {
         expect(logContext.error).toHaveBeenCalled();
       });
 
-      it('is exhausted after the configured max retries', async () => {
-        await job.perform(logContext).catch(() => {});
-        await job.perform(logContext).catch(() => {});
-        expect(job.exhausted()).toBeFalse();
-        await job.perform(logContext).catch(() => {});
-        expect(job.exhausted()).toBeTrue();
-      });
+      JobLifecycleExamples.exhaustionExample({ getJob, getLogContext, maxRetries: 3 });
     });
 
     describe('when the fetch succeeds', () => {

@@ -6,6 +6,8 @@ import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory
 import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { ResourceRequestJobFactory } from '../../support/factories/ResourceRequestJobFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
+import { JobLifecycleExamples } from '../../support/utils/JobLifecycleExamples.js';
+import { LogContextUtils } from '../../support/utils/LogContextUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 const baseUrl = 'http://example.com';
@@ -41,9 +43,13 @@ describe('ResourceRequestJob', () => {
     spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
   };
 
+  const performAndExpectResponse = async () => {
+    await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+  };
+
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
-    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
+    logContext = LogContextUtils.build();
     client = ClientFactory.build({ baseUrl });
     clients = NamespaceMapFactory.build({ clients: { default: client } });
 
@@ -51,9 +57,7 @@ describe('ResourceRequestJob', () => {
   });
 
   describe('#constructor', () => {
-    it('stores the id', () => {
-      expect(job.id).toEqual('id');
-    });
+    JobLifecycleExamples.identityExamples({ getJob: () => job, expectedId: 'id', checkInstance: false });
   });
 
   describe('#arguments', () => {
@@ -90,53 +94,53 @@ describe('ResourceRequestJob', () => {
       });
 
       it('resolves with the response', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
         expect(axios.get).toHaveBeenCalledWith(fullUrl, expectedRequestOptions);
       });
 
       it('calls enqueueActions with a ResponseWrapper', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(resourceRequest.enqueueActions).toHaveBeenCalledTimes(1);
         expect(resourceRequest.enqueueActions.calls.argsFor(0)[0]).toBeInstanceOf(ResponseWrapper);
       });
 
       it('calls enqueuePaginatedActions with a ResponseWrapper', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(resourceRequest.enqueuePaginatedActions).toHaveBeenCalledTimes(1);
         expect(resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[0]).toBeInstanceOf(ResponseWrapper);
       });
 
       it('passes the job parameters to enqueueActions', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(resourceRequest.enqueueActions.calls.argsFor(0)[0].parameters).toBe(parameters);
       });
 
       it('passes the resolved URL as originUrl to both enqueue methods', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(resourceRequest.enqueueActions.calls.argsFor(0)[1]).toBe(url);
         expect(resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[2]).toBe(url);
       });
 
       it('passes the job parameters to enqueuePaginatedActions', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(resourceRequest.enqueuePaginatedActions.calls.argsFor(0)[1]).toBe(parameters);
       });
 
       it('logs debug when performing', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(logContext.debug).toHaveBeenCalled();
       });
 
       it('does not exhaust after several successful attempts', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
+        await performAndExpectResponse();
+        await performAndExpectResponse();
 
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
@@ -195,7 +199,7 @@ describe('ResourceRequestJob', () => {
         stubEnqueueMethods();
         response = AxiosUtils.stubGet(200, '[]');
 
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(axios.get).toHaveBeenCalledWith(expectedUrl, expectedRequestOptions);
       });
@@ -208,8 +212,7 @@ describe('ResourceRequestJob', () => {
         rebuildJob();
         spyOn(resourceRequest, 'hasAssets').and.returnValue(true);
         spyOn(resourceRequest, 'enqueueAssets').and.stub();
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
-        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
+        stubEnqueueMethods();
         response = AxiosUtils.stubGet(200, rawHtml);
       });
 
@@ -239,8 +242,7 @@ describe('ResourceRequestJob', () => {
         rebuildJob();
         spyOn(resourceRequest, 'hasParser').and.returnValue(true);
         spyOn(resourceRequest, 'enqueueExtraction').and.stub();
-        spyOn(resourceRequest, 'enqueueActions').and.stub();
-        spyOn(resourceRequest, 'enqueuePaginatedActions').and.stub();
+        stubEnqueueMethods();
         response = AxiosUtils.stubGet(200, rawBody);
       });
 
@@ -302,7 +304,7 @@ describe('ResourceRequestJob', () => {
       it('resolves the client from the explicit target namespace', async () => {
         response = AxiosUtils.stubGet(200, '[]');
 
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        await performAndExpectResponse();
 
         expect(axios.get).toHaveBeenCalledWith('http://other.example.com/categories.json', expectedRequestOptions);
       });
