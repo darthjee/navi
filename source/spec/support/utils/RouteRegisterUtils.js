@@ -1,10 +1,10 @@
+import { LoggerUtils } from './LoggerUtils.js';
 import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { ConflictError } from '../../../lib/exceptions/http/ConflictError.js';
 import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
 import { NotFoundError } from '../../../lib/exceptions/http/NotFoundError.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { RouteRegister } from '../../../lib/server/RouteRegister.js';
-import { LoggerUtils } from './LoggerUtils.js';
 
 /**
  * Error scenarios shared by every verb of RouteRegister.
@@ -142,6 +142,11 @@ class RouteRegisterUtils {
    * @param {object} ctx - Context returned by {@link RouteRegisterUtils.setup}.
    * @param {object} verb - Verb configuration.
    * @param {object} scenario - Entry of the error scenarios table.
+   * @param {string} scenario.name - Description of the error used in the describe title.
+   * @param {Function} scenario.build - Builds the error thrown by the handler.
+   * @param {number} scenario.status - Expected HTTP status.
+   * @param {string} scenario.bodyName - Description of the expected body used in the it title.
+   * @param {object} scenario.body - Expected JSON body.
    * @returns {void}
    */
   static #itHandlesError(ctx, verb, { name, build, status, bodyName, body }) {
