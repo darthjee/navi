@@ -1,7 +1,7 @@
 import { Job } from 'deku-swarm';
-import { HtmlParseJob } from '../../../lib/jobs/HtmlParseJob.js';
 import { HtmlParser } from '../../../lib/utils/HtmlParser.js';
 import { AssetRequestFactory } from '../../support/factories/AssetRequestFactory.js';
+import { HtmlParseJobFactory } from '../../support/factories/HtmlParseJobFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 
 describe('HtmlParseJob', () => {
@@ -13,6 +13,15 @@ describe('HtmlParseJob', () => {
   let logContext;
 
   const baseUrl = 'https://example.com';
+
+  const buildJob = (overrides = {}) => {
+    job = HtmlParseJobFactory.build({ rawHtml, assetRequests, jobRegistry, clientRegistry, ...overrides });
+  };
+
+  const performWith = async (discovered) => {
+    spyOn(HtmlParser, 'parse').and.returnValue(discovered);
+    await job.perform(logContext);
+  };
 
   beforeEach(() => {
     logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
@@ -29,7 +38,7 @@ describe('HtmlParseJob', () => {
   describe('#constructor', () => {
     it('is an instance of Job', () => {
       assetRequests = [];
-      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      buildJob();
       expect(job).toBeInstanceOf(Job);
     });
   });
@@ -37,7 +46,7 @@ describe('HtmlParseJob', () => {
   describe('#maxRetries', () => {
     beforeEach(() => {
       assetRequests = [];
-      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      buildJob();
     });
 
     it('returns 1', () => {
@@ -51,30 +60,36 @@ describe('HtmlParseJob', () => {
         AssetRequestFactory.build({ selector: 'link', attribute: 'href' }),
         AssetRequestFactory.build({ selector: 'script', attribute: 'src' }),
       ];
-      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      buildJob();
       expect(job.arguments).toEqual({ assetCount: 2 });
     });
 
     it('returns assetCount of 0 when no asset requests', () => {
       assetRequests = [];
-      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      buildJob();
       expect(job.arguments).toEqual({ assetCount: 0 });
     });
 
-    describe('when originUrl is provided', () => {
-      it('includes originUrl in the arguments', () => {
-        const originUrl = 'https://example.com/page.html';
-        assetRequests = [];
-        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry, originUrl });
-        expect(job.arguments).toEqual({ assetCount: 0, originUrl });
-      });
-    });
-
-    describe('when originUrl is not provided', () => {
-      it('does not include originUrl in the arguments', () => {
-        assetRequests = [];
-        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
-        expect(job.arguments.originUrl).toBeUndefined();
+    [
+      {
+        description: 'when originUrl is provided',
+        title: 'includes originUrl in the arguments',
+        originUrl: 'https://example.com/page.html',
+        expectedArguments: { assetCount: 0, originUrl: 'https://example.com/page.html' },
+      },
+      {
+        description: 'when originUrl is not provided',
+        title: 'does not include originUrl in the arguments',
+        originUrl: undefined,
+        expectedArguments: { assetCount: 0 },
+      },
+    ].forEach(({ description, title, originUrl, expectedArguments }) => {
+      describe(description, () => {
+        it(title, () => {
+          assetRequests = [];
+          buildJob({ originUrl });
+          expect(job.arguments).toEqual(expectedArguments);
+        });
       });
     });
   });
@@ -83,12 +98,11 @@ describe('HtmlParseJob', () => {
     describe('with a single AssetRequest', () => {
       beforeEach(() => {
         assetRequests = [AssetRequestFactory.build({ selector: 'link[rel="stylesheet"]', attribute: 'href' })];
-        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+        buildJob();
       });
 
       it('calls HtmlParser.parse once for the AssetRequest', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue([]);
-        await job.perform(logContext);
+        await performWith([]);
         expect(HtmlParser.parse).toHaveBeenCalledOnceWith(
           rawHtml,
           'link[rel="stylesheet"]',
@@ -98,16 +112,14 @@ describe('HtmlParseJob', () => {
       });
 
       it('enqueues one AssetDownloadJob per discovered URL', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css']);
-        await job.perform(logContext);
+        await performWith(['/styles.css']);
         expect(jobRegistry.enqueue).toHaveBeenCalledOnceWith('AssetDownload', jasmine.objectContaining({
           url: `${baseUrl}/styles.css`,
         }));
       });
 
       it('enqueues multiple AssetDownloadJobs for multiple discovered URLs', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue(['/styles.css', '/theme.css']);
-        await job.perform(logContext);
+        await performWith(['/styles.css', '/theme.css']);
         expect(jobRegistry.enqueue).toHaveBeenCalledTimes(2);
       });
     });
@@ -115,46 +127,44 @@ describe('HtmlParseJob', () => {
     describe('URL resolution', () => {
       beforeEach(() => {
         assetRequests = [AssetRequestFactory.build({ selector: 'link', attribute: 'href' })];
-        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+        buildJob();
       });
 
-      it('enqueues absolute https URLs as-is', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue(['https://cdn.example.com/app.css']);
-        await job.perform(logContext);
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
-          url: 'https://cdn.example.com/app.css',
-        }));
-      });
-
-      it('enqueues absolute http URLs as-is', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue(['http://cdn.example.com/app.css']);
-        await job.perform(logContext);
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
-          url: 'http://cdn.example.com/app.css',
-        }));
-      });
-
-      it('prepends https: for protocol-relative URLs', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue(['//cdn.example.com/app.css']);
-        await job.perform(logContext);
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
-          url: 'https://cdn.example.com/app.css',
-        }));
-      });
-
-      it('concatenates root-relative URLs with the client base URL', async () => {
-        spyOn(HtmlParser, 'parse').and.returnValue(['/assets/app.css']);
-        await job.perform(logContext);
-        expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
-          url: `${baseUrl}/assets/app.css`,
-        }));
+      [
+        {
+          title: 'enqueues absolute https URLs as-is',
+          discovered: 'https://cdn.example.com/app.css',
+          expectedUrl: 'https://cdn.example.com/app.css',
+        },
+        {
+          title: 'enqueues absolute http URLs as-is',
+          discovered: 'http://cdn.example.com/app.css',
+          expectedUrl: 'http://cdn.example.com/app.css',
+        },
+        {
+          title: 'prepends https: for protocol-relative URLs',
+          discovered: '//cdn.example.com/app.css',
+          expectedUrl: 'https://cdn.example.com/app.css',
+        },
+        {
+          title: 'concatenates root-relative URLs with the client base URL',
+          discovered: '/assets/app.css',
+          expectedUrl: `${baseUrl}/assets/app.css`,
+        },
+      ].forEach(({ title, discovered, expectedUrl }) => {
+        it(title, async () => {
+          await performWith([discovered]);
+          expect(jobRegistry.enqueue).toHaveBeenCalledWith('AssetDownload', jasmine.objectContaining({
+            url: expectedUrl,
+          }));
+        });
       });
     });
 
     describe('when the selector matches zero elements', () => {
       beforeEach(() => {
         assetRequests = [AssetRequestFactory.build({ selector: 'video', attribute: 'src' })];
-        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+        buildJob();
         spyOn(HtmlParser, 'parse').and.returnValue([]);
       });
 
@@ -170,7 +180,7 @@ describe('HtmlParseJob', () => {
           AssetRequestFactory.build({ selector: 'link[rel="stylesheet"]', attribute: 'href' }),
           AssetRequestFactory.build({ selector: 'script[src]', attribute: 'src' }),
         ];
-        job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+        buildJob();
         spyOn(HtmlParser, 'parse').and.callFake((_html, selector) => {
           if (selector === 'link[rel="stylesheet"]') return ['/styles.css'];
           if (selector === 'script[src]') return ['/app.js'];
@@ -193,7 +203,7 @@ describe('HtmlParseJob', () => {
   describe('#exhausted', () => {
     beforeEach(() => {
       assetRequests = [];
-      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      buildJob();
     });
 
     it('returns false with zero attempts', () => {
@@ -202,7 +212,7 @@ describe('HtmlParseJob', () => {
 
     it('is exhausted after one failure', async () => {
       assetRequests = [AssetRequestFactory.build()];
-      job = new HtmlParseJob({ id: 'test-id', rawHtml, assetRequests, jobRegistry, clientRegistry });
+      buildJob();
       spyOn(HtmlParser, 'parse').and.throwError(new Error('parse failure'));
       await job.perform(logContext).catch(() => {});
       expect(job.exhausted()).toBeTrue();
