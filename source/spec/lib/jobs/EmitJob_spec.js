@@ -32,11 +32,36 @@ describe('EmitJob', () => {
 
   const rebuildJob = ({
     emitUrl = url, method = 'POST', status = undefined, jobItem = item, jobParameters = {}, headers = undefined,
-    bodyTemplate = undefined,
+    bodyTemplate = undefined, retries = undefined, cooldown = undefined, emitClient = undefined,
+    extractionId = undefined,
   } = {}) => {
-    emit = ResourceRequestEmitFactory.build({ url: emitUrl, method, status, headers, body_template: bodyTemplate });
+    emit = ResourceRequestEmitFactory.build({
+      url: emitUrl, method, status, headers, body_template: bodyTemplate, retries, cooldown, client: emitClient,
+    });
     parameters = jobParameters;
-    job = EmitJobFactory.build({ item: jobItem, emit, clients, parameters });
+    job = EmitJobFactory.build({ item: jobItem, emit, clients, parameters, extractionId });
+  };
+
+  const performIgnoringFailure = async (times = 1) => {
+    for (let attempt = 0; attempt < times; attempt += 1) {
+      await job.perform(logContext).catch(() => {});
+    }
+  };
+
+  const firstRecord = () => EmissionRegistry.getRecords()[0];
+
+  const itForwardsToClientEmit = ({ description, title, jobOptions, expectedBody = item, expectedHeaders = {} }) => {
+    describe(description, () => {
+      beforeEach(() => {
+        rebuildJob(jobOptions);
+      });
+
+      it(title, async () => {
+        await job.perform(logContext);
+
+        expect(client.emit).toHaveBeenCalledWith('POST', url, expectedBody, undefined, logContext, expectedHeaders);
+      });
+    });
   };
 
   beforeEach(() => {
@@ -95,9 +120,9 @@ describe('EmitJob', () => {
       });
 
       it('does not exhaust after several successful attempts', async () => {
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
-        await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          await expectAsync(job.perform(logContext)).toBeResolvedTo(response);
+        }
 
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toBeUndefined();
@@ -109,25 +134,20 @@ describe('EmitJob', () => {
         spyOn(client, 'emit').and.resolveTo({ status: 200, data: {} });
       });
 
-      describe('when the emit configures headers', () => {
-        beforeEach(() => {
-          rebuildJob({ headers: { 'X-Token': 'abc' } });
-        });
-
-        it('passes the configured headers as the 6th argument to client.emit', async () => {
-          await job.perform(logContext);
-
-          expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, { 'X-Token': 'abc' });
-        });
-      });
-
-      describe('when the emit configures no headers', () => {
-        it('passes an empty object as the 6th argument to client.emit', async () => {
-          await job.perform(logContext);
-
-          expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, {});
-        });
-      });
+      [
+        {
+          description: 'when the emit configures headers',
+          title: 'passes the configured headers as the 6th argument to client.emit',
+          jobOptions: { headers: { 'X-Token': 'abc' } },
+          expectedHeaders: { 'X-Token': 'abc' },
+        },
+        {
+          description: 'when the emit configures no headers',
+          title: 'passes an empty object as the 6th argument to client.emit',
+          jobOptions: {},
+          expectedHeaders: {},
+        },
+      ].forEach(itForwardsToClientEmit);
     });
 
     describe('emit body_template rendering', () => {
@@ -135,25 +155,20 @@ describe('EmitJob', () => {
         spyOn(client, 'emit').and.resolveTo({ status: 200, data: {} });
       });
 
-      describe('when the emit configures a body_template', () => {
-        beforeEach(() => {
-          rebuildJob({ bodyTemplate: { itemName: '{:name}' } });
-        });
-
-        it('sends the rendered body as the 3rd argument to client.emit, not the raw item', async () => {
-          await job.perform(logContext);
-
-          expect(client.emit).toHaveBeenCalledWith('POST', url, { itemName: 'widget' }, undefined, logContext, {});
-        });
-      });
-
-      describe('when the emit configures no body_template', () => {
-        it('sends the raw item as the 3rd argument to client.emit, unchanged', async () => {
-          await job.perform(logContext);
-
-          expect(client.emit).toHaveBeenCalledWith('POST', url, item, undefined, logContext, {});
-        });
-      });
+      [
+        {
+          description: 'when the emit configures a body_template',
+          title: 'sends the rendered body as the 3rd argument to client.emit, not the raw item',
+          jobOptions: { bodyTemplate: { itemName: '{:name}' } },
+          expectedBody: { itemName: 'widget' },
+        },
+        {
+          description: 'when the emit configures no body_template',
+          title: 'sends the raw item as the 3rd argument to client.emit, unchanged',
+          jobOptions: {},
+          expectedBody: item,
+        },
+      ].forEach(itForwardsToClientEmit);
     });
 
     [
@@ -201,7 +216,7 @@ describe('EmitJob', () => {
       it('fails when the response is not a 2xx', async () => {
         AxiosUtils.stubPost(404, {});
 
-        await job.perform(logContext).catch(() => {});
+        await performIgnoringFailure();
 
         expect(job.lastError).toEqual(new RequestFailed(404, fullUrl));
       });
@@ -221,7 +236,7 @@ describe('EmitJob', () => {
       it('fails for a different status, even a different 2xx one', async () => {
         AxiosUtils.stubPost(200, {});
 
-        await job.perform(logContext).catch(() => {});
+        await performIgnoringFailure();
 
         expect(job.lastError).toEqual(new RequestFailed(200, fullUrl));
       });
@@ -237,7 +252,7 @@ describe('EmitJob', () => {
       it('registers failure and increments attempts, then succeeds once the stub recovers', async () => {
         expect(job.lastError).toBeUndefined();
 
-        await job.perform(logContext).catch(() => {});
+        await performIgnoringFailure();
         expect(job.exhausted()).toBeFalse();
         expect(job.lastError).toEqual(expectedError);
 
@@ -247,19 +262,16 @@ describe('EmitJob', () => {
       });
 
       it('logs the error', async () => {
-        await job.perform(logContext).catch(() => {});
+        await performIgnoringFailure();
 
         expect(logContext.error).toHaveBeenCalledWith(jasmine.stringContaining(job.id));
       });
 
       it('exhausts after maxRetries (default 5, since 502 is retryable) failed attempts', async () => {
-        await job.perform(logContext).catch(() => {});
-        await job.perform(logContext).catch(() => {});
-        await job.perform(logContext).catch(() => {});
-        await job.perform(logContext).catch(() => {});
+        await performIgnoringFailure(4);
         expect(job.exhausted()).toBeFalse();
 
-        await job.perform(logContext).catch(() => {});
+        await performIgnoringFailure();
         expect(job.exhausted()).toBeTrue();
         expect(job.lastError).toEqual(expectedError);
       });
@@ -274,9 +286,7 @@ describe('EmitJob', () => {
           namespace: 'other',
           clients: { other: otherClient },
         });
-        emit = ResourceRequestEmitFactory.build({ url, client: { name: 'other', namespace: 'other' } });
-        parameters = {};
-        job = EmitJobFactory.build({ item, emit, clients, parameters });
+        rebuildJob({ emitClient: { name: 'other', namespace: 'other' } });
       });
 
       it('resolves the client from the explicit target namespace', async () => {
@@ -322,59 +332,68 @@ describe('EmitJob', () => {
         });
       });
 
-      describe('when the emit fails with a retryable status', () => {
-        beforeEach(() => {
-          AxiosUtils.stubPostRejection({ response: { status: 502 } });
-        });
+      [
+        {
+          description: 'with a retryable status',
+          rejection: { response: { status: 502 } },
+          expectedRecord: { status: 'failed', httpStatus: 502, error: jasmine.stringContaining('502') },
+        },
+        {
+          description: 'past maxRetries',
+          jobOptions: { retries: 1 },
+          rejection: { response: { status: 502 } },
+          expectedRecord: { status: 'dead' },
+        },
+        {
+          description: 'with a non-retryable 4xx',
+          rejection: { response: { status: 404 } },
+          expectedRecord: { status: 'dead', httpStatus: 404 },
+        },
+        {
+          description: 'with a network-level error',
+          rejection: new Error('network down'),
+          expectedRecord: { status: 'failed', httpStatus: null },
+        },
+      ].forEach(({ description, jobOptions, rejection, expectedRecord }) => {
+        describe(`when the emit fails ${description}`, () => {
+          beforeEach(() => {
+            rebuildJob(jobOptions);
+            AxiosUtils.stubPostRejection(rejection);
+          });
 
-        it('records a failed emission with the http status', async () => {
-          await job.perform(logContext).catch(() => {});
+          it(`records a ${expectedRecord.status} emission`, async () => {
+            await performIgnoringFailure();
 
-          const [record] = EmissionRegistry.getRecords();
-          expect(record.status).toBe('failed');
-          expect(record.httpStatus).toBe(502);
-          expect(record.error).toContain('502');
-        });
-
-        it('increments the failed counter', async () => {
-          await job.perform(logContext).catch(() => {});
-
-          expect(EmissionRegistry.counts).toEqual(jasmine.objectContaining({ failed: 1, dead: 0 }));
-        });
-      });
-
-      describe('when the emit fails past maxRetries', () => {
-        beforeEach(() => {
-          emit = ResourceRequestEmitFactory.build({ url, retries: 1 });
-          job = EmitJobFactory.build({ item, emit, clients, parameters: {} });
-          AxiosUtils.stubPostRejection({ response: { status: 502 } });
-        });
-
-        it('records a dead emission', async () => {
-          await job.perform(logContext).catch(() => {});
-
-          const [record] = EmissionRegistry.getRecords();
-          expect(record.status).toBe('dead');
-        });
-
-        it('increments the dead counter but not the failed counter', async () => {
-          await job.perform(logContext).catch(() => {});
-
-          expect(EmissionRegistry.counts).toEqual(jasmine.objectContaining({ failed: 0, dead: 1 }));
+            expect(firstRecord()).toEqual(jasmine.objectContaining(expectedRecord));
+          });
         });
       });
 
-      describe('when the emit fails with a non-retryable 4xx', () => {
-        beforeEach(() => {
-          AxiosUtils.stubPostRejection({ response: { status: 404 } });
-        });
+      [
+        {
+          description: 'retryable status',
+          jobOptions: {},
+          title: 'increments the failed counter',
+          expectedCounts: { failed: 1, dead: 0 },
+        },
+        {
+          description: 'exhausted retries',
+          jobOptions: { retries: 1 },
+          title: 'increments the dead counter but not the failed counter',
+          expectedCounts: { failed: 0, dead: 1 },
+        },
+      ].forEach(({ description, jobOptions, title, expectedCounts }) => {
+        describe(`when the emit fails with a ${description}`, () => {
+          beforeEach(() => {
+            rebuildJob(jobOptions);
+            AxiosUtils.stubPostRejection({ response: { status: 502 } });
+          });
 
-        it('records a dead emission', async () => {
-          await job.perform(logContext).catch(() => {});
+          it(title, async () => {
+            await performIgnoringFailure();
 
-          const [record] = EmissionRegistry.getRecords();
-          expect(record.status).toBe('dead');
-          expect(record.httpStatus).toBe(404);
+            expect(EmissionRegistry.counts).toEqual(jasmine.objectContaining(expectedCounts));
+          });
         });
       });
 
@@ -387,7 +406,7 @@ describe('EmitJob', () => {
         it('records a null itemRef', async () => {
           await job.perform(logContext);
 
-          expect(EmissionRegistry.getRecords()[0].itemRef).toBeNull();
+          expect(firstRecord().itemRef).toBeNull();
         });
       });
 
@@ -399,43 +418,34 @@ describe('EmitJob', () => {
         it('records a null httpStatus', async () => {
           await job.perform(logContext);
 
-          expect(EmissionRegistry.getRecords()[0].httpStatus).toBeNull();
-        });
-      });
-
-      describe('when the emit fails with a network-level error', () => {
-        beforeEach(() => {
-          AxiosUtils.stubPostRejection(new Error('network down'));
-        });
-
-        it('records a failed emission with a null httpStatus', async () => {
-          await job.perform(logContext).catch(() => {});
-
-          const [record] = EmissionRegistry.getRecords();
-          expect(record.status).toBe('failed');
-          expect(record.httpStatus).toBeNull();
+          expect(firstRecord().httpStatus).toBeNull();
         });
       });
 
       describe('when the job carries an extractionId', () => {
         beforeEach(() => {
-          job = EmitJobFactory.build({ item, emit, clients, parameters: {}, extractionId: 99 });
+          rebuildJob({ extractionId: 99 });
         });
 
-        it('stamps extractionId on a success emission', async () => {
-          response = AxiosUtils.stubPost(200, {});
+        [
+          {
+            status: 'success',
+            arrange: () => AxiosUtils.stubPost(200, {}),
+            perform: () => job.perform(logContext),
+          },
+          {
+            status: 'failed',
+            arrange: () => AxiosUtils.stubPostRejection({ response: { status: 502 } }),
+            perform: () => performIgnoringFailure(),
+          },
+        ].forEach(({ status, arrange, perform }) => {
+          it(`stamps extractionId on a ${status} emission`, async () => {
+            arrange();
 
-          await job.perform(logContext);
+            await perform();
 
-          expect(EmissionRegistry.getRecords()[0].extractionId).toBe(99);
-        });
-
-        it('stamps extractionId on a failed emission', async () => {
-          AxiosUtils.stubPostRejection({ response: { status: 502 } });
-
-          await job.perform(logContext).catch(() => {});
-
-          expect(EmissionRegistry.getRecords()[0].extractionId).toBe(99);
+            expect(firstRecord().extractionId).toBe(99);
+          });
         });
       });
 
@@ -445,7 +455,7 @@ describe('EmitJob', () => {
 
           await job.perform(logContext);
 
-          expect(EmissionRegistry.getRecords()[0].extractionId).toBeNull();
+          expect(firstRecord().extractionId).toBeNull();
         });
       });
     });
@@ -472,8 +482,7 @@ describe('EmitJob', () => {
 
     describe('when emit.retries is configured', () => {
       beforeEach(() => {
-        emit = ResourceRequestEmitFactory.build({ url, retries: 2 });
-        job = EmitJobFactory.build({ item, emit, clients, parameters: {} });
+        rebuildJob({ retries: 2 });
       });
 
       it('returns the configured value', () => {
@@ -522,8 +531,7 @@ describe('EmitJob', () => {
 
     describe('when emit.cooldown is configured', () => {
       beforeEach(() => {
-        emit = ResourceRequestEmitFactory.build({ url, cooldown: 1234 });
-        job = EmitJobFactory.build({ item, emit, clients, parameters: {} });
+        rebuildJob({ cooldown: 1234 });
       });
 
       it('returns the configured value', () => {
