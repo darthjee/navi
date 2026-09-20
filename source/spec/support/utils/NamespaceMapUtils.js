@@ -12,10 +12,13 @@ class NamespaceMapUtils {
   /**
    * Builds the NamespaceMap from a description of the resources of each namespace.
    *
-   * Every resource is built with a single ResourceRequest for the given url. The
-   * `default` namespace is always registered, empty when not described.
-   * @param {Record<string, Record<string, string>>} namespaces - Maps a namespace name to
-   * an object mapping resource names to the url of their single request.
+   * Every resource is built with a single ResourceRequest for the given url. A resource
+   * can be described either by its url or by an object `{ url, disabled }`, in which case
+   * the request is built disabled when `disabled` is true. The `default` namespace is
+   * always registered, empty when not described.
+   * @param {Record<string, Record<string, string|{url: string, disabled?: boolean}>>} namespaces -
+   * Maps a namespace name to an object mapping resource names to the url (or the
+   * `{ url, disabled }` descriptor) of their single request.
    * @returns {Record<string, ResourceRequest>} The built requests, keyed by resource name.
    * @example
    * const requests = NamespaceMapUtils.build({
@@ -23,6 +26,8 @@ class NamespaceMapUtils {
    *   reports: { categories: '/categories.json' },
    * });
    * requests.categories; // the ResourceRequest for '/categories.json'
+   * @example
+   * NamespaceMapUtils.build({ default: { old_page: { url: '/old', disabled: true } } });
    */
   static build({ default: defaultResources = {}, ...others } = {}) {
     const requests = {};
@@ -42,15 +47,18 @@ class NamespaceMapUtils {
 
   /**
    * Builds the Resource of each entry, collecting its request.
-   * @param {Record<string, string>} resources - Maps resource names to request urls.
+   * @param {Record<string, string|{url: string, disabled?: boolean}>} resources - Maps resource
+   * names to request urls or `{ url, disabled }` descriptors.
    * @param {Record<string, ResourceRequest>} requests - Collector of the built requests.
    * @returns {Record<string, Resource>} The built resources, keyed by name.
    */
   static #buildResources(resources, requests) {
     const built = {};
 
-    Object.entries(resources).forEach(([name, url]) => {
-      requests[name] = ResourceRequestFactory.build({ url });
+    Object.entries(resources).forEach(([name, description]) => {
+      const { url, disabled } = typeof description === 'string' ? { url: description } : description;
+
+      requests[name] = ResourceRequestFactory.build({ url, disabled });
       built[name] = ResourceFactory.build({ name, resourceRequests: [requests[name]] });
     });
 
