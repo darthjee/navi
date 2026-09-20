@@ -64,12 +64,12 @@ describe('JobRegistry', () => {
         const error = new Error('test error');
 
         JobRegistry.pick();
-        try { j._fail(error); } catch (_) { /* expected */ }
+        JobRegistryUtils.failSilently(j, error);
         JobRegistry.fail(j);
         JobRegistry.promoteReadyJobs();
 
         JobRegistry.pick();
-        try { j._fail(error); } catch (_) { /* expected */ }
+        JobRegistryUtils.failSilently(j, error);
         JobRegistry.fail(j);
 
         expect(JobRegistry.hasJob()).toBeFalse();

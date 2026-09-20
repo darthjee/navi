@@ -7,6 +7,7 @@ import { EmitJobFactory } from '../../support/factories/EmitJobFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { ResourceRequestEmitFactory } from '../../support/factories/ResourceRequestEmitFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
+import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
 const baseUrl = 'http://example.com';
@@ -461,7 +462,7 @@ describe('EmitJob', () => {
   });
 
   describe('#maxRetries', () => {
-    const fail = (error) => { try { job._fail(error); } catch (_) { /* expected */ } };
+    const fail = (error) => JobRegistryUtils.failSilently(job, error);
 
     describe('when no emit.retries override is configured', () => {
       it('returns EmitJob.DEFAULT_MAX_RETRIES', () => {
@@ -511,7 +512,7 @@ describe('EmitJob', () => {
   });
 
   describe('#cooldown', () => {
-    const fail = (error) => { try { job._fail(error); } catch (_) { /* expected */ } };
+    const fail = (error) => JobRegistryUtils.failSilently(job, error);
 
     describe('when no emit.cooldown override is configured and there is no Retry-After to honor', () => {
       it('returns EmitJob.DEFAULT_COOLDOWN', () => {

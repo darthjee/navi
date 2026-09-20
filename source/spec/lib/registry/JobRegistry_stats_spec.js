@@ -1,6 +1,7 @@
 import { JobFactory, JobRegistry, IdentifyableCollection, Queue } from 'deku-swarm';
 import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 import { ClientRegistry } from '../../../lib/registry/ClientRegistry.js';
+import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {
   let clients;
@@ -133,9 +134,7 @@ describe('JobRegistry', () => {
       beforeEach(() => {
         JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
         const job = JobRegistry.pick();
-        try { job._fail(new Error()); } catch { /* expected */ }
-        try { job._fail(new Error()); } catch { /* expected */ }
-        try { job._fail(new Error()); } catch { /* expected */ }
+        JobRegistryUtils.exhaust(job);
         JobRegistry.fail(job);
       });
 

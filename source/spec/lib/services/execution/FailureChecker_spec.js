@@ -4,6 +4,7 @@ import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
 import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../../lib/services/execution/FailureChecker.js';
+import { JobRegistryUtils } from '../../../support/utils/JobRegistryUtils.js';
 
 describe('FailureChecker', () => {
   let clients;
@@ -64,9 +65,7 @@ describe('FailureChecker', () => {
           JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
 
           const job1 = JobRegistry.pick();
-          try { job1._fail(new Error()); } catch { /* expected */ }
-          try { job1._fail(new Error()); } catch { /* expected */ }
-          try { job1._fail(new Error()); } catch { /* expected */ }
+          JobRegistryUtils.exhaust(job1);
           JobRegistry.fail(job1);
 
           const job2 = JobRegistry.pick();

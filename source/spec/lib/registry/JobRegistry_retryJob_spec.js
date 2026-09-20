@@ -51,12 +51,12 @@ describe('JobRegistry', () => {
         job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 }, maxRetries: 1 });
 
         JobRegistry.pick();
-        try { job._fail(new Error('test')); } catch (_) { /* expected */ }
+        JobRegistryUtils.failSilently(job, new Error('test'));
         JobRegistry.fail(job);
         JobRegistry.promoteReadyJobs();
 
         JobRegistry.pick();
-        try { job._fail(new Error('test')); } catch (_) { /* expected */ }
+        JobRegistryUtils.failSilently(job, new Error('test'));
         JobRegistry.fail(job);
       });
 

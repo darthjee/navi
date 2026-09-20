@@ -108,9 +108,7 @@ describe('JobRegistry', () => {
       beforeEach(() => {
         JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
         job = JobRegistry.pick();
-        try { job._fail(new Error()); } catch { /* expected */ }
-        try { job._fail(new Error()); } catch { /* expected */ }
-        try { job._fail(new Error()); } catch { /* expected */ }
+        JobRegistryUtils.exhaust(job);
         JobRegistry.fail(job);
       });
 
@@ -186,9 +184,7 @@ describe('JobRegistry', () => {
       beforeEach(() => {
         JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
         job = JobRegistry.pick();
-        try { job._fail(new Error()); } catch { /* expected */ }
-        try { job._fail(new Error()); } catch { /* expected */ }
-        try { job._fail(new Error()); } catch { /* expected */ }
+        JobRegistryUtils.exhaust(job);
         JobRegistry.fail(job);
       });
 
