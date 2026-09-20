@@ -1,21 +1,14 @@
 import { JobRegistry } from 'deku-swarm';
-import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {
   const ctx = JobRegistryUtils.setup();
 
   describe('.clearQueues', () => {
-    let resourceRequest;
-
-    beforeEach(() => {
-      resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
-    });
-
     describe('when there are enqueued jobs', () => {
       beforeEach(() => {
-        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
-        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: ctx.resourceRequest, parameters: {} });
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: ctx.resourceRequest, parameters: {} });
       });
 
       it('removes all enqueued jobs', () => {
@@ -33,7 +26,7 @@ describe('JobRegistry', () => {
 
     describe('when there are finished jobs', () => {
       beforeEach(() => {
-        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: ctx.resourceRequest, parameters: {} });
         const job = JobRegistry.pick();
         JobRegistry.finish(job);
       });
@@ -47,7 +40,7 @@ describe('JobRegistry', () => {
 
     describe('when there are dead jobs', () => {
       beforeEach(() => {
-        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
+        JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: ctx.resourceRequest, parameters: {} });
         const job = JobRegistry.pick();
         job.exhausted = () => true;
         JobRegistry.fail(job);

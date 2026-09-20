@@ -31,10 +31,8 @@ describe('JobRegistry', () => {
 
     describe('when the job is not exhausted', () => {
       it('sets readyBy using the configured cooldown', () => {
-        JobRegistry.reset();
-        JobRegistry.build({ cooldown: 5000 });
-        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        JobRegistry.pick();
+        JobRegistryUtils.rebuild({ cooldown: 5000 });
+        const j = JobRegistryUtils.enqueueAndPick();
 
         const before = Date.now() + 4900;
         JobRegistry.fail(j);
@@ -45,11 +43,8 @@ describe('JobRegistry', () => {
       });
 
       it('moves the job to the failed queue, not retryQueue', () => {
-        JobRegistry.reset();
-        JobRegistry.build({ cooldown: 5000 });
-        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        JobRegistry.pick();
-        JobRegistry.fail(j);
+        JobRegistryUtils.rebuild({ cooldown: 5000 });
+        JobRegistry.fail(JobRegistryUtils.enqueueAndPick());
 
         expect(JobRegistry.hasReadyJob()).toBeFalse();
         expect(JobRegistry.hasJob()).toBeTrue();
@@ -58,19 +53,10 @@ describe('JobRegistry', () => {
 
     describe('when the job is exhausted', () => {
       it('moves the job to the dead queue using its own configured maxRetries', () => {
-        JobRegistry.reset();
-        JobRegistry.build({ cooldown: -1 });
-        const j = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 }, maxRetries: 2 });
-        const error = new Error('test error');
+        JobRegistryUtils.rebuild({ cooldown: -1 });
+        const j = JobRegistryUtils.enqueueAndPick({ parameters: { value: 1 }, maxRetries: 2 });
 
-        JobRegistry.pick();
-        try { j._fail(error); } catch (_) { /* expected */ }
-        JobRegistry.fail(j);
-        JobRegistry.promoteReadyJobs();
-
-        JobRegistry.pick();
-        try { j._fail(error); } catch (_) { /* expected */ }
-        JobRegistry.fail(j);
+        JobRegistryUtils.failUntilDead(j, 2, new Error('test error'));
 
         expect(JobRegistry.hasJob()).toBeFalse();
         expect(JobRegistry.stats().dead).toBe(1);

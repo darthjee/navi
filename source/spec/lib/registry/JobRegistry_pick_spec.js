@@ -4,6 +4,28 @@ import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 describe('JobRegistry', () => {
   const ctx = JobRegistryUtils.setup();
 
+  const itPicksInOrder = (firstDescription, getJobs) => {
+    it(firstDescription, () => {
+      expect(JobRegistry.pick()).toEqual(getJobs()[0]);
+    });
+
+    it('removes the job from the queue', () => {
+      JobRegistry.pick();
+
+      expect(JobRegistry.pick()).toEqual(getJobs()[1]);
+    });
+
+    it('decreases the queue size', () => {
+      JobRegistry.pick();
+
+      expect(JobRegistry.hasJob()).toBeTrue();
+
+      JobRegistry.pick();
+
+      expect(JobRegistry.hasJob()).toBeFalse();
+    });
+  };
+
   describe('.pick', () => {
     describe('when the queue is empty', () => {
       it('returns undefined', () => {
@@ -25,25 +47,7 @@ describe('JobRegistry', () => {
         job2 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
       });
 
-      it('returns the first job', () => {
-        expect(JobRegistry.pick()).toEqual(job1);
-      });
-
-      it('removes the job from the queue', () => {
-        JobRegistry.pick();
-
-        expect(JobRegistry.pick()).toEqual(job2);
-      });
-
-      it('decreases the queue size', () => {
-        JobRegistry.pick();
-
-        expect(JobRegistry.hasJob()).toBeTrue();
-
-        JobRegistry.pick();
-
-        expect(JobRegistry.hasJob()).toBeFalse();
-      });
+      itPicksInOrder('returns the first job', () => [job1, job2]);
 
       it('adds the picked job to processing', () => {
         const job = JobRegistry.pick();
@@ -60,25 +64,7 @@ describe('JobRegistry', () => {
         job2 = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
       });
 
-      it('returns the first job', () => {
-        expect(JobRegistry.pick()).toEqual(job1);
-      });
-
-      it('removes the job from the queue', () => {
-        JobRegistry.pick();
-
-        expect(JobRegistry.pick()).toEqual(job2);
-      });
-
-      it('decreases the queue size', () => {
-        JobRegistry.pick();
-
-        expect(JobRegistry.hasJob()).toBeTrue();
-
-        JobRegistry.pick();
-
-        expect(JobRegistry.hasJob()).toBeFalse();
-      });
+      itPicksInOrder('returns the first job', () => [job1, job2]);
     });
 
     describe('when the queue has failed and not failed jobs', () => {
@@ -92,25 +78,7 @@ describe('JobRegistry', () => {
         JobRegistry.promoteReadyJobs();
       });
 
-      it('returns the first not failed job', () => {
-        expect(JobRegistry.pick()).toEqual(job2);
-      });
-
-      it('removes the job from the queue', () => {
-        JobRegistry.pick();
-
-        expect(JobRegistry.pick()).toEqual(job1);
-      });
-
-      it('decreases the queue size', () => {
-        JobRegistry.pick();
-
-        expect(JobRegistry.hasJob()).toBeTrue();
-
-        JobRegistry.pick();
-
-        expect(JobRegistry.hasJob()).toBeFalse();
-      });
+      itPicksInOrder('returns the first not failed job', () => [job2, job1]);
     });
 
     describe('when enqueued is empty and retryQueue has items', () => {
