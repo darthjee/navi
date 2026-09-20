@@ -73,8 +73,7 @@ class JobRegistryScenarios {
    * @returns {Job} The picked job.
    */
   static #pick(attributes) {
-    JobRegistry.enqueue('ResourceRequestJob', attributes);
-    return JobRegistry.pick();
+    return JobRegistryUtils.enqueueAndPick(attributes);
   }
 }
 

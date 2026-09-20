@@ -9,10 +9,8 @@ describe('JobRegistry', () => {
       let job;
 
       beforeEach(() => {
-        JobRegistry.reset();
-        JobRegistry.build({ cooldown: 5000 });
-        job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-        JobRegistry.pick();
+        JobRegistryUtils.rebuild({ cooldown: 5000 });
+        job = JobRegistryUtils.enqueueAndPick();
         JobRegistry.fail(job);
       });
 
@@ -46,18 +44,9 @@ describe('JobRegistry', () => {
       let job;
 
       beforeEach(() => {
-        JobRegistry.reset();
-        JobRegistry.build({ cooldown: -1 });
-        job = JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 }, maxRetries: 1 });
-
-        JobRegistry.pick();
-        JobRegistryUtils.failSilently(job, new Error('test'));
-        JobRegistry.fail(job);
-        JobRegistry.promoteReadyJobs();
-
-        JobRegistry.pick();
-        JobRegistryUtils.failSilently(job, new Error('test'));
-        JobRegistry.fail(job);
+        JobRegistryUtils.rebuild({ cooldown: -1 });
+        job = JobRegistryUtils.enqueueAndPick({ parameters: { value: 1 }, maxRetries: 1 });
+        JobRegistryUtils.failUntilDead(job, 2, new Error('test'));
       });
 
       it('moves the job to the retry queue', () => {
