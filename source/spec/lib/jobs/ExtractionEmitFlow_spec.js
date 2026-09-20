@@ -17,6 +17,28 @@ import { ResourceFactory } from '../../support/factories/ResourceFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
 import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
 
+const enqueued = (klass) => JobRegistry.jobsByStatus('enqueued').filter((job) => job instanceof klass);
+
+const hasEnqueued = (klass) => enqueued(klass).length > 0;
+
+const performAll = async (jobs, logContext) => {
+  for (const job of jobs) {
+    await job.perform(logContext);
+  }
+};
+
+const expectEmitted = (url, body) => {
+  expect(axios.post).toHaveBeenCalledWith(url, body, jasmine.anything());
+};
+
+const postIdBody = '<html><body class="page page-id-42 postid-880433 logged-in"></body></html>';
+
+const postIdRequestAttributes = (emitAttributes = {}) => ({
+  url: '/bundle/tidal-aberrations/?logged-in',
+  parser: { type: 'regex', match: 'postid-(\\d+)', field: 'post_id' },
+  emit: { client: 'majora_api', method: 'POST', url: '/api/bundles/resolve', ...emitAttributes },
+});
+
 /**
  * End-to-end coverage for the two worked examples from
  * docs/agents/future/crawler/flows.md: it drives a real ResourceRequestJob → real
@@ -52,6 +74,29 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
     JobFactory.reset();
   });
 
+  const buildTopJob = ({ body, ...requestAttributes }) => {
+    const resourceRequest = new ResourceRequest({ status: 200, clientName: 'lootstudios', ...requestAttributes });
+
+    AxiosUtils.stubGet(200, body);
+    AxiosUtils.stubPost(200, {});
+
+    return new ResourceRequestJob({ id: 'top', resourceRequest, parameters: {}, clients });
+  };
+
+  const performTopAndFindExtraction = async (topJob) => {
+    await topJob.perform(logContext);
+
+    const [extractionJob] = enqueued(ExtractionJob);
+    expect(extractionJob).toBeInstanceOf(ExtractionJob);
+    return extractionJob;
+  };
+
+  const performExtractionAndFindEmits = async (extractionJob) => {
+    await extractionJob.perform(logContext);
+
+    return enqueued(EmitJob);
+  };
+
   describe('Loot Studios example (json_path parser + filter + fields + chaining)', () => {
     const rawBody = JSON.stringify({
       bundleObjs: [
@@ -61,14 +106,12 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
       ],
     });
 
-    let resourceRequest;
     let job;
 
     beforeEach(() => {
-      resourceRequest = new ResourceRequest({
+      job = buildTopJob({
+        body: rawBody,
         url: '/wp-admin/admin-ajax.php?action=GetMyLootsCache',
-        status: 200,
-        clientName: 'lootstudios',
         parser: {
           type: 'json_path',
           match: 'bundleObjs',
@@ -84,90 +127,45 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
           { resource: 'miniature_detail', parameters: { bundle_inid: 'parsedBody.obj_inid' } },
         ],
       });
-
-      job = new ResourceRequestJob({ id: 'top', resourceRequest, parameters: {}, clients });
-
-      AxiosUtils.stubGet(200, rawBody);
-      AxiosUtils.stubPost(200, {});
     });
 
     it('still enqueues the ActionProcessingJob chain (regression)', async () => {
       await job.perform(logContext);
 
-      const actionJob = JobRegistry.jobsByStatus('enqueued').find((enqueued) => enqueued instanceof ActionProcessingJob);
-      expect(actionJob).toBeInstanceOf(ActionProcessingJob);
+      expect(enqueued(ActionProcessingJob)[0]).toBeInstanceOf(ActionProcessingJob);
     });
 
     it('emits one POST to /api/miniatures per filtered item, with the mapped body', async () => {
-      await job.perform(logContext);
-
-      const extractionJob = JobRegistry.jobsByStatus('enqueued').find((enqueued) => enqueued instanceof ExtractionJob);
-      expect(extractionJob).toBeInstanceOf(ExtractionJob);
-
-      await extractionJob.perform(logContext);
-
-      const emitJobs = JobRegistry.jobsByStatus('enqueued').filter((enqueued) => enqueued instanceof EmitJob);
+      const extractionJob = await performTopAndFindExtraction(job);
+      const emitJobs = await performExtractionAndFindEmits(extractionJob);
       expect(emitJobs.length).toBe(2);
 
-      for (const emitJob of emitJobs) {
-        await emitJob.perform(logContext);
-      }
+      await performAll(emitJobs, logContext);
 
       expect(axios.post).toHaveBeenCalledTimes(2);
-      expect(axios.post).toHaveBeenCalledWith(
+      expectEmitted(
         'https://majora.example.com/api/miniatures',
         { inid: 'in1', name: 'Miniature One', post_id: '1001', bundle: 'Bundle Alpha' },
-        jasmine.anything(),
       );
-      expect(axios.post).toHaveBeenCalledWith(
+      expectEmitted(
         'https://majora.example.com/api/miniatures',
         { inid: 'in3', name: 'Miniature Three', post_id: '1003', bundle: 'Bundle Gamma' },
-        jasmine.anything(),
       );
     });
   });
 
   describe('Regex standalone example (Loot Studios Approach B)', () => {
-    const rawBody = '<html><body class="page page-id-42 postid-880433 logged-in"></body></html>';
-
-    let resourceRequest;
     let job;
 
     beforeEach(() => {
-      resourceRequest = new ResourceRequest({
-        url: '/bundle/tidal-aberrations/?logged-in',
-        status: 200,
-        clientName: 'lootstudios',
-        parser: {
-          type: 'regex',
-          match: 'postid-(\\d+)',
-          field: 'post_id',
-        },
-        emit: {
-          client: 'majora_api',
-          method: 'POST',
-          url: '/api/bundles/resolve',
-        },
-      });
-
-      job = new ResourceRequestJob({ id: 'top', resourceRequest, parameters: {}, clients });
-
-      AxiosUtils.stubGet(200, rawBody);
-      AxiosUtils.stubPost(200, {});
+      job = buildTopJob({ body: postIdBody, ...postIdRequestAttributes() });
     });
 
     it('extracts and emits with no ActionProcessingJob enqueued', async () => {
-      await job.perform(logContext);
+      const extractionJob = await performTopAndFindExtraction(job);
+      expect(hasEnqueued(ActionProcessingJob)).toBeFalse();
 
-      const enqueued = JobRegistry.jobsByStatus('enqueued');
-      expect(enqueued.some((job_) => job_ instanceof ActionProcessingJob)).toBeFalse();
-
-      const extractionJob = enqueued.find((job_) => job_ instanceof ExtractionJob);
-      expect(extractionJob).toBeInstanceOf(ExtractionJob);
-
-      await extractionJob.perform(logContext);
-
-      const emitJobs = JobRegistry.jobsByStatus('enqueued').filter((job_) => job_ instanceof EmitJob);
+      const emitJobs = await performExtractionAndFindEmits(extractionJob);
       expect(emitJobs.length).toBe(1);
 
       await emitJobs[0].perform(logContext);
@@ -181,43 +179,15 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
   });
 
   describe('Disabled emit (parser present, emit.disabled: true)', () => {
-    const rawBody = '<html><body class="page page-id-42 postid-880433 logged-in"></body></html>';
-
-    let resourceRequest;
     let job;
 
     beforeEach(() => {
-      resourceRequest = new ResourceRequest({
-        url: '/bundle/tidal-aberrations/?logged-in',
-        status: 200,
-        clientName: 'lootstudios',
-        parser: {
-          type: 'regex',
-          match: 'postid-(\\d+)',
-          field: 'post_id',
-        },
-        emit: {
-          client: 'majora_api',
-          method: 'POST',
-          url: '/api/bundles/resolve',
-          disabled: true,
-        },
-      });
-
-      job = new ResourceRequestJob({ id: 'top', resourceRequest, parameters: {}, clients });
-
-      AxiosUtils.stubGet(200, rawBody);
-      AxiosUtils.stubPost(200, {});
+      job = buildTopJob({ body: postIdBody, ...postIdRequestAttributes({ disabled: true }) });
     });
 
     it('still extracts but never enqueues an EmitJob nor calls the emit HTTP boundary', async () => {
-      await job.perform(logContext);
-
-      const enqueued = JobRegistry.jobsByStatus('enqueued');
-      const extractionJob = enqueued.find((job_) => job_ instanceof ExtractionJob);
-      expect(extractionJob).toBeInstanceOf(ExtractionJob);
-
-      await extractionJob.perform(logContext);
+      const extractionJob = await performTopAndFindExtraction(job);
+      const emitJobs = await performExtractionAndFindEmits(extractionJob);
 
       expect(extractionJob.lastError).toBeUndefined();
       expect(logContext.debug).toHaveBeenCalledWith(
@@ -225,39 +195,30 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
         { items: [{ post_id: '880433' }] },
       );
 
-      const emitJobs = JobRegistry.jobsByStatus('enqueued').filter((job_) => job_ instanceof EmitJob);
       expect(emitJobs.length).toBe(0);
       expect(axios.post).not.toHaveBeenCalled();
     });
   });
 
   describe('Only-actions resource (no parser)', () => {
-    let resourceRequest;
     let job;
 
     beforeEach(() => {
-      resourceRequest = new ResourceRequest({
+      job = buildTopJob({
+        body: JSON.stringify({ obj_inid: 'in1' }),
         url: '/categories.json',
-        status: 200,
-        clientName: 'lootstudios',
         actions: [
           { resource: 'miniature_detail', parameters: { bundle_inid: 'parsedBody.obj_inid' } },
         ],
       });
-
-      job = new ResourceRequestJob({ id: 'top', resourceRequest, parameters: {}, clients });
-
-      AxiosUtils.stubGet(200, JSON.stringify({ obj_inid: 'in1' }));
-      AxiosUtils.stubPost(200, {});
     });
 
     it('enqueues the ActionProcessingJob chain and no ExtractionJob/EmitJob at all', async () => {
       await job.perform(logContext);
 
-      const enqueued = JobRegistry.jobsByStatus('enqueued');
-      expect(enqueued.some((job_) => job_ instanceof ExtractionJob)).toBeFalse();
-      expect(enqueued.some((job_) => job_ instanceof EmitJob)).toBeFalse();
-      expect(enqueued.some((job_) => job_ instanceof ActionProcessingJob)).toBeTrue();
+      expect(hasEnqueued(ExtractionJob)).toBeFalse();
+      expect(hasEnqueued(EmitJob)).toBeFalse();
+      expect(hasEnqueued(ActionProcessingJob)).toBeTrue();
       expect(axios.post).not.toHaveBeenCalled();
     });
   });
@@ -276,10 +237,12 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
   let namespaceMap;
   let parserRegistry;
 
-  const buildNamespaceMap = ({ resources }) => NamespaceMap.build({
+  const buildNamespaceMap = ({ targetRequest }) => NamespaceMap.build({
     default: new Namespace({
       name: 'default',
-      resources,
+      resources: {
+        product: ResourceFactory.build({ name: 'product', resourceRequests: [targetRequest], namespace: 'default' }),
+      },
       clients: {
         lootstudios: ClientFactory.build({ name: 'lootstudios', baseUrl: 'https://app.lootstudios.com' }),
         majora_api: ClientFactory.build({ name: 'majora_api', baseUrl: 'https://majora.example.com' }),
@@ -294,7 +257,13 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: namespaceMap } });
   };
 
-  const enqueued = (klass) => JobRegistry.jobsByStatus('enqueued').filter((job) => job instanceof klass);
+  const buildRequest = (attributes) => new ResourceRequest({
+    status: 200, clientName: 'lootstudios', namespace: 'default', ...attributes,
+  });
+
+  const buildOriginJob = (resourceRequest) => new ResourceRequestJob({
+    id: 'origin', resourceRequest, parameters: {}, clients: namespaceMap,
+  });
 
   beforeEach(() => {
     LoggerUtils.stubLoggerMethods();
@@ -316,32 +285,21 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
     let originJob;
 
     beforeEach(() => {
-      const targetRequest = new ResourceRequest({
+      const targetRequest = buildRequest({
         url: '/products/{:page}.json',
-        status: 200,
-        clientName: 'lootstudios',
-        namespace: 'default',
         parser: { type: 'json_path', match: 'items', fields: { sku: 'sku', name: 'name' } },
         emit: { client: 'majora_api', method: 'POST', url: '/api/products/{:page}' },
       });
 
-      namespaceMap = buildNamespaceMap({
-        resources: {
-          product: ResourceFactory.build({ name: 'product', resourceRequests: [targetRequest], namespace: 'default' }),
-        },
-      });
+      namespaceMap = buildNamespaceMap({ targetRequest });
       registerJobFactories();
 
-      const originRequest = new ResourceRequest({
+      originJob = buildOriginJob(buildRequest({
         url: '/index.json',
-        status: 200,
-        clientName: 'lootstudios',
-        namespace: 'default',
         paginated_actions: [
           { resource: 'product', pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }] },
         ],
-      });
-      originJob = new ResourceRequestJob({ id: 'origin', resourceRequest: originRequest, parameters: {}, clients: namespaceMap });
+      }));
 
       // page-varying stub: the origin fetch drives pagination, each product page returns its own list
       spyOn(axios, 'get').and.callFake((url) => {
@@ -377,36 +335,23 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
         '/products/1.json', '/products/2.json', '/products/3.json',
       ]);
 
-      for (const job of perPageJobs) {
-        await job.perform(logContext);
-      }
+      await performAll(perPageJobs, logContext);
 
       const extractionJobs = enqueued(ExtractionJob);
       expect(extractionJobs.length).toBe(3);
 
-      for (const job of extractionJobs) {
-        await job.perform(logContext);
-      }
+      await performAll(extractionJobs, logContext);
 
       const emitJobs = enqueued(EmitJob);
       expect(emitJobs.length).toBe(6);
 
-      for (const job of emitJobs) {
-        await job.perform(logContext);
-      }
+      await performAll(emitJobs, logContext);
 
       expect(axios.post).toHaveBeenCalledTimes(6);
       for (const page of [1, 2, 3]) {
-        expect(axios.post).toHaveBeenCalledWith(
-          `https://majora.example.com/api/products/${page}`,
-          { sku: `P${page}-A`, name: `Product ${page} A` },
-          jasmine.anything(),
-        );
-        expect(axios.post).toHaveBeenCalledWith(
-          `https://majora.example.com/api/products/${page}`,
-          { sku: `P${page}-B`, name: `Product ${page} B` },
-          jasmine.anything(),
-        );
+        const url = `https://majora.example.com/api/products/${page}`;
+        expectEmitted(url, { sku: `P${page}-A`, name: `Product ${page} A` });
+        expectEmitted(url, { sku: `P${page}-B`, name: `Product ${page} B` });
       }
     });
   });
@@ -415,32 +360,17 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
     let originJob;
 
     beforeEach(() => {
-      const targetRequest = new ResourceRequest({
-        url: '/products/{:page}.json',
-        status: 200,
-        clientName: 'lootstudios',
-        namespace: 'default',
-      });
-
-      namespaceMap = buildNamespaceMap({
-        resources: {
-          product: ResourceFactory.build({ name: 'product', resourceRequests: [targetRequest], namespace: 'default' }),
-        },
-      });
+      namespaceMap = buildNamespaceMap({ targetRequest: buildRequest({ url: '/products/{:page}.json' }) });
       registerJobFactories();
 
-      const originRequest = new ResourceRequest({
+      originJob = buildOriginJob(buildRequest({
         url: '/catalog.json',
-        status: 200,
-        clientName: 'lootstudios',
-        namespace: 'default',
         parser: { type: 'json_path', match: 'products', fields: { id: 'id', title: 'title' } },
         emit: { client: 'majora_api', method: 'POST', url: '/api/catalog' },
         paginated_actions: [
           { resource: 'product', pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }] },
         ],
-      });
-      originJob = new ResourceRequestJob({ id: 'origin', resourceRequest: originRequest, parameters: {}, clients: namespaceMap });
+      }));
 
       spyOn(axios, 'get').and.callFake((url) => {
         if (url.includes('/products/')) return Promise.resolve({ status: 200, data: '{}' });
@@ -466,17 +396,11 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
       const originEmitJobs = enqueued(EmitJob);
       expect(originEmitJobs.length).toBe(2);
 
-      for (const job of originEmitJobs) {
-        await job.perform(logContext);
-      }
+      await performAll(originEmitJobs, logContext);
 
       expect(axios.post).toHaveBeenCalledTimes(2);
-      expect(axios.post).toHaveBeenCalledWith(
-        'https://majora.example.com/api/catalog', { id: 'c1', title: 'Cat One' }, jasmine.anything(),
-      );
-      expect(axios.post).toHaveBeenCalledWith(
-        'https://majora.example.com/api/catalog', { id: 'c2', title: 'Cat Two' }, jasmine.anything(),
-      );
+      expectEmitted('https://majora.example.com/api/catalog', { id: 'c1', title: 'Cat One' });
+      expectEmitted('https://majora.example.com/api/catalog', { id: 'c2', title: 'Cat Two' });
 
       const extractionCountBefore = enqueued(ExtractionJob).length;
       const emitCountBefore = enqueued(EmitJob).length;
@@ -487,9 +411,7 @@ describe('paginated_actions + parser/emit interaction (end-to-end)', () => {
       const perPageJobs = enqueued(ResourceRequestJob);
       expect(perPageJobs.map((job) => job.arguments.url).sort()).toEqual(['/products/1.json', '/products/2.json']);
 
-      for (const job of perPageJobs) {
-        await job.perform(logContext);
-      }
+      await performAll(perPageJobs, logContext);
 
       // the paginated target has no parser: it produces no further ExtractionJob/EmitJob
       expect(enqueued(ExtractionJob).length).toBe(extractionCountBefore);
