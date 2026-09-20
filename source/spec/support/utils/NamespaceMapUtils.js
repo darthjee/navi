@@ -14,9 +14,9 @@ class NamespaceMapUtils {
    *
    * Every resource is built with a single ResourceRequest for the given url. The
    * `default` namespace is always registered, empty when not described.
-   * @param {Object<string, Object<string, string>>} namespaces - Maps a namespace name to
+   * @param {Record<string, Record<string, string>>} namespaces - Maps a namespace name to
    * an object mapping resource names to the url of their single request.
-   * @returns {Object<string, ResourceRequest>} The built requests, keyed by resource name.
+   * @returns {Record<string, ResourceRequest>} The built requests, keyed by resource name.
    * @example
    * const requests = NamespaceMapUtils.build({
    *   default: { home_page: '/' },
@@ -42,9 +42,9 @@ class NamespaceMapUtils {
 
   /**
    * Builds the Resource of each entry, collecting its request.
-   * @param {Object<string, string>} resources - Maps resource names to request urls.
-   * @param {Object<string, ResourceRequest>} requests - Collector of the built requests.
-   * @returns {Object<string, Resource>} The built resources, keyed by name.
+   * @param {Record<string, string>} resources - Maps resource names to request urls.
+   * @param {Record<string, ResourceRequest>} requests - Collector of the built requests.
+   * @returns {Record<string, Resource>} The built resources, keyed by name.
    */
   static #buildResources(resources, requests) {
     const built = {};
