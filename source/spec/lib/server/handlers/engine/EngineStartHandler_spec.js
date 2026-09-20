@@ -2,6 +2,7 @@ import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
 import { EngineStartHandler } from '../../../../../lib/server/handlers/engine/EngineStartHandler.js';
 import { Application } from '../../../../../lib/services/application/Application.js';
+import { ApplicationStateUtils } from '../../../../support/utils/ApplicationStateUtils.js';
 
 describe("describe('EngineStartHandler'", () => {
   let res;
@@ -23,8 +24,7 @@ describe("describe('EngineStartHandler'", () => {
   describe('#handle', () => {
     describe('when engine is stopped', () => {
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(true);
-        spyOn(Application, 'isRunning').and.returnValue(false);
+        ApplicationStateUtils.stubStopped();
       });
 
       it('calls Application.start() with no resources when the body is empty', async () => {
@@ -51,8 +51,7 @@ describe("describe('EngineStartHandler'", () => {
 
     describe('when engine is running', () => {
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(false);
-        spyOn(Application, 'isRunning').and.returnValue(true);
+        ApplicationStateUtils.stubRunning();
       });
 
       it('calls Application.enqueueResources() with the named resources', async () => {
@@ -82,8 +81,7 @@ describe("describe('EngineStartHandler'", () => {
 
     describe('when engine is neither stopped nor running', () => {
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(false);
-        spyOn(Application, 'isRunning').and.returnValue(false);
+        ApplicationStateUtils.stubNeither();
       });
 
       it('throws a ConflictError', async () => {

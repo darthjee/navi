@@ -1,15 +1,20 @@
 import { JobRegistry } from 'deku-swarm';
 import { ConflictError } from '../../../../../lib/exceptions/http/ConflictError.js';
-import { Namespace } from '../../../../../lib/registry/namespace/Namespace.js';
 import { NamespaceMap } from '../../../../../lib/registry/namespace/NamespaceMap.js';
 import { ApiEngineStartHandler } from '../../../../../lib/server/handlers/api/ApiEngineStartHandler.js';
 import { SecuredRequestHandler } from '../../../../../lib/server/SecuredRequestHandler.js';
 import { Application } from '../../../../../lib/services/application/Application.js';
-import { ResourceFactory } from '../../../../support/factories/ResourceFactory.js';
-import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';
+import { ApplicationStateUtils } from '../../../../support/utils/ApplicationStateUtils.js';
+import { NamespaceMapUtils } from '../../../../support/utils/NamespaceMapUtils.js';
 
 describe('ApiEngineStartHandler', () => {
   let res;
+
+  const processBody = (body) => new ApiEngineStartHandler({ body }, res, 'token').process();
+
+  const expectRunningResponse = (enqueued, skippedResources = []) => {
+    expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued, skippedResources });
+  };
 
   beforeEach(() => {
     res = { json: jasmine.createSpy('json'), status: jasmine.createSpy('status').and.returnValue({ json: jasmine.createSpy('json') }) };
@@ -27,88 +32,48 @@ describe('ApiEngineStartHandler', () => {
 
   describe('#process', () => {
     describe('when targets is present but malformed', () => {
+      const malformedTargets = [
+        ['an entry has no namespace', { targets: [{ resources: ['x'] }] }],
+        ['an entry has a non-string namespace', { targets: [{ namespace: 42 }] }],
+        ['resources is not an array of strings', { targets: [{ namespace: 'reports', resources: 'oops' }] }],
+        ['targets is not an array', { targets: { namespace: 'reports' } }],
+        ['target-level parameters is not a plain object (an array)', { targets: [{ namespace: 'reports', parameters: [1, 2] }] }],
+        ['target-level parameters is not a plain object (a string)', { targets: [{ namespace: 'reports', parameters: 'oops' }] }],
+        ['a resource object entry has no name', { targets: [{ namespace: 'reports', resources: [{ parameters: { id: 1 } }] }] }],
+        ['a resource object entry has a blank name', { targets: [{ namespace: 'reports', resources: [{ name: '   ' }] }] }],
+        [
+          'a resource object entry has a non-plain-object parameters',
+          { targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: 'oops' }] }] },
+        ],
+        [
+          'a resource entry parameter value is an object',
+          { targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: { id: { nested: 1 } } }] }] },
+        ],
+        [
+          'a resource entry parameter value is an array',
+          { targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: { id: [1] } }] }] },
+        ],
+        [
+          'a target-level parameter value is an object',
+          { targets: [{ namespace: 'reports', parameters: { id: { nested: 1 } } }] },
+        ],
+      ];
+
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(false);
-        spyOn(Application, 'isRunning').and.returnValue(true);
+        ApplicationStateUtils.stubRunning();
       });
 
-      it('responds with 400 when an entry has no namespace', async () => {
-        const req = { body: { targets: [{ resources: ['x'] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when an entry has a non-string namespace', async () => {
-        const req = { body: { targets: [{ namespace: 42 }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when resources is not an array of strings', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', resources: 'oops' }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when targets is not an array', async () => {
-        const req = { body: { targets: { namespace: 'reports' } } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when target-level parameters is not a plain object (an array)', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', parameters: [1, 2] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when target-level parameters is not a plain object (a string)', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', parameters: 'oops' }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when a resource object entry has no name', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', resources: [{ parameters: { id: 1 } }] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when a resource object entry has a blank name', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', resources: [{ name: '   ' }] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when a resource object entry has a non-plain-object parameters', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: 'oops' }] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when a resource entry parameter value is an object', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: { id: { nested: 1 } } }] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when a resource entry parameter value is an array', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: { id: [1] } }] }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
-      });
-
-      it('responds with 400 when a target-level parameter value is an object', async () => {
-        const req = { body: { targets: [{ namespace: 'reports', parameters: { id: { nested: 1 } } }] } };
-        await new ApiEngineStartHandler(req, res, 'token').process();
-        expect(res.status).toHaveBeenCalledWith(400);
+      malformedTargets.forEach(([description, body]) => {
+        it(`responds with 400 when ${description}`, async () => {
+          await processBody(body);
+          expect(res.status).toHaveBeenCalledWith(400);
+        });
       });
     });
 
     describe('when the engine is stopped', () => {
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(true);
-        spyOn(Application, 'isRunning').and.returnValue(false);
+        ApplicationStateUtils.stubStopped();
       });
 
       describe('and targets is omitted', () => {
@@ -117,15 +82,13 @@ describe('ApiEngineStartHandler', () => {
         });
 
         it('calls Application.start() with the top-level resources unvalidated (still a bare-string-only fallback)', async () => {
-          const req = { body: { resources: ['home_page'] } };
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({ resources: ['home_page'] });
           expect(Application.start).toHaveBeenCalledWith(['home_page']);
         });
 
         it('responds with running status and the enqueue result', async () => {
-          const req = { body: { resources: ['home_page'] } };
-          await new ApiEngineStartHandler(req, res, 'token').process();
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['home_page'], skippedResources: [] });
+          await processBody({ resources: ['home_page'] });
+          expectRunningResponse(['home_page']);
         });
       });
 
@@ -134,52 +97,36 @@ describe('ApiEngineStartHandler', () => {
         let categoryRequest;
 
         beforeEach(() => {
-          homePageRequest = ResourceRequestFactory.build({ url: '/' });
-          const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
-          categoryRequest = ResourceRequestFactory.build({ url: '/categories.json' });
-          const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
-
-          NamespaceMap.build({
-            default: new Namespace({ name: 'default', resources: { home_page: homePageResource } }),
-            reports: new Namespace({ name: 'reports', resources: { categories: categoriesResource } }),
-          });
+          ({ home_page: homePageRequest, categories: categoryRequest } = NamespaceMapUtils.build({
+            default: { home_page: '/' },
+            reports: { categories: '/categories.json' },
+          }));
 
           spyOn(Application, 'start').and.returnValue(Promise.resolve(undefined));
         });
 
         it('transitions the engine without enqueueing the default set', async () => {
-          const req = { body: { targets: [{ namespace: 'reports', resources: ['categories'] }] } };
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({ targets: [{ namespace: 'reports', resources: ['categories'] }] });
           expect(Application.start).toHaveBeenCalledWith([], { enqueue: false });
         });
 
         it('aggregates the enqueue result across every named target, enqueueing all param-free resources when resources is omitted', async () => {
-          const req = {
-            body: {
-              targets: [
-                { namespace: 'reports', resources: ['categories'] },
-                { namespace: 'default' },
-              ],
-            },
-          };
+          await processBody({
+            targets: [
+              { namespace: 'reports', resources: ['categories'] },
+              { namespace: 'default' },
+            ],
+          });
 
-          await new ApiEngineStartHandler(req, res, 'token').process();
-
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['categories'], skippedResources: [] });
+          expectRunningResponse(['categories']);
           expect(JobRegistry.enqueue).toHaveBeenCalledWith('ResourceRequestJob', { resourceRequest: categoryRequest, parameters: {} });
           expect(JobRegistry.enqueue).toHaveBeenCalledWith('ResourceRequestJob', { resourceRequest: homePageRequest, parameters: {} });
         });
 
         it('reports skipped resources from a named target', async () => {
-          const req = { body: { targets: [{ namespace: 'reports', resources: ['missing'] }] } };
+          await processBody({ targets: [{ namespace: 'reports', resources: ['missing'] }] });
 
-          await new ApiEngineStartHandler(req, res, 'token').process();
-
-          expect(res.json).toHaveBeenCalledWith({
-            status: 'running',
-            enqueued: [],
-            skippedResources: [{ name: 'missing', reason: 'not_found' }],
-          });
+          expectRunningResponse([], [{ name: 'missing', reason: 'not_found' }]);
         });
       });
 
@@ -187,39 +134,30 @@ describe('ApiEngineStartHandler', () => {
         let collectionRequest;
 
         beforeEach(() => {
-          collectionRequest = ResourceRequestFactory.build({ url: '/bundle/{:slug}/' });
-          const collectionResource = ResourceFactory.build({ name: 'collection', resourceRequests: [collectionRequest] });
-
-          NamespaceMap.build({
-            default: new Namespace({ name: 'default' }),
-            reports: new Namespace({ name: 'reports', resources: { collection: collectionResource } }),
-          });
+          ({ collection: collectionRequest } = NamespaceMapUtils.build({
+            reports: { collection: '/bundle/{:slug}/' },
+          }));
 
           spyOn(Application, 'start').and.returnValue(Promise.resolve(undefined));
         });
 
         it('enqueues the resource with the given parameters and responds with running status', async () => {
-          const req = {
-            body: {
-              targets: [{ namespace: 'reports', resources: [{ name: 'collection', parameters: { slug: 'x' } }] }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({
+            targets: [{ namespace: 'reports', resources: [{ name: 'collection', parameters: { slug: 'x' } }] }],
+          });
 
           expect(JobRegistry.enqueue).toHaveBeenCalledWith(
             'ResourceRequestJob',
             { resourceRequest: collectionRequest, parameters: { slug: 'x' } },
           );
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['collection'], skippedResources: [] });
+          expectRunningResponse(['collection']);
         });
       });
     });
 
     describe('when the engine is running', () => {
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(false);
-        spyOn(Application, 'isRunning').and.returnValue(true);
+        ApplicationStateUtils.stubRunning();
       });
 
       describe('and targets is omitted', () => {
@@ -228,43 +166,31 @@ describe('ApiEngineStartHandler', () => {
         });
 
         it('calls Application.enqueueResources() with the top-level resources', async () => {
-          const req = { body: { resources: ['home_page'] } };
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({ resources: ['home_page'] });
           expect(Application.enqueueResources).toHaveBeenCalledWith(['home_page']);
         });
 
         it('responds with running status and the enqueue result', async () => {
-          const req = { body: { resources: ['home_page'] } };
-          await new ApiEngineStartHandler(req, res, 'token').process();
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['home_page'], skippedResources: [] });
+          await processBody({ resources: ['home_page'] });
+          expectRunningResponse(['home_page']);
         });
       });
 
       describe('and targets is given', () => {
         beforeEach(() => {
-          const categoryRequest = ResourceRequestFactory.build({ url: '/categories.json' });
-          const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
-
-          NamespaceMap.build({
-            default: new Namespace({ name: 'default' }),
-            reports: new Namespace({ name: 'reports', resources: { categories: categoriesResource } }),
-          });
+          NamespaceMapUtils.build({ reports: { categories: '/categories.json' } });
         });
 
         it('enqueues named resources scoped to their namespace', async () => {
-          const req = { body: { targets: [{ namespace: 'reports', resources: ['categories'] }] } };
+          await processBody({ targets: [{ namespace: 'reports', resources: ['categories'] }] });
 
-          await new ApiEngineStartHandler(req, res, 'token').process();
-
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['categories'], skippedResources: [] });
+          expectRunningResponse(['categories']);
         });
 
         it('does not call Application.start() or Application.enqueueResources()', async () => {
           spyOn(Application, 'start');
           spyOn(Application, 'enqueueResources');
-          const req = { body: { targets: [{ namespace: 'reports', resources: ['categories'] }] } };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({ targets: [{ namespace: 'reports', resources: ['categories'] }] });
 
           expect(Application.start).not.toHaveBeenCalled();
           expect(Application.enqueueResources).not.toHaveBeenCalled();
@@ -275,43 +201,31 @@ describe('ApiEngineStartHandler', () => {
         let categoryRequest;
 
         beforeEach(() => {
-          categoryRequest = ResourceRequestFactory.build({ url: '/categories/{:id}.json' });
-          const categoriesResource = ResourceFactory.build({ name: 'categories', resourceRequests: [categoryRequest] });
-
-          NamespaceMap.build({
-            default: new Namespace({ name: 'default' }),
-            reports: new Namespace({ name: 'reports', resources: { categories: categoriesResource } }),
-          });
+          ({ categories: categoryRequest } = NamespaceMapUtils.build({
+            reports: { categories: '/categories/{:id}.json' },
+          }));
         });
 
         it('forwards an object-form resources[] entry parameters, merged shape, to ResourceEnqueuer', async () => {
-          const req = {
-            body: {
-              targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: { id: 1 } }] }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({
+            targets: [{ namespace: 'reports', resources: [{ name: 'categories', parameters: { id: 1 } }] }],
+          });
 
           expect(JobRegistry.enqueue).toHaveBeenCalledWith(
             'ResourceRequestJob',
             { resourceRequest: categoryRequest, parameters: { id: 1 } },
           );
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['categories'], skippedResources: [] });
+          expectRunningResponse(['categories']);
         });
 
         it('forwards a target-level parameters default merged under a per-resource override', async () => {
-          const req = {
-            body: {
-              targets: [{
-                namespace: 'reports',
-                parameters: { id: 1, extra: 'value' },
-                resources: [{ name: 'categories', parameters: { id: 2 } }],
-              }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({
+            targets: [{
+              namespace: 'reports',
+              parameters: { id: 1, extra: 'value' },
+              resources: [{ name: 'categories', parameters: { id: 2 } }],
+            }],
+          });
 
           expect(JobRegistry.enqueue).toHaveBeenCalledWith(
             'ResourceRequestJob',
@@ -320,13 +234,9 @@ describe('ApiEngineStartHandler', () => {
         });
 
         it('applies a target-level parameters default to a bare-string resources[] entry', async () => {
-          const req = {
-            body: {
-              targets: [{ namespace: 'reports', parameters: { id: 5 }, resources: ['categories'] }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({
+            targets: [{ namespace: 'reports', parameters: { id: 5 }, resources: ['categories'] }],
+          });
 
           expect(JobRegistry.enqueue).toHaveBeenCalledWith(
             'ResourceRequestJob',
@@ -335,94 +245,68 @@ describe('ApiEngineStartHandler', () => {
         });
 
         it('ignores unknown keys on a resource object entry rather than rejecting it', async () => {
-          const req = {
-            body: {
-              targets: [{
-                namespace: 'reports',
-                resources: [{ name: 'categories', parameters: { id: 1 }, unknown: 'ignored' }],
-              }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({
+            targets: [{
+              namespace: 'reports',
+              resources: [{ name: 'categories', parameters: { id: 1 }, unknown: 'ignored' }],
+            }],
+          });
 
           expect(res.status).not.toHaveBeenCalled();
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['categories'], skippedResources: [] });
+          expectRunningResponse(['categories']);
         });
 
         it('remains unaffected for a plain bare-string-only resources[] request with no parameters anywhere', async () => {
-          const req = { body: { targets: [{ namespace: 'reports', resources: ['categories'] }] } };
+          await processBody({ targets: [{ namespace: 'reports', resources: ['categories'] }] });
 
-          await new ApiEngineStartHandler(req, res, 'token').process();
-
-          expect(res.json).toHaveBeenCalledWith({
-            status: 'running',
-            enqueued: [],
-            skippedResources: [{ name: 'categories', reason: 'needs_params' }],
-          });
+          expectRunningResponse([], [{ name: 'categories', reason: 'needs_params' }]);
         });
 
         it('enqueues one and skips the other when the same resource name repeats with satisfying and missing parameters', async () => {
-          const req = {
-            body: {
-              targets: [{
-                namespace: 'reports',
-                resources: [
-                  { name: 'categories', parameters: { id: 1 } },
-                  { name: 'categories', parameters: { other: 'value' } },
-                ],
-              }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
+          await processBody({
+            targets: [{
+              namespace: 'reports',
+              resources: [
+                { name: 'categories', parameters: { id: 1 } },
+                { name: 'categories', parameters: { other: 'value' } },
+              ],
+            }],
+          });
 
           expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
             'ResourceRequestJob',
             { resourceRequest: categoryRequest, parameters: { id: 1 } },
           );
-          expect(res.json).toHaveBeenCalledWith({
-            status: 'running',
-            enqueued: ['categories'],
-            skippedResources: [{ name: 'categories', reason: 'needs_params', parameters: { other: 'value' } }],
-          });
+          expectRunningResponse(
+            ['categories'],
+            [{ name: 'categories', reason: 'needs_params', parameters: { other: 'value' } }],
+          );
         });
 
         it('threads extra parameter keys through to a request with no {:token} at all', async () => {
-          const homePageRequest = ResourceRequestFactory.build({ url: '/' });
-          const homePageResource = ResourceFactory.build({ name: 'home_page', resourceRequests: [homePageRequest] });
           NamespaceMap.reset();
-          NamespaceMap.build({
-            default: new Namespace({ name: 'default' }),
-            reports: new Namespace({ name: 'reports', resources: { home_page: homePageResource } }),
+          const { home_page: homePageRequest } = NamespaceMapUtils.build({ reports: { home_page: '/' } });
+
+          await processBody({
+            targets: [{ namespace: 'reports', resources: [{ name: 'home_page', parameters: { unrelated: 'value' } }] }],
           });
-
-          const req = {
-            body: {
-              targets: [{ namespace: 'reports', resources: [{ name: 'home_page', parameters: { unrelated: 'value' } }] }],
-            },
-          };
-
-          await new ApiEngineStartHandler(req, res, 'token').process();
 
           expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
             'ResourceRequestJob',
             { resourceRequest: homePageRequest, parameters: { unrelated: 'value' } },
           );
-          expect(res.json).toHaveBeenCalledWith({ status: 'running', enqueued: ['home_page'], skippedResources: [] });
+          expectRunningResponse(['home_page']);
         });
       });
     });
 
     describe('when the engine is neither stopped nor running', () => {
       beforeEach(() => {
-        spyOn(Application, 'isStopped').and.returnValue(false);
-        spyOn(Application, 'isRunning').and.returnValue(false);
+        ApplicationStateUtils.stubNeither();
       });
 
       it('throws a ConflictError', async () => {
-        const req = { body: {} };
-        await expectAsync(new ApiEngineStartHandler(req, res, 'token').process())
+        await expectAsync(processBody({}))
           .toBeRejectedWith(jasmine.any(ConflictError));
       });
     });
