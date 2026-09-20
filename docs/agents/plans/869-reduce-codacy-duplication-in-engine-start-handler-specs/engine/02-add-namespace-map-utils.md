@@ -1,0 +1,5 @@
+# Add NamespaceMapUtils
+Create a spec helper that builds the `NamespaceMap` fixture repeated in the API handler spec's `beforeEach` blocks. It should accept, per namespace, the resources to register (name + url), build each with `ResourceRequestFactory`/`ResourceFactory`, call `NamespaceMap.build({...})` with a `default` namespace and a `reports` namespace, and return the built `ResourceRequest` objects (keyed by resource name) so specs can assert on `JobRegistry.enqueue` with `resourceRequest`. It must cover the variants currently in the spec: `default` with `home_page` + `reports` with `categories` (stopped/targets), an empty `default` + `reports.categories` with url `/categories.json` or `/categories/{:id}.json`, `reports.collection` with url `/bundle/{:slug}/`, and `reports.home_page` with url `/`. Cleanup stays in the spec's existing `afterEach` (`NamespaceMap.reset()`).
+
+## Files to Change
+- `source/spec/support/utils/NamespaceMapUtils.js` — new helper class (name indicative) exporting `NamespaceMapUtils` that builds the namespace fixture and returns the built requests
