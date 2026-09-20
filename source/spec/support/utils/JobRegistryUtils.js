@@ -1,5 +1,6 @@
 import { JobFactory, JobRegistry, IdentifyableCollection, Queue } from 'deku-swarm';
 import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
+import { ResourceRequestFactory } from '../factories/ResourceRequestFactory.js';
 
 /**
  * Test utility for setting up a JobRegistry with standard collections.
@@ -8,8 +9,9 @@ class JobRegistryUtils {
   /**
    * Installs a beforeEach that builds the JobRegistry and an afterEach that resets it.
    * Returns a context object whose collection properties (jobs, retryQueue, finished,
-   * dead, processing) are populated before each spec and available for assertions.
-   * @returns {{ jobs: Queue, retryQueue: Queue, finished: Queue, dead: IdentifyableCollection, processing: IdentifyableCollection }} Context object populated before each spec.
+   * dead, processing) are populated before each spec and available for assertions,
+   * together with a `resourceRequest` ready to be used when enqueuing jobs.
+   * @returns {{ jobs: Queue, retryQueue: Queue, finished: Queue, dead: IdentifyableCollection, processing: IdentifyableCollection, resourceRequest: ResourceRequest }} Context object populated before each spec.
    */
   static setup() {
     const ctx = {};
@@ -21,6 +23,7 @@ class JobRegistryUtils {
       ctx.finished = new Queue();
       ctx.dead = new IdentifyableCollection();
       ctx.processing = new IdentifyableCollection();
+      ctx.resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
       JobRegistry.build({
         queue: ctx.jobs,
         retryQueue: ctx.retryQueue,

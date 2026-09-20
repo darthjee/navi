@@ -1,21 +1,14 @@
 import { Job, JobFactory, JobRegistry } from 'deku-swarm';
-import { ResourceRequestFactory } from '../../support/factories/ResourceRequestFactory.js';
 import { JobRegistryUtils } from '../../support/utils/JobRegistryUtils.js';
 
 describe('JobRegistry', () => {
-  let resourceRequest;
-
-  JobRegistryUtils.setup();
-
-  beforeEach(() => {
-    resourceRequest = ResourceRequestFactory.build({ url: 'http://example.com' });
-  });
+  const ctx = JobRegistryUtils.setup();
 
   describe('.enqueue', () => {
     it('creates and enqueues a job', () => {
       expect(JobRegistry.hasJob()).toBeFalse();
 
-      const jobAttributes = { resourceRequest, parameters: { id: 20 } };
+      const jobAttributes = { resourceRequest: ctx.resourceRequest, parameters: { id: 20 } };
       const job = JobRegistry.enqueue('ResourceRequestJob', jobAttributes);
 
       expect(job).toBeInstanceOf(Job);
@@ -26,10 +19,10 @@ describe('JobRegistry', () => {
       const factory = JobFactory.get('ResourceRequestJob');
       spyOn(factory, 'build').and.callThrough();
 
-      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest, parameters: {} });
+      JobRegistry.enqueue('ResourceRequestJob', { resourceRequest: ctx.resourceRequest, parameters: {} });
 
       expect(factory.build).toHaveBeenCalledWith(
-        jasmine.objectContaining({ resourceRequest })
+        jasmine.objectContaining({ resourceRequest: ctx.resourceRequest })
       );
     });
 
