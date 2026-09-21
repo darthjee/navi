@@ -1,6 +1,6 @@
 ---
 name: spec-support
-description: Navi spec-support specialist. Use for any task involving spec-support/ — the private navi-spec-support package that holds the jsdom/React spec bootstrap shared by frontend/ and dev/frontend/ (dom, loader, transform hooks, async and noop helpers).
+description: Navi spec-support specialist. Use for any task involving spec-support/ — the private navi-spec-support package that holds the jsdom/React spec bootstrap shared by frontend/ and dev/frontend/ (dom, loader, transform hooks, async, fetch and noop helpers).
 tools: Read, Edit, Write, Bash
 ---
 
@@ -14,6 +14,7 @@ You own everything inside `spec-support/`:
 - `loader.js` — registers `transform_hooks.js` via `import.meta.url` (used with `--import`)
 - `transform_hooks.js` — ESM `load` hook: transforms `.jsx` via esbuild and stubs css/scss/sass/less imports
 - `async.js` — `flushAsync` and `flushMany`
+- `fetch.js` — `stubFetchSuccess`, `mockFetchSuccess`, `mockFetchFailure`, `mockFetchPending` (Jasmine `spyOn` stubs of `globalThis.fetch`) and `paginationHeaders`
 - `noop.js` — default-exported `noop`
 - `package.json` and `README.md`
 
@@ -36,6 +37,7 @@ Only these subpaths are public; keep them stable, since both frontends and the `
 | `navi-spec-support/loader.js` | side effect: registers the transform hooks |
 | `navi-spec-support/transform_hooks.js` | ESM `load` hook |
 | `navi-spec-support/async.js` | `flushAsync`, `flushMany` |
+| `navi-spec-support/fetch.js` | `stubFetchSuccess`, `mockFetchSuccess`, `mockFetchFailure`, `mockFetchPending`, `paginationHeaders` |
 | `navi-spec-support/noop.js` | default `noop` |
 
 ## Consumption and reinstall rule

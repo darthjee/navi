@@ -9,6 +9,7 @@ bootstrap shared by the `frontend/` and `dev/frontend/` test suites.
 | `navi-spec-support/loader.js` | Registers the ESM transform hooks (`--import`) |
 | `navi-spec-support/transform_hooks.js` | ESM `load` hook: JSX via esbuild, stubs css/scss/sass/less |
 | `navi-spec-support/async.js` | `flushAsync` and `flushMany` |
+| `navi-spec-support/fetch.js` | Fetch stubs (`stubFetchSuccess`, `mockFetchSuccess`, `mockFetchFailure`, `mockFetchPending`) and `paginationHeaders` |
 | `navi-spec-support/noop.js` | Default-exported `noop` function |
 
 `jsdom`, `react`, `react-dom` and `esbuild` are peer dependencies only: each
