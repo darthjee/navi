@@ -76,4 +76,53 @@ const itBehavesLikeFetchedMenu = ({ state, render, label, dataKey, items, warns 
   });
 };
 
-export { itBehavesLikeFetchedMenu };
+const fixture = (name) => new URL(`fixtures/${name}`, import.meta.url).href;
+
+// Successful and failed fetch responses, as accepted by renderMenuWithExtensions.
+const jsonResponse = (body) => ({ ok: true, json: () => Promise.resolve(body) });
+const failedResponse = (status) => ({ ok: false, status });
+
+// Extensions manifest exposing the `Reports` route (/ext/reports).
+const reportsManifest = () => jsonResponse({ bundles: [{ src: fixture('validReports.js') }] });
+
+const anchorTexts = (container) =>
+  Array.from(container.querySelectorAll('a')).map((a) => a.textContent);
+
+const waitForButton = async (container) => {
+  for (let i = 0; i < 50 && !container.querySelector('button'); i += 1) {
+    await flushAsync();
+  }
+};
+
+const openMenu = async (container) => {
+  await waitForButton(container);
+  await act(async () => {
+    container.querySelector('button').click();
+  });
+};
+
+// Stubs fetch so `/menu.json` resolves to `menu` and `/extensions/frontend.json`
+// to `manifest` (both are response objects; any other request is rejected),
+// then renders the component with `render`, waits for it to settle and opens
+// the dropdown. Call inside a `beforeEach`. Pass `warns: true` when the
+// scenario is expected to log a warning, so the console stays quiet.
+const renderMenuWithExtensions = async ({ state, render, menu, manifest, warns = false }) => {
+  if (warns) spyOn(console, 'warn');
+  spyOn(globalThis, 'fetch').and.callFake((url) => {
+    if (url === '/menu.json') return Promise.resolve(menu);
+    if (url === '/extensions/frontend.json') return Promise.resolve(manifest);
+    return Promise.reject(new Error(`unexpected request: ${url}`));
+  });
+  await render();
+  await flushAsync();
+  await openMenu(state.container);
+};
+
+export {
+  anchorTexts,
+  failedResponse,
+  itBehavesLikeFetchedMenu,
+  jsonResponse,
+  renderMenuWithExtensions,
+  reportsManifest,
+};

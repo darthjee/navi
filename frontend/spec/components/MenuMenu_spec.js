@@ -6,27 +6,14 @@ import { resetExtensionsCache } from '../../src/extensions/loadExtensions.js';
 import { useContainer } from '../support/dom.js';
 import { flushAsync } from '../support/async.js';
 import { mockFetchSuccess } from '../support/fetch.js';
-import { itBehavesLikeFetchedMenu } from '../support/fetched_menu.js';
-
-const fixture = (name) => new URL(`../support/fixtures/${name}`, import.meta.url).href;
-
-const jsonResponse = (body) => Promise.resolve({ ok: true, json: () => Promise.resolve(body) });
-
-const anchorTexts = (container) =>
-  Array.from(container.querySelectorAll('a')).map((a) => a.textContent);
-
-const waitForButton = async (container) => {
-  for (let i = 0; i < 50 && !container.querySelector('button'); i += 1) {
-    await flushAsync();
-  }
-};
-
-const openMenu = async (container) => {
-  await waitForButton(container);
-  await act(async () => {
-    container.querySelector('button').click();
-  });
-};
+import {
+  anchorTexts,
+  failedResponse,
+  itBehavesLikeFetchedMenu,
+  jsonResponse,
+  renderMenuWithExtensions,
+  reportsManifest,
+} from '../support/fetched_menu.js';
 
 const renderMenu = async (root) => {
   await act(async () => {
@@ -82,24 +69,13 @@ describe('MenuMenu', () => {
   });
 
   describe('merging extension routes', () => {
-    const stubMenuAnd = (menu, manifest) => {
-      spyOn(globalThis, 'fetch').and.callFake((url) => {
-        if (url === '/menu.json') return jsonResponse(menu);
-        if (url === '/extensions/frontend.json') return manifest();
-        return Promise.reject(new Error(`unexpected request: ${url}`));
-      });
-    };
+    const renderWith = (options) => renderMenuWithExtensions({ state, render, ...options });
 
     describe('when an extension route is not already listed or hidden', () => {
-      beforeEach(async () => {
-        stubMenuAnd(
-          { entries: [{ route: '/logs', text: 'Logs' }], hidden: [] },
-          () => jsonResponse({ bundles: [{ src: fixture('validReports.js') }] }),
-        );
-        await renderMenu(state.root);
-        await flushAsync();
-        await openMenu(state.container);
-      });
+      beforeEach(() => renderWith({
+        menu: jsonResponse({ entries: [{ route: '/logs', text: 'Logs' }], hidden: [] }),
+        manifest: reportsManifest(),
+      }));
 
       it('appends the extension entry after the menu-file entries', () => {
         expect(anchorTexts(state.container)).toEqual(['Logs', 'Reports']);
@@ -107,15 +83,10 @@ describe('MenuMenu', () => {
     });
 
     describe('when the extension route is listed in hidden', () => {
-      beforeEach(async () => {
-        stubMenuAnd(
-          { entries: [{ route: '/logs', text: 'Logs' }], hidden: ['/ext/reports'] },
-          () => jsonResponse({ bundles: [{ src: fixture('validReports.js') }] }),
-        );
-        await renderMenu(state.root);
-        await flushAsync();
-        await openMenu(state.container);
-      });
+      beforeEach(() => renderWith({
+        menu: jsonResponse({ entries: [{ route: '/logs', text: 'Logs' }], hidden: ['/ext/reports'] }),
+        manifest: reportsManifest(),
+      }));
 
       it('omits the hidden extension route', () => {
         expect(anchorTexts(state.container)).toEqual(['Logs']);
@@ -123,21 +94,16 @@ describe('MenuMenu', () => {
     });
 
     describe('when the extension route already exists in the menu entries', () => {
-      beforeEach(async () => {
-        stubMenuAnd(
-          {
-            entries: [
-              { route: '/logs', text: 'Logs' },
-              { route: '/ext/reports', text: 'Reports (configured)' },
-            ],
-            hidden: [],
-          },
-          () => jsonResponse({ bundles: [{ src: fixture('validReports.js') }] }),
-        );
-        await renderMenu(state.root);
-        await flushAsync();
-        await openMenu(state.container);
-      });
+      beforeEach(() => renderWith({
+        menu: jsonResponse({
+          entries: [
+            { route: '/logs', text: 'Logs' },
+            { route: '/ext/reports', text: 'Reports (configured)' },
+          ],
+          hidden: [],
+        }),
+        manifest: reportsManifest(),
+      }));
 
       it('does not duplicate the route', () => {
         expect(anchorTexts(state.container)).toEqual(['Logs', 'Reports (configured)']);
@@ -145,16 +111,11 @@ describe('MenuMenu', () => {
     });
 
     describe('when the extension manifest request fails', () => {
-      beforeEach(async () => {
-        spyOn(console, 'warn');
-        stubMenuAnd(
-          { entries: [{ route: '/logs', text: 'Logs' }], hidden: [] },
-          () => Promise.resolve({ ok: false, status: 500 }),
-        );
-        await renderMenu(state.root);
-        await flushAsync();
-        await openMenu(state.container);
-      });
+      beforeEach(() => renderWith({
+        menu: jsonResponse({ entries: [{ route: '/logs', text: 'Logs' }], hidden: [] }),
+        manifest: failedResponse(500),
+        warns: true,
+      }));
 
       it('still renders the menu-file entries', () => {
         expect(anchorTexts(state.container)).toEqual(['Logs']);
@@ -162,19 +123,11 @@ describe('MenuMenu', () => {
     });
 
     describe('when the menu request fails but extensions load', () => {
-      beforeEach(async () => {
-        spyOn(console, 'warn');
-        spyOn(globalThis, 'fetch').and.callFake((url) => {
-          if (url === '/menu.json') return Promise.resolve({ ok: false, status: 502 });
-          if (url === '/extensions/frontend.json') {
-            return jsonResponse({ bundles: [{ src: fixture('validReports.js') }] });
-          }
-          return Promise.reject(new Error(`unexpected request: ${url}`));
-        });
-        await renderMenu(state.root);
-        await flushAsync();
-        await openMenu(state.container);
-      });
+      beforeEach(() => renderWith({
+        menu: failedResponse(502),
+        manifest: reportsManifest(),
+        warns: true,
+      }));
 
       it('still renders the extension entries', () => {
         expect(anchorTexts(state.container)).toEqual(['Reports']);
