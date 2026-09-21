@@ -1,8 +1,8 @@
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import StatsDisplay from '../../src/components/elements/StatsDisplay.jsx';
-import { useContainer } from '../support/dom.js';
 
 const stats = {
   workers: { idle: 3, busy: 1 },

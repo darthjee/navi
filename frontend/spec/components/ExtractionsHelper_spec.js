@@ -1,5 +1,5 @@
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import ExtractionsHelper from '../../src/components/pages/helpers/ExtractionsHelper.jsx';
-import { renderInAct, useContainer } from '../support/dom.js';
 import { itBehavesLikeEmptyFeed, itBehavesLikeHelperFetchStates } from '../support/helper_states.js';
 
 const rows = [

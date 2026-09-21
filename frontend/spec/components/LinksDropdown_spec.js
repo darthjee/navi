@@ -1,7 +1,7 @@
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import LinksDropdown from '../../src/components/elements/LinksDropdown.jsx';
-import { useContainer } from '../support/dom.js';
 import { itBehavesLikeDropdown } from '../support/dropdown.js';
 
 const links = [

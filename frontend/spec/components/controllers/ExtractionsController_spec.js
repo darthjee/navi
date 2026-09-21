@@ -1,6 +1,6 @@
+import { flushAsync } from 'navi-spec-support/async.js';
 import ExtractionsController from '../../../src/components/pages/controllers/ExtractionsController.jsx';
 import noop from '../../../src/utils/noop.js';
-import { flushAsync } from '../../support/async.js';
 import { buildControllerState } from '../../support/controller_state.js';
 import { mockFetchFailure } from '../../support/fetch.js';
 

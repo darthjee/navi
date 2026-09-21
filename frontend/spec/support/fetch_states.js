@@ -1,4 +1,4 @@
-import { flushAsync } from './async.js';
+import { flushAsync } from 'navi-spec-support/async.js';
 import { mockFetchFailure } from './fetch.js';
 import noop from '../../src/utils/noop.js';
 

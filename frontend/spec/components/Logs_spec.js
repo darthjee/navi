@@ -1,8 +1,8 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import Logs from '../../src/components/elements/Logs.jsx';
 import noop from '../../src/utils/noop.js';
-import { flushAsync } from '../support/async.js';
-import { renderInAct, useContainer } from '../support/dom.js';
 import {
   itBehavesLikeLogsTerminal,
   logEntries,

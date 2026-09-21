@@ -1,6 +1,6 @@
+import { useContainer } from 'navi-spec-support/dom.js';
 import { act, createElement } from 'react';
 import ExtensionErrorBoundary from '../../src/extensions/ExtensionErrorBoundary.jsx';
-import { useContainer } from '../support/dom.js';
 
 const Healthy = () => createElement('div', { className: 'healthy' }, 'Healthy child');
 

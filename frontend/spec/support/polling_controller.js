@@ -1,4 +1,4 @@
-import { flushMany } from './async.js';
+import { flushMany } from 'navi-spec-support/async.js';
 import { useControllerState } from './controller_state.js';
 import { mockFetchFailure, mockResponses } from './fetch.js';
 import noop from '../../src/utils/noop.js';

@@ -1,8 +1,8 @@
+import { flushAsync, flushMany } from 'navi-spec-support/async.js';
 import { act } from 'react';
 import fetchMemoryHistory from '../../../src/clients/MemoryHistoryClient.js';
 import MemoryChartController from '../../../src/components/elements/controllers/MemoryChartController.jsx';
 import noop from '../../../src/utils/noop.js';
-import { flushAsync, flushMany } from '../../support/async.js';
 import { mockResponses } from '../../support/fetch.js';
 import { itBehavesLikePollingController, usePollingController } from '../../support/polling_controller.js';
 

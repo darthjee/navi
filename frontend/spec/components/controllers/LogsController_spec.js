@@ -1,6 +1,6 @@
+import { flushAsync } from 'navi-spec-support/async.js';
 import LogsController from '../../../src/components/elements/controllers/LogsController.jsx';
 import noop from '../../../src/utils/noop.js';
-import { flushAsync } from '../../support/async.js';
 import { buildControllerState } from '../../support/controller_state.js';
 
 const pendingFetchLogs = () => jasmine.createSpy('fetchLogs').and.returnValue(new Promise(noop));

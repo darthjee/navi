@@ -1,12 +1,11 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { useContainer } from 'navi-spec-support/dom.js';
 import { act, createElement } from 'react';
 import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Layout from '../../src/components/pages/Layout.jsx';
 import ExtensionErrorBoundary from '../../src/extensions/ExtensionErrorBoundary.jsx';
 import { resetExtensionsCache } from '../../src/extensions/loadExtensions.js';
 import noop from '../../src/utils/noop.js';
-import { useContainer } from '../support/dom.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const Reports = () => createElement('div', { className: 'ext-reports' }, 'Reports Page');
 

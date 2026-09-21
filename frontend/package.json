@@ -7,9 +7,9 @@
   "scripts": {
     "build": "vite build",
     "server": "vite dev --host 0.0.0.0 --port 8080",
-    "spec": "node --import ./spec/support/loader.js node_modules/.bin/jasmine 'spec/**/*.js'",
-    "test": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 jasmine 'spec/**/*.js'",
-    "coverage": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 --reporter=lcov jasmine 'spec/**/*.js'",
+    "spec": "node --import navi-spec-support/loader.js node_modules/.bin/jasmine 'spec/**/*.js'",
+    "test": "NODE_OPTIONS='--import navi-spec-support/loader.js' npx c8 jasmine 'spec/**/*.js'",
+    "coverage": "NODE_OPTIONS='--import navi-spec-support/loader.js' npx c8 --reporter=lcov jasmine 'spec/**/*.js'",
     "lint": "eslint . && stylelint --config ../.stylelintrc.json 'src/**/*.css'",
     "lint_fix": "eslint . --fix && stylelint --config ../.stylelintrc.json 'src/**/*.css' --fix",
     "lint_report": "eslint src/ --format html --output-file report/eslint-report.html",
@@ -55,6 +55,7 @@
     "globals": "^16.5.0",
     "jasmine": "^5.0.0",
     "jsdom": "^25.0.0",
+    "navi-spec-support": "file:../spec-support",
     "sass": "^1.69.0",
     "stylelint": "^16.26.1",
     "vite": "^7.2.4"
@@ -65,7 +66,7 @@
       "**/*[sS]pec.js"
     ],
     "helpers": [
-      "support/dom.js"
+      "support/setup.js"
     ]
   },
   "c8": {

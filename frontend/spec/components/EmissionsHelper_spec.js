@@ -1,6 +1,6 @@
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import EmissionsHelper from '../../src/components/pages/helpers/EmissionsHelper.jsx';
 import noop from '../../src/utils/noop.js';
-import { renderInAct, useContainer } from '../support/dom.js';
 import { itBehavesLikeEmptyFeed, itBehavesLikeHelperFetchStates } from '../support/helper_states.js';
 
 const counts = { extracted: 5, emitted: 3, failed: 1, dead: 1 };

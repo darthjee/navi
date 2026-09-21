@@ -1,5 +1,5 @@
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import MemoryStatusHelper from '../../src/components/pages/helpers/MemoryStatusHelper.jsx';
-import { renderInAct, useContainer } from '../support/dom.js';
 import { itBehavesLikeHelperFetchStates } from '../support/helper_states.js';
 
 describe('MemoryStatusHelper', () => {

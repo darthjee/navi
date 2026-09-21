@@ -1,9 +1,9 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import Extractions from '../../src/components/pages/Extractions.jsx';
-import { flushAsync } from '../support/async.js';
-import { useContainer } from '../support/dom.js';
 import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const extractionsBody = {
