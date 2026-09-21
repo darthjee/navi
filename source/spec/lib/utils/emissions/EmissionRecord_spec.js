@@ -1,4 +1,5 @@
 import { EmissionRecord } from '../../../../lib/utils/emissions/EmissionRecord.js';
+import { RecordExamples } from '../../../support/utils/RecordExamples.js';
 
 describe('EmissionRecord', () => {
   let record;
@@ -15,10 +16,18 @@ describe('EmissionRecord', () => {
     });
   });
 
+  const examples = {
+    getRecord: () => record,
+    expectedId: 1,
+    buildRecord: () => new EmissionRecord(1, {
+      status: 'success',
+      url: 'http://example.com',
+      method: 'POST'
+    })
+  };
+
   describe('constructor', () => {
-    it('creates a record with the given id', () => {
-      expect(record.id).toBe(1);
-    });
+    RecordExamples.constructorExamples(examples);
 
     it('creates a record with the given status', () => {
       expect(record.status).toBe('success');
@@ -46,10 +55,6 @@ describe('EmissionRecord', () => {
 
     it('creates a record with the given extractionId', () => {
       expect(record.extractionId).toBe(7);
-    });
-
-    it('creates a record with a timestamp', () => {
-      expect(record.timestamp).toBeInstanceOf(Date);
     });
 
     describe('when optional fields are omitted', () => {
@@ -82,24 +87,11 @@ describe('EmissionRecord', () => {
   });
 
   describe('#timestamp', () => {
-    it('returns a Date created at construction time', () => {
-      const before = new Date();
-      const anotherRecord = new EmissionRecord(1, {
-        status: 'success',
-        url: 'http://example.com',
-        method: 'POST'
-      });
-      const after = new Date();
-
-      expect(anotherRecord.timestamp.getTime()).toBeGreaterThanOrEqual(before.getTime());
-      expect(anotherRecord.timestamp.getTime()).toBeLessThanOrEqual(after.getTime());
-    });
+    RecordExamples.timestampExamples(examples);
   });
 
   describe('#toJSON', () => {
-    it('returns an object with the record id', () => {
-      expect(record.toJSON().id).toBe(1);
-    });
+    RecordExamples.toJSONExamples(examples);
 
     it('returns an object with the record status', () => {
       expect(record.toJSON().status).toBe('success');
@@ -127,10 +119,6 @@ describe('EmissionRecord', () => {
 
     it('returns an object with the record extractionId', () => {
       expect(record.toJSON().extractionId).toBe(7);
-    });
-
-    it('returns an object with the timestamp as ISO string', () => {
-      expect(record.toJSON().timestamp).toBe(record.timestamp.toISOString());
     });
   });
 });

@@ -1,4 +1,5 @@
 import { ExtractionRecord } from '../../../../lib/utils/extractions/ExtractionRecord.js';
+import { RecordExamples } from '../../../support/utils/RecordExamples.js';
 
 describe('ExtractionRecord', () => {
   let record;
@@ -11,10 +12,14 @@ describe('ExtractionRecord', () => {
     });
   });
 
+  const examples = {
+    getRecord: () => record,
+    expectedId: 1,
+    buildRecord: () => new ExtractionRecord(1, { parserType: 'regex' })
+  };
+
   describe('constructor', () => {
-    it('creates a record with the given id', () => {
-      expect(record.id).toBe(1);
-    });
+    RecordExamples.constructorExamples(examples);
 
     it('creates a record with the given parserType', () => {
       expect(record.parserType).toBe('json_path');
@@ -26,10 +31,6 @@ describe('ExtractionRecord', () => {
 
     it('creates a record with the given itemCount', () => {
       expect(record.itemCount).toBe(20);
-    });
-
-    it('creates a record with a timestamp', () => {
-      expect(record.timestamp).toBeInstanceOf(Date);
     });
 
     describe('when optional fields are omitted', () => {
@@ -50,20 +51,11 @@ describe('ExtractionRecord', () => {
   });
 
   describe('#timestamp', () => {
-    it('returns a Date created at construction time', () => {
-      const before = new Date();
-      const anotherRecord = new ExtractionRecord(1, { parserType: 'regex' });
-      const after = new Date();
-
-      expect(anotherRecord.timestamp.getTime()).toBeGreaterThanOrEqual(before.getTime());
-      expect(anotherRecord.timestamp.getTime()).toBeLessThanOrEqual(after.getTime());
-    });
+    RecordExamples.timestampExamples(examples);
   });
 
   describe('#toJSON', () => {
-    it('returns an object with the record id', () => {
-      expect(record.toJSON().id).toBe(1);
-    });
+    RecordExamples.toJSONExamples(examples);
 
     it('returns an object with the record parserType', () => {
       expect(record.toJSON().parserType).toBe('json_path');
@@ -75,10 +67,6 @@ describe('ExtractionRecord', () => {
 
     it('returns an object with the record itemCount', () => {
       expect(record.toJSON().itemCount).toBe(20);
-    });
-
-    it('returns an object with the timestamp as ISO string', () => {
-      expect(record.toJSON().timestamp).toBe(record.timestamp.toISOString());
     });
   });
 });
