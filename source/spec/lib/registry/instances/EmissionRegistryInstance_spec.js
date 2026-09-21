@@ -1,5 +1,6 @@
 import { EmissionRegistryInstance } from '../../../../lib/registry/instances/EmissionRegistryInstance.js';
 import { EmissionStore } from '../../../../lib/utils/emissions/EmissionStore.js';
+import { RegistryInstanceExamples } from '../../../support/utils/RegistryInstanceExamples.js';
 
 describe('EmissionRegistryInstance', () => {
   let instance;
@@ -14,22 +15,20 @@ describe('EmissionRegistryInstance', () => {
     ...overrides
   });
 
+  const examples = {
+    getInstance: () => instance,
+    InstanceClass: EmissionRegistryInstance,
+    StoreClass: EmissionStore,
+    addRecord: (target) => target.recordEmission(emission()),
+    keyField: 'itemRef'
+  };
+
   beforeEach(() => {
     instance = new EmissionRegistryInstance();
   });
 
   describe('constructor', () => {
-    it('creates an EmissionStore', () => {
-      expect(instance.store).toBeInstanceOf(EmissionStore);
-    });
-
-    it('defaults the store retention to 100', () => {
-      expect(instance.store.retention).toBe(100);
-    });
-
-    it('forwards a custom retention to the store', () => {
-      expect(new EmissionRegistryInstance({ retention: 25 }).store.retention).toBe(25);
-    });
+    RegistryInstanceExamples.constructorExamples(examples);
   });
 
   describe('#incExtracted', () => {
@@ -63,29 +62,11 @@ describe('EmissionRegistryInstance', () => {
       instance.recordEmission(emission({ itemRef: 'c' }));
     });
 
-    it('returns all records oldest-first', () => {
-      expect(instance.getRecords().map(r => r.itemRef)).toEqual(['a', 'b', 'c']);
-    });
-
-    it('filters to records newer than lastId', () => {
-      const firstId = instance.getRecords()[0].id;
-      expect(instance.getRecords({ lastId: firstId }).map(r => r.itemRef)).toEqual(['b', 'c']);
-    });
-
-    it('returns an empty array when lastId is not found', () => {
-      expect(instance.getRecords({ lastId: 9999 })).toEqual([]);
-    });
+    RegistryInstanceExamples.getRecordsExamples(examples);
   });
 
   describe('#getRecordById', () => {
-    it('returns the matching record', () => {
-      const record = instance.recordEmission(emission());
-      expect(instance.getRecordById(record.id)).toBe(record);
-    });
-
-    it('returns undefined for an unknown id', () => {
-      expect(instance.getRecordById(9999)).toBeUndefined();
-    });
+    RegistryInstanceExamples.getRecordByIdExamples(examples);
   });
 
   describe('#counts', () => {
