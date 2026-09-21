@@ -51,4 +51,9 @@ const useContainer = () => {
   return state;
 };
 
-export { useContainer };
+// Renders `element` into `root` inside an act() boundary.
+const renderInAct = async (root, element) => {
+  await act(async () => { root.render(element); });
+};
+
+export { renderInAct, useContainer };
