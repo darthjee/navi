@@ -1,36 +1,15 @@
 import MemoryStatusHelper from '../../src/components/pages/helpers/MemoryStatusHelper.jsx';
 import { renderInAct, useContainer } from '../support/dom.js';
+import { itBehavesLikeHelperFetchStates } from '../support/helper_states.js';
 
 describe('MemoryStatusHelper', () => {
   const state = useContainer();
 
-  describe('.renderLoading', () => {
-    beforeEach(async () => {
-      await renderInAct(state.root, MemoryStatusHelper.renderLoading());
-    });
-
-    it('renders the loading spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
-
-    it('shows a loading message', () => {
-      expect(state.container.textContent).toContain('Loading memory status');
-    });
-  });
-
-  describe('.renderError', () => {
-    beforeEach(async () => {
-      await renderInAct(state.root, MemoryStatusHelper.renderError('boom'));
-    });
-
-    it('renders the error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-    });
-
-    it('shows the error prefix and message', () => {
-      expect(state.container.textContent).toContain('Failed to load memory status');
-      expect(state.container.textContent).toContain('boom');
-    });
+  itBehavesLikeHelperFetchStates({
+    state,
+    helper: MemoryStatusHelper,
+    loadingText: 'Loading memory status',
+    errorPrefix: 'Failed to load memory status',
   });
 
   describe('.render', () => {
