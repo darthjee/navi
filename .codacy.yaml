@@ -5,6 +5,7 @@ exclude_paths:
   - dev/frontend/spec/
   - source/spec/
   - frontend/spec/
+  - spec-support/
   - dev/proxy/
   - dev/web_proxy/
   - docker_volumes/**

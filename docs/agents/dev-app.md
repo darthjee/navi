@@ -104,6 +104,10 @@ A browser UI for browsing the categories and items served by `dev/app/`. Built w
 | `/#/categories/:id/items` | `CategoryItemsIndexPage` |
 | `/#/categories/:categoryId/items/:id` | `CategoryItemPage` |
 
+### Spec bootstrap
+
+`dev/frontend/` specs use the jsdom/React bootstrap from the private `navi-spec-support` package (`spec-support/`), shared with `frontend/`: `dom.js` (jsdom globals, `useContainer`, `renderInAct`), `loader.js`/`transform_hooks.js` (ESM loader), `async.js` (`flushAsync`, `flushMany`) and `noop.js`. See [Spec Support](spec-support.md). After pulling, run a one-time `yarn install` in `dev/frontend/` (and again whenever `spec-support/` changes); in Docker, `navi_dev_frontend` mounts the folder at `/home/spec-support` for that purpose.
+
 ---
 
 ## Docker Compose
