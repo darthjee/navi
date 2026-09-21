@@ -16,11 +16,15 @@ It is owned by the `spec-support` agent (`.claude/agents/spec-support.md`).
 | `navi-spec-support/loader.js` | `spec-support/loader.js` | Side effect: registers `./transform_hooks.js` via `import.meta.url` |
 | `navi-spec-support/transform_hooks.js` | `spec-support/transform_hooks.js` | ESM `load` hook: transforms `.jsx` through esbuild (automatic JSX runtime) and stubs css/scss/sass/less imports |
 | `navi-spec-support/async.js` | `spec-support/async.js` | Named exports `flushAsync` and `flushMany` |
+| `navi-spec-support/fetch.js` | `spec-support/fetch.js` | Named exports `stubFetchSuccess`, `mockFetchSuccess`, `mockFetchFailure`, `mockFetchPending` and `paginationHeaders` |
 | `navi-spec-support/noop.js` | `spec-support/noop.js` | Default export `noop` |
 
 - `useContainer()` — call at `describe` level; registers `beforeEach`/`afterEach` that create a DOM container, a React `createRoot` and unmount them, returning a state object exposing `container` and `root`.
 - `renderInAct(root, element)` — renders inside an `act()` boundary.
 - `flushAsync()` / `flushMany(times)` — let pending promises and timers settle inside `act()`.
+- `stubFetchSuccess(data, headers?)` — call inside `it`/`beforeEach`; `spyOn(globalThis, 'fetch')` resolving a successful JSON response (with `headers` on the response when given).
+- `mockFetchSuccess(data, headers?)`, `mockFetchFailure(status)`, `mockFetchPending()` — call at `describe` level; register a `beforeEach` that stubs `fetch` with a success, a failure (`{ ok: false, status }`) or a never-resolving promise (loading state).
+- `paginationHeaders({ page, pageSize, pages })` — builds the `PAGE` / `PAGE-SIZE` / `PAGES` `Headers` read by `responseHandler`.
 
 The package has no runtime dependencies. `jsdom`, `react`, `react-dom` and `esbuild` are `peerDependencies` only, so each frontend controls its own versions and there is a single React instance shared with the app under test.
 

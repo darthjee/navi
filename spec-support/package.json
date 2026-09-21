@@ -9,6 +9,7 @@
     "./loader.js": "./loader.js",
     "./transform_hooks.js": "./transform_hooks.js",
     "./async.js": "./async.js",
+    "./fetch.js": "./fetch.js",
     "./noop.js": "./noop.js"
   },
   "peerDependencies": {
