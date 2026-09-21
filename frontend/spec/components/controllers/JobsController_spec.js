@@ -1,7 +1,11 @@
-import JobsController from '../../src/components/pages/controllers/JobsController.jsx';
+import JobsController from '../../../src/components/pages/controllers/JobsController.jsx';
+import { stubFetchSuccess } from '../../support/fetch.js';
+import { buildSetterSpies } from '../../support/spies.js';
 
 describe('JobsController', () => {
   const navigate = jasmine.createSpy('navigate');
+
+  const buildController = (status = 'failed', search = '') => new JobsController(status, search, navigate);
 
   beforeEach(() => {
     navigate.calls.reset();
@@ -10,14 +14,14 @@ describe('JobsController', () => {
   describe('#activeFilters', () => {
     describe('when the search string contains class filters', () => {
       it('parses the class array', () => {
-        const view = new JobsController('failed', '?filters%5Bclass%5D%5B%5D=ResourceRequestJob', navigate);
+        const view = buildController('failed', '?filters%5Bclass%5D%5B%5D=ResourceRequestJob');
         expect(view.activeFilters.class).toEqual(['ResourceRequestJob']);
       });
     });
 
     describe('when the search string is empty', () => {
       it('returns empty class array', () => {
-        const view = new JobsController('failed', '', navigate);
+        const view = buildController();
         expect(view.activeFilters.class).toEqual([]);
       });
     });
@@ -26,7 +30,7 @@ describe('JobsController', () => {
   describe('#filterQuery', () => {
     describe('when active filters are present', () => {
       it('serialises the class filters into a query string', () => {
-        const view = new JobsController('failed', '?filters%5Bclass%5D%5B%5D=ResourceRequestJob', navigate);
+        const view = buildController('failed', '?filters%5Bclass%5D%5B%5D=ResourceRequestJob');
         expect(view.filterQuery).toContain('filters');
         expect(view.filterQuery).toContain('ResourceRequestJob');
       });
@@ -34,7 +38,7 @@ describe('JobsController', () => {
 
     describe('when no active filters are present', () => {
       it('returns an empty string', () => {
-        const view = new JobsController('failed', '', navigate);
+        const view = buildController();
         expect(view.filterQuery).toBe('');
       });
     });
@@ -43,7 +47,7 @@ describe('JobsController', () => {
   describe('#handleClassFilterChange', () => {
     describe('when checking a class with a status set', () => {
       it('navigates to the status path with the new filter query', () => {
-        const view = new JobsController('failed', '', navigate);
+        const view = buildController();
         view.handleClassFilterChange('ResourceRequestJob', true);
         expect(navigate).toHaveBeenCalledWith(jasmine.stringContaining('/jobs/failed'));
         expect(navigate).toHaveBeenCalledWith(jasmine.stringContaining('ResourceRequestJob'));
@@ -63,11 +67,7 @@ describe('JobsController', () => {
 
     describe('when unchecking the only active class', () => {
       it('navigates to the base path without a query string', () => {
-        const view = new JobsController(
-          'failed',
-          '?filters%5Bclass%5D%5B%5D=ResourceRequestJob',
-          navigate
-        );
+        const view = buildController('failed', '?filters%5Bclass%5D%5B%5D=ResourceRequestJob');
         view.handleClassFilterChange('ResourceRequestJob', false);
         expect(navigate).toHaveBeenCalledWith('/jobs/failed');
       });
@@ -75,10 +75,9 @@ describe('JobsController', () => {
 
     describe('when unchecking one of two active classes', () => {
       it('keeps the remaining class in the query string', () => {
-        const view = new JobsController(
+        const view = buildController(
           'failed',
-          '?filters%5Bclass%5D%5B%5D=ResourceRequestJob&filters%5Bclass%5D%5B%5D=AssetDownloadJob',
-          navigate
+          '?filters%5Bclass%5D%5B%5D=ResourceRequestJob&filters%5Bclass%5D%5B%5D=AssetDownloadJob'
         );
         view.handleClassFilterChange('ResourceRequestJob', false);
         const arg = navigate.calls.mostRecent().args[0];
@@ -89,7 +88,7 @@ describe('JobsController', () => {
 
     describe('when used as a detached callback', () => {
       it('still works because it is pre-bound', () => {
-        const view = new JobsController('failed', '', navigate);
+        const view = buildController();
         const cb = view.handleClassFilterChange;
         cb('ResourceRequestJob', true);
         expect(navigate).toHaveBeenCalled();
@@ -100,10 +99,8 @@ describe('JobsController', () => {
   describe('#buildLoad', () => {
     describe('when status is provided', () => {
       it('fetches from /jobs/:status.json', async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
-        );
-        const view = new JobsController('failed', '', navigate);
+        stubFetchSuccess([]);
+        const view = buildController();
         await view.buildLoad();
         expect(globalThis.fetch).toHaveBeenCalledWith('/jobs/failed.json');
       });
@@ -111,9 +108,7 @@ describe('JobsController', () => {
 
     describe('when status is undefined', () => {
       it('fetches all status endpoints', async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
-        );
+        stubFetchSuccess([]);
         const view = new JobsController(undefined, '', navigate);
         await view.buildLoad();
         expect(globalThis.fetch.calls.count()).toBe(5);
@@ -124,10 +119,9 @@ describe('JobsController', () => {
   describe('#buildSuccessHandler', () => {
     describe('when not cancelled', () => {
       it('calls setJobs and clears the error', () => {
-        const view = new JobsController('failed', '', navigate);
+        const view = buildController();
         const state = { cancelled: false };
-        const setJobs = jasmine.createSpy('setJobs');
-        const setError = jasmine.createSpy('setError');
+        const { setJobs, setError } = buildSetterSpies();
         const handler = view.buildSuccessHandler(state, setJobs, setError);
 
         handler([{ id: 'abc' }]);
@@ -139,10 +133,9 @@ describe('JobsController', () => {
 
     describe('when cancelled', () => {
       it('does not call setJobs or setError', () => {
-        const view = new JobsController('failed', '', navigate);
+        const view = buildController();
         const state = { cancelled: true };
-        const setJobs = jasmine.createSpy('setJobs');
-        const setError = jasmine.createSpy('setError');
+        const { setJobs, setError } = buildSetterSpies();
         const handler = view.buildSuccessHandler(state, setJobs, setError);
 
         handler([{ id: 'abc' }]);
@@ -156,13 +149,9 @@ describe('JobsController', () => {
   describe('#buildEffect', () => {
     describe('when the fetch succeeds', () => {
       it('calls setJobs with the returned data and clears loading', async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([{ id: 'x' }]) })
-        );
-        const view = new JobsController('failed', '', navigate);
-        const setJobs = jasmine.createSpy('setJobs');
-        const setError = jasmine.createSpy('setError');
-        const setLoading = jasmine.createSpy('setLoading');
+        stubFetchSuccess([{ id: 'x' }]);
+        const view = buildController();
+        const { setJobs, setError, setLoading } = buildSetterSpies();
 
         const cleanup = view.buildEffect(setJobs, setError, setLoading)();
         await new Promise((r) => setTimeout(r, 0));
@@ -180,10 +169,8 @@ describe('JobsController', () => {
         spyOn(globalThis, 'fetch').and.returnValue(
           new Promise((r) => { resolve = r; })
         );
-        const view = new JobsController('failed', '', navigate);
-        const setJobs = jasmine.createSpy('setJobs');
-        const setError = jasmine.createSpy('setError');
-        const setLoading = jasmine.createSpy('setLoading');
+        const view = buildController();
+        const { setJobs, setError, setLoading } = buildSetterSpies();
 
         const cleanup = view.buildEffect(setJobs, setError, setLoading)();
         cleanup();

@@ -1,9 +1,14 @@
-// Stubs globalThis.fetch to resolve with a successful response.
+// Stubs globalThis.fetch immediately (usable inside an `it`) to resolve with a successful response.
+const stubFetchSuccess = (data) => {
+  spyOn(globalThis, 'fetch').and.returnValue(
+    Promise.resolve({ ok: true, json: () => Promise.resolve(data) })
+  );
+};
+
+// Stubs globalThis.fetch before each spec to resolve with a successful response.
 const mockFetchSuccess = (data) => {
   beforeEach(() => {
-    spyOn(globalThis, 'fetch').and.returnValue(
-      Promise.resolve({ ok: true, json: () => Promise.resolve(data) })
-    );
+    stubFetchSuccess(data);
   });
 };
 
@@ -16,4 +21,4 @@ const mockFetchFailure = (status) => {
   });
 };
 
-export { mockFetchFailure, mockFetchSuccess };
+export { mockFetchFailure, mockFetchSuccess, stubFetchSuccess };

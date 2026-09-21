@@ -7,9 +7,9 @@
   "scripts": {
     "build": "vite build",
     "server": "vite dev --host 0.0.0.0 --port 8080",
-    "spec": "node --import ./spec/support/loader.js node_modules/.bin/jasmine spec/**/*.js",
-    "test": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 jasmine spec/**/*.js",
-    "coverage": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 --reporter=lcov jasmine spec/**/*.js",
+    "spec": "node --import ./spec/support/loader.js node_modules/.bin/jasmine 'spec/**/*.js'",
+    "test": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 jasmine 'spec/**/*.js'",
+    "coverage": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 --reporter=lcov jasmine 'spec/**/*.js'",
     "lint": "eslint . && stylelint --config ../.stylelintrc.json 'src/**/*.css'",
     "lint_fix": "eslint . --fix && stylelint --config ../.stylelintrc.json 'src/**/*.css' --fix",
     "lint_report": "eslint src/ --format html --output-file report/eslint-report.html",
