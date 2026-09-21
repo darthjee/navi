@@ -1,7 +1,31 @@
 import LogsPageController from '../../src/components/pages/controllers/LogsPageController.jsx';
 import noop from '../../src/utils/noop.js';
+import { logEntries, okResponse, resolveOnceThenPend } from '../support/logs.js';
 
+// Plain (not act-wrapped) on purpose: the controller runs outside React.
 const flushAsync = () => new Promise((r) => setTimeout(r, 0));
+
+// Starts the polling effect of a fresh controller and returns its refs, the
+// setLogs spy and the cleanup function.
+const startPolling = () => {
+  const cancelledRef = { current: false };
+  const lastIdRef = { current: null };
+  const setLogs = jasmine.createSpy('setLogs');
+  const view = LogsPageController.build([]);
+  const cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
+
+  return { cancelledRef, lastIdRef, setLogs, cleanup };
+};
+
+// Runs buildScrollEffect for a controller holding `logs` and returns the
+// scrollIntoView spy attached to the bottom ref.
+const runScrollEffect = (logs) => {
+  const scrollSpy = jasmine.createSpy('scrollIntoView');
+  const bottomRef = { current: { scrollIntoView: scrollSpy } };
+
+  LogsPageController.build(logs).buildScrollEffect(bottomRef)();
+  return scrollSpy;
+};
 
 describe('LogsPageController', () => {
   describe('.build', () => {
@@ -13,42 +37,22 @@ describe('LogsPageController', () => {
 
   describe('#buildPollingEffect', () => {
     describe('when logs are returned on the first poll', () => {
-      const entries = [
-        { id: 10, level: 'info', message: 'Hello', timestamp: '2024-01-01T00:00:00Z' },
-      ];
-
-      let cancelledRef;
-      let lastIdRef;
-      let setLogs;
-      let cleanup;
+      let polling;
 
       beforeEach(async () => {
-        let callCount = 0;
-        spyOn(globalThis, 'fetch').and.callFake(() => {
-          callCount++;
-          if (callCount === 1) {
-            return Promise.resolve({ ok: true, json: () => Promise.resolve(entries) });
-          }
-          return new Promise(noop);
-        });
-
-        cancelledRef = { current: false };
-        lastIdRef = { current: null };
-        setLogs = jasmine.createSpy('setLogs');
-
-        const view = LogsPageController.build([]);
-        cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
+        spyOn(globalThis, 'fetch').and.callFake(resolveOnceThenPend(okResponse(logEntries)));
+        polling = startPolling();
         await flushAsync();
       });
 
-      afterEach(() => { cleanup && cleanup(); });
+      afterEach(() => { polling.cleanup(); });
 
       it('calls setLogs with the new entries', () => {
-        expect(setLogs).toHaveBeenCalled();
+        expect(polling.setLogs).toHaveBeenCalled();
       });
 
       it('updates lastIdRef to the id of the last entry', () => {
-        expect(lastIdRef.current).toBe(10);
+        expect(polling.lastIdRef.current).toBe(4);
       });
 
       it('polls again immediately', () => {
@@ -57,22 +61,15 @@ describe('LogsPageController', () => {
     });
 
     describe('when the response is empty', () => {
-      let cleanup;
+      let polling;
 
       beforeEach(async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve([]) }),
-        );
-
-        const cancelledRef = { current: false };
-        const lastIdRef = { current: null };
-        const setLogs = jasmine.createSpy('setLogs');
-        const view = LogsPageController.build([]);
-        cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
+        spyOn(globalThis, 'fetch').and.returnValue(Promise.resolve(okResponse([])));
+        polling = startPolling();
         await flushAsync();
       });
 
-      afterEach(() => { cleanup && cleanup(); });
+      afterEach(() => { polling.cleanup(); });
 
       it('does not poll again immediately', () => {
         expect(globalThis.fetch.calls.count()).toBe(1);
@@ -80,14 +77,10 @@ describe('LogsPageController', () => {
     });
 
     describe('cleanup', () => {
-      it('sets cancelledRef to true', async () => {
+      it('sets cancelledRef to true', () => {
         spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
 
-        const cancelledRef = { current: false };
-        const lastIdRef = { current: null };
-        const setLogs = jasmine.createSpy('setLogs');
-        const view = LogsPageController.build([]);
-        const cleanup = view.buildPollingEffect(cancelledRef, lastIdRef, setLogs)();
+        const { cancelledRef, cleanup } = startPolling();
 
         cleanup();
         expect(cancelledRef.current).toBeTrue();
@@ -97,20 +90,14 @@ describe('LogsPageController', () => {
 
   describe('#buildScrollEffect', () => {
     it('calls scrollIntoView on the bottomRef element when logs exist', () => {
-      const scrollSpy = jasmine.createSpy('scrollIntoView');
-      const bottomRef = { current: { scrollIntoView: scrollSpy } };
-      const view = LogsPageController.build([{ id: 1, level: 'info', message: 'x', timestamp: 't' }]);
+      const scrollSpy = runScrollEffect(logEntries);
 
-      view.buildScrollEffect(bottomRef)();
       expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
     });
 
     it('does not call scrollIntoView when there are no logs', () => {
-      const scrollSpy = jasmine.createSpy('scrollIntoView');
-      const bottomRef = { current: { scrollIntoView: scrollSpy } };
-      const view = LogsPageController.build([]);
+      const scrollSpy = runScrollEffect([]);
 
-      view.buildScrollEffect(bottomRef)();
       expect(scrollSpy).not.toHaveBeenCalled();
     });
   });
