@@ -13,6 +13,8 @@ You own:
 - `dockerfiles/` — every Dockerfile in the repo (dev app, dev frontend, dev proxies, demo images, production build).
 - `docker-compose.yml` (root) — service definitions for local development.
 
+Related to the shared spec bootstrap (`spec-support/`, the private `navi-spec-support` package, owned by the `spec-support` agent): `docker-compose.yml` mounts `./spec-support` into `navi_frontend` (`/home/node/spec-support`) and `navi_dev_frontend` (`/home/spec-support`) so `yarn install` can resolve the `file:` dependency, and `dockerfiles/navi-hey-test/` sources its reused `dom.js`, `loader.js` and `transform_hooks.js` from `spec-support/` (while `fetch.js` stays in `frontend/spec/support/`).
+
 Explicitly out of scope:
 
 - `docker_volumes/` — runtime bind-mount data (config samples, node_modules cache); stays with `architect`, since it's data, not something authored/reviewed like a Dockerfile.
