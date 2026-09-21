@@ -3,7 +3,9 @@ import { act } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Job from '../../src/components/pages/Job.jsx';
 import noop from '../../src/utils/noop.js';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
+import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const mockJobFetch = (job) => {
   let callCount = 0;
@@ -15,8 +17,6 @@ const mockJobFetch = (job) => {
     return new Promise(noop);
   });
 };
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const renderJob = async (root, id = 'abc-123') => {
   await act(async () => {
@@ -33,19 +33,12 @@ const renderJob = async (root, id = 'abc-123') => {
 describe('Job', () => {
   const state = useContainer();
 
-  describe('while loading', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await renderJob(state.root);
-    });
-
-    it('renders a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
-
-    it('shows loading text', () => {
-      expect(state.container.textContent).toContain('Loading job');
-    });
+  itBehavesLikeFetchStates({
+    state,
+    render: () => renderJob(state.root),
+    loadingText: 'Loading job',
+    errorText: 'Failed to load job',
+    status: 500,
   });
 
   describe('when the job loads successfully', () => {
@@ -134,32 +127,6 @@ describe('Job', () => {
 
     it('shows a not-found message', () => {
       expect(state.container.textContent).toContain('Job not found');
-    });
-  });
-
-  describe('when the fetch fails', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: false, status: 500 })
-      );
-      await renderJob(state.root);
-      await flushAsync();
-    });
-
-    it('does not show a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).toBeNull();
-    });
-
-    it('renders an error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-    });
-
-    it('shows a descriptive error message', () => {
-      expect(state.container.textContent).toContain('Failed to load job');
-    });
-
-    it('includes the error details in the message', () => {
-      expect(state.container.textContent).toContain('HTTP 500');
     });
   });
 });

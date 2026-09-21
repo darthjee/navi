@@ -2,10 +2,9 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Jobs from '../../src/components/pages/Jobs.jsx';
-import noop from '../../src/utils/noop.js';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const render = async (state, { initialPath = '/jobs' } = {}) => {
   await act(async () => {
@@ -24,19 +23,12 @@ const render = async (state, { initialPath = '/jobs' } = {}) => {
 describe('Jobs', () => {
   const state = useContainer();
 
-  describe('while loading', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await render(state);
-    });
-
-    it('renders a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
-
-    it('shows loading text', () => {
-      expect(state.container.textContent).toContain('Loading jobs');
-    });
+  itBehavesLikeFetchStates({
+    state,
+    render: () => render(state),
+    loadingText: 'Loading jobs',
+    errorText: 'Failed to load jobs',
+    status: 503,
   });
 
   describe('when jobs load successfully', () => {
@@ -111,32 +103,6 @@ describe('Jobs', () => {
 
     it('shows an empty state message', () => {
       expect(state.container.textContent).toContain('No jobs found');
-    });
-  });
-
-  describe('when the fetch fails', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: false, status: 503 })
-      );
-      await render(state);
-      await flushAsync();
-    });
-
-    it('does not show a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).toBeNull();
-    });
-
-    it('renders an error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-    });
-
-    it('shows a descriptive error message', () => {
-      expect(state.container.textContent).toContain('Failed to load jobs');
-    });
-
-    it('includes the error details in the message', () => {
-      expect(state.container.textContent).toContain('HTTP 503');
     });
   });
 
