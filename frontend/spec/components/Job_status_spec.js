@@ -1,20 +1,68 @@
-import { createElement } from 'react';
-import { act } from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Job from '../../src/components/pages/Job.jsx';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
+import { renderJob } from '../support/render_job.js';
 
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+const findRetryButton = ({ container }) => (
+  Array.from(container.querySelectorAll('button')).find(b => b.textContent === 'Retry')
+);
 
-const renderJob = async (root, id = 'abc-123') => {
-  await act(async () => {
-    root.render(
-      createElement(MemoryRouter, { initialEntries: [`/job/${id}`] },
-        createElement(Routes, null,
-          createElement(Route, { path: '/job/:id', element: createElement(Job) })
-        )
-      )
-    );
+const textSections = {
+  remainingAttempts: {
+    label: 'Remaining attempts',
+    shown: 'shows remaining attempts',
+    hidden: 'does not show Remaining attempts',
+    value: (job) => job.remainingAttempts,
+  },
+  readyIn: {
+    label: 'Ready in',
+    shown: 'shows Ready in',
+    hidden: 'does not show Ready in',
+  },
+  lastError: {
+    label: 'Last error',
+    shown: 'shows Last error section',
+    hidden: 'does not show Last error',
+  },
+};
+
+// Generates one spec per entry declared in `visible`; entries left undefined are not asserted.
+const itBehavesLikeVisibleSections = (state, job, visible) => {
+  Object.entries(textSections).forEach(([key, { label, shown, hidden, value }]) => {
+    if (visible[key] === undefined) return;
+
+    if (visible[key]) {
+      it(shown, () => {
+        expect(state.container.textContent).toContain(label);
+        if (value) expect(state.container.textContent).toContain(String(value(job)));
+      });
+    } else {
+      it(hidden, () => {
+        expect(state.container.textContent).not.toContain(label);
+      });
+    }
+  });
+
+  if (visible.retryButton === true) {
+    it('shows a Retry button', () => {
+      expect(findRetryButton(state)).toBeDefined();
+    });
+  } else if (visible.retryButton === false) {
+    it('does not show a Retry button', () => {
+      expect(findRetryButton(state)).toBeUndefined();
+    });
+  }
+};
+
+const itShowsCollapsedError = (state, message) => {
+  it('shows the error message inside collapsible section', () => {
+    expect(state.container.textContent).toContain(message);
+  });
+
+  it('shows the error section collapsed by default', () => {
+    const details = state.container.querySelectorAll('details');
+    const errorDetails = Array.from(details).find(d => d.textContent.includes('Show error'));
+    expect(errorDetails).not.toBeNull();
+    expect(errorDetails.open).toBeFalsy();
   });
 };
 
@@ -29,24 +77,7 @@ const statusScenarios = [
       arguments: { url: '/items.json', parameters: {} },
       remainingAttempts: 3,
     },
-    assertions: (state) => {
-      it('shows remaining attempts', () => {
-        expect(state.container.textContent).toContain('3');
-      });
-
-      it('does not show Ready in', () => {
-        expect(state.container.textContent).not.toContain('Ready in');
-      });
-
-      it('does not show Last error', () => {
-        expect(state.container.textContent).not.toContain('Last error');
-      });
-
-      it('does not show a Retry button', () => {
-        const buttons = Array.from(state.container.querySelectorAll('button'));
-        expect(buttons.find(b => b.textContent === 'Retry')).toBeUndefined();
-      });
-    },
+    visible: { remainingAttempts: true, readyIn: false, lastError: false, retryButton: false },
   },
   {
     label: 'failed without a recorded error',
@@ -59,22 +90,10 @@ const statusScenarios = [
       remainingAttempts: 2,
       readyInMs: 5000,
     },
-    assertions: (state) => {
+    visible: { remainingAttempts: true, lastError: false, retryButton: true },
+    extraAssertions: (state) => {
       it('shows a countdown in seconds', () => {
         expect(state.container.textContent).toContain('5s');
-      });
-
-      it('shows remaining attempts', () => {
-        expect(state.container.textContent).toContain('2');
-      });
-
-      it('does not show Last error', () => {
-        expect(state.container.textContent).not.toContain('Last error');
-      });
-
-      it('shows a Retry button', () => {
-        const buttons = Array.from(state.container.querySelectorAll('button'));
-        expect(buttons.find(b => b.textContent === 'Retry')).toBeDefined();
       });
     },
   },
@@ -91,21 +110,9 @@ const statusScenarios = [
       lastError: 'connection refused',
       backtrace: 'Error: connection refused\n    at Object.<anonymous>',
     },
-    assertions: (state) => {
-      it('shows Last error section', () => {
-        expect(state.container.textContent).toContain('Last error');
-      });
-
-      it('shows the error message inside collapsible section', () => {
-        expect(state.container.textContent).toContain('connection refused');
-      });
-
-      it('shows the error section collapsed by default', () => {
-        const details = state.container.querySelectorAll('details');
-        const errorDetails = Array.from(details).find(d => d.textContent.includes('Show error'));
-        expect(errorDetails).not.toBeNull();
-        expect(errorDetails.open).toBeFalsy();
-      });
+    visible: { lastError: true },
+    extraAssertions: (state) => {
+      itShowsCollapsedError(state, 'connection refused');
 
       it('shows Ready when readyInMs is 0', () => {
         expect(state.container.textContent).toContain('Ready');
@@ -121,26 +128,10 @@ const statusScenarios = [
       jobClass: 'ResourceRequestJob',
       arguments: { url: '/done.json', parameters: {} },
     },
-    assertions: (state) => {
+    visible: { remainingAttempts: false, readyIn: false, lastError: false, retryButton: false },
+    extraAssertions: (state) => {
       it('shows the job id', () => {
         expect(state.container.textContent).toContain('fin-1');
-      });
-
-      it('does not show Remaining attempts', () => {
-        expect(state.container.textContent).not.toContain('Remaining attempts');
-      });
-
-      it('does not show Ready in', () => {
-        expect(state.container.textContent).not.toContain('Ready in');
-      });
-
-      it('does not show Last error', () => {
-        expect(state.container.textContent).not.toContain('Last error');
-      });
-
-      it('does not show a Retry button', () => {
-        const buttons = Array.from(state.container.querySelectorAll('button'));
-        expect(buttons.find(b => b.textContent === 'Retry')).toBeUndefined();
       });
     },
   },
@@ -153,24 +144,7 @@ const statusScenarios = [
       jobClass: 'ActionProcessingJob',
       arguments: { item: { id: 7 } },
     },
-    assertions: (state) => {
-      it('does not show Remaining attempts', () => {
-        expect(state.container.textContent).not.toContain('Remaining attempts');
-      });
-
-      it('does not show Ready in', () => {
-        expect(state.container.textContent).not.toContain('Ready in');
-      });
-
-      it('does not show Last error', () => {
-        expect(state.container.textContent).not.toContain('Last error');
-      });
-
-      it('shows a Retry button', () => {
-        const buttons = Array.from(state.container.querySelectorAll('button'));
-        expect(buttons.find(b => b.textContent === 'Retry')).toBeDefined();
-      });
-    },
+    visible: { remainingAttempts: false, readyIn: false, lastError: false, retryButton: true },
   },
   {
     label: 'dead with a recorded error',
@@ -183,29 +157,9 @@ const statusScenarios = [
       lastError: 'fatal timeout',
       backtrace: 'Error: fatal timeout\n    at Object.<anonymous>',
     },
-    assertions: (state) => {
-      it('shows Last error section', () => {
-        expect(state.container.textContent).toContain('Last error');
-      });
-
-      it('shows the error message inside collapsible section', () => {
-        expect(state.container.textContent).toContain('fatal timeout');
-      });
-
-      it('shows the error section collapsed by default', () => {
-        const details = state.container.querySelectorAll('details');
-        const errorDetails = Array.from(details).find(d => d.textContent.includes('Show error'));
-        expect(errorDetails).not.toBeNull();
-        expect(errorDetails.open).toBeFalsy();
-      });
-
-      it('does not show Remaining attempts', () => {
-        expect(state.container.textContent).not.toContain('Remaining attempts');
-      });
-
-      it('does not show Ready in', () => {
-        expect(state.container.textContent).not.toContain('Ready in');
-      });
+    visible: { remainingAttempts: false, readyIn: false, lastError: true },
+    extraAssertions: (state) => {
+      itShowsCollapsedError(state, 'fatal timeout');
     },
   },
 ];
@@ -213,7 +167,7 @@ const statusScenarios = [
 describe('Job status rendering', () => {
   const state = useContainer();
 
-  statusScenarios.forEach(({ label, job, assertions }) => {
+  statusScenarios.forEach(({ label, job, visible, extraAssertions }) => {
     describe(`when the job is ${label}`, () => {
       beforeEach(async () => {
         spyOn(globalThis, 'fetch').and.returnValue(
@@ -223,7 +177,8 @@ describe('Job status rendering', () => {
         await flushAsync();
       });
 
-      assertions(state);
+      itBehavesLikeVisibleSections(state, job, visible);
+      if (extraAssertions) extraAssertions(state);
     });
   });
 });

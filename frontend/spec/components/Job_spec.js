@@ -1,11 +1,8 @@
-import { createElement } from 'react';
-import { act } from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Job from '../../src/components/pages/Job.jsx';
 import noop from '../../src/utils/noop.js';
 import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
 import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
+import { renderJob } from '../support/render_job.js';
 
 const mockJobFetch = (job) => {
   let callCount = 0;
@@ -15,18 +12,6 @@ const mockJobFetch = (job) => {
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(job) });
     }
     return new Promise(noop);
-  });
-};
-
-const renderJob = async (root, id = 'abc-123') => {
-  await act(async () => {
-    root.render(
-      createElement(MemoryRouter, { initialEntries: [`/job/${id}`] },
-        createElement(Routes, null,
-          createElement(Route, { path: '/job/:id', element: createElement(Job) })
-        )
-      )
-    );
   });
 };
 
