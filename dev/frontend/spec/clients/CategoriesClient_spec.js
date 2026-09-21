@@ -1,50 +1,47 @@
+import { mockFetchSuccess, paginationHeaders } from 'navi-spec-support/fetch.js';
 import { fetchCategories, fetchCategory } from '../../src/clients/CategoriesClient.js';
+import { itRejectsWithStatus, itRequests, itResolvesWith } from '../support/client_scenarios.js';
 
 describe('CategoriesClient', () => {
   describe('fetchCategories', () => {
     describe('when the request succeeds', () => {
       const data = [{ id: 1, name: 'Electronics' }, { id: 2, name: 'Books' }];
-      const headers = new Headers({ PAGE: '1', 'PAGE-SIZE': '10', PAGES: '3' });
 
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, headers, json: () => Promise.resolve(data) })
-        );
-      });
+      mockFetchSuccess(data, paginationHeaders({ page: 1, pageSize: 10, pages: 3 }));
 
-      it('fetches from /categories.json', async () => {
-        await fetchCategories();
-        expect(globalThis.fetch).toHaveBeenCalledWith('/categories.json');
-      });
+      itRequests([
+        {
+          description: 'fetches from /categories.json',
+          call: () => fetchCategories(),
+          url: '/categories.json',
+        },
+        {
+          description: 'appends the queryString to the URL when provided',
+          call: () => fetchCategories('page=2'),
+          url: '/categories.json?page=2',
+        },
+      ]);
 
-      it('returns the categories array inside data', async () => {
-        const result = await fetchCategories();
-        expect(result.data).toEqual(data);
-      });
-
-      it('returns pagination metadata', async () => {
-        const result = await fetchCategories();
-        expect(result.pagination).toEqual({ page: 1, pageSize: 10, pages: 3 });
-      });
-
-      describe('when a queryString is provided', () => {
-        it('appends it to the URL', async () => {
-          await fetchCategories('page=2');
-          expect(globalThis.fetch).toHaveBeenCalledWith('/categories.json?page=2');
-        });
-      });
+      itResolvesWith([
+        {
+          description: 'returns the categories array inside data',
+          call: () => fetchCategories(),
+          select: (result) => result.data,
+          expected: data,
+        },
+        {
+          description: 'returns pagination metadata',
+          call: () => fetchCategories(),
+          select: (result) => result.pagination,
+          expected: { page: 1, pageSize: 10, pages: 3 },
+        },
+      ]);
     });
 
-    describe('when the request fails', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 500 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(fetchCategories()).toBeRejectedWithError('HTTP 500');
-      });
+    itRejectsWithStatus({
+      description: 'when the request fails',
+      call: () => fetchCategories(),
+      status: 500,
     });
   });
 
@@ -52,33 +49,25 @@ describe('CategoriesClient', () => {
     describe('when the request succeeds', () => {
       const data = { id: 1, name: 'Electronics' };
 
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: true, json: () => Promise.resolve(data) })
-        );
-      });
+      mockFetchSuccess(data);
 
-      it('fetches from /categories/:id.json', async () => {
-        await fetchCategory(1);
-        expect(globalThis.fetch).toHaveBeenCalledWith('/categories/1.json');
-      });
+      itRequests([
+        {
+          description: 'fetches from /categories/:id.json',
+          call: () => fetchCategory(1),
+          url: '/categories/1.json',
+        },
+      ]);
 
-      it('returns the category', async () => {
-        const result = await fetchCategory(1);
-        expect(result).toEqual(data);
-      });
+      itResolvesWith([
+        { description: 'returns the category', call: () => fetchCategory(1), expected: data },
+      ]);
     });
 
-    describe('when the request fails with 404', () => {
-      beforeEach(() => {
-        spyOn(globalThis, 'fetch').and.returnValue(
-          Promise.resolve({ ok: false, status: 404 })
-        );
-      });
-
-      it('throws an error with the status code', async () => {
-        await expectAsync(fetchCategory(999)).toBeRejectedWithError('HTTP 404');
-      });
+    itRejectsWithStatus({
+      description: 'when the request fails with 404',
+      call: () => fetchCategory(999),
+      status: 404,
     });
   });
 });
