@@ -1,4 +1,5 @@
 import { EmissionStore } from '../../../../lib/utils/emissions/EmissionStore.js';
+import { StoreExamples } from '../../../support/utils/StoreExamples.js';
 
 describe('EmissionStore', () => {
   let store;
@@ -13,22 +14,19 @@ describe('EmissionStore', () => {
     ...overrides
   });
 
+  const examples = {
+    getStore: () => store,
+    buildStore: (retention) => new EmissionStore(retention),
+    addRecord: (target, key = 'ref') => target.recordEmission(emission({ itemRef: key })),
+    keyField: 'itemRef'
+  };
+
   beforeEach(() => {
     store = new EmissionStore();
   });
 
   describe('constructor', () => {
-    it('starts with an empty store', () => {
-      expect(store.size).toBe(0);
-    });
-
-    it('defaults retention to 100', () => {
-      expect(store.retention).toBe(100);
-    });
-
-    it('accepts a custom retention', () => {
-      expect(new EmissionStore(50).retention).toBe(50);
-    });
+    StoreExamples.constructorExamples(examples);
 
     it('starts with all counters at zero', () => {
       expect(store.counts).toEqual({ extracted: 0, emitted: 0, failed: 0, dead: 0 });
@@ -93,21 +91,7 @@ describe('EmissionStore', () => {
         smallStore.recordEmission(emission({ itemRef: '3' }));
       });
 
-      it('does not exceed the retention limit', () => {
-        smallStore.recordEmission(emission({ itemRef: '4' }));
-        expect(smallStore.size).toBe(3);
-      });
-
-      it('removes the oldest record', () => {
-        smallStore.recordEmission(emission({ itemRef: '4' }));
-        expect(smallStore.getRecords()[0].itemRef).toBe('2');
-      });
-
-      it('keeps the newest record', () => {
-        smallStore.recordEmission(emission({ itemRef: '4' }));
-        const records = smallStore.getRecords();
-        expect(records[records.length - 1].itemRef).toBe('4');
-      });
+      StoreExamples.retentionLimitExamples({ ...examples, getStore: () => smallStore });
 
       it('keeps counters exact past retention', () => {
         smallStore.recordEmission(emission({ itemRef: '4' }));
@@ -134,32 +118,11 @@ describe('EmissionStore', () => {
   });
 
   describe('#getRecords', () => {
-    it('returns an empty array when store is empty', () => {
-      expect(store.getRecords()).toEqual([]);
-    });
-
-    it('returns records oldest-first', () => {
-      store.recordEmission(emission({ itemRef: 'a' }));
-      store.recordEmission(emission({ itemRef: 'b' }));
-      expect(store.getRecords().map(r => r.itemRef)).toEqual(['a', 'b']);
-    });
-
-    it('returns a copy of the records array', () => {
-      store.recordEmission(emission());
-      store.getRecords().push('extra');
-      expect(store.size).toBe(1);
-    });
+    StoreExamples.getRecordsExamples(examples);
   });
 
   describe('#getRecordById', () => {
-    it('returns the record with the matching ID', () => {
-      const added = store.recordEmission(emission());
-      expect(store.getRecordById(added.id)).toBe(added);
-    });
-
-    it('returns undefined when no record has the given ID', () => {
-      expect(store.getRecordById(999)).toBeUndefined();
-    });
+    StoreExamples.getRecordByIdExamples(examples);
   });
 
   describe('#clear', () => {
@@ -170,13 +133,7 @@ describe('EmissionStore', () => {
       store.clear();
     });
 
-    it('removes all records', () => {
-      expect(store.size).toBe(0);
-    });
-
-    it('results in an empty getRecords', () => {
-      expect(store.getRecords()).toEqual([]);
-    });
+    StoreExamples.clearExamples(examples);
 
     it('resets all counters to zero', () => {
       expect(store.counts).toEqual({ extracted: 0, emitted: 0, failed: 0, dead: 0 });
@@ -184,29 +141,15 @@ describe('EmissionStore', () => {
   });
 
   describe('#size', () => {
-    it('returns 0 for an empty store', () => {
-      expect(store.size).toBe(0);
-    });
-
-    it('returns the number of records in the store', () => {
-      store.recordEmission(emission());
-      store.recordEmission(emission());
-      expect(store.size).toBe(2);
-    });
+    StoreExamples.sizeExamples(examples);
   });
 
   describe('#retention', () => {
-    it('returns the configured retention limit', () => {
-      expect(new EmissionStore(25).retention).toBe(25);
-    });
+    StoreExamples.retentionExamples(examples);
   });
 
   describe('#counts', () => {
-    it('returns a copy that does not affect the store when mutated', () => {
-      const counts = store.counts;
-      counts.emitted = 999;
-      expect(store.counts.emitted).toBe(0);
-    });
+    StoreExamples.countsCopyExamples({ ...examples, counterKey: 'emitted' });
   });
 
   describe('#toJSON', () => {
@@ -217,13 +160,7 @@ describe('EmissionStore', () => {
       });
     });
 
-    it('returns records as plain objects oldest-first', () => {
-      store.recordEmission(emission({ itemRef: 'a' }));
-      store.recordEmission(emission({ itemRef: 'b' }));
-      const json = store.toJSON();
-      expect(json.records.map(r => r.itemRef)).toEqual(['a', 'b']);
-      expect(typeof json.records[0].timestamp).toBe('string');
-    });
+    StoreExamples.toJSONRecordsExamples(examples);
 
     it('includes the current counters', () => {
       store.recordEmission(emission({ status: 'success' }));

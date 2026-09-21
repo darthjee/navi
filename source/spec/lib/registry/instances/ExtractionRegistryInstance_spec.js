@@ -1,5 +1,6 @@
 import { ExtractionRegistryInstance } from '../../../../lib/registry/instances/ExtractionRegistryInstance.js';
 import { ExtractionStore } from '../../../../lib/utils/extractions/ExtractionStore.js';
+import { RegistryInstanceExamples } from '../../../support/utils/RegistryInstanceExamples.js';
 
 describe('ExtractionRegistryInstance', () => {
   let instance;
@@ -11,22 +12,20 @@ describe('ExtractionRegistryInstance', () => {
     ...overrides
   });
 
+  const examples = {
+    getInstance: () => instance,
+    InstanceClass: ExtractionRegistryInstance,
+    StoreClass: ExtractionStore,
+    addRecord: (target) => target.recordExtraction(extraction()),
+    keyField: 'originUrl'
+  };
+
   beforeEach(() => {
     instance = new ExtractionRegistryInstance();
   });
 
   describe('constructor', () => {
-    it('creates an ExtractionStore', () => {
-      expect(instance.store).toBeInstanceOf(ExtractionStore);
-    });
-
-    it('defaults the store retention to 100', () => {
-      expect(instance.store.retention).toBe(100);
-    });
-
-    it('forwards a custom retention to the store', () => {
-      expect(new ExtractionRegistryInstance({ retention: 25 }).store.retention).toBe(25);
-    });
+    RegistryInstanceExamples.constructorExamples(examples);
   });
 
   describe('#recordExtraction', () => {
@@ -48,29 +47,11 @@ describe('ExtractionRegistryInstance', () => {
       instance.recordExtraction(extraction({ originUrl: 'c' }));
     });
 
-    it('returns all records oldest-first', () => {
-      expect(instance.getRecords().map(r => r.originUrl)).toEqual(['a', 'b', 'c']);
-    });
-
-    it('filters to records newer than lastId', () => {
-      const firstId = instance.getRecords()[0].id;
-      expect(instance.getRecords({ lastId: firstId }).map(r => r.originUrl)).toEqual(['b', 'c']);
-    });
-
-    it('returns an empty array when lastId is not found', () => {
-      expect(instance.getRecords({ lastId: 9999 })).toEqual([]);
-    });
+    RegistryInstanceExamples.getRecordsExamples(examples);
   });
 
   describe('#getRecordById', () => {
-    it('returns the matching record', () => {
-      const record = instance.recordExtraction(extraction());
-      expect(instance.getRecordById(record.id)).toBe(record);
-    });
-
-    it('returns undefined for an unknown id', () => {
-      expect(instance.getRecordById(9999)).toBeUndefined();
-    });
+    RegistryInstanceExamples.getRecordByIdExamples(examples);
   });
 
   describe('#counts', () => {
