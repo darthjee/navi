@@ -34,7 +34,10 @@ Out of scope:
 Codacy reports markedly fewer duplication clones for the files above, and behaviour is unchanged (the affected specs still pass and still verify the same scenarios).
 
 ## Solution
-- Add a generic `navi-spec-support/fetch.js` (owned by the `spec-support` agent) with the fetch stubs (pending, success with JSON body and optional `PAGE`/`PAGE-SIZE`/`PAGES` headers, failure), register it in the package `exports`, README and agent scope docs, and use it in both the page and client specs of `dev/frontend`. Remember consumers hold a `file:` snapshot: re-run `yarn install` in `dev/frontend/` after changing it
+- Add a generic `navi-spec-support/fetch.js` (owned by the `spec-support` agent) with the fetch stubs, register it in the package `exports`, README and agent scope docs, and use it in both the page and client specs of `dev/frontend`. Remember consumers hold a `file:` snapshot: re-run `yarn install` in `dev/frontend/` after changing it
+  - Mirror the names and semantics of `frontend/spec/support/fetch.js` so the later `frontend/` migration is a pure import swap: `mockFetchSuccess(data)` and `mockFetchFailure(status)` register a `beforeEach`, `stubFetchSuccess(data)` stubs immediately (usable inside an `it`/`beforeEach`, and needed by scenarios that re-stub `fetch` mid-test such as `when the id changes`)
+  - Add `mockFetchPending()` (a promise that never resolves) alongside them
+  - The success helpers accept an optional `{ headers }` argument (`PAGE`/`PAGE-SIZE`/`PAGES`) so the paginated responses no longer need a local `makeFetchResponse`
 - Add a render-with-router helper (path + route pattern + element, optionally capturing `navigate`) for the page specs, kept in `dev/frontend/spec/support/` (owned by the `dev` agent) because it depends on `react-router-dom`, which `spec-support` does not
 - Share the loading/error/success scenarios, the `when the id changes` scenario and the multiple-pages scenario across the page specs as shared examples parameterised by the page, its route and its data, following the `itBehavesLikeFetchStates` precedent in `frontend/spec/support/fetch_states.js`
 - Table-drive the client specs' request/response cases
