@@ -2,11 +2,9 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import Extractions from '../../src/components/pages/Extractions.jsx';
-import noop from '../../src/utils/noop.js';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
-import { mockFetchFailure } from '../support/fetch.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const extractionsBody = {
   counts: { extracted: 40 },
@@ -49,19 +47,12 @@ const renderExtractions = async (root) => {
 describe('Extractions', () => {
   const state = useContainer();
 
-  describe('while loading', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await renderExtractions(state.root);
-    });
-
-    it('renders a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
-
-    it('shows loading text', () => {
-      expect(state.container.textContent).toContain('Loading extractions');
-    });
+  itBehavesLikeFetchStates({
+    state,
+    render: () => renderExtractions(state.root),
+    loadingText: 'Loading extractions',
+    errorText: 'Failed to load extractions',
+    status: 503,
   });
 
   describe('when both feeds load successfully', () => {
@@ -124,21 +115,6 @@ describe('Extractions', () => {
 
     it('shows the empty state message', () => {
       expect(state.container.textContent).toContain('No extractions recorded yet.');
-    });
-  });
-
-  describe('when a fetch fails', () => {
-    mockFetchFailure(503);
-
-    beforeEach(async () => {
-      await renderExtractions(state.root);
-      await flushAsync();
-    });
-
-    it('renders an error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-      expect(state.container.textContent).toContain('Failed to load extractions');
-      expect(state.container.textContent).toContain('HTTP 503');
     });
   });
 });

@@ -2,11 +2,10 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import StatsHeader from '../../src/components/elements/StatsHeader.jsx';
-import noop from '../../src/utils/noop.js';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
-import { mockFetchFailure, mockFetchSuccess } from '../support/fetch.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+import { mockFetchSuccess } from '../support/fetch.js';
+import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const renderStatsHeader = async (root) => {
   await act(async () => {
@@ -17,19 +16,12 @@ const renderStatsHeader = async (root) => {
 describe('StatsHeader', () => {
   const state = useContainer();
 
-  describe('while loading', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await renderStatsHeader(state.root);
-    });
-
-    it('renders a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
-
-    it('shows loading text', () => {
-      expect(state.container.textContent).toContain('Loading stats');
-    });
+  itBehavesLikeFetchStates({
+    state,
+    render: () => renderStatsHeader(state.root),
+    loadingText: 'Loading stats',
+    errorText: 'Failed to load stats',
+    status: 503,
   });
 
   describe('when stats load successfully', () => {
@@ -103,31 +95,6 @@ describe('StatsHeader', () => {
       const hrefs = links.map((a) => a.getAttribute('href'));
       expect(hrefs).not.toContain('/logs');
       expect(hrefs).not.toContain('/memory/status');
-    });
-  });
-
-  describe('when the fetch fails', () => {
-    mockFetchFailure(503);
-
-    beforeEach(async () => {
-      await renderStatsHeader(state.root);
-      await flushAsync();
-    });
-
-    it('does not show a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).toBeNull();
-    });
-
-    it('renders an error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-    });
-
-    it('shows a descriptive error message', () => {
-      expect(state.container.textContent).toContain('Failed to load stats');
-    });
-
-    it('includes the error details in the message', () => {
-      expect(state.container.textContent).toContain('HTTP 503');
     });
   });
 });
