@@ -1,9 +1,9 @@
+import noop from 'navi-spec-support/noop.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import CategoryItemPage from '../../src/pages/CategoryItemPage.jsx';
-import noop from '../support/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 

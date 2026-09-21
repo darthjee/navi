@@ -1,9 +1,9 @@
+import noop from 'navi-spec-support/noop.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import PaginatedList from '../../src/components/PaginatedList.jsx';
-import noop from '../support/noop.js';
 
 const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
