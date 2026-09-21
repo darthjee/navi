@@ -1,5 +1,3 @@
-import noop from '../../src/utils/noop.js';
-
 // Stubs globalThis.fetch to resolve with a successful response.
 const mockFetchSuccess = (data) => {
   beforeEach(() => {
@@ -18,11 +16,4 @@ const mockFetchFailure = (status) => {
   });
 };
 
-// Stubs globalThis.fetch with a promise that never resolves (loading state).
-const mockFetchPending = () => {
-  beforeEach(() => {
-    spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-  });
-};
-
-export { mockFetchFailure, mockFetchPending, mockFetchSuccess };
+export { mockFetchFailure, mockFetchSuccess };
