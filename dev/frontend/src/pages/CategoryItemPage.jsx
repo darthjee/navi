@@ -1,38 +1,15 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchItem } from '../clients/ItemsClient.js';
+import ErrorAlert from '../components/ErrorAlert.jsx';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
+import useFetchData from '../hooks/useFetchData.js';
 
 function CategoryItemPage() {
   const { categoryId, id } = useParams();
-  const [item, setItem] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: item, error, loading } = useFetchData(() => fetchItem(categoryId, id), [categoryId, id]);
 
-  useEffect(() => {
-    fetchItem(categoryId, id)
-      .then((data) => {
-        setItem(data);
-        setError(null);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [categoryId, id]);
-
-  if (loading) {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border" role="status" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">{error}</div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorAlert message={error} />;
 
   return (
     <div className="container mt-4">

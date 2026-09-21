@@ -1,38 +1,15 @@
-import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchCategory } from '../clients/CategoriesClient.js';
+import ErrorAlert from '../components/ErrorAlert.jsx';
+import LoadingSpinner from '../components/LoadingSpinner.jsx';
+import useFetchData from '../hooks/useFetchData.js';
 
 function CategoryPage() {
   const { id } = useParams();
-  const [category, setCategory] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: category, error, loading } = useFetchData(() => fetchCategory(id), [id]);
 
-  useEffect(() => {
-    fetchCategory(id)
-      .then((data) => {
-        setCategory(data);
-        setError(null);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border" role="status" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mt-5">
-        <div className="alert alert-danger">{error}</div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorAlert message={error} />;
 
   return (
     <div className="container mt-4">
