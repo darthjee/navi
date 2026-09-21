@@ -2,11 +2,9 @@ import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import Emissions from '../../src/components/pages/Emissions.jsx';
-import noop from '../../src/utils/noop.js';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
-import { mockFetchFailure } from '../support/fetch.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const body = {
   counts: { extracted: 5, emitted: 3, failed: 1, dead: 1 },
@@ -46,19 +44,12 @@ const renderEmissions = async (root) => {
 describe('Emissions', () => {
   const state = useContainer();
 
-  describe('while loading', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await renderEmissions(state.root);
-    });
-
-    it('renders a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
-
-    it('shows loading text', () => {
-      expect(state.container.textContent).toContain('Loading emissions');
-    });
+  itBehavesLikeFetchStates({
+    state,
+    render: () => renderEmissions(state.root),
+    loadingText: 'Loading emissions',
+    errorText: 'Failed to load emissions',
+    status: 503,
   });
 
   describe('when the feed loads successfully', () => {
@@ -116,21 +107,6 @@ describe('Emissions', () => {
 
     it('shows the empty state message', () => {
       expect(state.container.textContent).toContain('No emissions recorded yet.');
-    });
-  });
-
-  describe('when the fetch fails', () => {
-    mockFetchFailure(503);
-
-    beforeEach(async () => {
-      await renderEmissions(state.root);
-      await flushAsync();
-    });
-
-    it('renders an error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-      expect(state.container.textContent).toContain('Failed to load emissions');
-      expect(state.container.textContent).toContain('HTTP 503');
     });
   });
 });
