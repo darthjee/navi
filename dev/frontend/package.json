@@ -8,8 +8,8 @@
   "scripts": {
     "build": "vite build",
     "server": "vite dev --host 0.0.0.0 --port 8080",
-    "test": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 jasmine spec/**/*.js",
-    "coverage": "NODE_OPTIONS='--import ./spec/support/loader.js' npx c8 --reporter=lcov jasmine spec/**/*.js",
+    "test": "NODE_OPTIONS='--import navi-spec-support/loader.js' npx c8 jasmine spec/**/*.js",
+    "coverage": "NODE_OPTIONS='--import navi-spec-support/loader.js' npx c8 --reporter=lcov jasmine spec/**/*.js",
     "lint": "eslint . && stylelint --config ../../.stylelintrc.json 'src/**/*.css'",
     "lint_fix": "eslint . --fix && stylelint --config ../../.stylelintrc.json 'src/**/*.css' --fix",
     "report": "jscpd src/ --reporters html,console --output ./report"
@@ -34,6 +34,7 @@
     "jasmine": "^5.0.0",
     "jsdom": "^25.0.0",
     "jscpd": "^4.0.5",
+    "navi-spec-support": "file:../../spec-support",
     "stylelint": "^16.26.1",
     "vite": "^7.2.4"
   },
@@ -43,7 +44,7 @@
       "**/*[sS]pec.js"
     ],
     "helpers": [
-      "support/dom.js"
+      "support/setup.js"
     ]
   },
   "c8": {

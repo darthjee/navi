@@ -4,6 +4,6 @@
     "**/*[sS]pec.js"
   ],
   "helpers": [
-    "support/dom.js"
+    "support/setup.js"
   ]
 }
