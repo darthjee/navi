@@ -1,45 +1,34 @@
 import { flushAsync } from 'navi-spec-support/async.js';
-import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
-import noop from 'navi-spec-support/noop.js';
+import { useContainer } from 'navi-spec-support/dom.js';
+import { mockFetchSuccess, paginationHeaders } from 'navi-spec-support/fetch.js';
 import { createElement } from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import CategoriesIndexPage from '../../src/pages/CategoriesIndexPage.jsx';
-
-const makeFetchResponse = (data, paginationHeaders = {}) => {
-  const headers = new Headers({
-    PAGE: String(paginationHeaders.page || 1),
-    'PAGE-SIZE': String(paginationHeaders.pageSize || 10),
-    PAGES: String(paginationHeaders.pages || 1),
-  });
-  return Promise.resolve({ ok: true, headers, json: () => Promise.resolve(data) });
-};
+import {
+  itBehavesLikeErrorState,
+  itBehavesLikeLoadingState,
+  itBehavesLikePaginatedIndex,
+} from '../support/page_scenarios.js';
+import createPageRenderer from '../support/render_page.js';
 
 describe('CategoriesIndexPage', () => {
   const state = useContainer();
-
-  const render = async (initialEntry = '/categories') => {
-    await renderInAct(state.root, createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(CategoriesIndexPage)));
-  };
-
-  describe('while loading', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(new Promise(noop));
-      await render();
-    });
-
-    it('shows a spinner', () => {
-      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
-    });
+  const { render } = createPageRenderer(state, {
+    element: createElement(CategoriesIndexPage),
+    defaultPath: '/categories',
   });
 
+  itBehavesLikeLoadingState({ state, render });
+
   describe('when data loads successfully', () => {
-    const categories = [
-      { id: 1, name: 'Electronics' },
-      { id: 2, name: 'Books' },
-    ];
+    mockFetchSuccess(
+      [
+        { id: 1, name: 'Electronics' },
+        { id: 2, name: 'Books' },
+      ],
+      paginationHeaders()
+    );
 
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(makeFetchResponse(categories));
       await render();
       await flushAsync();
     });
@@ -66,43 +55,14 @@ describe('CategoriesIndexPage', () => {
     });
   });
 
-  describe('when data loads with multiple pages', () => {
-    const categories = [{ id: 1, name: 'Electronics' }];
-
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        makeFetchResponse(categories, { page: 2, pageSize: 1, pages: 5 })
-      );
-      await render('/categories?page=2');
-      await flushAsync();
-    });
-
-    it('renders pagination', () => {
-      expect(state.container.querySelector('.pagination')).not.toBeNull();
-    });
-
-    it('marks the current page as active', () => {
-      const activeItem = state.container.querySelector('.page-item.active');
-      expect(activeItem).not.toBeNull();
-      expect(activeItem.textContent).toContain('2');
-    });
+  itBehavesLikePaginatedIndex({
+    state,
+    render,
+    data: [{ id: 1, name: 'Electronics' }],
+    headers: { page: 2, pageSize: 1, pages: 5 },
+    path: '/categories?page=2',
+    activePage: 2,
   });
 
-  describe('when the fetch fails', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: false, status: 500 })
-      );
-      await render();
-      await flushAsync();
-    });
-
-    it('shows an error alert', () => {
-      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
-    });
-
-    it('displays the error message', () => {
-      expect(state.container.textContent).toContain('HTTP 500');
-    });
-  });
+  itBehavesLikeErrorState({ state, render, status: 500 });
 });
