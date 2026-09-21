@@ -1,6 +1,5 @@
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
-import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import Pagination, { paginationPages } from '../../src/components/Pagination.jsx';
 
 describe('paginationPages', () => {
@@ -54,24 +53,10 @@ describe('paginationPages', () => {
 });
 
 describe('Pagination', () => {
-  let container;
-  let root;
-
-  beforeEach(() => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  });
-
-  afterEach(async () => {
-    await act(async () => { root.unmount(); });
-    document.body.removeChild(container);
-  });
+  const state = useContainer();
 
   const render = async (props) => {
-    await act(async () => {
-      root = createRoot(container);
-      root.render(createElement(Pagination, props));
-    });
+    await renderInAct(state.root, createElement(Pagination, props));
   };
 
   describe('with 5 pages, current page 3', () => {
@@ -80,18 +65,18 @@ describe('Pagination', () => {
     });
 
     it('renders a nav with pagination', () => {
-      expect(container.querySelector('nav')).not.toBeNull();
-      expect(container.querySelector('.pagination')).not.toBeNull();
+      expect(state.container.querySelector('nav')).not.toBeNull();
+      expect(state.container.querySelector('.pagination')).not.toBeNull();
     });
 
     it('marks page 3 as active', () => {
-      const active = container.querySelector('.page-item.active');
+      const active = state.container.querySelector('.page-item.active');
       expect(active).not.toBeNull();
       expect(active.textContent).toContain('3');
     });
 
     it('renders prev and next arrows', () => {
-      const links = Array.from(container.querySelectorAll('.page-link'));
+      const links = Array.from(state.container.querySelectorAll('.page-link'));
       const texts = links.map((l) => l.textContent);
       expect(texts).toContain('«');
       expect(texts).toContain('»');
@@ -99,20 +84,20 @@ describe('Pagination', () => {
 
     it('disables the prev arrow on the first page', async () => {
       await render({ currentPage: 1, totalPages: 5, basePath: '/#/categories' });
-      const items = Array.from(container.querySelectorAll('.page-item'));
+      const items = Array.from(state.container.querySelectorAll('.page-item'));
       const prev = items[0];
       expect(prev.classList.contains('disabled')).toBeTrue();
     });
 
     it('disables the next arrow on the last page', async () => {
       await render({ currentPage: 5, totalPages: 5, basePath: '/#/categories' });
-      const items = Array.from(container.querySelectorAll('.page-item'));
+      const items = Array.from(state.container.querySelectorAll('.page-item'));
       const next = items[items.length - 1];
       expect(next.classList.contains('disabled')).toBeTrue();
     });
 
     it('builds hrefs using basePath', () => {
-      const links = Array.from(container.querySelectorAll('a.page-link'));
+      const links = Array.from(state.container.querySelectorAll('a.page-link'));
       const hrefs = links.map((a) => a.getAttribute('href'));
       expect(hrefs).toContain('/#/categories?page=1');
       expect(hrefs).toContain('/#/categories?page=5');
@@ -125,7 +110,7 @@ describe('Pagination', () => {
     });
 
     it('renders ellipsis spans', () => {
-      const ellipses = Array.from(container.querySelectorAll('.page-item.disabled span.page-link'));
+      const ellipses = Array.from(state.container.querySelectorAll('.page-item.disabled span.page-link'));
       expect(ellipses.length).toBeGreaterThan(0);
       expect(ellipses[0].textContent).toContain('…');
     });

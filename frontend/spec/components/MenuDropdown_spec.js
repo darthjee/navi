@@ -1,8 +1,8 @@
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import MenuDropdown from '../../src/components/elements/MenuDropdown.jsx';
-import { useContainer } from '../support/dom.js';
 import { itBehavesLikeDropdown } from '../support/dropdown.js';
 
 const entries = [

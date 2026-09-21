@@ -1,4 +1,4 @@
-import { renderInAct } from './dom.js';
+import { renderInAct } from 'navi-spec-support/dom.js';
 
 const identity = (element) => element;
 

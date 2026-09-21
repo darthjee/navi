@@ -1,8 +1,8 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import MemoryStatus from '../../src/components/pages/MemoryStatus.jsx';
-import { flushAsync } from '../support/async.js';
-import { renderInAct, useContainer } from '../support/dom.js';
 import { mockFetchSuccessWithHistory } from '../support/fetch_memory_status.js';
 import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 

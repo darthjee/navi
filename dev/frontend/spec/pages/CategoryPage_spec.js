@@ -1,15 +1,13 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
+import noop from 'navi-spec-support/noop.js';
 import { createElement } from 'react';
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import CategoryPage from '../../src/pages/CategoryPage.jsx';
-import noop from '../support/noop.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 describe('CategoryPage', () => {
-  let container;
-  let root;
+  const state = useContainer();
   let navigate;
 
   const NavigationCapture = () => {
@@ -17,28 +15,16 @@ describe('CategoryPage', () => {
     return null;
   };
 
-  beforeEach(() => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  });
-
-  afterEach(async () => {
-    await act(async () => { root.unmount(); });
-    document.body.removeChild(container);
-  });
-
   const render = async () => {
-    await act(async () => {
-      root = createRoot(container);
-      root.render(
-        createElement(MemoryRouter, { initialEntries: ['/categories/1'] },
-          createElement(NavigationCapture),
-          createElement(Routes, null,
-            createElement(Route, { path: '/categories/:id', element: createElement(CategoryPage) })
-          )
+    await renderInAct(
+      state.root,
+      createElement(MemoryRouter, { initialEntries: ['/categories/1'] },
+        createElement(NavigationCapture),
+        createElement(Routes, null,
+          createElement(Route, { path: '/categories/:id', element: createElement(CategoryPage) })
         )
-      );
-    });
+      )
+    );
   };
 
   describe('while loading', () => {
@@ -48,7 +34,7 @@ describe('CategoryPage', () => {
     });
 
     it('shows a spinner', () => {
-      expect(container.querySelector('.spinner-border')).not.toBeNull();
+      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
     });
   });
 
@@ -64,15 +50,15 @@ describe('CategoryPage', () => {
     });
 
     it('does not show a spinner', () => {
-      expect(container.querySelector('.spinner-border')).toBeNull();
+      expect(state.container.querySelector('.spinner-border')).toBeNull();
     });
 
     it('shows the category name', () => {
-      expect(container.textContent).toContain('Electronics');
+      expect(state.container.textContent).toContain('Electronics');
     });
 
     it('renders a link to items', () => {
-      const links = container.querySelectorAll('a');
+      const links = state.container.querySelectorAll('a');
       const hrefs = Array.from(links).map((a) => a.getAttribute('href'));
       expect(hrefs).toContain('/categories/1/items');
     });
@@ -88,11 +74,11 @@ describe('CategoryPage', () => {
     });
 
     it('shows an error alert', () => {
-      expect(container.querySelector('.alert-danger')).not.toBeNull();
+      expect(state.container.querySelector('.alert-danger')).not.toBeNull();
     });
 
     it('displays the error message', () => {
-      expect(container.textContent).toContain('HTTP 404');
+      expect(state.container.textContent).toContain('HTTP 404');
     });
   });
 
@@ -108,7 +94,7 @@ describe('CategoryPage', () => {
     });
 
     it('shows the spinner again while the new fetch is pending', () => {
-      expect(container.querySelector('.spinner-border')).not.toBeNull();
+      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
     });
   });
 });

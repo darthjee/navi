@@ -1,15 +1,13 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
+import noop from 'navi-spec-support/noop.js';
 import { createElement } from 'react';
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import PaginatedList from '../../src/components/PaginatedList.jsx';
-import noop from '../support/noop.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 describe('PaginatedList', () => {
-  let container;
-  let root;
+  const state = useContainer();
   let navigate;
   let fetchPage;
 
@@ -24,32 +22,20 @@ describe('PaginatedList', () => {
   };
 
   const render = async (initialEntry = '/things', props = {}) => {
-    await act(async () => {
-      root = createRoot(container);
-      root.render(
-        createElement(MemoryRouter, { initialEntries: [initialEntry] },
-          createElement(NavigationCapture),
-          createElement(PaginatedList, {
-            title: 'Things',
-            fetchPage,
-            itemPath: (item) => `/things/${item.id}`,
-            basePath: '/#/things',
-            ...props,
-          })
-        )
-      );
-    });
+    await renderInAct(
+      state.root,
+      createElement(MemoryRouter, { initialEntries: [initialEntry] },
+        createElement(NavigationCapture),
+        createElement(PaginatedList, {
+          title: 'Things',
+          fetchPage,
+          itemPath: (item) => `/things/${item.id}`,
+          basePath: '/#/things',
+          ...props,
+        })
+      )
+    );
   };
-
-  beforeEach(() => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  });
-
-  afterEach(async () => {
-    await act(async () => { root.unmount(); });
-    document.body.removeChild(container);
-  });
 
   describe('while loading', () => {
     beforeEach(async () => {
@@ -58,7 +44,7 @@ describe('PaginatedList', () => {
     });
 
     it('shows a spinner', () => {
-      expect(container.querySelector('.spinner-border')).not.toBeNull();
+      expect(state.container.querySelector('.spinner-border')).not.toBeNull();
     });
   });
 
@@ -70,11 +56,11 @@ describe('PaginatedList', () => {
     });
 
     it('shows an error alert with the message', () => {
-      expect(container.querySelector('.alert-danger').textContent).toBe('HTTP 500');
+      expect(state.container.querySelector('.alert-danger').textContent).toBe('HTTP 500');
     });
 
     it('does not show a spinner', () => {
-      expect(container.querySelector('.spinner-border')).toBeNull();
+      expect(state.container.querySelector('.spinner-border')).toBeNull();
     });
   });
 
@@ -88,21 +74,21 @@ describe('PaginatedList', () => {
     });
 
     it('renders the title', () => {
-      expect(container.querySelector('h1').textContent).toBe('Things');
+      expect(state.container.querySelector('h1').textContent).toBe('Things');
     });
 
     it('renders one list item per resource', () => {
-      expect(container.querySelectorAll('.list-group-item').length).toBe(2);
+      expect(state.container.querySelectorAll('.list-group-item').length).toBe(2);
     });
 
     it('links each item using itemPath', () => {
-      const hrefs = Array.from(container.querySelectorAll('.list-group-item a'))
+      const hrefs = Array.from(state.container.querySelectorAll('.list-group-item a'))
         .map((a) => a.getAttribute('href'));
       expect(hrefs).toEqual(['/things/1', '/things/2']);
     });
 
     it('does not render pagination when there is a single page', () => {
-      expect(container.querySelector('.pagination')).toBeNull();
+      expect(state.container.querySelector('.pagination')).toBeNull();
     });
 
     it('forwards an empty query string to fetchPage', () => {
@@ -120,15 +106,15 @@ describe('PaginatedList', () => {
     });
 
     it('renders pagination', () => {
-      expect(container.querySelector('.pagination')).not.toBeNull();
+      expect(state.container.querySelector('.pagination')).not.toBeNull();
     });
 
     it('marks the current page as active', () => {
-      expect(container.querySelector('.page-item.active').textContent).toContain('2');
+      expect(state.container.querySelector('.page-item.active').textContent).toContain('2');
     });
 
     it('builds pagination links using basePath', () => {
-      const hrefs = Array.from(container.querySelectorAll('a.page-link'))
+      const hrefs = Array.from(state.container.querySelectorAll('a.page-link'))
         .map((a) => a.getAttribute('href'));
       expect(hrefs).toContain('/#/things?page=3');
     });
@@ -144,7 +130,7 @@ describe('PaginatedList', () => {
     });
 
     it('does not render pagination', () => {
-      expect(container.querySelector('.pagination')).toBeNull();
+      expect(state.container.querySelector('.pagination')).toBeNull();
     });
   });
 
@@ -186,19 +172,18 @@ describe('PaginatedList', () => {
       );
       await render('/things', { resourceId: 1 });
       await flushAsync();
-      await act(async () => {
-        root.render(
-          createElement(MemoryRouter, { initialEntries: ['/things'] },
-            createElement(PaginatedList, {
-              title: 'Things',
-              fetchPage,
-              itemPath: (item) => `/things/${item.id}`,
-              basePath: '/#/things',
-              resourceId: 2,
-            })
-          )
-        );
-      });
+      await renderInAct(
+        state.root,
+        createElement(MemoryRouter, { initialEntries: ['/things'] },
+          createElement(PaginatedList, {
+            title: 'Things',
+            fetchPage,
+            itemPath: (item) => `/things/${item.id}`,
+            basePath: '/#/things',
+            resourceId: 2,
+          })
+        )
+      );
       await flushAsync();
     });
 

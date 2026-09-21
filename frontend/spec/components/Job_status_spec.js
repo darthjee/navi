@@ -1,5 +1,5 @@
-import { flushAsync } from '../support/async.js';
-import { useContainer } from '../support/dom.js';
+import { flushAsync } from 'navi-spec-support/async.js';
+import { useContainer } from 'navi-spec-support/dom.js';
 import { renderJob } from '../support/render_job.js';
 
 const findRetryButton = ({ container }) => (

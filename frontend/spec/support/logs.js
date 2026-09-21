@@ -1,4 +1,4 @@
-import { renderInAct, useContainer } from './dom.js';
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import noop from '../../src/utils/noop.js';
 
 // Shared fixtures and examples for the logs component specs (Logs, LogsPage,

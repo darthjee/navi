@@ -1,3 +1,4 @@
+import { flushAsync } from 'navi-spec-support/async.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -5,8 +6,6 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Layout from '../../src/components/pages/Layout.jsx';
 import { resetExtensionsCache } from '../../src/extensions/loadExtensions.js';
 import noop from '../../src/utils/noop.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const renderLayout = async (root, { children = null } = {}) => {
   await act(async () => {

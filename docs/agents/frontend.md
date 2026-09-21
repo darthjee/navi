@@ -216,3 +216,7 @@ yarn lint       # ESLint check
 yarn lint_fix   # ESLint auto-fix
 yarn report     # jscpd copy-paste detection
 ```
+
+### Spec bootstrap
+
+The jsdom/React test bootstrap (`dom.js` with `useContainer` and `renderInAct`, the ESM `loader.js`/`transform_hooks.js`, and the `flushAsync`/`flushMany` helpers) is not kept in `frontend/spec/support/`: it lives in the private `navi-spec-support` package (`spec-support/`), shared with `dev/frontend/`, and specs import it from `navi-spec-support/...`. See [Spec Support](spec-support.md). After pulling, run a one-time `yarn install` in `frontend/` (and again whenever `spec-support/` changes); in Docker, `navi_frontend` mounts the folder at `/home/node/spec-support` for that purpose. Support files that depend on `frontend/src/` (`fetch_states`, `logs`, `polling_controller`, ...) stay in `frontend/spec/support/`.

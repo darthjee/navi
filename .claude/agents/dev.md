@@ -17,6 +17,8 @@ You own everything inside `dev/`:
 
 `dev/app/lib/common/` and `dev/app/spec/lib/common/` are copies of `source/lib/common/` and `source/spec/lib/common/` (synced in CI) — treat the `source/lib/common/` originals as owned by the `engine` agent; only mirror changes here, don't diverge.
 
+The shared jsdom/React spec bootstrap used by `dev/frontend/` specs (`dom.js`, `loader.js`, `transform_hooks.js`, `async.js`, `noop.js`) lives in `spec-support/` (the private `navi-spec-support` package, owned by the `spec-support` agent). `dev/frontend/` consumes it through a `file:../../spec-support` devDependency (re-run `yarn install` after it changes) and does not own it.
+
 Do NOT touch `source/` or `frontend/` or any file outside `dev/`.
 
 ## Stack

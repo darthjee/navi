@@ -1,9 +1,9 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Jobs from '../../src/components/pages/Jobs.jsx';
-import { flushAsync } from '../support/async.js';
-import { useContainer } from '../support/dom.js';
 import { itBehavesLikeFetchStates } from '../support/fetch_states.js';
 
 const render = async (state, { initialPath = '/jobs' } = {}) => {

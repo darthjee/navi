@@ -1,9 +1,8 @@
+import { flushAsync } from 'navi-spec-support/async.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import ReadyCountdown from '../../src/components/elements/ReadyCountdown.jsx';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const render = async (root, props) => {
   await act(async () => {

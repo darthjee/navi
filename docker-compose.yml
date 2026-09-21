@@ -101,6 +101,7 @@ services:
     command: yarn build
     volumes:
       - ./dev/frontend/:/home/node/app/
+      - ./spec-support:/home/spec-support
       - ./docker_volumes/node_modules_dev_frontend:/home/node/app/node_modules
       - ./dev/app/static:/home/node/app/dist
 
@@ -112,6 +113,7 @@ services:
     command: yarn server
     volumes:
       - ./frontend:/home/node/app
+      - ./spec-support:/home/node/spec-support
       - ./docker_volumes/node_modules_frontend:/home/node/app/node_modules
       - ./source/static:/home/node/app/dist
 

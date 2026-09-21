@@ -1,5 +1,5 @@
+import { flushAsync } from 'navi-spec-support/async.js';
 import { act } from 'react';
-import { flushAsync } from './async.js';
 import { mockFetchFailure, mockFetchSuccess } from './fetch.js';
 
 // Registers the scenarios shared by the fetch-driven menus (MenuMenu and

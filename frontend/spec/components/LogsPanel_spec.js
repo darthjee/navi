@@ -1,6 +1,6 @@
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import LogsPanel from '../../src/components/elements/LogsPanel.jsx';
-import { renderInAct, useContainer } from '../support/dom.js';
 import { itBehavesLikeLogsTerminal, logEntries } from '../support/logs.js';
 
 describe('LogsPanel', () => {

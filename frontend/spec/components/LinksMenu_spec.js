@@ -1,7 +1,7 @@
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import LinksMenu from '../../src/components/elements/LinksMenu.jsx';
-import { useContainer } from '../support/dom.js';
 import { itBehavesLikeFetchedMenu } from '../support/fetched_menu.js';
 
 const links = [

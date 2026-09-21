@@ -1,9 +1,8 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import MemoryUsageChart from '../../src/components/elements/MemoryUsageChart.jsx';
-import { useContainer } from '../support/dom.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
 const renderChart = async (root, props) => {
   await act(async () => {

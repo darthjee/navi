@@ -1,7 +1,7 @@
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import JobsHelper from '../../src/components/pages/helpers/JobsHelper.jsx';
-import { renderInAct, useContainer } from '../support/dom.js';
 import { itBehavesLikeHelperFetchStates } from '../support/helper_states.js';
 
 describe('JobsHelper', () => {

@@ -25,6 +25,7 @@ Delegate implementation, exploration, and planning work to the right agent. Neve
 | `dev` | `dev/` — dev backend, dev frontend, and the two Tent reverse proxies used to exercise Navi locally |
 | `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
 | `worker` | `worker/` — the `deku-swarm` npm package: a generic queue-and-pool worker system |
+| `spec-support` | `spec-support/` — the private `navi-spec-support` package: the jsdom/React spec bootstrap shared by `frontend/` and `dev/frontend/` |
 | `docker` | `dockerfiles/` and root `docker-compose.yml` — Dockerfiles for every service image (dev app, dev frontend, dev proxies, production build) |
 | `docs` | User-facing docs: `README.md`, `docs/guides/how_to_use_navi.md`, `docs/guides/navi/*`, `docs/guides/HOW_TO_USE_NAVI-CLIENT.md`, `docs/guides/navi-client/*`, `docs/guides/HOW_TO_USE_DEKU_SWARM.md`, `docs/guides/deku-swarm/*`, `DOCKERHUB_DESCRIPTION.md`, `clients/node/README.md` |
 | `guide` | `examples/` — runnable worked-example projects that demonstrate building on top of Navi (extensions, derived images) |
@@ -55,6 +56,7 @@ When a task spans multiple agents:
 | [Web Server](../../docs/agents/web-server.md) | The optional Express web server built into the main application. |
 | [Frontend](../../docs/agents/frontend.md) | The React SPA monitoring dashboard. |
 | [Dev Proxy](../../docs/agents/dev-proxy.md) | The Tent-powered reverse proxy used in local development. |
+| [Spec Support](../../docs/agents/spec-support.md) | The private `navi-spec-support` package (`spec-support/`) shared by the two frontends' specs: exports contract, consumption via `file:` dependencies, reinstall rule. |
 | [Client (Node)](../../docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`) wrapping Navi's `/api/*` HTTP namespace. |
 | [Plans](../../docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](../../docs/agents/issues/) | Detailed specs for open GitHub issues. |

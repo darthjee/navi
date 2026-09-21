@@ -2,7 +2,8 @@
 #
 # A lean-production sibling of dockerfiles/production_navi_hey/: it bakes both
 # Navi toolchains (backend + frontend devDependencies), the reused
-# frontend/spec/support/* files, the SPEC-6 navi-hey/testing doubles behind an
+# spec-support/ (dom, loader, transform_hooks) and frontend/spec/support/fetch.js
+# files, the SPEC-6 navi-hey/testing doubles behind an
 # image-only navi-hey/package.json "exports" map, and two spec_dir-scoped
 # Jasmine configs run as two separate node processes (so helpers / jsdom
 # globals / coverage never cross between the backend and frontend suites).
@@ -39,9 +40,16 @@ RUN /bin/bash /usr/local/sbin/yarn_builder.sh \
 # Frontend toolchain: frontend/ devDependencies (jasmine, jsdom, esbuild, ...).
 FROM base AS frontend_builder
 ENV HOME_DIR=/home/node
+# navi-spec-support is a `file:../spec-support` dependency of frontend/.
+COPY --chown=node:node ./spec-support/ /home/node/spec-support/
 COPY --chown=node:node ./frontend/package.json ./frontend/yarn.lock /home/node/app/
 COPY --from=scripts /home/scripts/builder/yarn_builder.sh /usr/local/sbin/yarn_builder.sh
-RUN /bin/bash /usr/local/sbin/yarn_builder.sh
+RUN /bin/bash /usr/local/sbin/yarn_builder.sh \
+ && if [ -L /home/node/app/node_modules/navi-spec-support ]; then \
+      target="$(readlink -f /home/node/app/node_modules/navi-spec-support)"; \
+      rm /home/node/app/node_modules/navi-spec-support; \
+      cp -R "$target" /home/node/app/node_modules/navi-spec-support; \
+    fi
 
 # --------------------------------------------------------------------------
 FROM base AS final
@@ -59,22 +67,22 @@ COPY --from=frontend_builder /home/node/yarn/new/  /usr/local/share/.cache/yarn/
 
 # Baked navi-hey package: the *real* RequestHandler (byte-identical to the
 # runtime image's navi-hey/extension — "what you test is what runs") plus the
-# promoted backend doubles and the reused frontend support files, all verbatim.
+# promoted backend doubles and the reused spec-support/frontend support files, all verbatim.
 COPY ./source/lib/ /navi/node_modules/navi-hey/lib/
 COPY ./source/spec/support/utils/AxiosUtils.js  /navi/node_modules/navi-hey/spec/support/utils/AxiosUtils.js
 COPY ./source/spec/support/utils/LoggerUtils.js /navi/node_modules/navi-hey/spec/support/utils/LoggerUtils.js
-COPY ./frontend/spec/support/dom.js   /navi/node_modules/navi-hey/frontend-support/dom.js
+COPY ./spec-support/dom.js            /navi/node_modules/navi-hey/frontend-support/dom.js
 COPY ./frontend/spec/support/fetch.js /navi/node_modules/navi-hey/frontend-support/fetch.js
 COPY ./dockerfiles/navi-hey-test/navi-hey.package.json /navi/node_modules/navi-hey/package.json
 
-# Baked runner configs + the reused frontend loader hooks (verbatim).
+# Baked runner configs + the reused spec-support loader hooks (verbatim).
 COPY ./dockerfiles/navi-hey-test/jasmine.backend.json  /opt/navi-hey-test/jasmine.backend.json
 COPY ./dockerfiles/navi-hey-test/jasmine.frontend.json /opt/navi-hey-test/jasmine.frontend.json
 COPY ./dockerfiles/navi-hey-test/c8.json               /opt/navi-hey-test/c8.json
 COPY ./dockerfiles/navi-hey-test/eslint.config.mjs     /opt/navi-hey-test/eslint.config.mjs
 COPY ./dockerfiles/navi-hey-test/opt.package.json      /opt/navi-hey-test/package.json
-COPY ./frontend/spec/support/loader.js          /opt/navi-hey-test/loader.js
-COPY ./frontend/spec/support/transform_hooks.js /opt/navi-hey-test/transform_hooks.js
+COPY ./spec-support/loader.js                   /opt/navi-hey-test/loader.js
+COPY ./spec-support/transform_hooks.js          /opt/navi-hey-test/transform_hooks.js
 COPY ./dockerfiles/navi-hey-test/link_farm.sh   /usr/local/sbin/link_farm.sh
 COPY ./dockerfiles/navi-hey-test/entrypoint.sh  /usr/local/bin/navi-hey-test
 

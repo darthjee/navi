@@ -1,6 +1,6 @@
+import { flushMany } from 'navi-spec-support/async.js';
 import EmissionsController from '../../../src/components/pages/controllers/EmissionsController.jsx';
 import noop from '../../../src/utils/noop.js';
-import { flushMany } from '../../support/async.js';
 import { mockResponses } from '../../support/fetch.js';
 import { itBehavesLikePollingController, usePollingController } from '../../support/polling_controller.js';
 

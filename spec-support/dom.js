@@ -10,6 +10,8 @@ const { window } = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
 const globals = {
   window,
   document: window.document,
+  navigator: window.navigator,
+  location: window.location,
   HTMLElement: window.HTMLElement,
   Element: window.Element,
   Node: window.Node,

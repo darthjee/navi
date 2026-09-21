@@ -7,6 +7,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 USER node
 
+# navi-spec-support is a `file:../spec-support` dependency of frontend/, so the
+# folder must exist next to app/ for `yarn install` to resolve it.
+COPY --chown=node:node ./spec-support/ /home/node/spec-support/
 COPY --chown=node:node \
   ./frontend/package.json frontend/yarn.lock \
   /home/node/app/

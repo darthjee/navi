@@ -1,8 +1,8 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { useContainer } from 'navi-spec-support/dom.js';
 import { createElement } from 'react';
 import { act } from 'react';
 import EngineControls from '../../src/components/elements/EngineControls.jsx';
-import { flushAsync } from '../support/async.js';
-import { useContainer } from '../support/dom.js';
 import { mockFetchFailure, stubFetchSuccess } from '../support/fetch.js';
 
 const renderControls = async (root) => {
