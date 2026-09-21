@@ -3,8 +3,8 @@ import { act } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import MenuMenu from '../../src/components/elements/MenuMenu.jsx';
 import { resetExtensionsCache } from '../../src/extensions/loadExtensions.js';
-import { useContainer } from '../support/dom.js';
 import { flushAsync } from '../support/async.js';
+import { useContainer } from '../support/dom.js';
 import { mockFetchSuccess } from '../support/fetch.js';
 import {
   anchorTexts,
