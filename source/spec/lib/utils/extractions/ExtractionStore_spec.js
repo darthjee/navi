@@ -1,4 +1,5 @@
 import { ExtractionStore } from '../../../../lib/utils/extractions/ExtractionStore.js';
+import { StoreExamples } from '../../../support/utils/StoreExamples.js';
 
 describe('ExtractionStore', () => {
   let store;
@@ -10,22 +11,21 @@ describe('ExtractionStore', () => {
     ...overrides
   });
 
+  const examples = {
+    getStore: () => store,
+    buildStore: (retention) => new ExtractionStore(retention),
+    addRecord: (target, key = 'http://example.com/list?page=1') => (
+      target.recordExtraction(extraction({ originUrl: key }))
+    ),
+    keyField: 'originUrl'
+  };
+
   beforeEach(() => {
     store = new ExtractionStore();
   });
 
   describe('constructor', () => {
-    it('starts with an empty store', () => {
-      expect(store.size).toBe(0);
-    });
-
-    it('defaults retention to 100', () => {
-      expect(store.retention).toBe(100);
-    });
-
-    it('accepts a custom retention', () => {
-      expect(new ExtractionStore(50).retention).toBe(50);
-    });
+    StoreExamples.constructorExamples(examples);
 
     it('starts with the extracted counter at zero', () => {
       expect(store.counts).toEqual({ extracted: 0 });
@@ -66,21 +66,7 @@ describe('ExtractionStore', () => {
         smallStore.recordExtraction(extraction({ originUrl: '3' }));
       });
 
-      it('does not exceed the retention limit', () => {
-        smallStore.recordExtraction(extraction({ originUrl: '4' }));
-        expect(smallStore.size).toBe(3);
-      });
-
-      it('removes the oldest record', () => {
-        smallStore.recordExtraction(extraction({ originUrl: '4' }));
-        expect(smallStore.getRecords()[0].originUrl).toBe('2');
-      });
-
-      it('keeps the newest record', () => {
-        smallStore.recordExtraction(extraction({ originUrl: '4' }));
-        const records = smallStore.getRecords();
-        expect(records[records.length - 1].originUrl).toBe('4');
-      });
+      StoreExamples.retentionLimitExamples({ ...examples, getStore: () => smallStore });
 
       it('keeps the extracted counter exact past retention', () => {
         smallStore.recordExtraction(extraction({ originUrl: '4', itemCount: 10 }));
@@ -90,32 +76,11 @@ describe('ExtractionStore', () => {
   });
 
   describe('#getRecords', () => {
-    it('returns an empty array when store is empty', () => {
-      expect(store.getRecords()).toEqual([]);
-    });
-
-    it('returns records oldest-first', () => {
-      store.recordExtraction(extraction({ originUrl: 'a' }));
-      store.recordExtraction(extraction({ originUrl: 'b' }));
-      expect(store.getRecords().map(r => r.originUrl)).toEqual(['a', 'b']);
-    });
-
-    it('returns a copy of the records array', () => {
-      store.recordExtraction(extraction());
-      store.getRecords().push('extra');
-      expect(store.size).toBe(1);
-    });
+    StoreExamples.getRecordsExamples(examples);
   });
 
   describe('#getRecordById', () => {
-    it('returns the record with the matching ID', () => {
-      const added = store.recordExtraction(extraction());
-      expect(store.getRecordById(added.id)).toBe(added);
-    });
-
-    it('returns undefined when no record has the given ID', () => {
-      expect(store.getRecordById(999)).toBeUndefined();
-    });
+    StoreExamples.getRecordByIdExamples(examples);
   });
 
   describe('#clear', () => {
@@ -125,13 +90,7 @@ describe('ExtractionStore', () => {
       store.clear();
     });
 
-    it('removes all records', () => {
-      expect(store.size).toBe(0);
-    });
-
-    it('results in an empty getRecords', () => {
-      expect(store.getRecords()).toEqual([]);
-    });
+    StoreExamples.clearExamples(examples);
 
     it('resets the extracted counter to zero', () => {
       expect(store.counts).toEqual({ extracted: 0 });
@@ -139,29 +98,15 @@ describe('ExtractionStore', () => {
   });
 
   describe('#size', () => {
-    it('returns 0 for an empty store', () => {
-      expect(store.size).toBe(0);
-    });
-
-    it('returns the number of records in the store', () => {
-      store.recordExtraction(extraction());
-      store.recordExtraction(extraction());
-      expect(store.size).toBe(2);
-    });
+    StoreExamples.sizeExamples(examples);
   });
 
   describe('#retention', () => {
-    it('returns the configured retention limit', () => {
-      expect(new ExtractionStore(25).retention).toBe(25);
-    });
+    StoreExamples.retentionExamples(examples);
   });
 
   describe('#counts', () => {
-    it('returns a copy that does not affect the store when mutated', () => {
-      const counts = store.counts;
-      counts.extracted = 999;
-      expect(store.counts.extracted).toBe(0);
-    });
+    StoreExamples.countsCopyExamples({ ...examples, counterKey: 'extracted' });
   });
 
   describe('#toJSON', () => {
@@ -172,13 +117,7 @@ describe('ExtractionStore', () => {
       });
     });
 
-    it('returns records as plain objects oldest-first', () => {
-      store.recordExtraction(extraction({ originUrl: 'a' }));
-      store.recordExtraction(extraction({ originUrl: 'b' }));
-      const json = store.toJSON();
-      expect(json.records.map(r => r.originUrl)).toEqual(['a', 'b']);
-      expect(typeof json.records[0].timestamp).toBe('string');
-    });
+    StoreExamples.toJSONRecordsExamples(examples);
 
     it('includes the current counters', () => {
       store.recordExtraction(extraction({ itemCount: 3 }));
