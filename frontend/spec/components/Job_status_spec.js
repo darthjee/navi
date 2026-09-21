@@ -1,22 +1,6 @@
-import { createElement } from 'react';
-import { act } from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Job from '../../src/components/pages/Job.jsx';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-
-const renderJob = async (root, id = 'abc-123') => {
-  await act(async () => {
-    root.render(
-      createElement(MemoryRouter, { initialEntries: [`/job/${id}`] },
-        createElement(Routes, null,
-          createElement(Route, { path: '/job/:id', element: createElement(Job) })
-        )
-      )
-    );
-  });
-};
+import { renderJob } from '../support/render_job.js';
 
 const statusScenarios = [
   {
