@@ -1,9 +1,9 @@
 import { createElement } from 'react';
 import { act } from 'react';
 import EngineControls from '../../src/components/elements/EngineControls.jsx';
+import { flushAsync } from '../support/async.js';
 import { useContainer } from '../support/dom.js';
-
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+import { mockFetchFailure, stubFetchSuccess } from '../support/fetch.js';
 
 const renderControls = async (root) => {
   await act(async () => {
@@ -14,160 +14,80 @@ const renderControls = async (root) => {
 const findButtonByText = (container, text) =>
   Array.from(container.querySelectorAll('button')).find((b) => b.textContent === text) ?? null;
 
+const actionButtons = ['Pause', 'Stop', 'Restart', 'Reload', 'Continue', 'Start'];
+
+// Expected buttons for each engine state, keyed by a readable state name.
+// `extras` optionally registers additional specs inside the state's describe.
+const scenarios = {
+  running: {
+    status: 'running',
+    rendered: ['Pause', 'Stop', 'Restart', 'Reload', 'Shut Down'],
+    absent: ['Continue', 'Start'],
+    extras: (state) => {
+      it('renders the Engine label', () => {
+        expect(state.container.textContent).toContain('Engine');
+      });
+    }
+  },
+  paused: {
+    status: 'paused',
+    rendered: ['Stop', 'Restart', 'Reload', 'Continue', 'Shut Down'],
+    absent: ['Pause', 'Start']
+  },
+  stopped: {
+    status: 'stopped',
+    rendered: ['Start', 'Shut Down'],
+    absent: ['Pause', 'Stop', 'Restart', 'Reload', 'Continue']
+  },
+  transitioning: {
+    status: 'pausing',
+    rendered: ['Shut Down'],
+    absent: [],
+    extras: (state) => {
+      it('renders a spinner', () => {
+        expect(state.container.querySelector('[role="status"]')).not.toBeNull();
+      });
+
+      it('does not render action buttons', () => {
+        actionButtons.forEach((text) => {
+          expect(findButtonByText(state.container, text)).toBeNull();
+        });
+      });
+    }
+  }
+};
+
 describe('EngineControls', () => {
   const state = useContainer();
 
-  describe('when engine is running', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'running' }) })
-      );
-      await renderControls(state.root);
-      await flushAsync();
-    });
+  Object.entries(scenarios).forEach(([name, { status, rendered, absent, extras }]) => {
+    describe(`when engine is ${name}`, () => {
+      beforeEach(async () => {
+        stubFetchSuccess({ status });
+        await renderControls(state.root);
+        await flushAsync();
+      });
 
-    it('renders the Engine label', () => {
-      expect(state.container.textContent).toContain('Engine');
-    });
+      rendered.forEach((text) => {
+        it(`renders the ${text} button`, () => {
+          expect(findButtonByText(state.container, text)).not.toBeNull();
+        });
+      });
 
-    it('renders the Pause button', () => {
-      expect(findButtonByText(state.container, 'Pause')).not.toBeNull();
-    });
+      absent.forEach((text) => {
+        it(`does not render the ${text} button`, () => {
+          expect(findButtonByText(state.container, text)).toBeNull();
+        });
+      });
 
-    it('renders the Stop button', () => {
-      expect(findButtonByText(state.container, 'Stop')).not.toBeNull();
-    });
-
-    it('renders the Restart button', () => {
-      expect(findButtonByText(state.container, 'Restart')).not.toBeNull();
-    });
-
-    it('renders the Reload button', () => {
-      expect(findButtonByText(state.container, 'Reload')).not.toBeNull();
-    });
-
-    it('does not render the Continue button', () => {
-      expect(findButtonByText(state.container, 'Continue')).toBeNull();
-    });
-
-    it('does not render the Start button', () => {
-      expect(findButtonByText(state.container, 'Start')).toBeNull();
-    });
-
-    it('renders the Shut Down button', () => {
-      expect(findButtonByText(state.container, 'Shut Down')).not.toBeNull();
-    });
-  });
-
-  describe('when engine is paused', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'paused' }) })
-      );
-      await renderControls(state.root);
-      await flushAsync();
-    });
-
-    it('does not render the Pause button', () => {
-      expect(findButtonByText(state.container, 'Pause')).toBeNull();
-    });
-
-    it('renders the Stop button', () => {
-      expect(findButtonByText(state.container, 'Stop')).not.toBeNull();
-    });
-
-    it('renders the Restart button', () => {
-      expect(findButtonByText(state.container, 'Restart')).not.toBeNull();
-    });
-
-    it('renders the Reload button', () => {
-      expect(findButtonByText(state.container, 'Reload')).not.toBeNull();
-    });
-
-    it('renders the Continue button', () => {
-      expect(findButtonByText(state.container, 'Continue')).not.toBeNull();
-    });
-
-    it('does not render the Start button', () => {
-      expect(findButtonByText(state.container, 'Start')).toBeNull();
-    });
-
-    it('renders the Shut Down button', () => {
-      expect(findButtonByText(state.container, 'Shut Down')).not.toBeNull();
-    });
-  });
-
-  describe('when engine is stopped', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'stopped' }) })
-      );
-      await renderControls(state.root);
-      await flushAsync();
-    });
-
-    it('does not render the Pause button', () => {
-      expect(findButtonByText(state.container, 'Pause')).toBeNull();
-    });
-
-    it('does not render the Stop button', () => {
-      expect(findButtonByText(state.container, 'Stop')).toBeNull();
-    });
-
-    it('does not render the Restart button', () => {
-      expect(findButtonByText(state.container, 'Restart')).toBeNull();
-    });
-
-    it('does not render the Reload button', () => {
-      expect(findButtonByText(state.container, 'Reload')).toBeNull();
-    });
-
-    it('does not render the Continue button', () => {
-      expect(findButtonByText(state.container, 'Continue')).toBeNull();
-    });
-
-    it('renders the Start button', () => {
-      expect(findButtonByText(state.container, 'Start')).not.toBeNull();
-    });
-
-    it('renders the Shut Down button', () => {
-      expect(findButtonByText(state.container, 'Shut Down')).not.toBeNull();
-    });
-  });
-
-  describe('when engine is transitioning', () => {
-    beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'pausing' }) })
-      );
-      await renderControls(state.root);
-      await flushAsync();
-    });
-
-    it('renders a spinner', () => {
-      const spinner = state.container.querySelector('[role="status"]');
-      expect(spinner).not.toBeNull();
-    });
-
-    it('does not render action buttons', () => {
-      expect(findButtonByText(state.container, 'Pause')).toBeNull();
-      expect(findButtonByText(state.container, 'Stop')).toBeNull();
-      expect(findButtonByText(state.container, 'Restart')).toBeNull();
-      expect(findButtonByText(state.container, 'Reload')).toBeNull();
-      expect(findButtonByText(state.container, 'Continue')).toBeNull();
-      expect(findButtonByText(state.container, 'Start')).toBeNull();
-    });
-
-    it('renders the Shut Down button', () => {
-      expect(findButtonByText(state.container, 'Shut Down')).not.toBeNull();
+      if (extras) extras(state);
     });
   });
 
   describe('when fetch fails', () => {
+    mockFetchFailure(500);
+
     beforeEach(async () => {
-      spyOn(globalThis, 'fetch').and.returnValue(
-        Promise.resolve({ ok: false, status: 500 })
-      );
       await renderControls(state.root);
       await flushAsync();
     });
