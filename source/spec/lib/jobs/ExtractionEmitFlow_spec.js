@@ -41,7 +41,7 @@ const postIdRequestAttributes = (emitAttributes = {}) => ({
 
 /**
  * End-to-end coverage for the two worked examples from
- * docs/agents/future/crawler/flows.md: it drives a real ResourceRequestJob → real
+ * docs/agents/specs/crawler/flows.md: it drives a real ResourceRequestJob → real
  * ExtractionJob/parser → real EmitEnqueuer → real EmitJob chain through the real
  * JobFactory/JobRegistry, mocking only the outermost HTTP boundary (the initial
  * resource fetch and the final emit POST).

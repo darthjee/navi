@@ -469,7 +469,7 @@ Navi tracks every extraction run and emission attempt in memory, exposed through
 
 Both endpoints page with a `?last_id=<id>` cursor and cap each page at `web.logs_page_size` records (default `20`, shared with `/logs.json`), ordered oldest-first. Their underlying ring buffers are sized independently via the top-level `emit.size` / `extraction.size` config keys (default `100` each, see the Fields table above); the counters themselves stay exact for the whole run regardless of ring-buffer eviction. `GET /stats.json` also summarizes the same counters under its `emissions` key. All of this data resets when the engine stops, the same as the log buffers.
 
-See [`docs/agents/future/crawler/flows.md`](https://github.com/darthjee/navi/blob/main/docs/agents/future/crawler/flows.md) for further worked examples, including how extraction/emit interacts with `paginated_actions`.
+See [`docs/agents/specs/crawler/flows.md`](https://github.com/darthjee/navi/blob/main/docs/agents/specs/crawler/flows.md) for further worked examples, including how extraction/emit interacts with `paginated_actions`.
 
 ### See it live
 
