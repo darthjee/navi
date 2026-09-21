@@ -1,3 +1,4 @@
+import { renderInAct, useContainer } from './dom.js';
 import noop from '../../src/utils/noop.js';
 
 // Shared fixtures and examples for the logs component specs (Logs, LogsPage,
@@ -84,6 +85,60 @@ const itRendersEntries = (state) => {
   });
 };
 
+// Registers, at describe level, the scenarios shared by the helpers that build
+// and render the logs terminal (LogsPageHelper and LogsHelper). `HelperClass`
+// must expose a static `build(logs)` and an instance `render(bottomRef)`.
+const itBehavesLikeLogsHelper = (HelperClass) => {
+  describe('.build', () => {
+    it(`returns a ${HelperClass.name} instance`, () => {
+      expect(HelperClass.build([])).toBeInstanceOf(HelperClass);
+    });
+  });
+
+  describe('#render', () => {
+    const state = useContainer();
+    const bottomRef = { current: null };
+
+    const renderHelper = (logs) => renderInAct(state.root, HelperClass.build(logs).render(bottomRef));
+
+    describe('with no log entries', () => {
+      beforeEach(() => renderHelper([]));
+
+      itRendersAnEmptyTerminal(state);
+    });
+
+    describe('with log entries', () => {
+      beforeEach(() => renderHelper(logEntries));
+
+      itRendersEntries(state);
+
+      it('renders a row for each log entry', () => {
+        const rows = state.container.querySelectorAll('.bg-dark > div');
+        expect(rows.length).toBe(logEntries.length + 1); // +1 for bottomRef sentinel div
+      });
+
+      it('does not apply a CSS colour class to info entries', () => {
+        const infoRow = Array.from(state.container.querySelectorAll('.bg-dark > div'))
+          .find((el) => el.textContent.includes('Server started'));
+        expect(infoRow).toBeDefined();
+        ['text-warning', 'text-danger'].forEach((cssClass) => {
+          expect(infoRow.classList.contains(cssClass)).toBeFalse();
+        });
+      });
+
+      it('shows the timestamp in brackets', () => {
+        expect(state.container.textContent).toContain(`[${logEntries[0].timestamp}]`);
+      });
+
+      it('shows the level in brackets', () => {
+        logEntries.forEach(({ level }) => {
+          expect(state.container.textContent).toContain(`[${level}]`);
+        });
+      });
+    });
+  });
+};
+
 // Registers, at describe level, the scenarios shared by the components that
 // render the logs terminal. `state` comes from useContainer(). `sources` maps
 // scenario names to async setup functions (registered as beforeEach) that
@@ -146,6 +201,7 @@ const itBehavesLikeLogsTerminal = ({ state, sources, callCount }) => {
 };
 
 export {
+  itBehavesLikeLogsHelper,
   itBehavesLikeLogsTerminal,
   logEntries,
   okResponse,
