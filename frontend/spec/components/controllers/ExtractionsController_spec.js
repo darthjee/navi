@@ -1,7 +1,8 @@
 import ExtractionsController from '../../../src/components/pages/controllers/ExtractionsController.jsx';
 import noop from '../../../src/utils/noop.js';
-
-const flushAsync = () => new Promise((r) => setTimeout(r, 0));
+import { flushAsync } from '../../support/async.js';
+import { buildControllerState } from '../../support/controller_state.js';
+import { mockFetchFailure } from '../../support/fetch.js';
 
 const mockPair = (extractions, emissions) => {
   spyOn(globalThis, 'fetch').and.callFake((url) => {
@@ -25,9 +26,7 @@ describe('ExtractionsController', () => {
     let cleanup;
 
     beforeEach(() => {
-      setData = jasmine.createSpy('setData');
-      setError = jasmine.createSpy('setError');
-      setLoading = jasmine.createSpy('setLoading');
+      ({ setData, setError, setLoading } = buildControllerState());
     });
 
     afterEach(() => { cleanup && cleanup(); });
@@ -118,8 +117,9 @@ describe('ExtractionsController', () => {
     });
 
     describe('when a feed rejects', () => {
+      mockFetchFailure(500);
+
       beforeEach(async () => {
-        spyOn(globalThis, 'fetch').and.returnValue(Promise.resolve({ ok: false, status: 500 }));
         const view = ExtractionsController.build(setData, setError, setLoading);
         cleanup = view.buildEffect()();
         await flushAsync();
