@@ -1,0 +1,22 @@
+{
+  "name": "navi-spec-support",
+  "version": "1.0.0",
+  "description": "Private jsdom/React spec bootstrap shared by the frontend and dev/frontend test suites",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./dom.js": "./dom.js",
+    "./loader.js": "./loader.js",
+    "./transform_hooks.js": "./transform_hooks.js",
+    "./async.js": "./async.js",
+    "./noop.js": "./noop.js"
+  },
+  "peerDependencies": {
+    "esbuild": ">=0.24.0",
+    "jsdom": "^25.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "author": "darthjee",
+  "license": "MIT"
+}
