@@ -1,0 +1,13 @@
+# Write `migration.md` and `release-flow.md`
+Both files go in `docs/agents/specs/deku-sprout/`, at design level (mechanisms and decisions, not exact line-level checklists — the later sub-issues carry those). Before writing, check the current state of the mechanisms named below in the repository so the specs do not go stale.
+
+**`migration.md`**:
+- Move map: `BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger` from `source/lib/common/utils/logging/` to `logger/lib/`, with their specs from `source/spec/lib/common/utils/logging/` to `logger/spec/`; `clients/node/lib/logging/` and its specs are removed.
+- Consumers: `source/` (`file:../logger` dependency, as done for `deku-swarm`; the `Log*` and `buffer/` files import from the package); `clients/node/` (gains a runtime dependency on the published package and stops being self-contained, accepted in #888; uses the group-aware `Logger`); `dev/app` (only imports `Logger`; stops receiving the logging files through the `source/lib/common/` copy mechanism — `scripts/ci/setup-dev.sh`, the CircleCI "Copy common code from source" steps, the `docker-compose.yml` mounts and `dockerfiles/demo_dev_app/Dockerfile` — and drops the jasmine exclusion of the copied logging specs).
+- Docker: images and compose services that install `source/` or `dev/app` dependencies must make `logger/` available, as `dockerfiles/navi-hey-test/Dockerfile` does for `worker/` (copy the folder and replace the `node_modules/deku-swarm` symlink with a real copy) and `docker-compose.yml` does with the `./worker` mount.
+
+**`release-flow.md`**: the `deku-swarm` model applied to `deku-sprout`. Describe what exists for `worker/` today — `jasmine-worker` and `checks-worker` CI jobs, `check-and-publish-worker` (publishes when `worker/` changes since the last release tag or when the `force_worker_build` pipeline parameter is set; `scripts/ci.sh` entry and `scripts/ci/check-and-publish-worker.sh`), `scripts/bump_version.sh` (`app|client|worker` targets and the README "Current/Next Version" lines), `worker-X.Y.Z` tags — and state that `deku-sprout` gets the equivalent of each (own version, auto-publish on changes in `logger/`, its own force parameter, bump target, tags). Version coordination: a change to `deku-sprout` does not force a release of `navi-hey` or `navi-hey-client`; each bumps only when it chooses to adopt a new version. The first release must be published to npm before the client links to it, since `navi-hey-client` consumers install from the registry, where a `file:` dependency cannot resolve.
+
+## Files to Change
+- `docs/agents/specs/deku-sprout/migration.md` — new
+- `docs/agents/specs/deku-sprout/release-flow.md` — new
