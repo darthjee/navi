@@ -5,6 +5,9 @@ USER root
 RUN apt-get update && apt-get install -y --no-install-recommends rsync=3.2.7-1+deb12u6 && rm -rf /var/lib/apt/lists/*
 USER node
 
+# navi-spec-support is a `file:../../spec-support` dependency of dev/frontend/,
+# so the folder must exist two levels above app/ for `yarn install` to resolve it.
+COPY --chown=node:node ./spec-support/ /home/spec-support/
 COPY --chown=node:node \
   ./dev/frontend/package.json ./dev/frontend/yarn.lock \
   /home/node/app/
