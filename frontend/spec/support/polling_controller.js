@@ -1,7 +1,7 @@
-import noop from '../../src/utils/noop.js';
 import { flushMany } from './async.js';
 import { useControllerState } from './controller_state.js';
 import { mockFetchFailure, mockResponses } from './fetch.js';
+import noop from '../../src/utils/noop.js';
 
 // Registers the spies/refs and the cleanup for a polling controller spec.
 // Call it inside the `#buildPollingEffect` describe. Returns `state` (the
