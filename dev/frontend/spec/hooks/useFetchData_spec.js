@@ -1,14 +1,11 @@
+import { flushAsync } from 'navi-spec-support/async.js';
+import { renderInAct, useContainer } from 'navi-spec-support/dom.js';
 import noop from 'navi-spec-support/noop.js';
 import { createElement } from 'react';
-import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import useFetchData from '../../src/hooks/useFetchData.js';
 
-const flushAsync = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-
 describe('useFetchData', () => {
-  let container;
-  let root;
+  const state = useContainer();
   let fetcher;
 
   const TestComponent = ({ id }) => {
@@ -21,22 +18,8 @@ describe('useFetchData', () => {
   };
 
   const render = async (id) => {
-    await act(async () => {
-      root = root || createRoot(container);
-      root.render(createElement(TestComponent, { id }));
-    });
+    await renderInAct(state.root, createElement(TestComponent, { id }));
   };
-
-  beforeEach(() => {
-    root = null;
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  });
-
-  afterEach(async () => {
-    await act(async () => { root.unmount(); });
-    document.body.removeChild(container);
-  });
 
   describe('while loading', () => {
     beforeEach(async () => {
@@ -45,7 +28,7 @@ describe('useFetchData', () => {
     });
 
     it('reports loading', () => {
-      expect(container.querySelector('.loading')).not.toBeNull();
+      expect(state.container.querySelector('.loading')).not.toBeNull();
     });
 
     it('calls the fetcher once', () => {
@@ -61,11 +44,11 @@ describe('useFetchData', () => {
     });
 
     it('stops loading', () => {
-      expect(container.querySelector('.loading')).toBeNull();
+      expect(state.container.querySelector('.loading')).toBeNull();
     });
 
     it('exposes the data', () => {
-      expect(container.querySelector('.data').textContent).toBe('result-1');
+      expect(state.container.querySelector('.data').textContent).toBe('result-1');
     });
   });
 
@@ -77,11 +60,11 @@ describe('useFetchData', () => {
     });
 
     it('stops loading', () => {
-      expect(container.querySelector('.loading')).toBeNull();
+      expect(state.container.querySelector('.loading')).toBeNull();
     });
 
     it('exposes the error message', () => {
-      expect(container.querySelector('.error').textContent).toBe('boom');
+      expect(state.container.querySelector('.error').textContent).toBe('boom');
     });
   });
 
@@ -98,7 +81,7 @@ describe('useFetchData', () => {
       fetcher.and.returnValue(new Promise(noop));
       await render(2);
 
-      expect(container.querySelector('.loading')).not.toBeNull();
+      expect(state.container.querySelector('.loading')).not.toBeNull();
     });
 
     it('refetches and exposes the new data', async () => {
@@ -106,7 +89,7 @@ describe('useFetchData', () => {
       await flushAsync();
 
       expect(fetcher).toHaveBeenCalledTimes(2);
-      expect(container.querySelector('.data').textContent).toBe('result-2');
+      expect(state.container.querySelector('.data').textContent).toBe('result-2');
     });
   });
 
