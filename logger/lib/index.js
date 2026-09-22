@@ -1,4 +1,5 @@
 // Public API surface for deku-sprout.
-//
-// No classes have been extracted yet — BaseLogger, ConsoleLogger,
-// LoggerGroup and Logger land here in a later step.
+export { BaseLogger } from './BaseLogger.js';
+export { ConsoleLogger } from './ConsoleLogger.js';
+export { LoggerGroup } from './LoggerGroup.js';
+export { Logger } from './Logger.js';
