@@ -9,6 +9,7 @@
 | `dev/` | Sample apps and services used to exercise Navi in local development (dev backend, dev frontend, and two reverse proxies). |
 | `clients/` | Client packages for Navi's token-secured `/api/*` HTTP namespace, one subfolder per supported language. |
 | `worker/` | `deku-swarm`: the generic queue-and-pool worker package consumed by `source/`. |
+| `logger/` | `deku-sprout`: the shared logging package (owned by `logger`), consumed by `source/`, `clients/node/` and `dev/app`. Currently an empty folder kept with a `.gitkeep`; the package is scaffolded by the following sub-issues of #888. |
 | `spec-support/` | `navi-spec-support`: private (never published) package with the jsdom/React spec bootstrap shared by the `frontend/` and `dev/frontend/` test suites. |
 | `examples/` | Standalone worked-example projects that demonstrate building on top of Navi (owned by `guide`); the first entry is `navi-orders-extension/`. |
 | `dockerfiles/` | Dockerfiles for each service image (dev app, dev frontend, dev proxies, production build). |

@@ -19,7 +19,7 @@ The first example is `examples/navi-orders-extension/`.
 
 ## Out of scope
 
-Do not touch `source/`, `frontend/`, `worker/`, `dev/`, `dockerfiles/`,
+Do not touch `source/`, `frontend/`, `worker/`, `logger/`, `dev/`, `dockerfiles/`,
 `docker-compose.yml`, `.circleci/config.yml`, or `Makefile`. If an example needs
 a change in any of those, coordinate through `architect`.
 

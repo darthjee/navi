@@ -18,7 +18,7 @@ You own everything inside `spec-support/`:
 - `noop.js` — default-exported `noop`
 - `package.json` and `README.md`
 
-Do NOT touch `frontend/` (owned by `frontend`), `dev/` (owned by `dev`), `dockerfiles/` or `docker-compose.yml` (owned by `docker`). Support files that import from `frontend/src/` (`fetch_states`, `logs`, `polling_controller`, `render_job`, ...) stay in `frontend/spec/support/` and are not part of this package.
+Do NOT touch `frontend/` (owned by `frontend`), `dev/` (owned by `dev`), `logger/` (owned by `logger`), `dockerfiles/` or `docker-compose.yml` (owned by `docker`). Support files that import from `frontend/src/` (`fetch_states`, `logs`, `polling_controller`, `render_job`, ...) stay in `frontend/spec/support/` and are not part of this package.
 
 ## Stack
 

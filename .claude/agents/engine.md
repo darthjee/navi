@@ -24,7 +24,7 @@ You own everything inside `source/`:
 
 `engine` now consumes `Worker`, `Job` (base class), `JobFactory`, `JobRegistry`, `WorkersRegistry`, `Engine`, and `WorkersAllocator` from the `deku-swarm` npm package (`worker/`, owned by the new `worker` agent) via `import { ... } from 'deku-swarm'`, instead of owning them directly. `lib/background/`, the `Engine.js`/`WorkersAllocator.js` classes previously under `lib/services/`, `lib/factory/`, and the `lib/utils/collections/` + `lib/utils/generators/IdGenerator.js`/`UUidGenerator.js` utilities all moved to `worker/` — do not edit them here; that's `worker`'s scope now. `lib/utils/generators/IncrementalIdGenerator.js` and `lib/utils/logging/` stay in `engine`.
 
-Do NOT touch `frontend/`, `dev/`, `worker/`, or any file outside `source/`.
+Do NOT touch `frontend/`, `dev/`, `worker/`, `logger/`, or any file outside `source/`.
 
 ## Stack
 
