@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Logger } from 'deku-sprout';
 import { ConfigFileParser } from '../../lib/ConfigFileParser.js';
 import { ConfigFileParseError } from '../../lib/exceptions/ConfigFileParseError.js';
-import { Logger } from '../../lib/logging/Logger.js';
 
 const FIXTURES_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'support', 'fixtures');
 const fixture = (name) => { return path.join(FIXTURES_DIR, name); };

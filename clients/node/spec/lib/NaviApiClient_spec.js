@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Logger } from '../../lib/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { NaviApiClient } from '../../lib/NaviApiClient.js';
 
 describe('NaviApiClient', () => {

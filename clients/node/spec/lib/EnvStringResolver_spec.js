@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
+import { Logger } from 'deku-sprout';
 import { EnvStringResolver } from '../../lib/EnvStringResolver.js';
-import { Logger } from '../../lib/logging/Logger.js';
 
 describe('EnvStringResolver', () => {
   const ENV_VAR = 'NAVI_CLIENT_SPEC_ENV_VAR';

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { Logger } from './logging/Logger.js';
+import { Logger } from 'deku-sprout';
 
 /**
  * Pattern matching environment variable references in strings.

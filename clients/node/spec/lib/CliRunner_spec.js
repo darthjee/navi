@@ -1,7 +1,7 @@
+import { Logger } from 'deku-sprout';
 import { NaviClient } from '../../client.js';
 import { CliRunner } from '../../lib/CliRunner.js';
 import { ConfigFileGrouper } from '../../lib/ConfigFileGrouper.js';
-import { Logger } from '../../lib/logging/Logger.js';
 
 describe('CliRunner', () => {
   const baseUrl = 'http://example.com';
