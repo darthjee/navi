@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { LogContext } from '../../../../../lib/common/utils/logging/LogContext.js';
-import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
 import { LogRegistry } from '../../../../../lib/registry/LogRegistry.js';
 
 describe('LogContext', () => {

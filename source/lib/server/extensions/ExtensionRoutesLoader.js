@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { Logger } from '../../common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { ExtensionsDirectoryMissing } from '../../exceptions/config/ExtensionsDirectoryMissing.js';
 import { ForbiddenError } from '../../exceptions/http/ForbiddenError.js';
 import { PathValidator } from '../PathValidator.js';

@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { LoggerUtils } from './LoggerUtils.js';
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { ConflictError } from '../../../lib/exceptions/http/ConflictError.js';
 import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
 import { NotFoundError } from '../../../lib/exceptions/http/NotFoundError.js';

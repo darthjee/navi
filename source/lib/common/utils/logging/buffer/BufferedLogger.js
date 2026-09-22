@@ -1,4 +1,4 @@
-import { BaseLogger } from '../BaseLogger.js';
+import { BaseLogger } from 'deku-sprout';
 import { LogBuffer } from './LogBuffer.js';
 
 /**

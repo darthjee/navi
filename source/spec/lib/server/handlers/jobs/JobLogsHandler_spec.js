@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
-import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
 import { LogRegistry } from '../../../../../lib/registry/LogRegistry.js';
 import { JobLogsHandler } from '../../../../../lib/server/handlers/jobs/JobLogsHandler.js';
 

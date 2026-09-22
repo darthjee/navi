@@ -1,8 +1,7 @@
+import { Logger, LoggerGroup } from 'deku-sprout';
 import { BufferedLogger } from '../../common/utils/logging/buffer/BufferedLogger.js';
 import { LogBufferCollection } from '../../common/utils/logging/buffer/LogBufferCollection.js';
 import { LogFilter } from '../../common/utils/logging/LogFilter.js';
-import { Logger } from '../../common/utils/logging/Logger.js';
-import { LoggerGroup } from '../../common/utils/logging/LoggerGroup.js';
 
 /**
  * Holds a LoggerGroup (Logger + BufferedLogger) for the LogRegistry singleton.

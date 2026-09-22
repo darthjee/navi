@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { MenuEntry } from '../../../lib/models/configs/MenuEntry.js';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 import { Router, STOCK_ROUTE_KEYS } from '../../../lib/server/Router.js';

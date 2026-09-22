@@ -1,6 +1,6 @@
 import http from 'http';
+import { Logger } from 'deku-sprout';
 import { JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { MenuEntry } from '../../../lib/models/configs/MenuEntry.js';
 import { WebConfig } from '../../../lib/models/configs/WebConfig.js';
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';

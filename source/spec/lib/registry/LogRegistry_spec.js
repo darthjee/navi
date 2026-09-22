@@ -1,4 +1,4 @@
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { LogRegistry } from '../../../lib/registry/LogRegistry.js';
 
 describe('LogRegistry', () => {

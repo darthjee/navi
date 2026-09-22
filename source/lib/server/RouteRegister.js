@@ -1,4 +1,4 @@
-import { Logger } from '../common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { ConflictError } from '../exceptions/http/ConflictError.js';
 import { ForbiddenError } from '../exceptions/http/ForbiddenError.js';
 import { NotFoundError } from '../exceptions/http/NotFoundError.js';

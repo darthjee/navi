@@ -1,4 +1,4 @@
-import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/file/ConfigurationFileNotFound.js';
 import { ConfigurationIncludeNotFound } from '../../../../lib/exceptions/config/file/ConfigurationIncludeNotFound.js';
 import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';

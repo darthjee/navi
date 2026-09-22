@@ -1,4 +1,4 @@
-import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { FilterMatcher } from '../../../../lib/parsers/css_selector_parser/FilterMatcher.js';
 
 describe('FilterMatcher', () => {

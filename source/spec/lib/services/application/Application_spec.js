@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 import { ConfigurationFileNotFound } from '../../../../lib/exceptions/config/file/ConfigurationFileNotFound.js';
 import { ConfigurationFileNotProvided } from '../../../../lib/exceptions/config/file/ConfigurationFileNotProvided.js';
 import { MenuConfigurationInvalid } from '../../../../lib/exceptions/config/MenuConfigurationInvalid.js';
