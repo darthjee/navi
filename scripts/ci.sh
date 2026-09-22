@@ -13,6 +13,7 @@ case "$ACTION" in
   install-deps) bash "$DIR/ci/install-deps.sh" "$@" ;;
   lint-and-report) bash "$DIR/ci/lint-and-report.sh" "$@" ;;
   check-and-publish-worker) bash "$DIR/ci/check-and-publish-worker.sh" "$@" ;;
+  check-and-publish-deku-sprout) bash "$DIR/ci/check-and-publish-deku-sprout.sh" "$@" ;;
   build-frontend) bash "$DIR/ci/build-frontend.sh" "$@" ;;
   *)
     echo "Unknown action: $ACTION" >&2

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 [app|client|worker] [version]" >&2
+  echo "Usage: $0 [app|client|worker|deku-sprout] [version]" >&2
   exit 1
 }
 
@@ -13,6 +13,7 @@ README="$ROOT_DIR/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
 WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
+LOGGER_PACKAGE_JSON="$ROOT_DIR/logger/package.json"
 DEMO_DOCKERFILE="$ROOT_DIR/dockerfiles/demo_navi_hey/Dockerfile"
 
 if [[ $# -gt 2 ]]; then
@@ -23,13 +24,13 @@ TARGET="app"
 VERSION=""
 
 if [[ $# -eq 1 ]]; then
-  if [[ "$1" =~ ^(app|client|worker)$ ]]; then
+  if [[ "$1" =~ ^(app|client|worker|deku-sprout)$ ]]; then
     TARGET="$1"
   else
     VERSION="$1"
   fi
 elif [[ $# -eq 2 ]]; then
-  [[ "$1" =~ ^(app|client|worker)$ ]] || usage
+  [[ "$1" =~ ^(app|client|worker|deku-sprout)$ ]] || usage
   TARGET="$1"
   VERSION="$2"
 fi
@@ -39,6 +40,7 @@ package_json_for() {
     app) echo "$APP_PACKAGE_JSON" ;;
     client) echo "$CLIENT_PACKAGE_JSON" ;;
     worker) echo "$WORKER_PACKAGE_JSON" ;;
+    deku-sprout) echo "$LOGGER_PACKAGE_JSON" ;;
   esac
 }
 
@@ -152,10 +154,41 @@ bump_worker() {
   fi
 }
 
+bump_deku_sprout() {
+  sed -i '' \
+    "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
+    "$LOGGER_PACKAGE_JSON"
+
+  if grep -q '\*\*Deku Sprout Current Version:\*\*' "$README"; then
+    sed -i '' \
+      "s|\*\*Deku Sprout Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/deku-sprout-.*)|**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/deku-sprout-$VERSION)|" \
+      "$README"
+  else
+    sed -i '' \
+      "/\*\*Worker Next Version:\*\*/a\\
+\\
+**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/deku-sprout-$VERSION)" \
+      "$README"
+  fi
+
+  if grep -q '\*\*Deku Sprout Next Version:\*\*' "$README"; then
+    sed -i '' \
+      "s|\*\*Deku Sprout Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/deku-sprout-.*)|**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/deku-sprout-$VERSION...main)|" \
+      "$README"
+  else
+    sed -i '' \
+      "/\*\*Deku Sprout Current Version:\*\*/a\\
+\\
+**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/deku-sprout-$VERSION...main)" \
+      "$README"
+  fi
+}
+
 case "$TARGET" in
   app) bump_app ;;
   client) bump_client ;;
   worker) bump_worker ;;
+  deku-sprout) bump_deku_sprout ;;
 esac
 
 echo "Bumped $TARGET to $VERSION (next release: $NEXT_VERSION)"
