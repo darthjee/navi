@@ -4,6 +4,9 @@ parameters:
   force_worker_build:
     type: boolean
     default: false
+  force_deku_sprout_build:
+    type: boolean
+    default: false
 
 workflows:
   test-and-release:
@@ -34,12 +37,16 @@ workflows:
           filters: *all-tags
       - checks-worker:
           filters: *all-tags
+      - jasmine-deku-sprout:
+          filters: *all-tags
+      - checks-deku-sprout:
+          filters: *all-tags
       - smoke-extensions:
           filters: *all-tags
       - test-extension-harness:
           filters: *all-tags
       - coverage-final:
-          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker]
+          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout]
           filters: *all-tags
       - check-version-tag:
           filters: &version-tag-filters
@@ -49,8 +56,10 @@ workflows:
               ignore: /.*/
       - check-and-publish-worker:
           filters: *version-tag-filters
+      - check-and-publish-deku-sprout:
+          filters: *version-tag-filters
       - npm-publish:
-          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-and-publish-worker, smoke-extensions, test-extension-harness]
+          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-and-publish-worker, check-and-publish-deku-sprout, smoke-extensions, test-extension-harness]
           filters: *version-tag-filters
       - check-client-version-tag:
           filters: &client-tag-filters
@@ -239,6 +248,24 @@ jobs:
       - lint-and-report:
           path: worker
 
+  jasmine-deku-sprout:
+    executor: node-ci
+    steps:
+      - checkout
+      - install-deps:
+          path: logger
+      - run-tests:
+          path: logger
+
+  checks-deku-sprout:
+    executor: node-ci
+    steps:
+      - checkout
+      - install-deps:
+          path: logger
+      - lint-and-report:
+          path: logger
+
   coverage-final:
     executor: node-ci
     steps:
@@ -280,6 +307,15 @@ jobs:
       - run:
           name: Check worker/ changes and publish if needed
           command: FORCE_WORKER_BUILD=<< pipeline.parameters.force_worker_build >> scripts/ci.sh check-and-publish-worker
+
+  check-and-publish-deku-sprout:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Check logger/ changes and publish if needed
+          command: FORCE_DEKU_SPROUT_BUILD=<< pipeline.parameters.force_deku_sprout_build >> scripts/ci.sh check-and-publish-deku-sprout
 
   npm-publish:
     executor: node-ci
