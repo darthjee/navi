@@ -15,6 +15,7 @@
     "report": "jscpd app.js lib spec --reporters console,html --output ./report/jscpd"
   },
   "dependencies": {
+    "deku-sprout": "file:../logger",
     "express": "^4.18.0",
     "js-yaml": "^4.1.0",
     "morgan": "^1.10.1",
@@ -38,8 +39,7 @@
   "jasmine": {
     "spec_dir": "spec",
     "spec_files": [
-      "**/*[sS]pec.js",
-      "!lib/common/utils/logging/**"
+      "**/*[sS]pec.js"
     ]
   },
   "c8": {

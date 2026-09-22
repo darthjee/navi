@@ -1,6 +1,6 @@
+import { Logger } from 'deku-sprout';
 import { notFound } from './not_found.js';
 import { RequestHandler } from '../common/server/RequestHandler.js';
-import { Logger } from '../common/utils/logging/Logger.js';
 import DataNavigator from '../models/DataNavigator.js';
 import RouteParamsExtractor from '../routing/RouteParamsExtractor.js';
 

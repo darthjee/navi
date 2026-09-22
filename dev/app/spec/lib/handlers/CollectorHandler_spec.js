@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import CollectorHandler from '../../../lib/handlers/CollectorHandler.js';
 
 describe('CollectorHandler', () => {
