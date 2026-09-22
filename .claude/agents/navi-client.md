@@ -20,7 +20,7 @@ You own everything inside `clients/node/`:
 
 `clients/` is designed to hold one subfolder per supported client language; `clients/node/` is the first. Future languages (e.g. Python) get their own subfolder and, when warranted, their own dedicated specialist agent — not this one.
 
-Do NOT touch `source/`, `frontend/`, `dev/`, or any other `clients/<language>/` folder. The `/api/*` routes this package wraps are owned by the `engine` agent (`source/lib/server/handlers/api/`) — consume them as documented in [Web Server](../../docs/agents/web-server.md#api-namespace), don't modify them from here.
+Do NOT touch `source/`, `frontend/`, `dev/`, `logger/`, or any other `clients/<language>/` folder. The `/api/*` routes this package wraps are owned by the `engine` agent (`source/lib/server/handlers/api/`) — consume them as documented in [Web Server](../../docs/agents/web-server.md#api-namespace), don't modify them from here.
 
 ## Stack
 

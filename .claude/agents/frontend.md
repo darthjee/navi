@@ -17,7 +17,7 @@ You own everything inside `frontend/`:
 
 The shared jsdom/React spec bootstrap (`dom.js` with `useContainer`/`renderInAct`, `loader.js`, `transform_hooks.js`, `async.js`) lives in `spec-support/` (the private `navi-spec-support` package, owned by the `spec-support` agent). `frontend/` consumes it through a `file:../spec-support` devDependency (re-run `yarn install` after it changes) and does not own it.
 
-Do NOT touch `source/` or `dev/` or any file outside `frontend/`.
+Do NOT touch `source/`, `dev/` or `logger/`, or any file outside `frontend/`.
 
 ## Stack
 
