@@ -63,7 +63,7 @@ export default [
     },
   },
   {
-    files: ['spec/**/*[sS]pec.js'],
+    files: ['spec/**/*[sS]pec.js', 'spec/support/**/*.js'],
     plugins: {
       jasmine,
     },
