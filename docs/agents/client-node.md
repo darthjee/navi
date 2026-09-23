@@ -12,10 +12,6 @@ clients/node/
 │   ├── NaviApiClient.js   # internal HTTP helper (axios POST + status handling)
 │   ├── CliArgumentsParser.js
 │   ├── CliRunner.js
-│   ├── logging/           # self-contained port of source/lib/common/utils/logging/
-│   │   ├── Logger.js       # static facade, no LoggerGroup (single ConsoleLogger sink)
-│   │   ├── BaseLogger.js    # level-filtering logic (debug/info/warn/error/silent)
-│   │   └── ConsoleLogger.js
 │   └── exceptions/
 │       └── ApiRequestFailed.js
 ├── bin/
