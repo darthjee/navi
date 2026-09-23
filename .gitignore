@@ -153,6 +153,7 @@ docker_volumes/extensions/frontend/*
 dev/proxy/static/assets/*
 dev/proxy/static/index.html
 dev/app/static
+dev/logger
 !docker_volumes/static/.gitkeep
 
 source/public/*

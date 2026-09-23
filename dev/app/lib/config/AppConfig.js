@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
+import { Logger } from 'deku-sprout';
 import { load } from 'js-yaml';
 import { JsonConfig } from './JsonConfig.js';
 import { EnvStringResolver } from '../common/utils/env_resolver/EnvStringResolver.js';
-import { Logger } from '../common/utils/logging/Logger.js';
 
 /**
  * Top-level configuration class for the dev app.

@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { Logger } from 'deku-sprout';
 import YAML from 'yaml';
 import { MenuEntry } from './MenuEntry.js';
 import { EnvStringResolver } from '../../common/utils/env_resolver/EnvStringResolver.js';
-import { Logger } from '../../common/utils/logging/Logger.js';
 import { MenuConfigurationInvalid } from '../../exceptions/config/MenuConfigurationInvalid.js';
 
 const DEFAULT_LABELS = {

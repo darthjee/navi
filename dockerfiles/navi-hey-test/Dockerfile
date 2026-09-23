@@ -27,6 +27,7 @@ ENV HOME_DIR=/home/node
 FROM base AS backend_builder
 ENV HOME_DIR=/home/node
 COPY --chown=node:node ./worker/ /home/node/worker/
+COPY --chown=node:node ./logger/ /home/node/logger/
 COPY --chown=node:node ./source/package.json ./source/yarn.lock /home/node/app/
 COPY --from=scripts /home/scripts/builder/yarn_builder.sh /usr/local/sbin/yarn_builder.sh
 RUN /bin/bash /usr/local/sbin/yarn_builder.sh \
@@ -34,6 +35,11 @@ RUN /bin/bash /usr/local/sbin/yarn_builder.sh \
       target="$(readlink -f /home/node/app/node_modules/deku-swarm)"; \
       rm /home/node/app/node_modules/deku-swarm; \
       cp -R "$target" /home/node/app/node_modules/deku-swarm; \
+    fi \
+ && if [ -L /home/node/app/node_modules/deku-sprout ]; then \
+      target="$(readlink -f /home/node/app/node_modules/deku-sprout)"; \
+      rm /home/node/app/node_modules/deku-sprout; \
+      cp -R "$target" /home/node/app/node_modules/deku-sprout; \
     fi
 
 # --------------------------------------------------------------------------

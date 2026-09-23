@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
+import { Logger } from 'deku-sprout';
 import { EnvStringResolver } from '../../../../../lib/common/utils/env_resolver/EnvStringResolver.js';
-import { Logger } from '../../../../../lib/common/utils/logging/Logger.js';
 
 describe('EnvStringResolver', () => {
   describe('.resolve', () => {

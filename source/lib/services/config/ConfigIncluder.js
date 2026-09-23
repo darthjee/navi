@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { Logger } from 'deku-sprout';
 import YAML from 'yaml';
 import { EnvStringResolver } from '../../common/utils/env_resolver/EnvStringResolver.js';
-import { Logger } from '../../common/utils/logging/Logger.js';
 import { ConfigurationFileNotFound } from '../../exceptions/config/file/ConfigurationFileNotFound.js';
 import { ConfigurationIncludeNotFound } from '../../exceptions/config/file/ConfigurationIncludeNotFound.js';
 

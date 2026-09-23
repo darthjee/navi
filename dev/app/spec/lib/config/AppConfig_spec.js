@@ -1,4 +1,4 @@
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { AppConfig } from '../../../lib/config/AppConfig.js';
 import { FixturesUtils } from '../../support/utils/FixturesUtils.js';
 

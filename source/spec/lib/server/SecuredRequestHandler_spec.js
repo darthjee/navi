@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import { ForbiddenError } from '../../../lib/exceptions/http/ForbiddenError.js';
 import { SecuredRequestHandler } from '../../../lib/server/SecuredRequestHandler.js';
 

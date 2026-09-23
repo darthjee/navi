@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { Logger } from 'deku-sprout';
 import { ApiRequestFailed } from './exceptions/ApiRequestFailed.js';
-import { Logger } from './logging/Logger.js';
 
 /**
  * NaviApiClient performs authenticated POST requests against a running Navi

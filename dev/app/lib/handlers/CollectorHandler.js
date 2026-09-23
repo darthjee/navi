@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { RequestHandler } from '../common/server/RequestHandler.js';
-import { Logger } from '../common/utils/logging/Logger.js';
 
 /**
  * Executes request-handling behaviour for the demo collector (emit target) endpoint.

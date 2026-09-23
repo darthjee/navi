@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
+import { Logger } from 'deku-sprout';
 import { MenuConfigurationInvalid } from '../../../../lib/exceptions/config/MenuConfigurationInvalid.js';
 import { MenuConfig } from '../../../../lib/models/configs/MenuConfig.js';
 import { MenuEntry } from '../../../../lib/models/configs/MenuEntry.js';

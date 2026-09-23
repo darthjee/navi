@@ -1,6 +1,6 @@
+import { Logger } from 'deku-sprout';
 import { NaviClient } from '../client.js';
 import { ConfigFileGrouper } from './ConfigFileGrouper.js';
-import { Logger } from './logging/Logger.js';
 
 const ACTIONS = ['config', 'engine-start', 'engine-stop'];
 const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'];

@@ -1,5 +1,5 @@
+import { Logger } from 'deku-sprout';
 import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
-import { Logger } from '../../../../lib/common/utils/logging/Logger.js';
 import { Application } from '../../../../lib/services/application/Application.js';
 import { DummyJobFactory } from '../../../support/dummies/factories/DummyJobFactory.js';
 import { DummyWorkerFactory } from '../../../support/dummies/factories/DummyWorkerFactory.js';

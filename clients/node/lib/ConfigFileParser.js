@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { Logger } from 'deku-sprout';
 import YAML from 'yaml';
 import { EnvStringResolver } from './EnvStringResolver.js';
 import { ConfigFileParseError } from './exceptions/ConfigFileParseError.js';
-import { Logger } from './logging/Logger.js';
 
 /**
  * ConfigFileParser reads and parses a single JSON/YAML config file (the same

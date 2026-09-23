@@ -1,6 +1,6 @@
+import { Logger } from 'deku-sprout';
 import express from 'express';
 import { Router } from './Router.js';
-import { Logger } from '../common/utils/logging/Logger.js';
 
 /**
  * Express web server for the Navi monitoring interface.

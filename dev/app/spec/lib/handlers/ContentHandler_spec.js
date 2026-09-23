@@ -1,6 +1,6 @@
+import { Logger } from 'deku-sprout';
 import request from 'supertest';
 import { RequestHandler } from '../../../lib/common/server/RequestHandler.js';
-import { Logger } from '../../../lib/common/utils/logging/Logger.js';
 import ContentHandler from '../../../lib/handlers/ContentHandler.js';
 import Serializer from '../../../lib/models/Serializer.js';
 import { BOOKS_CATEGORY, HOBBIT_ITEM } from '../../support/fixtures/expectedResponses.js';
