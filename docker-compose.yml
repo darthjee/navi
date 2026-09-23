@@ -40,6 +40,7 @@ services:
     volumes:
       - ./source:/home/node/app
       - ./worker:/home/node/worker
+      - ./logger:/home/node/logger
       - ./examples/navi-orders-extension/config:/home/node/app/config:ro
       - ./docker_volumes/node_modules:/home/node/app/node_modules
       - ./examples/navi-orders-extension/dist:/navi/extensions:ro
