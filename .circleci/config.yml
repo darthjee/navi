@@ -70,6 +70,15 @@ workflows:
       - npm-publish-client:
           requires: [check-client-version-tag, jasmine-client, checks-client]
           filters: *client-tag-filters
+      - check-deku-sprout-version-tag:
+          filters: &deku-sprout-tag-filters
+            tags:
+              only: /deku-sprout-\d+\.\d+\.\d+/
+            branches:
+              ignore: /.*/
+      - publish-deku-sprout-standalone:
+          requires: [check-deku-sprout-version-tag, jasmine-deku-sprout, checks-deku-sprout]
+          filters: *deku-sprout-tag-filters
       - build-and-release:
           requires: [npm-publish]
           filters: *version-tag-filters
@@ -316,6 +325,24 @@ jobs:
       - run:
           name: Check logger/ changes and publish if needed
           command: FORCE_DEKU_SPROUT_BUILD=<< pipeline.parameters.force_deku_sprout_build >> scripts/ci.sh check-and-publish-deku-sprout
+
+  check-deku-sprout-version-tag:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Check tag matches logger/package.json version
+          command: bash scripts/check_deku_sprout_tag_version.sh
+
+  publish-deku-sprout-standalone:
+    docker:
+      - image: darthjee/circleci_node:0.2.1
+    steps:
+      - checkout
+      - run:
+          name: Publish deku-sprout (standalone release)
+          command: FORCE_DEKU_SPROUT_BUILD=true scripts/ci.sh check-and-publish-deku-sprout
 
   npm-publish:
     executor: node-ci
