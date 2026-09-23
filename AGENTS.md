@@ -18,6 +18,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Folder Structure](docs/agents/folder-structure.md) | Top-level directory layout and the role of each folder. |
 | [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, YAML structure, initial enqueueing, Engine loop, worker execution, failure handling, web UI routes. |
 | [Worker Subsystem](docs/agents/worker.md) | Class-by-class reference for `deku-swarm` (`worker/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
+| [Logger Subsystem](docs/agents/logger.md) | Class-by-class reference for `deku-sprout` (`logger/`), the shared logging package — `BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger` — its consumers and its release flow. |
 | [Spec Support](docs/agents/spec-support.md) | The private `navi-spec-support` package (`spec-support/`): the jsdom/React spec bootstrap shared by `frontend/` and `dev/frontend/`, its `exports` contract, how the frontends consume it, and reinstall-after-edit rule. |
 | [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
 | [Dangers](docs/agents/dangers.md) | Async pitfalls, synchronous test dummies, and rules for planning cooldowns, sleeps, and waits. |
