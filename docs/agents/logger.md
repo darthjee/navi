@@ -78,6 +78,7 @@ They only import each other, which is what made them extractable without taking 
 | Standalone tag workflow | Pushing a `deku-sprout-X.Y.Z` tag runs `check-deku-sprout-version-tag` (`scripts/check_deku_sprout_tag_version.sh`, which checks the tag against `logger/package.json`), then `publish-deku-sprout-standalone` (the same publish script, forced). |
 | Version bump | `scripts/bump_version.sh deku-sprout [version]`. It updates `logger/package.json` and rewrites (or adds) the `**Deku Sprout Current Version:**` / `**Deku Sprout Next Version:**` lines in `README.md`. |
 | Tags | `deku-sprout-X.Y.Z`. These are decoupled from the main `navi-hey` release tag (#923). |
+| Pinning in `navi-hey` releases | The `npm-publish` job runs `scripts/ci.sh pin-local-deps` (`scripts/ci/pin-local-deps.sh`) before `navi-hey` is published. It rewrites `"deku-sprout": "file:../logger"` in `source/package.json` to the exact `logger/package.json` version (no `^`/`~`), does the same for `deku-swarm`, and fails the release if any `file:` dependency is left. |
 
 A `deku-sprout` release does **not** force a release of `navi-hey` or `navi-hey-client`. Each of them adopts a new version of the package when it chooses to: `source/` and `dev/app` pick up `logger/` changes immediately through `file:`, while `clients/node/` moves only when its `^` range or pinned version is bumped. Any change the client needs must be published to npm before the client can depend on it.
 
