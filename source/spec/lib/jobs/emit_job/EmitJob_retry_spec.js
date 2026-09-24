@@ -7,8 +7,6 @@ const { fullUrl } = EmitJobSpecUtils;
 
 describe('EmitJob', () => {
   const ctx = EmitJobSpecUtils.setup();
-
-  const rebuildJob = (options) => EmitJobSpecUtils.rebuildJob(ctx, options);
   const fail = (error) => JobRegistryUtils.failSilently(ctx.job, error);
 
   describe('#maxRetries', () => {
@@ -20,7 +18,7 @@ describe('EmitJob', () => {
 
     describe('when emit.retries is configured', () => {
       beforeEach(() => {
-        rebuildJob({ retries: 2 });
+        ctx.rebuildJob({ retries: 2 });
       });
 
       it('returns the configured value', () => {
@@ -67,7 +65,7 @@ describe('EmitJob', () => {
 
     describe('when emit.cooldown is configured', () => {
       beforeEach(() => {
-        rebuildJob({ cooldown: 1234 });
+        ctx.rebuildJob({ cooldown: 1234 });
       });
 
       it('returns the configured value', () => {

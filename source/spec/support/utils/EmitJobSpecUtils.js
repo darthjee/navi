@@ -60,11 +60,15 @@ class EmitJobSpecUtils {
   /**
    * Installs the common beforeEach (logger stubs, logContext spy, default
    * client and namespace map, initial job build) and returns the mutable
-   * context object refreshed by it.
+   * context object refreshed by it. The context also exposes
+   * `rebuildJob(options)` and `performIgnoringFailure(times)` bound to it.
    * @returns {object} The spec context.
    */
   static setup() {
-    const ctx = {};
+    const ctx = {
+      rebuildJob: (options) => EmitJobSpecUtils.rebuildJob(ctx, options),
+      performIgnoringFailure: (times) => EmitJobSpecUtils.performIgnoringFailure(ctx, times),
+    };
 
     beforeEach(() => {
       LoggerUtils.stubLoggerMethods();

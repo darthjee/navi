@@ -11,8 +11,6 @@ describe('EmitJob', () => {
   const ctx = EmitJobSpecUtils.setup();
   let response;
 
-  const rebuildJob = (options) => EmitJobSpecUtils.rebuildJob(ctx, options);
-  const performIgnoringFailure = (times) => EmitJobSpecUtils.performIgnoringFailure(ctx, times);
   const itForwardsToClientEmit = (example) => EmitJobSpecUtils.itForwardsToClientEmit(ctx, example);
 
   describe('#constructor', () => {
@@ -37,7 +35,7 @@ describe('EmitJob', () => {
       },
     ].forEach(({ description, emitUrl, jobParameters, expectedArguments }) => {
       it(`returns the resolved URL and method ${description}`, () => {
-        rebuildJob({ emitUrl, jobParameters });
+        ctx.rebuildJob({ emitUrl, jobParameters });
 
         expect(ctx.job.arguments).toEqual(expectedArguments);
       });
@@ -120,7 +118,7 @@ describe('EmitJob', () => {
     ].forEach(({ method, axiosMethod, stub }) => {
       describe(`when the emit method is ${method}`, () => {
         beforeEach(() => {
-          rebuildJob({ method });
+          ctx.rebuildJob({ method });
           response = AxiosUtils[stub](200, {});
         });
 
@@ -136,7 +134,7 @@ describe('EmitJob', () => {
       const resolvedFullUrl = 'http://example.com/items/42';
 
       beforeEach(() => {
-        rebuildJob({ emitUrl: paramUrl, jobParameters: { id: 42 } });
+        ctx.rebuildJob({ emitUrl: paramUrl, jobParameters: { id: 42 } });
         response = AxiosUtils.stubPost(200, {});
       });
 
@@ -158,7 +156,7 @@ describe('EmitJob', () => {
       it('fails when the response is not a 2xx', async () => {
         AxiosUtils.stubPost(404, {});
 
-        await performIgnoringFailure();
+        await ctx.performIgnoringFailure();
 
         expect(ctx.job.lastError).toEqual(new RequestFailed(404, fullUrl));
       });
@@ -166,7 +164,7 @@ describe('EmitJob', () => {
 
     describe('when an explicit status is configured', () => {
       beforeEach(() => {
-        rebuildJob({ status: 201 });
+        ctx.rebuildJob({ status: 201 });
       });
 
       it('succeeds only on an exact match', async () => {
@@ -178,7 +176,7 @@ describe('EmitJob', () => {
       it('fails for a different status, even a different 2xx one', async () => {
         AxiosUtils.stubPost(200, {});
 
-        await performIgnoringFailure();
+        await ctx.performIgnoringFailure();
 
         expect(ctx.job.lastError).toEqual(new RequestFailed(200, fullUrl));
       });
@@ -194,7 +192,7 @@ describe('EmitJob', () => {
       it('registers failure and increments attempts, then succeeds once the stub recovers', async () => {
         expect(ctx.job.lastError).toBeUndefined();
 
-        await performIgnoringFailure();
+        await ctx.performIgnoringFailure();
         expect(ctx.job.exhausted()).toBeFalse();
         expect(ctx.job.lastError).toEqual(expectedError);
 
@@ -204,16 +202,16 @@ describe('EmitJob', () => {
       });
 
       it('logs the error', async () => {
-        await performIgnoringFailure();
+        await ctx.performIgnoringFailure();
 
         expect(ctx.logContext.error).toHaveBeenCalledWith(jasmine.stringContaining(ctx.job.id));
       });
 
       it('exhausts after maxRetries (default 5, since 502 is retryable) failed attempts', async () => {
-        await performIgnoringFailure(4);
+        await ctx.performIgnoringFailure(4);
         expect(ctx.job.exhausted()).toBeFalse();
 
-        await performIgnoringFailure();
+        await ctx.performIgnoringFailure();
         expect(ctx.job.exhausted()).toBeTrue();
         expect(ctx.job.lastError).toEqual(expectedError);
       });
@@ -228,7 +226,7 @@ describe('EmitJob', () => {
           namespace: 'other',
           clients: { other: otherClient },
         });
-        rebuildJob({ emitClient: { name: 'other', namespace: 'other' } });
+        ctx.rebuildJob({ emitClient: { name: 'other', namespace: 'other' } });
       });
 
       it('resolves the client from the explicit target namespace', async () => {

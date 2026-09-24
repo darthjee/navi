@@ -8,10 +8,6 @@ describe('EmitJob', () => {
   const ctx = EmitJobSpecUtils.setup();
   let response;
 
-  const rebuildJob = (options) => EmitJobSpecUtils.rebuildJob(ctx, options);
-  const performIgnoringFailure = (times) => EmitJobSpecUtils.performIgnoringFailure(ctx, times);
-  const firstRecord = () => EmitJobSpecUtils.firstRecord();
-
   describe('emission tracking', () => {
     afterEach(() => {
       EmissionRegistry.reset();
@@ -70,14 +66,14 @@ describe('EmitJob', () => {
       ].forEach(({ description, jobOptions, rejection, expectedRecord }) => {
         describe(`when the emit fails ${description}`, () => {
           beforeEach(() => {
-            rebuildJob(jobOptions);
+            ctx.rebuildJob(jobOptions);
             AxiosUtils.stubPostRejection(rejection);
           });
 
           it(`records a ${expectedRecord.status} emission`, async () => {
-            await performIgnoringFailure();
+            await ctx.performIgnoringFailure();
 
-            expect(firstRecord()).toEqual(jasmine.objectContaining(expectedRecord));
+            expect(EmitJobSpecUtils.firstRecord()).toEqual(jasmine.objectContaining(expectedRecord));
           });
         });
       });
@@ -98,12 +94,12 @@ describe('EmitJob', () => {
       ].forEach(({ description, jobOptions, title, expectedCounts }) => {
         describe(`when the emit fails with a ${description}`, () => {
           beforeEach(() => {
-            rebuildJob(jobOptions);
+            ctx.rebuildJob(jobOptions);
             AxiosUtils.stubPostRejection({ response: { status: 502 } });
           });
 
           it(title, async () => {
-            await performIgnoringFailure();
+            await ctx.performIgnoringFailure();
 
             expect(EmissionRegistry.counts).toEqual(jasmine.objectContaining(expectedCounts));
           });
@@ -112,14 +108,14 @@ describe('EmitJob', () => {
 
       describe('when the emitted item has no id', () => {
         beforeEach(() => {
-          rebuildJob({ jobItem: { name: 'no-id' } });
+          ctx.rebuildJob({ jobItem: { name: 'no-id' } });
           response = AxiosUtils.stubPost(200, {});
         });
 
         it('records a null itemRef', async () => {
           await ctx.job.perform(ctx.logContext);
 
-          expect(firstRecord().itemRef).toBeNull();
+          expect(EmitJobSpecUtils.firstRecord().itemRef).toBeNull();
         });
       });
 
@@ -131,13 +127,13 @@ describe('EmitJob', () => {
         it('records a null httpStatus', async () => {
           await ctx.job.perform(ctx.logContext);
 
-          expect(firstRecord().httpStatus).toBeNull();
+          expect(EmitJobSpecUtils.firstRecord().httpStatus).toBeNull();
         });
       });
 
       describe('when the job carries an extractionId', () => {
         beforeEach(() => {
-          rebuildJob({ extractionId: 99 });
+          ctx.rebuildJob({ extractionId: 99 });
         });
 
         [
@@ -149,7 +145,7 @@ describe('EmitJob', () => {
           {
             status: 'failed',
             arrange: () => AxiosUtils.stubPostRejection({ response: { status: 502 } }),
-            perform: () => performIgnoringFailure(),
+            perform: () => ctx.performIgnoringFailure(),
           },
         ].forEach(({ status, arrange, perform }) => {
           it(`stamps extractionId on a ${status} emission`, async () => {
@@ -157,7 +153,7 @@ describe('EmitJob', () => {
 
             await perform();
 
-            expect(firstRecord().extractionId).toBe(99);
+            expect(EmitJobSpecUtils.firstRecord().extractionId).toBe(99);
           });
         });
       });
@@ -168,7 +164,7 @@ describe('EmitJob', () => {
 
           await ctx.job.perform(ctx.logContext);
 
-          expect(firstRecord().extractionId).toBeNull();
+          expect(EmitJobSpecUtils.firstRecord().extractionId).toBeNull();
         });
       });
     });
