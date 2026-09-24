@@ -355,6 +355,9 @@ jobs:
           name: Build frontend
           command: scripts/ci.sh build-frontend
       - run:
+          name: Pin local dependencies
+          command: scripts/ci.sh pin-local-deps
+      - run:
           name: Publish to npm
           command: scripts/ci.sh publish source
 
