@@ -1,4 +1,4 @@
-import { JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { JobRegistry } from 'deku-swarm';
 import { EmissionRegistry } from '../../../../lib/registry/EmissionRegistry.js';
 import { ExtractionRegistry } from '../../../../lib/registry/ExtractionRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
@@ -7,82 +7,11 @@ import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.j
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { EngineState } from '../../../../lib/services/engine/EngineState.js';
 import { FakeEngine } from '../../../support/dummies/services/FakeEngine.js';
+import { EngineControllerExamples } from '../../../support/utils/EngineControllerExamples.js';
+import { EngineControllerSpecUtils } from '../../../support/utils/EngineControllerSpecUtils.js';
 
 describe('EngineController', () => {
-  let controller;
-  let state;
-  let enqueueResources;
-  let reloadConfig;
-
-  beforeEach(() => {
-    state = new EngineState();
-    state.set('running');
-
-    enqueueResources = jasmine.createSpy('enqueueResources').and.returnValue({ enqueued: [], skippedResources: [] });
-    reloadConfig = jasmine.createSpy('reloadConfig');
-
-    controller = new EngineController({ state, sleepMs: 0, enqueueResources, reloadConfig });
-    controller.engine = { stop: () => {}, pause: () => {}, resume: () => {}, emit: () => {} };
-
-    spyOn(WorkersRegistry, 'hasBusyWorker').and.returnValue(false);
-    spyOn(JobRegistry, 'clearQueues').and.stub();
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
-    LogRegistry.reset();
-  });
-
-  /**
-   * Shared scenario: the lifecycle method leaves the engine untouched when the
-   * controller is running (i.e. not in the state the method resumes from).
-   * @param {string} method - Controller method name (`continue`, `resumeProcessing`).
-   * @param {string} requiredState - State the method requires, used in the description.
-   */
-  function itDoesNothingWhenRunning(method, requiredState) {
-    it(`does nothing when not ${requiredState}`, async () => {
-      spyOn(controller.engine, 'resume');
-
-      await controller[method]();
-
-      expect(controller.engine.resume).not.toHaveBeenCalled();
-      expect(state.get()).toBe('running');
-    });
-  }
-
-  /**
-   * Shared scenario: the method stops then resumes the engine, in order.
-   * @param {string} method - Controller method name (`restart`, `reload`).
-   */
-  function itStopsThenResumesInOrder(method) {
-    it('stops then resumes the engine, in order', async () => {
-      spyOn(controller, 'stop').and.callThrough();
-      spyOn(controller, 'resumeProcessing').and.callThrough();
-
-      await controller[method]();
-
-      expect(controller.stop).toHaveBeenCalledBefore(controller.resumeProcessing);
-      expect(state.get()).toBe('running');
-    });
-  }
-
-  /**
-   * Shared scenario: the method does nothing when the controller is not running.
-   * @param {string} method - Controller method name (`restart`, `reload`).
-   */
-  function itDoesNothingWhenNotRunning(method) {
-    it('does nothing when not running', async () => {
-      state.set('stopped');
-      spyOn(controller, 'stop');
-      spyOn(controller, 'resumeProcessing');
-
-      await controller[method]();
-
-      expect(controller.stop).not.toHaveBeenCalled();
-      expect(controller.resumeProcessing).not.toHaveBeenCalled();
-      expect(state.get()).toBe('stopped');
-    });
-  }
+  const ctx = EngineControllerSpecUtils.setupController();
 
   describe('#buildEngine', () => {
     /**
@@ -95,7 +24,7 @@ describe('EngineController', () => {
      * @returns {Promise<EngineController>} The controller that ran the engine.
      */
     async function runEngineUntil({ config, stopWhen }) {
-      const localController = new EngineController({ state, config });
+      const localController = new EngineController({ state: ctx.state, config });
       spyOn(localController, 'shutdown');
 
       const engine = localController.buildEngine();
@@ -191,7 +120,7 @@ describe('EngineController', () => {
     beforeEach(() => {
       reporter = jasmine.createSpyObj('RunReporter', ['report']);
       localController = new EngineController({
-        state,
+        state: ctx.state,
         config: { failureConfig: { threshold: 30 } },
       });
       localController.engine = FakeEngine.build();
@@ -233,14 +162,14 @@ describe('EngineController', () => {
      * @param {number} [params.sleepMs=0] - Sleep given to the build.
      * @returns {object} The built controller, the configStore and the reporter.
      */
-    function buildController({ config, buildState = state, sleepMs = 0 }) {
+    function buildController({ config, buildState = ctx.state, sleepMs = 0 }) {
       const configStore = { config, entryFilePath: '/some/path.yml' };
       const reporter = jasmine.createSpyObj('RunReporter', ['report']);
       const builtController = EngineController.build({
         state: buildState,
         configStore,
         sleepMs,
-        enqueueResources,
+        enqueueResources: ctx.enqueueResources,
         reporter,
       });
 
@@ -300,7 +229,7 @@ describe('EngineController', () => {
 
     scenarios.forEach(({ description, shouldAutostart, expectedState, pauses }) => {
       it(description, () => {
-        const localController = new EngineController({ state, shouldAutostart });
+        const localController = new EngineController({ state: ctx.state, shouldAutostart });
         localController.engine = FakeEngine.build({ start: jasmine.createSpy('start').and.returnValue('start-result') });
         spyOn(localController.engine, 'pause');
 
@@ -311,7 +240,7 @@ describe('EngineController', () => {
         } else {
           expect(localController.engine.pause).not.toHaveBeenCalled();
         }
-        expect(state.get()).toBe(expectedState);
+        expect(ctx.state.get()).toBe(expectedState);
         expect(localController.engine.start).toHaveBeenCalled();
         expect(result).toBe('start-result');
       });
@@ -320,50 +249,50 @@ describe('EngineController', () => {
 
   describe('#pause', () => {
     it('pauses the engine without stopping it', async () => {
-      spyOn(controller.engine, 'pause');
-      spyOn(controller.engine, 'stop');
+      spyOn(ctx.controller.engine, 'pause');
+      spyOn(ctx.controller.engine, 'stop');
 
-      await controller.pause();
+      await ctx.controller.pause();
 
-      expect(controller.engine.pause).toHaveBeenCalled();
-      expect(controller.engine.stop).not.toHaveBeenCalled();
-      expect(state.get()).toBe('paused');
+      expect(ctx.controller.engine.pause).toHaveBeenCalled();
+      expect(ctx.controller.engine.stop).not.toHaveBeenCalled();
+      expect(ctx.state.get()).toBe('paused');
     });
   });
 
   describe('#stop', () => {
     it('stops without recreating the engine', async () => {
-      const originalEngine = controller.engine;
-      spyOn(controller.engine, 'pause');
+      const originalEngine = ctx.controller.engine;
+      spyOn(ctx.controller.engine, 'pause');
 
-      await controller.stop();
+      await ctx.controller.stop();
 
-      expect(controller.engine).toBe(originalEngine);
-      expect(controller.engine.pause).toHaveBeenCalled();
-      expect(state.get()).toBe('stopped');
+      expect(ctx.controller.engine).toBe(originalEngine);
+      expect(ctx.controller.engine.pause).toHaveBeenCalled();
+      expect(ctx.state.get()).toBe('stopped');
     });
 
     it('emits a stop event on the engine', async () => {
-      spyOn(controller.engine, 'emit');
-      await controller.stop();
-      expect(controller.engine.emit).toHaveBeenCalledWith('stop');
+      spyOn(ctx.controller.engine, 'emit');
+      await ctx.controller.stop();
+      expect(ctx.controller.engine.emit).toHaveBeenCalledWith('stop');
     });
   });
 
   describe('#continue', () => {
     it('resumes without creating a new engine', async () => {
-      await controller.pause();
-      const originalEngine = controller.engine;
-      spyOn(controller.engine, 'resume');
+      await ctx.controller.pause();
+      const originalEngine = ctx.controller.engine;
+      spyOn(ctx.controller.engine, 'resume');
 
-      await controller.continue();
+      await ctx.controller.continue();
 
-      expect(controller.engine).toBe(originalEngine);
-      expect(controller.engine.resume).toHaveBeenCalled();
-      expect(state.get()).toBe('running');
+      expect(ctx.controller.engine).toBe(originalEngine);
+      expect(ctx.controller.engine.resume).toHaveBeenCalled();
+      expect(ctx.state.get()).toBe('running');
     });
 
-    itDoesNothingWhenRunning('continue', 'paused');
+    EngineControllerExamples.doesNothingWhenRunning(ctx, 'continue', 'paused');
   });
 
   describe('#resumeProcessing', () => {
@@ -372,23 +301,23 @@ describe('EngineController', () => {
      * @returns {Promise<void>}
      */
     async function stopThenSpyOnEmit() {
-      await controller.stop();
-      spyOn(controller.engine, 'emit');
+      await ctx.controller.stop();
+      spyOn(ctx.controller.engine, 'emit');
     }
 
     it('starts without creating a new engine', async () => {
-      await controller.stop();
-      const originalEngine = controller.engine;
-      spyOn(controller.engine, 'resume');
+      await ctx.controller.stop();
+      const originalEngine = ctx.controller.engine;
+      spyOn(ctx.controller.engine, 'resume');
 
-      await controller.resumeProcessing();
+      await ctx.controller.resumeProcessing();
 
-      expect(controller.engine).toBe(originalEngine);
-      expect(controller.engine.resume).toHaveBeenCalled();
-      expect(state.get()).toBe('running');
+      expect(ctx.controller.engine).toBe(originalEngine);
+      expect(ctx.controller.engine.resume).toHaveBeenCalled();
+      expect(ctx.state.get()).toBe('running');
     });
 
-    itDoesNothingWhenRunning('resumeProcessing', 'stopped');
+    EngineControllerExamples.doesNothingWhenRunning(ctx, 'resumeProcessing', 'stopped');
 
     [
       { suffix: '', args: [] },
@@ -396,81 +325,81 @@ describe('EngineController', () => {
     ].forEach(({ suffix, args }) => {
       it(`emits a start event on the engine${suffix}`, async () => {
         await stopThenSpyOnEmit();
-        await controller.resumeProcessing(...args);
-        expect(controller.engine.emit).toHaveBeenCalledWith('start');
+        await ctx.controller.resumeProcessing(...args);
+        expect(ctx.controller.engine.emit).toHaveBeenCalledWith('start');
       });
 
       it(`returns undefined when not stopped${suffix}`, async () => {
-        const result = await controller.resumeProcessing(...args);
+        const result = await ctx.controller.resumeProcessing(...args);
         expect(result).toBeUndefined();
       });
     });
 
     it('enqueues the default set when no names are given', async () => {
-      await controller.stop();
-      await controller.resumeProcessing();
-      expect(enqueueResources).toHaveBeenCalledWith([]);
+      await ctx.controller.stop();
+      await ctx.controller.resumeProcessing();
+      expect(ctx.enqueueResources).toHaveBeenCalledWith([]);
     });
 
     it('delegates to the injected enqueueResources callback and returns its result', async () => {
-      await controller.stop();
-      enqueueResources.and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
+      await ctx.controller.stop();
+      ctx.enqueueResources.and.returnValue({ enqueued: ['home_page'], skippedResources: [] });
 
-      const result = await controller.resumeProcessing(['home_page']);
+      const result = await ctx.controller.resumeProcessing(['home_page']);
 
-      expect(enqueueResources).toHaveBeenCalledWith(['home_page']);
+      expect(ctx.enqueueResources).toHaveBeenCalledWith(['home_page']);
       expect(result).toEqual({ enqueued: ['home_page'], skippedResources: [] });
     });
 
     describe('when called with { enqueue: false }', () => {
       it('transitions to running without enqueueing anything', async () => {
-        await controller.stop();
-        spyOn(controller.engine, 'resume');
+        await ctx.controller.stop();
+        spyOn(ctx.controller.engine, 'resume');
 
-        const result = await controller.resumeProcessing([], { enqueue: false });
+        const result = await ctx.controller.resumeProcessing([], { enqueue: false });
 
-        expect(controller.engine.resume).toHaveBeenCalled();
-        expect(state.get()).toBe('running');
-        expect(enqueueResources).not.toHaveBeenCalled();
+        expect(ctx.controller.engine.resume).toHaveBeenCalled();
+        expect(ctx.state.get()).toBe('running');
+        expect(ctx.enqueueResources).not.toHaveBeenCalled();
         expect(result).toEqual({ enqueued: [], skippedResources: [] });
       });
 
       it('does not call the enqueueResources callback', async () => {
-        await controller.stop();
+        await ctx.controller.stop();
 
-        await controller.resumeProcessing(['home_page'], { enqueue: false });
+        await ctx.controller.resumeProcessing(['home_page'], { enqueue: false });
 
-        expect(enqueueResources).not.toHaveBeenCalled();
+        expect(ctx.enqueueResources).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('#restart', () => {
-    itStopsThenResumesInOrder('restart');
-    itDoesNothingWhenNotRunning('restart');
+    EngineControllerExamples.stopsThenResumesInOrder(ctx, 'restart');
+    EngineControllerExamples.doesNothingWhenNotRunning(ctx, 'restart');
   });
 
   describe('#reload', () => {
-    itStopsThenResumesInOrder('reload');
+    EngineControllerExamples.stopsThenResumesInOrder(ctx, 'reload');
 
     it('calls the injected reloadConfig callback between stop and resumeProcessing', async () => {
-      spyOn(controller, 'stop').and.callThrough();
-      spyOn(controller, 'resumeProcessing').and.callThrough();
+      spyOn(ctx.controller, 'stop').and.callThrough();
+      spyOn(ctx.controller, 'resumeProcessing').and.callThrough();
 
-      await controller.reload();
+      await ctx.controller.reload();
 
-      expect(controller.stop).toHaveBeenCalledBefore(reloadConfig);
-      expect(reloadConfig).toHaveBeenCalledBefore(controller.resumeProcessing);
+      expect(ctx.controller.stop).toHaveBeenCalledBefore(ctx.reloadConfig);
+      expect(ctx.reloadConfig).toHaveBeenCalledBefore(ctx.controller.resumeProcessing);
     });
 
-    itDoesNothingWhenNotRunning('reload');
+    EngineControllerExamples.doesNothingWhenNotRunning(ctx, 'reload');
 
     it('does not call reloadConfig when not running', async () => {
-      state.set('stopped');
+      ctx.state.set('stopped');
 
-      await controller.reload();
+      await ctx.controller.reload();
 
-      expect(reloadConfig).not.toHaveBeenCalled();
+      expect(ctx.reloadConfig).not.toHaveBeenCalled();
     });
   });
 
@@ -480,25 +409,25 @@ describe('EngineController', () => {
      */
     function itStopsTheEngine() {
       it('stops the engine', async () => {
-        await controller.shutdown();
+        await ctx.controller.shutdown();
 
-        expect(controller.engine.stop).toHaveBeenCalled();
+        expect(ctx.controller.engine.stop).toHaveBeenCalled();
       });
     }
 
     beforeEach(() => {
-      spyOn(controller.engine, 'stop');
+      spyOn(ctx.controller.engine, 'stop');
     });
 
     describe('when a server controller is present', () => {
       beforeEach(() => {
-        controller.serverController = { shutdown: jasmine.createSpy('shutdown') };
+        ctx.controller.serverController = { shutdown: jasmine.createSpy('shutdown') };
       });
 
       it('shuts down the server controller', async () => {
-        await controller.shutdown();
+        await ctx.controller.shutdown();
 
-        expect(controller.serverController.shutdown).toHaveBeenCalled();
+        expect(ctx.controller.serverController.shutdown).toHaveBeenCalled();
       });
 
       itStopsTheEngine();
@@ -506,11 +435,11 @@ describe('EngineController', () => {
 
     describe('when there is no server controller', () => {
       beforeEach(() => {
-        controller.serverController = null;
+        ctx.controller.serverController = null;
       });
 
       it('does not throw', async () => {
-        await expectAsync(controller.shutdown()).not.toBeRejected();
+        await expectAsync(ctx.controller.shutdown()).not.toBeRejected();
       });
 
       itStopsTheEngine();
@@ -519,27 +448,27 @@ describe('EngineController', () => {
 
   describe('#finishRun', () => {
     beforeEach(() => {
-      controller = new EngineController({
-        state,
+      ctx.controller = new EngineController({
+        state: ctx.state,
         config: { failureConfig: { threshold: 30 } },
-        enqueueResources,
-        reloadConfig,
+        enqueueResources: ctx.enqueueResources,
+        reloadConfig: ctx.reloadConfig,
       });
-      controller.engine = { emit: () => {} };
-      spyOn(controller.engine, 'emit');
+      ctx.controller.engine = { emit: () => {} };
+      spyOn(ctx.controller.engine, 'emit');
     });
 
     it('sets the state to stopped', () => {
-      controller.finishRun();
+      ctx.controller.finishRun();
 
-      expect(state.get()).toBe('stopped');
+      expect(ctx.state.get()).toBe('stopped');
     });
 
     it('emits stop and finish events on the engine', () => {
-      controller.finishRun();
+      ctx.controller.finishRun();
 
-      expect(controller.engine.emit).toHaveBeenCalledWith('stop');
-      expect(controller.engine.emit).toHaveBeenCalledWith('finish');
+      expect(ctx.controller.engine.emit).toHaveBeenCalledWith('stop');
+      expect(ctx.controller.engine.emit).toHaveBeenCalledWith('finish');
     });
   });
 });
