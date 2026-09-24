@@ -1,7 +1,7 @@
 import { JobRegistry } from 'deku-swarm';
-import { ResponseWrapper } from '../../../lib/models/response/ResponseWrapper.js';
 import { LoggerUtils } from './LoggerUtils.js';
 import { RegistryCleanupUtils } from './RegistryCleanupUtils.js';
+import { ResponseWrapper } from '../../../lib/models/response/ResponseWrapper.js';
 
 /**
  * Test utility shared by the ResourceRequest spec files.
