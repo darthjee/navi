@@ -33,7 +33,7 @@ describe('Application failure threshold', () => {
   });
 
   it('calls process.exit(1) when dead ratio exceeds the configured threshold', async () => {
-    prepareRunScenario({ fixtureName: 'config/sample_config_with_failure.yml', successRate: 0 });
+    prepareRunScenario({ fixtureName: 'config/fast_retry_sample_config_with_failure.yml', successRate: 0 });
 
     await app.run();
 
@@ -41,7 +41,7 @@ describe('Application failure threshold', () => {
   });
 
   it('does not call process.exit when dead ratio stays within the threshold', async () => {
-    prepareRunScenario({ fixtureName: 'config/sample_config_with_failure.yml', successRate: 1 });
+    prepareRunScenario({ fixtureName: 'config/fast_retry_sample_config_with_failure.yml', successRate: 1 });
 
     await app.run();
 
@@ -49,7 +49,7 @@ describe('Application failure threshold', () => {
   });
 
   it('does not call process.exit when no failure threshold is configured', async () => {
-    prepareRunScenario({ fixtureName: 'config/sample_config.yml', successRate: 0 });
+    prepareRunScenario({ fixtureName: 'config/fast_retry_sample_config.yml', successRate: 0 });
 
     await app.run();
 
