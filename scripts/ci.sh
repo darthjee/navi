@@ -15,6 +15,7 @@ case "$ACTION" in
   check-and-publish-worker) bash "$DIR/ci/check-and-publish-worker.sh" "$@" ;;
   check-and-publish-deku-sprout) bash "$DIR/ci/check-and-publish-deku-sprout.sh" "$@" ;;
   build-frontend) bash "$DIR/ci/build-frontend.sh" "$@" ;;
+  pin-local-deps) bash "$DIR/ci/pin-local-deps.sh" "$@" ;;
   *)
     echo "Unknown action: $ACTION" >&2
     exit 1
