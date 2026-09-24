@@ -5,27 +5,11 @@ import { EmitJob } from '../../../lib/jobs/EmitJob.js';
 import { ExtractionJob } from '../../../lib/jobs/ExtractionJob.js';
 import { ResourceRequestJob } from '../../../lib/jobs/ResourceRequestJob.js';
 import { ResourceRequest } from '../../../lib/models/request/resource_request/ResourceRequest.js';
-import { JsonPathParser } from '../../../lib/parsers/JsonPathParser.js';
-import { RegexParser } from '../../../lib/parsers/RegexParser.js';
-import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
-import { ClientFactory } from '../../support/factories/ClientFactory.js';
 import { NamespaceMapFactory } from '../../support/factories/NamespaceMapFactory.js';
 import { AxiosUtils } from '../../support/utils/AxiosUtils.js';
-import { LoggerUtils } from '../../support/utils/LoggerUtils.js';
+import { EndToEndFlowUtils } from '../../support/utils/EndToEndFlowUtils.js';
 
-const enqueued = (klass) => JobRegistry.jobsByStatus('enqueued').filter((job) => job instanceof klass);
-
-const hasEnqueued = (klass) => enqueued(klass).length > 0;
-
-const performAll = async (jobs, logContext) => {
-  for (const job of jobs) {
-    await job.perform(logContext);
-  }
-};
-
-const expectEmitted = (url, body) => {
-  expect(axios.post).toHaveBeenCalledWith(url, body, jasmine.anything());
-};
+const { enqueued, hasEnqueued, performAll, expectEmitted } = EndToEndFlowUtils;
 
 const postIdBody = '<html><body class="page page-id-42 postid-880433 logged-in"></body></html>';
 
@@ -46,28 +30,16 @@ describe('ExtractionJob → EmitEnqueuer → EmitJob (end-to-end)', () => {
   let logContext;
   let clients;
 
+  const ctx = EndToEndFlowUtils.setup();
+
   beforeEach(() => {
-    LoggerUtils.stubLoggerMethods();
-    logContext = jasmine.createSpyObj('logContext', ['debug', 'info', 'warn', 'error']);
+    logContext = ctx.logContext;
+    clients = NamespaceMapFactory.build({ clients: EndToEndFlowUtils.exampleClients() });
 
-    JobRegistry.build({ cooldown: -1 });
-
-    clients = NamespaceMapFactory.build({
-      clients: {
-        lootstudios: ClientFactory.build({ name: 'lootstudios', baseUrl: 'https://app.lootstudios.com' }),
-        majora_api: ClientFactory.build({ name: 'majora_api', baseUrl: 'https://majora.example.com' }),
-      },
-    });
-
-    const parserRegistry = new ParserRegistry({ json_path: new JsonPathParser(), regex: new RegexParser() });
+    const parserRegistry = EndToEndFlowUtils.buildParserRegistry();
     JobFactory.build('Action', { klass: ActionProcessingJob });
     JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry } });
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients } });
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
-    JobFactory.reset();
   });
 
   const buildTopJob = ({ body, ...requestAttributes }) => {
