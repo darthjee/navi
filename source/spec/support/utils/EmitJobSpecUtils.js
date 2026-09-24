@@ -1,9 +1,9 @@
+import { LoggerUtils } from './LoggerUtils.js';
 import { EmissionRegistry } from '../../../lib/registry/EmissionRegistry.js';
 import { ClientFactory } from '../factories/ClientFactory.js';
 import { EmitJobFactory } from '../factories/EmitJobFactory.js';
 import { NamespaceMapFactory } from '../factories/NamespaceMapFactory.js';
 import { ResourceRequestEmitFactory } from '../factories/ResourceRequestEmitFactory.js';
-import { LoggerUtils } from './LoggerUtils.js';
 
 /**
  * Test utility shared by the EmitJob spec files.
