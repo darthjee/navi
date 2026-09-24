@@ -16,9 +16,9 @@ Cache Warmer Tool
 
 **Client Next Version:** [0.2.3](https://github.com/darthjee/navi/compare/client-0.2.2...main)
 
-**Worker Current Version:** [1.10.0](https://github.com/darthjee/navi/releases/tag/worker-1.10.0)
+**Worker Current Version:** [1.10.1](https://github.com/darthjee/navi/releases/tag/worker-1.10.1)
 
-**Worker Next Version:** [1.10.1](https://github.com/darthjee/navi/compare/worker-1.10.0...main)
+**Worker Next Version:** [1.10.2](https://github.com/darthjee/navi/compare/worker-1.10.1...main)
 
 **Deku Sprout Current Version:** [0.1.0](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.1.0)
 
