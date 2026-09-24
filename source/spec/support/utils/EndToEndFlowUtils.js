@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { JobFactory, JobRegistry } from 'deku-swarm';
+import { LogContextUtils } from './LogContextUtils.js';
+import { LoggerUtils } from './LoggerUtils.js';
 import { JsonPathParser } from '../../../lib/parsers/JsonPathParser.js';
 import { RegexParser } from '../../../lib/parsers/RegexParser.js';
 import { ParserRegistry } from '../../../lib/registry/ParserRegistry.js';
 import { ClientFactory } from '../factories/ClientFactory.js';
-import { LogContextUtils } from './LogContextUtils.js';
-import { LoggerUtils } from './LoggerUtils.js';
 
 /**
  * Test utility shared by the end-to-end extraction/emit flow specs, which drive real
