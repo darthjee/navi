@@ -6,31 +6,7 @@ import { NamespaceMap } from '../../../../lib/registry/namespace/NamespaceMap.js
 import { ConfigIncluder } from '../../../../lib/services/config/ConfigIncluder.js';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { EngineState } from '../../../../lib/services/engine/EngineState.js';
-
-/**
- * Builds a minimal fake Engine test double that supports the `on`/`emit`
- * listener API, so specs can assert on listener wiring without depending on
- * the real Engine implementation.
- * @param {object} [overrides={}] - Properties to override on the fake engine.
- * @returns {object} The fake engine instance.
- */
-function buildFakeEngine(overrides = {}) {
-  const handlers = {};
-
-  return {
-    start: async () => {},
-    pause: () => {},
-    resume: () => {},
-    stop: () => {},
-    on: (eventName, handler) => {
-      handlers[eventName] = handler;
-    },
-    emit: (eventName, ...args) => {
-      handlers[eventName]?.(...args);
-    },
-    ...overrides,
-  };
-}
+import { FakeEngine } from '../../../support/dummies/services/FakeEngine.js';
 
 describe('EngineController', () => {
   let controller;
@@ -218,7 +194,7 @@ describe('EngineController', () => {
         state,
         config: { failureConfig: { threshold: 30 } },
       });
-      localController.engine = buildFakeEngine();
+      localController.engine = FakeEngine.build();
       spyOn(LogRegistry, 'clearBuffers');
       EmissionRegistry.build();
       ExtractionRegistry.build();
@@ -272,7 +248,7 @@ describe('EngineController', () => {
     }
 
     it('builds an engine and binds the given reporter', () => {
-      const fakeEngine = buildFakeEngine();
+      const fakeEngine = FakeEngine.build();
 
       spyOn(EngineController.prototype, 'buildEngine').and.returnValue(fakeEngine);
       spyOn(EngineController.prototype, 'bind').and.callThrough();
@@ -292,7 +268,7 @@ describe('EngineController', () => {
       const localState = new EngineState();
       localState.set('running');
 
-      spyOn(EngineController.prototype, 'buildEngine').and.returnValue(buildFakeEngine());
+      spyOn(EngineController.prototype, 'buildEngine').and.returnValue(FakeEngine.build());
       spyOn(EngineController.prototype, 'bind').and.stub();
       spyOn(ConfigIncluder, 'resolve').and.returnValue('resolved-config');
       spyOn(NamespaceMap, 'include').and.stub();
@@ -325,7 +301,7 @@ describe('EngineController', () => {
     scenarios.forEach(({ description, shouldAutostart, expectedState, pauses }) => {
       it(description, () => {
         const localController = new EngineController({ state, shouldAutostart });
-        localController.engine = buildFakeEngine({ start: jasmine.createSpy('start').and.returnValue('start-result') });
+        localController.engine = FakeEngine.build({ start: jasmine.createSpy('start').and.returnValue('start-result') });
         spyOn(localController.engine, 'pause');
 
         const result = localController.start();
