@@ -10,8 +10,22 @@ describe('Client', () => {
   const fullUrl = 'http://example.com/categories.json';
   const status = 200;
 
+  const getOptions = (overrides = {}) => ({
+    timeout: 5000,
+    responseType: 'text',
+    headers: {},
+    maxRedirects: 0,
+    validateStatus: jasmine.any(Function),
+    ...overrides,
+  });
+
+  const requestFailed = (statusCode) => jasmine.objectContaining({
+    name: 'RequestFailed',
+    statusCode,
+    url: fullUrl,
+  });
+
   let client;
-  let expectedError;
   let resourceRequest;
   let logContext;
 
@@ -26,32 +40,17 @@ describe('Client', () => {
     const response = AxiosUtils.stubGet(200);
 
     await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
-    expect(axios.get).toHaveBeenCalledWith(fullUrl, {
-      timeout: 5000,
-      responseType: 'text',
-      headers: {},
-      maxRedirects: 0,
-      validateStatus: jasmine.any(Function),
-    });
+    expect(axios.get).toHaveBeenCalledWith(fullUrl, getOptions());
     expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(fullUrl));
     expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 200`));
     expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} matched (expected 200)`));
   });
 
   describe('when request status is not a match', () => {
-    beforeEach(() => {
-      expectedError = jasmine.objectContaining({
-        name: 'RequestFailed',
-        statusCode: 404,
-        url: fullUrl,
-      });
-
-    });
-
     it('throws RequestFailed when status does not match and logs the error', async () => {
       AxiosUtils.stubGet(404);
 
-      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(requestFailed(404));
       expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`Response ${fullUrl} → 404`));
       expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(`${fullUrl} did not match (got 404, expected 200)`));
       expect(logContext.error).toHaveBeenCalled();
@@ -72,7 +71,7 @@ describe('Client', () => {
       resourceRequest = ResourceRequestFactory.build({ url, status: 404 });
     });
 
-    it('throws RequestFailed when status does not match', async () => {
+    it('resolves with the response', async () => {
       const response = AxiosUtils.stubGet(404);
 
       await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
@@ -80,19 +79,10 @@ describe('Client', () => {
   });
 
   describe('when request is 5xx', () => {
-    beforeEach(() => {
-      expectedError = jasmine.objectContaining({
-        name: 'RequestFailed',
-        statusCode: 500,
-        url: fullUrl,
-      });
-
-    });
-
     it('throws RequestFailed with correct status and full url on error.response and logs the error', async () => {
       AxiosUtils.stubGetRejection({ response: { status: 500 } });
 
-      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(requestFailed(500));
       expect(logContext.error).toHaveBeenCalled();
     });
 
@@ -115,13 +105,7 @@ describe('Client', () => {
       const response = AxiosUtils.stubGet(200);
 
       await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
-      expect(axios.get).toHaveBeenCalledWith(fullUrl, {
-        timeout: 5000,
-        responseType: 'text',
-        headers: {},
-        maxRedirects: 0,
-        validateStatus: jasmine.any(Function),
-      });
+      expect(axios.get).toHaveBeenCalledWith(fullUrl, getOptions({ timeout: 5000 }));
     });
   });
 
@@ -136,13 +120,9 @@ describe('Client', () => {
       const response = AxiosUtils.stubGet(200);
 
       await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeResolvedTo(response);
-      expect(axios.get).toHaveBeenCalledWith(fullUrl, {
-        timeout: 5000,
-        responseType: 'text',
+      expect(axios.get).toHaveBeenCalledWith(fullUrl, getOptions({
         headers: { Authorization: 'Bearer token123', 'X-Custom': 'value' },
-        maxRedirects: 0,
-        validateStatus: jasmine.any(Function),
-      });
+      }));
     });
   });
 
@@ -158,13 +138,7 @@ describe('Client', () => {
       const response = AxiosUtils.stubGet(200);
 
       await expectAsync(client.perform(resourceRequest, { id: 42 }, logContext)).toBeResolvedTo(response);
-      expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, {
-        timeout: 5000,
-        responseType: 'text',
-        headers: {},
-        maxRedirects: 0,
-        validateStatus: jasmine.any(Function),
-      });
+      expect(axios.get).toHaveBeenCalledWith(resolvedFullUrl, getOptions());
       expect(logContext.info).toHaveBeenCalledWith(jasmine.stringContaining(resolvedFullUrl));
     });
   });
@@ -182,18 +156,10 @@ describe('Client', () => {
   });
 
   describe('when request is a redirect (3xx) but expected status is 200', () => {
-    beforeEach(() => {
-      expectedError = jasmine.objectContaining({
-        name: 'RequestFailed',
-        statusCode: 301,
-        url: fullUrl,
-      });
-    });
-
     it('throws RequestFailed with the redirect status and logs the error', async () => {
       AxiosUtils.stubGet(301);
 
-      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(expectedError);
+      await expectAsync(client.perform(resourceRequest, {}, logContext)).toBeRejectedWith(requestFailed(301));
       expect(logContext.error).toHaveBeenCalled();
     });
   });
