@@ -13,6 +13,14 @@ describe('Engine', () => {
 
   describe('#start', () => {
     describe('when keepAlive is true', () => {
+      const startOnceWithReadyJob = async (engine) => {
+        spyOn(engine.allocator, 'allocate');
+        spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
+        stopAfterIterations(engine, { limit: 1 });
+
+        await engine.start();
+      };
+
       it('keeps running when the queue becomes empty', async () => {
         const engine = buildEngine({ keepAlive: true });
         const iterations = stopAfterIterations(engine, { limit: 3 });
@@ -25,11 +33,8 @@ describe('Engine', () => {
       it('skips allocation while paused', async () => {
         const engine = buildEngine({ keepAlive: true });
         engine.pause();
-        spyOn(engine.allocator, 'allocate');
-        spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
-        stopAfterIterations(engine, { limit: 1 });
 
-        await engine.start();
+        await startOnceWithReadyJob(engine);
 
         expect(engine.allocator.allocate).not.toHaveBeenCalled();
       });
@@ -38,11 +43,8 @@ describe('Engine', () => {
         const engine = buildEngine({ keepAlive: true });
         engine.pause();
         engine.resume();
-        spyOn(engine.allocator, 'allocate');
-        spyOn(JobRegistry, 'hasReadyJob').and.returnValue(true);
-        stopAfterIterations(engine, { limit: 1 });
 
-        await engine.start();
+        await startOnceWithReadyJob(engine);
 
         expect(engine.allocator.allocate).toHaveBeenCalled();
       });
