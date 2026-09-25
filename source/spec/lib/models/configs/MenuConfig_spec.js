@@ -1,4 +1,3 @@
-import { join } from 'node:path';
 import { Logger } from 'deku-sprout';
 import { MenuConfigurationInvalid } from '../../../../lib/exceptions/config/MenuConfigurationInvalid.js';
 import { MenuConfig } from '../../../../lib/models/configs/MenuConfig.js';
@@ -9,17 +8,7 @@ const { LOGS, MEMORY } = MenuConfigFileUtils;
 const rendered = (path) => MenuConfigFileUtils.rendered(path);
 
 describe('MenuConfig', () => {
-  let dir;
-
-  beforeEach(() => {
-    dir = MenuConfigFileUtils.createTempDir();
-  });
-
-  afterEach(() => {
-    MenuConfigFileUtils.removeTempDir(dir);
-  });
-
-  const write = (lines) => MenuConfigFileUtils.write(dir, lines);
+  const { path: tempPath, write } = MenuConfigFileUtils.useTempDir();
 
   describe('.DEFAULT_ENTRIES', () => {
     it('is the Logs + Memory menu', () => {
@@ -46,7 +35,7 @@ describe('MenuConfig', () => {
 
   describe('.fromFile', () => {
     [
-      { description: 'the file does not exist', path: () => join(dir, 'missing.yml') },
+      { description: 'the file does not exist', path: () => tempPath('missing.yml') },
       { description: 'the file is empty', content: '' },
       { description: 'the file is whitespace-only', content: '   \n  \n' },
       { description: 'the file is fully commented out', content: ['# entries:', '#   - route: /dashboard'] },

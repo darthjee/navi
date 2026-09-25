@@ -27,6 +27,30 @@ class MenuConfigFileUtils {
   static DEFAULTS = [MenuConfigFileUtils.LOGS, MenuConfigFileUtils.MEMORY];
 
   /**
+   * Registers `beforeEach`/`afterEach` hooks that create and remove a temp dir
+   * per example, and returns accessors bound to the current example's dir.
+   * Call it inside a `describe` block.
+   * @returns {{path: function(string): string, write: function((string|string[])): string}}
+   *   `path(name)` resolves a file inside the temp dir; `write(lines)` writes `menu.yml`.
+   */
+  static useTempDir() {
+    let dir;
+
+    beforeEach(() => {
+      dir = MenuConfigFileUtils.createTempDir();
+    });
+
+    afterEach(() => {
+      MenuConfigFileUtils.removeTempDir(dir);
+    });
+
+    return {
+      path: (name) => join(dir, name),
+      write: (lines) => MenuConfigFileUtils.write(dir, lines),
+    };
+  }
+
+  /**
    * Creates a fresh temporary directory for a spec example.
    * @returns {string} The absolute path of the new directory.
    */

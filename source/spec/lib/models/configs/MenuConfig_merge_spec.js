@@ -6,17 +6,7 @@ const { LOGS, MEMORY } = MenuConfigFileUtils;
 const rendered = (path) => MenuConfigFileUtils.rendered(path);
 
 describe('MenuConfig', () => {
-  let dir;
-
-  beforeEach(() => {
-    dir = MenuConfigFileUtils.createTempDir();
-  });
-
-  afterEach(() => {
-    MenuConfigFileUtils.removeTempDir(dir);
-  });
-
-  const write = (lines) => MenuConfigFileUtils.write(dir, lines);
+  const { write } = MenuConfigFileUtils.useTempDir();
 
   describe('.fromFile', () => {
     describe('when hidden is true on a default route', () => {
