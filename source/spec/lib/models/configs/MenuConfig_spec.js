@@ -45,39 +45,20 @@ describe('MenuConfig', () => {
   });
 
   describe('.fromFile', () => {
-    describe('when the file does not exist', () => {
-      it('returns the default entries', () => {
-        expect(rendered(join(dir, 'missing.yml'))).toEqual([LOGS, MEMORY]);
-      });
-    });
+    [
+      { description: 'the file does not exist', path: () => join(dir, 'missing.yml') },
+      { description: 'the file is empty', content: '' },
+      { description: 'the file is whitespace-only', content: '   \n  \n' },
+      { description: 'the file is fully commented out', content: ['# entries:', '#   - route: /dashboard'] },
+      { description: 'the document carries neither entries nor defaults', content: 'other: value\n' },
+      { description: 'entries is an explicit empty list', content: 'entries: []\n' },
+    ].forEach(({ description, path, content }) => {
+      describe(`when ${description}`, () => {
+        it('returns the default entries', () => {
+          const file = path ? path() : write(content);
 
-    describe('when the file is empty', () => {
-      it('returns the default entries', () => {
-        expect(rendered(write(''))).toEqual([LOGS, MEMORY]);
-      });
-    });
-
-    describe('when the file is whitespace-only', () => {
-      it('returns the default entries', () => {
-        expect(rendered(write('   \n  \n'))).toEqual([LOGS, MEMORY]);
-      });
-    });
-
-    describe('when the file is fully commented out', () => {
-      it('returns the default entries', () => {
-        expect(rendered(write(['# entries:', '#   - route: /dashboard']))).toEqual([LOGS, MEMORY]);
-      });
-    });
-
-    describe('when the document carries neither entries nor defaults', () => {
-      it('returns the default entries', () => {
-        expect(rendered(write('other: value\n'))).toEqual([LOGS, MEMORY]);
-      });
-    });
-
-    describe('when entries is an explicit empty list', () => {
-      it('still renders the Logs + Memory defaults', () => {
-        expect(rendered(write('entries: []\n'))).toEqual([LOGS, MEMORY]);
+          expect(rendered(file)).toEqual([LOGS, MEMORY]);
+        });
       });
     });
 
