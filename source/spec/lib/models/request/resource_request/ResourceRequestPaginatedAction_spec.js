@@ -1,23 +1,14 @@
 import { JobRegistry } from 'deku-swarm';
 import { MissingActionResource } from '../../../../../lib/exceptions/registry/MissingActionResource.js';
 import { MissingMappingVariable } from '../../../../../lib/exceptions/registry/MissingMappingVariable.js';
-import { NamespaceNotFound } from '../../../../../lib/exceptions/registry/NamespaceNotFound.js';
 import { ResourceNotFound } from '../../../../../lib/exceptions/registry/ResourceNotFound.js';
 import { ResourceRequestPaginatedAction } from '../../../../../lib/models/request/resource_request/ResourceRequestPaginatedAction.js';
 import { Application } from '../../../../../lib/services/application/Application.js';
 import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';
+import { PaginatedActionSpecUtils } from '../../../../support/utils/PaginatedActionSpecUtils.js';
 import { ResourceActionUtils } from '../../../../support/utils/ResourceActionUtils.js';
 
-const pagination = [{ pages: 'parsedBody.total_pages', page_key: 'page' }];
-const responseWrapper = {
-  parsedBody: { total_pages: 3 },
-  headers: {},
-  parameters: {},
-};
-
-const registerProductsResource = (...resourceRequests) => {
-  return ResourceActionUtils.registerResource('products', resourceRequests);
-};
+const { pagination, responseWrapper, registerProductsResource } = PaginatedActionSpecUtils;
 
 describe('ResourceRequestPaginatedAction', () => {
   ResourceActionUtils.setup();
@@ -221,98 +212,6 @@ describe('ResourceRequestPaginatedAction', () => {
       }).toThrowMatching((error) => error instanceof MissingMappingVariable);
     });
 
-    describe('parameters', () => {
-      const wrapper = {
-        parsedBody: { total_pages: 2 },
-        headers: { 'x-per-page': '20' },
-        parameters: {},
-      };
-
-      it('resolves the configured parameters into every enqueued job, per page', () => {
-        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        registerProductsResource(resourceRequest);
-
-        new ResourceRequestPaginatedAction({
-          resource: 'products',
-          pagination,
-          parameters: { per_page: "headers['x-per-page']" },
-        }).execute(wrapper);
-
-        expect(JobRegistry.enqueue).toHaveBeenCalledTimes(2);
-        [1, 2].forEach((page) => {
-          expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-            'ResourceRequestJob',
-            { resourceRequest, parameters: { per_page: '20', page } },
-          );
-        });
-      });
-
-      it('overrides same-named inherited parameters with the resolved parameters values', () => {
-        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        registerProductsResource(resourceRequest);
-
-        new ResourceRequestPaginatedAction({
-          resource: 'products',
-          pagination,
-          parameters: { per_page: "headers['x-per-page']" },
-        }).execute(wrapper, { per_page: 5 });
-
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { per_page: '20', page: 1 } },
-        );
-      });
-
-      it('always keeps the page_key value even when parameters defines the same key', () => {
-        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        registerProductsResource(resourceRequest);
-
-        new ResourceRequestPaginatedAction({
-          resource: 'products',
-          pagination,
-          parameters: { page: "headers['x-per-page']" },
-        }).execute(wrapper);
-
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 1 } },
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 2 } },
-        );
-      });
-
-      it('behaves exactly as when parameters is omitted', () => {
-        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        registerProductsResource(resourceRequest);
-
-        new ResourceRequestPaginatedAction({ resource: 'products', pagination })
-          .execute(wrapper, { category_id: 5 });
-
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { category_id: 5, page: 1 } },
-        );
-        expect(JobRegistry.enqueue).toHaveBeenCalledWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { category_id: 5, page: 2 } },
-        );
-      });
-
-      it('throws MissingMappingVariable when a parameters path expression is unresolved', () => {
-        registerProductsResource(ResourceRequestFactory.build({ url: '/products.json' }));
-
-        expect(() => {
-          new ResourceRequestPaginatedAction({
-            resource: 'products',
-            pagination,
-            parameters: { per_page: "headers['x-missing']" },
-          }).execute(wrapper);
-        }).toThrowMatching((error) => error instanceof MissingMappingVariable);
-      });
-    });
-
     it('does not enqueue any job when the application is stopped', () => {
       spyOn(Application, 'isStopped').and.returnValue(true);
       registerProductsResource(ResourceRequestFactory.build({ url: '/products.json' }));
@@ -320,64 +219,6 @@ describe('ResourceRequestPaginatedAction', () => {
       new ResourceRequestPaginatedAction({ resource: 'products', pagination }).execute(responseWrapper);
 
       expect(JobRegistry.enqueue).not.toHaveBeenCalled();
-    });
-
-    describe('namespace resolution', () => {
-      it('exposes the resource name, target namespace, and origin namespace', () => {
-        const action = new ResourceRequestPaginatedAction({
-          resource: 'products',
-          namespace: 'paginated',
-          originNamespace: 'default',
-          pagination,
-        });
-
-        expect(action.resource).toBe('products');
-        expect(action.namespace).toBe('paginated');
-        expect(action.originNamespace).toBe('default');
-      });
-
-      it('resolves the target resource from an explicit namespace', () => {
-        const resourceRequest = ResourceRequestFactory.build({ url: '/paginated/products.json' });
-        ResourceActionUtils.registerResource('products', [resourceRequest], { namespace: 'paginated' });
-        const singlePageWrapper = { parsedBody: { total_pages: 1 }, headers: {} };
-
-        new ResourceRequestPaginatedAction({
-          resource: 'products',
-          namespace: 'paginated',
-          originNamespace: 'default',
-          pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }],
-        }).execute(singlePageWrapper);
-
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 1 } },
-        );
-      });
-
-      it('falls back to the default namespace when the origin namespace lookup fails', () => {
-        const resourceRequest = ResourceRequestFactory.build({ url: '/products.json' });
-        registerProductsResource(resourceRequest);
-        const singlePageWrapper = { parsedBody: { total_pages: 1 }, headers: {} };
-
-        new ResourceRequestPaginatedAction({
-          resource: 'products',
-          originNamespace: 'paginated',
-          pagination: [{ pages: 'parsedBody.total_pages', page_key: 'page' }],
-        }).execute(singlePageWrapper);
-
-        expect(JobRegistry.enqueue).toHaveBeenCalledOnceWith(
-          'ResourceRequestJob',
-          { resourceRequest, parameters: { page: 1 } },
-        );
-      });
-
-      it('throws NamespaceNotFound when the explicit target namespace does not exist', () => {
-        registerProductsResource(ResourceRequestFactory.build({ url: '/products.json' }));
-        const action = new ResourceRequestPaginatedAction({ resource: 'products', namespace: 'unknown', pagination });
-
-        expect(() => action.execute(responseWrapper))
-          .toThrowMatching((error) => error instanceof NamespaceNotFound);
-      });
     });
   });
 });
