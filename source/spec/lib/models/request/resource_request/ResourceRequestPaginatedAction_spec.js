@@ -6,18 +6,10 @@ import { ResourceNotFound } from '../../../../../lib/exceptions/registry/Resourc
 import { ResourceRequestPaginatedAction } from '../../../../../lib/models/request/resource_request/ResourceRequestPaginatedAction.js';
 import { Application } from '../../../../../lib/services/application/Application.js';
 import { ResourceRequestFactory } from '../../../../support/factories/ResourceRequestFactory.js';
+import { PaginatedActionSpecUtils } from '../../../../support/utils/PaginatedActionSpecUtils.js';
 import { ResourceActionUtils } from '../../../../support/utils/ResourceActionUtils.js';
 
-const pagination = [{ pages: 'parsedBody.total_pages', page_key: 'page' }];
-const responseWrapper = {
-  parsedBody: { total_pages: 3 },
-  headers: {},
-  parameters: {},
-};
-
-const registerProductsResource = (...resourceRequests) => {
-  return ResourceActionUtils.registerResource('products', resourceRequests);
-};
+const { pagination, responseWrapper, registerProductsResource } = PaginatedActionSpecUtils;
 
 describe('ResourceRequestPaginatedAction', () => {
   ResourceActionUtils.setup();
