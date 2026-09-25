@@ -132,4 +132,5 @@ describe('Client', () => {
         expect(logContext.error).toHaveBeenCalled();
       });
     });
+  });
 });
