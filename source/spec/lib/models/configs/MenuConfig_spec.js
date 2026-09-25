@@ -1,33 +1,25 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Logger } from 'deku-sprout';
 import { MenuConfigurationInvalid } from '../../../../lib/exceptions/config/MenuConfigurationInvalid.js';
 import { MenuConfig } from '../../../../lib/models/configs/MenuConfig.js';
 import { MenuEntry } from '../../../../lib/models/configs/MenuEntry.js';
+import { MenuConfigFileUtils } from '../../../support/utils/MenuConfigFileUtils.js';
+
+const { LOGS, MEMORY } = MenuConfigFileUtils;
+const rendered = (path) => MenuConfigFileUtils.rendered(path);
 
 describe('MenuConfig', () => {
   let dir;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'menu-config-'));
+    dir = MenuConfigFileUtils.createTempDir();
   });
 
   afterEach(() => {
-    rmSync(dir, { recursive: true, force: true });
+    MenuConfigFileUtils.removeTempDir(dir);
   });
 
-  const write = (lines) => {
-    const content = Array.isArray(lines) ? lines.join('\n') : lines;
-    const path = join(dir, 'menu.yml');
-    writeFileSync(path, content, 'utf8');
-    return path;
-  };
-
-  const rendered = (path) => MenuConfig.fromFile(path).map((entry) => entry.toJSON());
-
-  const LOGS = { route: '/logs', text: 'Logs' };
-  const MEMORY = { route: '/memory/status', text: 'Memory' };
+  const write = (lines) => MenuConfigFileUtils.write(dir, lines);
 
   describe('.DEFAULT_ENTRIES', () => {
     it('is the Logs + Memory menu', () => {
