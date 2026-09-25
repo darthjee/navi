@@ -73,7 +73,8 @@ class EngineSpecUtils {
    * @param {object} ctx - The spec context to fill.
    * @param {object} [options={}] - Build options.
    * @param {number} [options.cooldown=-1] - JobRegistry cooldown.
-   * @param {IdentifyableCollection} [options.workers] - Workers collection for WorkersRegistry.
+   * @param {IdentifyableCollection|Function} [options.workers] - Workers collection for WorkersRegistry,
+   *   or a function of ctx returning a fresh one (so each build gets its own collection).
    * @param {object|Function} [options.engineOptions={}] - Engine options, or a function of ctx returning them.
    * @returns {void}
    */
@@ -84,13 +85,15 @@ class EngineSpecUtils {
     ctx.jobFactory = new DummyJobFactory();
     ctx.workerFactory = new DummyWorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry });
 
+    const workersCollection = typeof workers === 'function' ? workers(ctx) : workers;
+
     JobFactory.registry('ResourceRequestJob', ctx.jobFactory);
     JobRegistry.build({ finished: ctx.finished, dead: ctx.dead, cooldown });
     WorkersRegistry.build({
       busy: ctx.busy,
       quantity: 2,
       factory: ctx.workerFactory,
-      ...(workers ? { workers } : {}),
+      ...(workersCollection ? { workers: workersCollection } : {}),
     });
     WorkersRegistry.initWorkers();
     DummyJob.setSuccessRate(1);
