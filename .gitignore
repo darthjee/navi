@@ -168,3 +168,4 @@ frontend/node_modules
 output/
 .claude/state/
 frontend/report
+dev/frontend/report/
