@@ -36,14 +36,13 @@ check_token() {
   fi
 }
 
-read_version() {
-  node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version"
-}
+# shellcheck source=../lib/package_bump_check.sh
+source "$DIR/../lib/package_bump_check.sh"
 
-VERSION=$(read_version < "$FOLDER/package.json")
+VERSION=$(package_bump_read_version < "$FOLDER/package.json")
 TAG="$TAG_PREFIX$VERSION"
 
-# --- forgotten-bump check (git-only) ---
+# --- forgotten-bump check (git-only, shared with scripts/bump_version.sh) ---
 check_version_bump() {
   if [ "$SKIP_BUMP_CHECK" = "true" ]; then
     echo "SKIP_BUMP_CHECK=true — skipping bump check"
@@ -51,28 +50,9 @@ check_version_bump() {
   fi
 
   # Start from HEAD^ so the tag currently being built is never returned.
-  local last_tag
-  last_tag=$(git describe --tags --abbrev=0 --match="${TAG_PREFIX}*" --match='[0-9]*.[0-9]*.[0-9]*' HEAD^ 2>/dev/null || echo "")
-
-  if [ -z "$last_tag" ]; then
-    echo "No previous release tag found — skipping bump check"
-    return 0
-  fi
-
-  if git diff --quiet "$last_tag"..HEAD -- "$FOLDER/lib" "$FOLDER/package.json"; then
-    echo "No published files changed in $FOLDER/ since $last_tag"
-    return 0
-  fi
-
-  local last_version
-  last_version=$(git show "$last_tag:$FOLDER/package.json" 2>/dev/null | read_version 2>/dev/null || echo "")
-
-  if [ "$last_version" = "$VERSION" ]; then
-    echo "$FOLDER/ published files changed since $last_tag but version $VERSION was not bumped" >&2
+  if ! package_bump_check "$FOLDER" "$TAG_PREFIX" HEAD^ HEAD; then
     exit 1
   fi
-
-  echo "$FOLDER/ changed since $last_tag and version was bumped (${last_version:-none} -> $VERSION)"
 }
 
 # --- publish decision (npm) ---
