@@ -1,13 +1,5 @@
 version: 2.1
 
-parameters:
-  force_worker_build:
-    type: boolean
-    default: false
-  force_deku_sprout_build:
-    type: boolean
-    default: false
-
 workflows:
   test-and-release:
     jobs:
@@ -314,8 +306,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check worker/ changes and publish if needed
-          command: FORCE_WORKER_BUILD=<< pipeline.parameters.force_worker_build >> scripts/ci.sh check-and-publish-worker
+          name: Publish deku-swarm if its version is not on npm
+          command: scripts/ci.sh check-and-publish-worker
 
   check-and-publish-deku-sprout:
     docker:
@@ -323,8 +315,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check logger/ changes and publish if needed
-          command: FORCE_DEKU_SPROUT_BUILD=<< pipeline.parameters.force_deku_sprout_build >> scripts/ci.sh check-and-publish-deku-sprout
+          name: Publish deku-sprout if its version is not on npm
+          command: scripts/ci.sh check-and-publish-deku-sprout
 
   check-deku-sprout-version-tag:
     docker:
@@ -342,7 +334,7 @@ jobs:
       - checkout
       - run:
           name: Publish deku-sprout (standalone release)
-          command: FORCE_DEKU_SPROUT_BUILD=true scripts/ci.sh check-and-publish-deku-sprout
+          command: SKIP_BUMP_CHECK=true scripts/ci.sh check-and-publish-deku-sprout
 
   npm-publish:
     executor: node-ci
@@ -358,8 +350,16 @@ jobs:
           name: Pin local dependencies
           command: scripts/ci.sh pin-local-deps
       - run:
+          name: Wait for pinned dependencies on npm
+          command: |
+            scripts/ci.sh wait-for-npm deku-swarm "$(node -p "require('./worker/package.json').version")"
+            scripts/ci.sh wait-for-npm deku-sprout "$(node -p "require('./logger/package.json').version")"
+      - run:
           name: Publish to npm
           command: scripts/ci.sh publish source
+      - run:
+          name: Wait for navi-hey on npm
+          command: scripts/ci.sh wait-for-npm navi-hey "$CIRCLE_TAG"
 
   check-client-version-tag:
     docker:
@@ -380,6 +380,9 @@ jobs:
       - run:
           name: Publish to npm
           command: scripts/ci.sh publish clients/node
+      - run:
+          name: Wait for navi-hey-client on npm
+          command: scripts/ci.sh wait-for-npm navi-hey-client "$(echo $CIRCLE_TAG | sed 's/^client-//')"
 
   build-and-release-client:
     machine: true
