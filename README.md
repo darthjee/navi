@@ -20,9 +20,9 @@ Cache Warmer Tool
 **Deku Sprout Current Version:** [0.2.3](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.2.3)
 **Deku Sprout Next Version:** [0.2.4](https://github.com/darthjee/navi/compare/deku-sprout-0.2.3...main)
 
-Tagging a navi release now automatically publishes `deku-swarm` and `deku-sprout` to npm whenever the version in `worker/package.json` / `logger/package.json` isn't published yet, and pushes the matching `worker-x.y.z` / `deku-sprout-x.y.z` tag — no separate manual release step is needed. The release fails if a package's published files (`lib/` or `package.json`) changed since its previous release without a version bump; changes to specs, lint config, README or `yarn.lock` alone don't require a bump. Use `bump_version.sh worker [version]` beforehand to bump the worker version and the badges above.
+Tagging a navi release automatically publishes `deku-swarm` and `deku-sprout` to npm whenever the version in `worker/package.json` / `logger/package.json` isn't published yet, and pushes the matching `worker-x.y.z` / `deku-sprout-x.y.z` tag — there is no separate release track for either package. The release fails if a package's published files (`lib/` or `package.json`) changed since its previous release without a version bump; changes to specs, lint config, README or `yarn.lock` alone don't require a bump.
 
-`deku-sprout` is released independently: pushing a `deku-sprout-x.y.z` tag (matching `logger/package.json`) publishes it to npm. Use `bump_version.sh deku-sprout [version]` beforehand to bump its version and the badges above.
+Use `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and the badges above. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run.
 
 ---
 
