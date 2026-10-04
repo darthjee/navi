@@ -8,9 +8,8 @@ The release pipeline publishes `worker/` (`deku-swarm`) and `logger/` (`deku-spr
 |---|---|---|
 | `check-and-publish-worker` | `scripts/ci.sh check-and-publish-worker` | `worker-X.Y.Z` |
 | `check-and-publish-deku-sprout` | `scripts/ci.sh check-and-publish-deku-sprout` | `deku-sprout-X.Y.Z` |
-| `publish-deku-sprout-standalone` | `SKIP_BUMP_CHECK=true scripts/ci.sh check-and-publish-deku-sprout` | `deku-sprout-X.Y.Z` (skipped when it already exists) |
 
-All three run `scripts/ci/check-and-publish-package.sh`, which pushes the tag with:
+Both run `scripts/ci/check-and-publish-package.sh`, which pushes the tag with:
 
 ```bash
 git push "https://x-access-token:${GITHUB_TOKEN}@github.com/darthjee/navi.git" "$TAG"

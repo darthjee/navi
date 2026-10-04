@@ -54,4 +54,4 @@ See [Logger Subsystem](../../docs/agents/logger.md) (class-by-class reference, c
 - Class files use CamelCase matching the class name; specs are `<ClassName>_spec.js`, mirroring `lib/`'s tree under `spec/`.
 - Public methods before private (`#`-prefixed) methods.
 - Dependency injection only — classes never reach for Navi-specific singletons (e.g. `LogContext`) directly.
-- Versioning is independent from the main app: bump with `scripts/bump_version.sh deku-sprout [version]` (resolved relative to the repo root), never by hand. Releases are tagged `deku-sprout-X.Y.Z`.
+- Versioning is independent from the main app: bump with `scripts/bump_version.sh deku-sprout [version]` (resolved relative to the repo root), never by hand. `deku-sprout` is published only by the app `X.Y.Z` release; `deku-sprout-X.Y.Z` is a release marker tag pushed by CI after publishing (pushing it by hand triggers nothing).

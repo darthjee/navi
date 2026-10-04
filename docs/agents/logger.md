@@ -69,18 +69,17 @@ They only import each other, which is what made them extractable without taking 
 
 ## Release flow
 
-`deku-sprout` has its own version, CI jobs and tags, independent from `navi-hey` and `navi-hey-client`.
+`deku-sprout` has its own version, CI jobs and tags, but it is published only by the app `X.Y.Z` release (there is no standalone release track since #964).
 
 | Piece | Where |
 |---|---|
 | Spec and lint jobs | CircleCI `jasmine-deku-sprout` and `checks-deku-sprout`, both required by the pipeline's gating jobs. |
 | Auto-publish job | CircleCI `check-and-publish-deku-sprout`, running `scripts/ci.sh check-and-publish-deku-sprout` (`scripts/ci/check-and-publish-deku-sprout.sh`). It is a thin wrapper around `scripts/ci/check-and-publish-package.sh` (shared with `check-and-publish-worker`). It publishes whenever the version in `logger/package.json` is not on npm yet (an `npm view` error other than "not found" fails the job). Before that, a git-only check finds the previous release with `git describe` from `HEAD^` (so the tag being built is never picked) and **fails** the job if `logger/lib/` or `logger/package.json` changed since that release while the version stayed the same; spec/config-only changes are ignored. The npm publish and the tag push are each idempotent on their own, so the job can be re-run safely. `DRY_RUN=1` prints what it would publish/push without doing it. Pushing the tag needs the `GITHUB_TOKEN` env var, checked before anything is published (see [Release Token](release-token.md)). |
-| Standalone tag workflow | Pushing a `deku-sprout-X.Y.Z` tag runs `check-deku-sprout-version-tag` (`scripts/check_deku_sprout_tag_version.sh`, which checks the tag against `logger/package.json`), then `publish-deku-sprout-standalone` (the same publish script with `SKIP_BUMP_CHECK=true`, since the tag check already ties the tag to `logger/package.json`). |
 | Version bump | `scripts/bump_version.sh deku-sprout [version]`. It updates `logger/package.json` and rewrites (or adds) the `**Deku Sprout Current Version:**` / `**Deku Sprout Next Version:**` lines in `README.md`. |
-| Tags | `deku-sprout-X.Y.Z`. These are decoupled from the main `navi-hey` release tag (#923). |
+| Tags | `deku-sprout-X.Y.Z` is a release marker, pushed by `check-and-publish-deku-sprout` after publishing. CircleCI ignores `deku-sprout-*` (and `worker-*`) tags, so pushing one by hand starts no pipeline and publishes nothing. To publish, bump `logger/package.json` with `scripts/bump_version.sh deku-sprout` and cut an app `X.Y.Z` release. The standalone `deku-sprout-X.Y.Z` track added in #923 was removed in #964, because the CI-pushed marker tag re-triggered it and published the same version twice. |
 | Pinning in `navi-hey` releases | The `npm-publish` job runs `scripts/ci.sh pin-local-deps` (`scripts/ci/pin-local-deps.sh`) before `navi-hey` is published. It rewrites `"deku-sprout": "file:../logger"` in `source/package.json` to the exact `logger/package.json` version (no `^`/`~`), does the same for `deku-swarm`, and fails the release if any `file:` dependency is left. It then waits (`scripts/ci/wait-for-npm.sh`, every 10 s for up to 5 min) until npm serves the pinned `deku-swarm`/`deku-sprout` versions, publishes `navi-hey`, and finally waits until npm serves `navi-hey@$TAG` so the Docker build that follows never races npm propagation. `npm-publish-client` ends with the same wait for `navi-hey-client`. |
 
-A `deku-sprout` release does **not** force a release of `navi-hey` or `navi-hey-client`. Each of them adopts a new version of the package when it chooses to: `source/` and `dev/app` pick up `logger/` changes immediately through `file:`, while `clients/node/` moves only when its `^` range or pinned version is bumped. Any change the client needs must be published to npm before the client can depend on it.
+Publishing a new `deku-sprout` version requires an app `X.Y.Z` release: a bumped `logger/package.json` stays unpublished until the next one. `source/` and `dev/app` still pick up `logger/` changes immediately through `file:`, while `clients/node/` moves only when its `^` range or pinned version is bumped. So a new `deku-sprout` version the client needs must first be published by an app `X.Y.Z` release, and only then can a `client-X.Y.Z` release depend on it.
 
 ## Design decisions
 
