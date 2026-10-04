@@ -1,7 +1,7 @@
 {
   "name": "deku-sprout",
   "type": "module",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Generic, domain-agnostic logging package",
   "readme": "README.md",
   "main": "lib/index.js",
