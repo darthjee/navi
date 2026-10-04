@@ -20,7 +20,7 @@ Cache Warmer Tool
 **Deku Sprout Current Version:** [0.2.0](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.2.0)
 **Deku Sprout Next Version:** [0.2.1](https://github.com/darthjee/navi/compare/deku-sprout-0.2.0...main)
 
-Tagging a navi release now automatically publishes `deku-swarm` to npm and pushes a matching `worker-x.y.z` tag whenever `worker/` changed since the last worker release (or `force_worker_build` was explicitly set for that pipeline run) and that version isn't already published — no separate manual worker release step is needed anymore. Use `bump_version.sh worker [version]` beforehand to bump the worker version and the badges above. `force_worker_build` is a CircleCI pipeline parameter that can only be set by explicitly triggering a pipeline (UI/API "Trigger Pipeline"), not by a normal tag push.
+Tagging a navi release now automatically publishes `deku-swarm` and `deku-sprout` to npm whenever the version in `worker/package.json` / `logger/package.json` isn't published yet, and pushes the matching `worker-x.y.z` / `deku-sprout-x.y.z` tag — no separate manual release step is needed. The release fails if a package's published files (`lib/` or `package.json`) changed since its previous release without a version bump; changes to specs, lint config, README or `yarn.lock` alone don't require a bump. Use `bump_version.sh worker [version]` beforehand to bump the worker version and the badges above.
 
 `deku-sprout` is released independently: pushing a `deku-sprout-x.y.z` tag (matching `logger/package.json`) publishes it to npm. Use `bump_version.sh deku-sprout [version]` beforehand to bump its version and the badges above.
 
