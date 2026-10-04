@@ -8,17 +8,17 @@
 
 Cache Warmer Tool
 
-**Current Version:** [1.13.2](https://github.com/darthjee/navi/releases/tag/1.13.2)
-**Next Release:** [1.13.3](https://github.com/darthjee/navi/compare/1.13.2...main)
+**Current Version:** [1.13.3](https://github.com/darthjee/navi/releases/tag/1.13.3)
+**Next Release:** [1.13.4](https://github.com/darthjee/navi/compare/1.13.3...main)
 
 **Client Current Version:** [0.2.2](https://github.com/darthjee/navi/releases/tag/client-0.2.2)
 **Client Next Version:** [0.2.3](https://github.com/darthjee/navi/compare/client-0.2.2...main)
 
-**Worker Current Version:** [1.11.2](https://github.com/darthjee/navi/releases/tag/worker-1.11.2)
-**Worker Next Version:** [1.11.3](https://github.com/darthjee/navi/compare/worker-1.11.2...main)
+**Worker Current Version:** [1.11.3](https://github.com/darthjee/navi/releases/tag/worker-1.11.3)
+**Worker Next Version:** [1.11.4](https://github.com/darthjee/navi/compare/worker-1.11.3...main)
 
-**Deku Sprout Current Version:** [0.2.2](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.2.2)
-**Deku Sprout Next Version:** [0.2.3](https://github.com/darthjee/navi/compare/deku-sprout-0.2.2...main)
+**Deku Sprout Current Version:** [0.2.3](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.2.3)
+**Deku Sprout Next Version:** [0.2.4](https://github.com/darthjee/navi/compare/deku-sprout-0.2.3...main)
 
 Tagging a navi release now automatically publishes `deku-swarm` and `deku-sprout` to npm whenever the version in `worker/package.json` / `logger/package.json` isn't published yet, and pushes the matching `worker-x.y.z` / `deku-sprout-x.y.z` tag — no separate manual release step is needed. The release fails if a package's published files (`lib/` or `package.json`) changed since its previous release without a version bump; changes to specs, lint config, README or `yarn.lock` alone don't require a bump. Use `bump_version.sh worker [version]` beforehand to bump the worker version and the badges above.
 
