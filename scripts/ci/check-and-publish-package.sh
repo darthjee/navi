@@ -8,6 +8,9 @@
 # Env:
 #   SKIP_BUMP_CHECK=true  skip the forgotten-version-bump check
 #   DRY_RUN=1             print what would be published/pushed instead of doing it
+#   GITHUB_TOKEN          required unless DRY_RUN=1: fine-grained PAT with
+#                         Contents: Read and write on darthjee/navi, used to
+#                         push the release tag (see docs/agents/release-token.md)
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,6 +23,18 @@ if [ -z "$FOLDER" ] || [ -z "$PACKAGE" ] || [ -z "$TAG_PREFIX" ]; then
   echo "Usage: $0 <folder> <npm-package> <tag-prefix>" >&2
   exit 1
 fi
+
+# --- token check (runs before anything is published) ---
+check_token() {
+  if [ "$DRY_RUN" = "1" ]; then
+    return 0
+  fi
+
+  if [ -z "${GITHUB_TOKEN:-}" ]; then
+    echo "GITHUB_TOKEN is required to push release tags" >&2
+    exit 1
+  fi
+}
 
 read_version() {
   node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version"
@@ -115,9 +130,10 @@ push_tag() {
   git config user.name "Navi CI"
   git config user.email "ci@navi.local"
   git tag -a "$TAG" -m "Release $TAG"
-  git push "https://x-access-token:${GH_PUSH_TOKEN}@github.com/darthjee/navi.git" "$TAG"
+  git push "https://x-access-token:${GITHUB_TOKEN}@github.com/darthjee/navi.git" "$TAG"
 }
 
+check_token
 check_version_bump
 
 if needs_publish; then

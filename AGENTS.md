@@ -27,6 +27,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Frontend](docs/agents/frontend.md) | The React SPA monitoring dashboard: technology stack, routing, API clients, component hierarchy, build process, and integration with the backend. |
 | [Dev Proxy](docs/agents/dev-proxy.md) | The Tent-powered reverse proxy (`dev/proxy`) used in local development: configuration files, caching behaviour, request flow, and how to extend the rules. |
 | [Client (Node)](docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`): package layout, the `/api/*` surface it wraps, CLI usage, testing, and CI jobs. |
+| [Release Token](docs/agents/release-token.md) | The `GITHUB_TOKEN` fine-grained PAT used by CI to push `worker-X.Y.Z` / `deku-sprout-X.Y.Z` release tags: required settings, CircleCI storage, rotation, troubleshooting and recovering a half-done release. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
 | [Specs](docs/agents/specs/) | Specs of not-yet-implemented work, kept as a guideline while that work is being developed (e.g. the crawler feature). |
