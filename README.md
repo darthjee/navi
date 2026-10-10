@@ -19,9 +19,9 @@ Use `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]`
 **Next Release:** [1.14.1](https://github.com/darthjee/navi/compare/1.14.0...main)
 
 ### Client
-**Client Current Version:** [0.2.3](https://github.com/darthjee/navi/releases/tag/client-0.2.3)
+**Client Current Version:** [0.2.4](https://github.com/darthjee/navi/releases/tag/client-0.2.4)
 
-**Client Next Version:** [0.2.4](https://github.com/darthjee/navi/compare/client-0.2.3...main)
+**Client Next Version:** [0.2.5](https://github.com/darthjee/navi/compare/client-0.2.4...main)
 
 ### Worker (Deku Swarm) 
 **Worker Current Version:** [1.12.0](https://github.com/darthjee/navi/releases/tag/worker-1.12.0)

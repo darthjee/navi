@@ -660,6 +660,11 @@ define-properties@^1.2.1:
     has-property-descriptors "^1.0.0"
     object-keys "^1.1.1"
 
+deku-sprout@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/deku-sprout/-/deku-sprout-0.3.0.tgz#abfb5f732ceb993b5cbca4e78d37ff2462cd6ea5"
+  integrity sha512-OzAXekyRPXxzajfRonDN1NmJdhx0/6cqT+eh2x3ITuh5pKzZj4AM+u1oZjeVQGOh/hnrnrwStGEvfbtTftrVMw==
+
 delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"

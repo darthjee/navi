@@ -211,6 +211,7 @@ jobs:
       - checkout
       - install-deps:
           path: clients/node
+          frozen: true
       - run-tests:
           path: clients/node
 
@@ -220,6 +221,7 @@ jobs:
       - checkout
       - install-deps:
           path: clients/node
+          frozen: true
       - lint-and-report:
           path: clients/node
 
