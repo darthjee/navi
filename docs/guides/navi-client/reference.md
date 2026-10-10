@@ -33,6 +33,20 @@ Both the library and the CLI surface failures the same way: any request that fai
 | `url` | The full URL that was requested. |
 | `body` | The parsed response body, when available. |
 
-In the CLI, this surfaces as the error message printed to stderr, with the process exiting with status `1`.
+For a response with status `>= 400`, the error's `message` ends with the server's reason, so you can see why the request failed without reading `body`:
+
+| Response body | Message |
+|---------------|---------|
+| an object with a string `error` field | `Request to <url> failed with status <status>: <body.error>` (never truncated) |
+| any other non-empty body (object/array, or a string such as an HTML page) | `Request to <url> failed with status <status>: <body>` — objects/arrays are JSON-encoded, and the reason is cut to 200 characters followed by `…` |
+| empty (no body, `null`, `''`, or `{}`) | `Request to <url> failed with status <status>` (no reason) |
+
+A request that fails without any response (connection refused, timeout) keeps the message `Request to <url> failed: <cause>`.
+
+In the CLI, this surfaces as the error message printed to stderr, with the process exiting with status `1`. For example:
+
+```text
+Request to https://navi.example/api/config failed with status 400: Resource "game_common_items" not found.
+```
 
 [← Back to How to Use navi-hey-client](../HOW_TO_USE_NAVI-CLIENT.md)

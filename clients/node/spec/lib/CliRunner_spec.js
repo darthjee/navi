@@ -2,6 +2,7 @@ import { Logger } from 'deku-sprout';
 import { NaviClient } from '../../client.js';
 import { CliRunner } from '../../lib/CliRunner.js';
 import { ConfigFileGrouper } from '../../lib/ConfigFileGrouper.js';
+import { ApiRequestFailed } from '../../lib/exceptions/ApiRequestFailed.js';
 
 describe('CliRunner', () => {
   const baseUrl = 'http://example.com';
@@ -193,6 +194,22 @@ describe('CliRunner', () => {
 
         expect(code).toBe(1);
         expect(Logger.error).toHaveBeenCalledWith('boom');
+      });
+
+      it('prints the ApiRequestFailed message carrying the server reason and returns 1', async () => {
+        const message = 'Request to http://example.com/api/config failed with status 400: '
+          + 'Resource "game_common_items" not found.';
+        const error = new ApiRequestFailed(message, {
+          statusCode: 400,
+          url: 'http://example.com/api/config',
+          body: { error: 'Resource "game_common_items" not found.' },
+        });
+        spyOn(NaviClient.prototype, 'config').and.returnValue(Promise.reject(error));
+
+        const code = await CliRunner.run({ baseUrl, token, action: 'config', payload: '{}' });
+
+        expect(code).toBe(1);
+        expect(Logger.error).toHaveBeenCalledWith(message);
       });
     });
   });

@@ -58,6 +58,76 @@ describe('NaviApiClient', () => {
           body: data,
         }));
       });
+
+      const expectMessage = async (data, message) => {
+        spyOn(axios, 'post').and.returnValue(Promise.resolve({ status: 400, data }));
+
+        await expectAsync(apiClient.post(path, {})).toBeRejectedWith(jasmine.objectContaining({
+          name: 'ApiRequestFailed',
+          message,
+        }));
+      };
+
+      const baseMessage = `Request to ${fullUrl} failed with status 400`;
+
+      it('appends body.error when it is a string', async () => {
+        await expectMessage(
+          { error: 'Resource "x" not found.' },
+          `${baseMessage}: Resource "x" not found.`,
+        );
+      });
+
+      it('does not truncate a long body.error', async () => {
+        const error = 'e'.repeat(300);
+
+        await expectMessage({ error }, `${baseMessage}: ${error}`);
+      });
+
+      it('appends the JSON-serialized body when there is no string error', async () => {
+        await expectMessage({ foo: 'bar' }, `${baseMessage}: {"foo":"bar"}`);
+      });
+
+      it('appends the JSON-serialized body when error is not a string', async () => {
+        await expectMessage({ error: { code: 1 } }, `${baseMessage}: {"error":{"code":1}}`);
+      });
+
+      it('appends the JSON-serialized body for arrays', async () => {
+        await expectMessage(['a', 'b'], `${baseMessage}: ["a","b"]`);
+      });
+
+      it('appends a short string body as-is', async () => {
+        await expectMessage('Bad Gateway', `${baseMessage}: Bad Gateway`);
+      });
+
+      it('truncates a long string body to 200 characters followed by an ellipsis', async () => {
+        const html = `<html>${'x'.repeat(300)}</html>`;
+
+        await expectMessage(html, `${baseMessage}: ${html.slice(0, 200)}…`);
+      });
+
+      it('truncates a long JSON-serialized body to 200 characters followed by an ellipsis', async () => {
+        const data = { foo: 'y'.repeat(300) };
+
+        await expectMessage(data, `${baseMessage}: ${JSON.stringify(data).slice(0, 200)}…`);
+      });
+
+      it('does not truncate a string body of exactly 200 characters', async () => {
+        const text = 'z'.repeat(200);
+
+        await expectMessage(text, `${baseMessage}: ${text}`);
+      });
+
+      [
+        ['undefined', undefined],
+        ['null', null],
+        ['an empty string', ''],
+        ['an empty object', {}],
+        ['an empty array', []],
+      ].forEach(([description, data]) => {
+        it(`appends nothing when the body is ${description}`, async () => {
+          await expectMessage(data, baseMessage);
+        });
+      });
     });
 
     describe('when the request itself fails', () => {
@@ -67,6 +137,7 @@ describe('NaviApiClient', () => {
         await expectAsync(apiClient.post(path, {})).toBeRejectedWith(jasmine.objectContaining({
           name: 'ApiRequestFailed',
           url: fullUrl,
+          message: `Request to ${fullUrl} failed: network down`,
         }));
       });
     });

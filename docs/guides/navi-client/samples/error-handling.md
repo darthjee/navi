@@ -37,7 +37,13 @@ try {
 
 The CLI surfaces the same failure without any code: `navi-client --action
 engine-start …` prints the `ApiRequestFailed` message to stderr and exits with
-status `1`, so a CI step running it fails automatically.
+status `1`, so a CI step running it fails automatically. For a `>= 400`
+response the message includes the server's reason (its `error` field, or the
+raw body cut to 200 characters), so the log shows why the call failed:
+
+```text
+Request to https://navi.internal.example.com/api/engine/start failed with status <status>: <reason>
+```
 
 ## What happens
 
@@ -58,7 +64,8 @@ rejects the same way, so one handler shape covers all of them.
 
 ## Notes
 
-- Full `ApiRequestFailed` field table and the CLI's stderr/exit-`1` behaviour:
+- Full `ApiRequestFailed` field table, the message format (including how the
+  server's reason is added), and the CLI's stderr/exit-`1` behaviour:
   [Reference](../reference.md).
 
 ---
