@@ -14,9 +14,9 @@ Tagging a navi release automatically publishes `deku-swarm` and `deku-sprout` to
 Use `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and the badges above. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run.
 
 ### Navi
-**Current Version:** [1.14.0](https://github.com/darthjee/navi/releases/tag/1.14.0)
+**Current Version:** [1.14.1](https://github.com/darthjee/navi/releases/tag/1.14.1)
 
-**Next Release:** [1.14.1](https://github.com/darthjee/navi/compare/1.14.0...main)
+**Next Release:** [1.14.2](https://github.com/darthjee/navi/compare/1.14.1...main)
 
 ### Client
 **Client Current Version:** [0.2.4](https://github.com/darthjee/navi/releases/tag/client-0.2.4)
