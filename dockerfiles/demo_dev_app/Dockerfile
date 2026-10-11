@@ -1,5 +1,8 @@
 FROM darthjee/node:0.2.1 as frontend
 
+# navi-spec-support is a `file:../../spec-support` dependency of dev/frontend/,
+# so the folder must exist two levels above app/ for `yarn install` to resolve it.
+COPY --chown=node:node ./spec-support/ /home/spec-support/
 COPY --chown=node:node dev/frontend/ /home/node/app/
 
 RUN yarn install && yarn build
