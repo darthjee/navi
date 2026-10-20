@@ -13,6 +13,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$SCRIPT_DIR/lib/package_bump_check.sh"
 
 README="$ROOT_DIR/README.md"
+APP_README="$ROOT_DIR/source/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
 WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
@@ -127,8 +128,19 @@ update_readme_row() {
     "$README"
 }
 
+# Rewrites the GitHub Release badge link to point at the new release tag.
+update_release_badge() {
+  local readme="$1"
+
+  sed -i '' \
+    "s#(https://github.com/darthjee/navi/releases/tag/[0-9.]*)\$#(https://github.com/darthjee/navi/releases/tag/$VERSION)#" \
+    "$readme"
+}
+
 bump_app() {
   update_readme_row "Navi-Hey" ""
+  update_release_badge "$README"
+  update_release_badge "$APP_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
