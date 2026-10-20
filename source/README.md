@@ -1,6 +1,8 @@
 # Navi
 
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
+[![GitHub Release](https://img.shields.io/github/v/release/darthjee/navi?logo=github)](https://github.com/darthjee/navi/releases/tag/1.14.1)
+[![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?logo=docker&label=navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey/general)
 
 Cache Warmer Tool
 
