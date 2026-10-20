@@ -10,8 +10,8 @@
 [![npm](https://img.shields.io/npm/v/deku-swarm.svg?label=npm|deku-swarm)](https://www.npmjs.com/package/deku-swarm)
 [![npm](https://img.shields.io/npm/v/deku-sprout.svg?label=npm|deku-sprout)](https://www.npmjs.com/package/deku-sprout)
 
-![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?label=docker|darthjee/navi-hey)
-![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?label=docker|darthjee/navi-hey-client)
+[![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?label=docker|darthjee/navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey/general)
+[![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?label=docker|darthjee/navi-hey-client)](https://hub.docker.com/repository/docker/darthjee/navi-hey-client/general)
 
 ![navi](https://raw.githubusercontent.com/darthjee/navi/master/navi.png)
 
