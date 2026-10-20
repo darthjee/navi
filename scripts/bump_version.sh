@@ -15,6 +15,8 @@ source "$SCRIPT_DIR/lib/package_bump_check.sh"
 README="$ROOT_DIR/README.md"
 APP_README="$ROOT_DIR/source/README.md"
 CLIENT_README="$ROOT_DIR/clients/node/README.md"
+WORKER_README="$ROOT_DIR/worker/README.md"
+LOGGER_README="$ROOT_DIR/logger/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
 WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
@@ -179,6 +181,7 @@ bump_client() {
 bump_worker() {
   update_readme_row "Worker (Deku Swarm)" "worker-"
   update_package_badge "deku_swarm" "$APP_README"
+  update_package_badge "deku_swarm" "$WORKER_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
@@ -189,6 +192,8 @@ bump_deku_sprout() {
   update_readme_row "Lib (Deku Sprout)" "deku-sprout-"
   update_package_badge "deku_sprout" "$APP_README"
   update_package_badge "deku_sprout" "$CLIENT_README"
+  update_package_badge "deku_sprout" "$WORKER_README"
+  update_package_badge "deku_sprout" "$LOGGER_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
