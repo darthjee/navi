@@ -2,7 +2,7 @@
 
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
 [![GitHub Release](https://img.shields.io/github/v/release/darthjee/navi?logo=github)](https://github.com/darthjee/navi/releases/tag/1.14.1)
-[![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?logo=docker&label=navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey/general)
+[![npm](https://img.shields.io/badge/navi_hey-v1.14.1-orange?logo=npm)](https://www.npmjs.com/package/navi_hey)
 
 [![npm](https://img.shields.io/badge/deku_swarm-v1.12.0-orange?logo=npm)](https://www.npmjs.com/package/deku-swarm)
 [![npm](https://img.shields.io/badge/deku_sprout-v0.3.0-orange?logo=npm)](https://www.npmjs.com/package/deku-sprout)
