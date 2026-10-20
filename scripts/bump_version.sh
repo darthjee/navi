@@ -14,6 +14,7 @@ source "$SCRIPT_DIR/lib/package_bump_check.sh"
 
 README="$ROOT_DIR/README.md"
 APP_README="$ROOT_DIR/source/README.md"
+CLIENT_README="$ROOT_DIR/clients/node/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
 WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
@@ -137,18 +138,19 @@ update_release_badge() {
     "$readme"
 }
 
-# Rewrites the app README npm badge "badge/<label>-v<version>-" for a package.
+# Rewrites a README badge "badge/<label>-v<version>-" for a package.
 update_package_badge() {
   local label="$1"
+  local readme="$2"
 
-  if ! grep -qF "badge/$label-v" "$APP_README"; then
-    echo "Error: $APP_README has no \"$label\" badge" >&2
+  if ! grep -qF "badge/$label-v" "$readme"; then
+    echo "Error: $readme has no \"$label\" badge" >&2
     exit 1
   fi
 
   sed -i '' \
     "s#badge/$label-v[0-9.]*-#badge/$label-v$VERSION-#" \
-    "$APP_README"
+    "$readme"
 }
 
 bump_app() {
@@ -167,6 +169,7 @@ bump_app() {
 
 bump_client() {
   update_readme_row "Client" "client-"
+  update_package_badge "navi_hey_client" "$CLIENT_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
@@ -175,7 +178,7 @@ bump_client() {
 
 bump_worker() {
   update_readme_row "Worker (Deku Swarm)" "worker-"
-  update_package_badge "deku_swarm"
+  update_package_badge "deku_swarm" "$APP_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
@@ -184,7 +187,8 @@ bump_worker() {
 
 bump_deku_sprout() {
   update_readme_row "Lib (Deku Sprout)" "deku-sprout-"
-  update_package_badge "deku_sprout"
+  update_package_badge "deku_sprout" "$APP_README"
+  update_package_badge "deku_sprout" "$CLIENT_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
