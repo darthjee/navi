@@ -1,7 +1,7 @@
 # deku-swarm
 
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
-[![GitHub Release](https://img.shields.io/badge/deku_swarm-v0.3.0-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
+[![GitHub Release](https://img.shields.io/badge/deku_swarm-v1.12.0-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
 [![npm](https://img.shields.io/npm/v/deku-swarm.svg?logo=npm&label=deku-swarm)](https://www.npmjs.com/package/deku-swarm)
 
 [![npm](https://img.shields.io/badge/deku_sprout-v0.3.0-orange?logo=npm)](https://www.npmjs.com/package/deku-sprout)
