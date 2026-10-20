@@ -137,6 +137,20 @@ update_release_badge() {
     "$readme"
 }
 
+# Rewrites the app README npm badge "badge/<label>-v<version>-" for a package.
+update_package_badge() {
+  local label="$1"
+
+  if ! grep -qF "badge/$label-v" "$APP_README"; then
+    echo "Error: $APP_README has no \"$label\" badge" >&2
+    exit 1
+  fi
+
+  sed -i '' \
+    "s#badge/$label-v[0-9.]*-#badge/$label-v$VERSION-#" \
+    "$APP_README"
+}
+
 bump_app() {
   update_readme_row "Navi-Hey" ""
   update_release_badge "$README"
@@ -161,6 +175,7 @@ bump_client() {
 
 bump_worker() {
   update_readme_row "Worker (Deku Swarm)" "worker-"
+  update_package_badge "deku_swarm"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
@@ -169,6 +184,7 @@ bump_worker() {
 
 bump_deku_sprout() {
   update_readme_row "Lib (Deku Sprout)" "deku-sprout-"
+  update_package_badge "deku_sprout"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
