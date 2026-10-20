@@ -3,6 +3,9 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
+![npm](https://img.shields.io/npm/v/navi-hey.svg)
+![npm](https://img.shields.io/npm/v/deku-swarm.svg)
+![npm](https://img.shields.io/npm/v/deku-sprout.svg)
 
 ![navi](https://raw.githubusercontent.com/darthjee/navi/master/navi.png)
 
@@ -13,25 +16,13 @@ Tagging a navi release automatically publishes `deku-swarm` and `deku-sprout` to
 
 Use `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and the badges above. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run.
 
-### Navi
-**Current Version:** [1.14.1](https://github.com/darthjee/navi/releases/tag/1.14.1)
-
-**Next Release:** [1.14.2](https://github.com/darthjee/navi/compare/1.14.1...main)
-
-### Client
-**Client Current Version:** [0.2.4](https://github.com/darthjee/navi/releases/tag/client-0.2.4)
-
-**Client Next Version:** [0.2.5](https://github.com/darthjee/navi/compare/client-0.2.4...main)
-
-### Worker (Deku Swarm) 
-**Worker Current Version:** [1.12.0](https://github.com/darthjee/navi/releases/tag/worker-1.12.0)
-
-**Worker Next Version:** [1.12.1](https://github.com/darthjee/navi/compare/worker-1.12.0...main)
-
-### Lib (Deku Sprout)
-**Deku Sprout Current Version:** [0.3.0](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.3.0)
-
-**Deku Sprout Next Version:** [0.3.1](https://github.com/darthjee/navi/compare/deku-sprout-0.3.0...main)
+### Versions
+| Packaage | Current | Next |
+| -------- | ------- | ---- |
+| Navi-Hey | [1.14.1](https://github.com/darthjee/navi/releases/tag/1.14.1) | [1.14.2](https://github.com/darthjee/navi/compare/1.14.1...main) |
+| Client | [0.2.4](https://github.com/darthjee/navi/releases/tag/client-0.2.4) | [0.2.5](https://github.com/darthjee/navi/compare/client-0.2.4...main) |
+| Worker (Deku Swarm) | [1.12.0](https://github.com/darthjee/navi/releases/tag/worker-1.12.0) | [1.12.1](https://github.com/darthjee/navi/compare/worker-1.12.0...main) |
+| Lib (Deku Sprout) | [0.3.0](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.3.0) | [0.3.1](https://github.com/darthjee/navi/compare/deku-sprout-0.3.0...main) |
 
 ---
 
