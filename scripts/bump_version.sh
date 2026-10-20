@@ -112,14 +112,23 @@ find_stale_packages() {
   done
 }
 
-bump_app() {
-  sed -i '' \
-    "s|\*\*Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/.*)|**Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$VERSION)|" \
-    "$README"
+# Rewrites the README Versions table row "| <label> | ... |".
+update_readme_row() {
+  local label="$1"
+  local tag="$2$VERSION"
+
+  if ! grep -qF "| $label |" "$README"; then
+    echo "Error: README Versions table has no \"$label\" row" >&2
+    exit 1
+  fi
 
   sed -i '' \
-    "s|\*\*Next Release:\*\* \[.*\](https://github.com/darthjee/navi/compare/.*)|**Next Release:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$VERSION...main)|" \
+    "s#^| $label | .* |\$#| $label | [$VERSION](https://github.com/darthjee/navi/releases/tag/$tag) | [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$tag...main) |#" \
     "$README"
+}
+
+bump_app() {
+  update_readme_row "Navi-Hey" ""
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
@@ -131,93 +140,27 @@ bump_app() {
 }
 
 bump_client() {
+  update_readme_row "Client" "client-"
+
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$CLIENT_PACKAGE_JSON"
-
-  if grep -q '\*\*Client Current Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Client Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/client-.*)|**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/client-$VERSION)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Next Release:\*\*/a\\
-\\
-**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/client-$VERSION)" \
-      "$README"
-  fi
-
-  if grep -q '\*\*Client Next Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Client Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/client-.*)|**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/client-$VERSION...main)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Client Current Version:\*\*/a\\
-\\
-**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/client-$VERSION...main)" \
-      "$README"
-  fi
 }
 
 bump_worker() {
+  update_readme_row "Worker (Deku Swarm)" "worker-"
+
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$WORKER_PACKAGE_JSON"
-
-  if grep -q '\*\*Worker Current Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Worker Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/worker-.*)|**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/worker-$VERSION)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Client Next Version:\*\*/a\\
-\\
-**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/worker-$VERSION)" \
-      "$README"
-  fi
-
-  if grep -q '\*\*Worker Next Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Worker Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/worker-.*)|**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/worker-$VERSION...main)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Worker Current Version:\*\*/a\\
-\\
-**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/worker-$VERSION...main)" \
-      "$README"
-  fi
 }
 
 bump_deku_sprout() {
+  update_readme_row "Lib (Deku Sprout)" "deku-sprout-"
+
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$LOGGER_PACKAGE_JSON"
-
-  if grep -q '\*\*Deku Sprout Current Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Deku Sprout Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/deku-sprout-.*)|**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/deku-sprout-$VERSION)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Worker Next Version:\*\*/a\\
-\\
-**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/deku-sprout-$VERSION)" \
-      "$README"
-  fi
-
-  if grep -q '\*\*Deku Sprout Next Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Deku Sprout Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/deku-sprout-.*)|**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/deku-sprout-$VERSION...main)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Deku Sprout Current Version:\*\*/a\\
-\\
-**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/deku-sprout-$VERSION...main)" \
-      "$README"
-  fi
 }
 
 # Bumps <target> to <version> (or to the next patch of its current version).

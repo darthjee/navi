@@ -3,7 +3,7 @@ set -e
 
 CLIENT_VERSION="${CIRCLE_TAG#client-}"
 PACKAGE_VERSION=$(node -p "require('./clients/node/package.json').version")
-README_VERSION=$(grep -oP '(?<=\*\*Client Current Version:\*\* \[)[\d.]+' README.md)
+README_VERSION=$(grep -oP '(?<=^\| Client \| \[)[\d.]+' README.md)
 
 FAILED=0
 
