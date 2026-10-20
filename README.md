@@ -3,9 +3,14 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
-![npm](https://img.shields.io/npm/v/navi-hey.svg)
-![npm](https://img.shields.io/npm/v/deku-swarm.svg)
-![npm](https://img.shields.io/npm/v/deku-sprout.svg)
+
+![npm](https://img.shields.io/npm/v/navi-hey.svg?label=npm|navi-hey)
+![npm](https://img.shields.io/npm/v/navi-hey-client.svg?label=npm|navi-hey-client)
+![npm](https://img.shields.io/npm/v/deku-swarm.svg?label=npm|deku-swarm)
+![npm](https://img.shields.io/npm/v/deku-sprout.svg?label=npm|deku-sprout)
+
+![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?label=docker|darthjee/navi-hey)
+![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?label=docker|darthjee/navi-hey-client)
 
 ![navi](https://raw.githubusercontent.com/darthjee/navi/master/navi.png)
 
