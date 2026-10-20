@@ -1,5 +1,11 @@
 # navi-hey-client
 
+[![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
+[![GitHub Release](https://img.shields.io/badge/navi_hey_client-v0.2.4-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
+[![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?logo=docker&label=navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey-client/general)
+
+[![npm](https://img.shields.io/badge/deku_sprout-v0.3.0-orange?logo=npm)](https://www.npmjs.com/package/deku-sprout)
+
 Node.js client for [Navi](https://github.com/darthjee/navi)'s token-secured `/api/*` HTTP namespace.
 
 Navi's `/api/*` namespace (`POST /api/config`, `POST /api/engine/start`, `POST /api/engine/stop`) allows external, programmatic control of a running Navi instance. This package is a thin wrapper over that namespace — it does not replicate any config/resource logic client-side — exposing both a library and a CLI (`navi-client`), so callers don't have to hand-roll requests and bearer-token handling themselves.
