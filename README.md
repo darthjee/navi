@@ -5,10 +5,10 @@
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
 [![GitHub Release](https://img.shields.io/github/v/release/darthjee/navi?logo=github)](https://github.com/darthjee/navi/releases/tag/1.14.1)
 
-[![npm](https://img.shields.io/npm/v/navi-hey.svg?label=npm|navi-hey)](https://www.npmjs.com/package/navi-hey)
-[![npm](https://img.shields.io/npm/v/navi-hey-client.svg?label=npm|navi-hey-client)](https://www.npmjs.com/package/navi-hey-client)
-[![npm](https://img.shields.io/npm/v/deku-swarm.svg?label=npm|deku-swarm)](https://www.npmjs.com/package/deku-swarm)
-[![npm](https://img.shields.io/npm/v/deku-sprout.svg?label=npm|deku-sprout)](https://www.npmjs.com/package/deku-sprout)
+[![npm](https://img.shields.io/npm/v/navi-hey.svg?logo=npm&label=navi-hey)](https://www.npmjs.com/package/navi-hey)
+[![npm](https://img.shields.io/npm/v/navi-hey-client.svg?logo=npm&label=navi-hey-client)](https://www.npmjs.com/package/navi-hey-client)
+[![npm](https://img.shields.io/npm/v/deku-swarm.svg?logo=npm&label=deku-swarm)](https://www.npmjs.com/package/deku-swarm)
+[![npm](https://img.shields.io/npm/v/deku-sprout.svg?logo=npm&label=deku-sprout)](https://www.npmjs.com/package/deku-sprout)
 
 [![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?label=docker|darthjee/navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey/general)
 [![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?label=docker|darthjee/navi-hey-client)](https://hub.docker.com/repository/docker/darthjee/navi-hey-client/general)
