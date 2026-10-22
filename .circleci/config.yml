@@ -34,12 +34,18 @@ workflows:
           filters: *all-tags
       - checks-deku-sprout:
           filters: *all-tags
+      - jasmine-release:
+          filters: *all-tags
+      - checks-release:
+          filters: *all-tags
+      - validate-release-yml:
+          filters: *all-tags
       - smoke-extensions:
           filters: *all-tags
       - test-extension-harness:
           filters: *all-tags
       - coverage-final:
-          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout]
+          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release]
           filters: *all-tags
       - check-version-tag:
           filters: &version-tag-filters
@@ -260,6 +266,32 @@ jobs:
           path: logger
       - lint-and-report:
           path: logger
+
+  jasmine-release:
+    executor: node-ci
+    steps:
+      - checkout
+      - install-deps:
+          path: scripts/release
+      - run-tests:
+          path: scripts/release
+
+  checks-release:
+    executor: node-ci
+    steps:
+      - checkout
+      - install-deps:
+          path: scripts/release
+      - lint-and-report:
+          path: scripts/release
+
+  validate-release-yml:
+    executor: node-ci
+    steps:
+      - checkout
+      - run:
+          name: Validate release.yml against package.json files
+          command: scripts/ci.sh validate-release-yml
 
   coverage-final:
     executor: node-ci
