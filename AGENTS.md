@@ -30,7 +30,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Release Token](docs/agents/release-token.md) | The `GITHUB_TOKEN` fine-grained PAT used by CI to push `worker-X.Y.Z` / `deku-sprout-X.Y.Z` release tags: required settings, CircleCI storage, rotation, troubleshooting and recovering a half-done release. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
-| [Specs](docs/agents/specs/) | Specs of not-yet-implemented work, kept as a guideline while that work is being developed (e.g. the crawler feature). |
+| [Specs](docs/agents/specs.md) | Specs of not-yet-implemented work, kept as a guideline while that work is being developed (e.g. the crawler feature). |
 
 ### Issues (`docs/agents/issues/`)
 
@@ -54,19 +54,9 @@ Example: `docs/agents/plans/66_remove-spec-duplications/plan.md` for issue #66.
 
 ### Specs (`docs/agents/specs/`)
 
-Each piece of planned-but-not-yet-implemented work gets one file, kept as a guideline while
-that work is being developed:
-
-```
-docs/agents/specs/<topic>.md
-```
-
-If the file grows too large, split it into a hub + subfolder (see `docs/agents/specs/crawler.md`
-and `docs/agents/specs/crawler/` for an example), the same pattern used by `architecture.md`,
-`flow.md`, and `contributing.md`.
-
-Once the feature is implemented and documented in its permanent place, its spec is removed. The
-`docs/agents/specs/` folder itself is permanent.
+Specs of not-yet-implemented work live under `docs/agents/specs/`. See
+[docs/agents/specs.md](docs/agents/specs.md) for the list of specs and their conventions (file
+layout, hub + subfolder split, the add/remove-from-hub rule, and removal after implementation).
 
 ### Module-level READMEs
 
