@@ -21,6 +21,15 @@ Examples:
 - A `deku-swarm` bump requires a `navi-hey` bump.
 - A `navi-hey-client` bump requires nothing more (its image follows its version).
 
-The comparison base is the previous release (the last `X.Y.Z` tag) for tags, and the merge base with `main` for PRs; the implementation sub-issue settles the exact refs.
+The comparison base depends on the CI context:
+
+- `X.Y.Z` tags: the previous `X.Y.Z` tag reachable from `HEAD^`;
+- `main`: `HEAD^` (the merged commit's parent);
+- PR branches: `git merge-base HEAD origin/main`;
+- when no base can be found (e.g. no previous `X.Y.Z` tag), the test passes with a message.
+
+A package with no `package.json` at the base ref counts as not bumped. Docker entries are not checked on their own, since they follow their folder's `package.json` version.
+
+Implemented in `scripts/release/` (`checkCascadeBumps`) and run by `scripts/ci.sh cascade-bump-check` (CI job `cascade-bump-check`).
 
 Related precedent: `scripts/lib/package_bump_check.sh`, shared by `scripts/ci/check-and-publish-package.sh` and `scripts/bump_version.sh`, already compares a package's version against its last release tag.

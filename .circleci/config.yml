@@ -40,6 +40,8 @@ workflows:
           filters: *all-tags
       - validate-release-yml:
           filters: *all-tags
+      - cascade-bump-check:
+          filters: *all-tags
       - smoke-extensions:
           filters: *all-tags
       - test-extension-harness:
@@ -292,6 +294,14 @@ jobs:
       - run:
           name: Validate release.yml against package.json files
           command: scripts/ci.sh validate-release-yml
+
+  cascade-bump-check:
+    executor: node-ci
+    steps:
+      - checkout
+      - run:
+          name: Check that dependents of bumped packages are bumped too
+          command: scripts/ci.sh cascade-bump-check
 
   coverage-final:
     executor: node-ci

@@ -1,10 +1,15 @@
 # navi-release-scripts
 
-Private package (never published) holding the validator for the root
+Private package (never published) holding two checks built on the root
 [`release.yml`](../../release.yml), the release dependency tree read by the
-release scripts.
+release scripts:
 
-## What it checks
+- the `release.yml` validator;
+- the cascade-bump check.
+
+## release.yml validator
+
+### What it checks
 
 For each entry of `release.yml`:
 
@@ -20,7 +25,7 @@ For each entry of `release.yml`:
 Every problem is reported, then the script exits 1. When everything matches it
 prints `release.yml OK (<n> packages)` and exits 0.
 
-## Usage
+### Usage
 
 From the repository root:
 
@@ -34,6 +39,54 @@ Or directly:
 cd scripts/release
 yarn install
 node bin/validate-release-yml.js ../..
+```
+
+## Cascade-bump check
+
+### Rule
+
+For every `npm` entry of `release.yml` whose `package.json` `version` differs
+between a base ref and `HEAD`, every package depending on it, directly or
+transitively through `depends_on`, must also have a different `version`.
+Otherwise each missing bump is reported, e.g.:
+
+```text
+navi-hey-client must be bumped because deku-sprout changed 0.3.0 -> 0.4.0
+```
+
+- `docker` entries are not checked on their own: their version is the
+  `package.json` version of their folder, so they follow their `npm` package.
+- A package with no `package.json` at the base ref counts as not bumped.
+- Only the version bump is checked, not whether a dependent's declared range
+  accepts the new version.
+
+### Base ref
+
+Resolved from CircleCI's environment:
+
+| Context | Base ref |
+|---------|----------|
+| `X.Y.Z` tag (`CIRCLE_TAG`) | the previous `X.Y.Z` tag reachable from `HEAD^` |
+| `main` (`CIRCLE_BRANCH=main`) | `HEAD^` |
+| any other branch, or outside CI | `git merge-base HEAD origin/main` |
+
+When no base can be found (e.g. no previous `X.Y.Z` tag), the check passes with
+`No comparison base found — skipping cascade-bump check`.
+
+### Usage
+
+From the repository root (fetches `origin/main` and tags first, best-effort):
+
+```bash
+scripts/ci.sh cascade-bump-check
+```
+
+Or directly, with an optional explicit base ref overriding the resolution:
+
+```bash
+cd scripts/release
+yarn install
+node bin/check-cascade-bumps.js ../.. [baseRef]
 ```
 
 ## Development
