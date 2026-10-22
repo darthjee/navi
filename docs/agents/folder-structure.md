@@ -14,7 +14,8 @@
 | `examples/` | Standalone worked-example projects that demonstrate building on top of Navi (owned by `guide`); the first entry is `navi-orders-extension/`. |
 | `dockerfiles/` | Dockerfiles for each service image (dev app, dev frontend, dev proxies, production build). |
 | `docker_volumes/` | Development/runtime data mounted into containers via `docker-compose.yml`. |
-| `scripts/` | Shell utilities for CI, release, and version bumping. |
+| `scripts/` | Shell utilities for CI, release, and version bumping. `scripts/release/` is a small private Node package (`navi-release-scripts`) that validates `release.yml` against each `package.json` (run via `scripts/ci.sh validate-release-yml`). |
+| `release.yml` | Release dependency tree: every released package (npm and Docker), its folder, platform, `depends_on` and optional `tag_prefix`. Read by the release scripts; checked by `scripts/release/`. |
 | `docs/` | Project documentation, including the `docs/agents/` set read by AI coding agents. |
 | `.circleci/` | CircleCI pipeline configuration. |
 | `.claude/` | Claude Code configuration: specialist agent definitions, scripts, and settings. |
