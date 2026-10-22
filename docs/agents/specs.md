@@ -29,3 +29,4 @@ place. This hub itself is permanent.
 | Spec | Description |
 |---|---|
 | [Crawler](specs/crawler.md) | Information crawling & data emission (incomplete design). |
+| [Release](specs/release.md) | Release-cycle overhaul: X.Y.Z-only releases, per-package detection and cascade bumps (epic #977). |
