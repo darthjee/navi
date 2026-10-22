@@ -24,7 +24,7 @@ This differs from the table in #977, which uses the typo names `hey-navi` / `dar
 
 ## Dependency tree: `release.yml`
 
-A root `release.yml` describes the tree, so that the release and cascade scripts share one source instead of each hardcoding it. Each entry gives the package's folder, platform, dependencies and extra-tag prefix. Illustrative format (the exact keys are settled by the implementation sub-issue):
+A root `release.yml` describes the tree, so that the release and cascade scripts share one source instead of each hardcoding it. Each entry gives the package's folder, platform, dependencies and extra-tag prefix. The format is now settled in the root `release.yml` (#983), and `scripts/ci.sh validate-release-yml` (package `scripts/release/`) checks it in CI. Current content:
 
 ```yaml
 packages:
