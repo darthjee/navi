@@ -18,6 +18,7 @@ case "$ACTION" in
   pin-local-deps) bash "$DIR/ci/pin-local-deps.sh" "$@" ;;
   wait-for-npm) bash "$DIR/ci/wait-for-npm.sh" "$@" ;;
   validate-release-yml) bash "$DIR/ci/validate-release-yml.sh" "$@" ;;
+  cascade-bump-check) bash "$DIR/ci/cascade-bump-check.sh" "$@" ;;
   *)
     echo "Unknown action: $ACTION" >&2
     exit 1
