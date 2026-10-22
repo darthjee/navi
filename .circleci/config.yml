@@ -4,55 +4,54 @@ workflows:
   test-and-release:
     jobs:
       - jasmine:
-          filters: &all-tags
+          filters: &test-filters
             tags:
-              only: /.*/
-              ignore: /^(deku-sprout|worker)-.*/
+              only: /^\d+\.\d+\.\d+$/
       - checks:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-dev:
-          filters: *all-tags
+          filters: *test-filters
       - checks-dev:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-dev-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - checks-dev-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - checks-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-client:
-          filters: *all-tags
+          filters: *test-filters
       - checks-client:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-worker:
-          filters: *all-tags
+          filters: *test-filters
       - checks-worker:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-deku-sprout:
-          filters: *all-tags
+          filters: *test-filters
       - checks-deku-sprout:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-release:
-          filters: *all-tags
+          filters: *test-filters
       - checks-release:
-          filters: *all-tags
+          filters: *test-filters
       - validate-release-yml:
-          filters: *all-tags
+          filters: *test-filters
       - cascade-bump-check:
-          filters: *all-tags
+          filters: *test-filters
       - smoke-extensions:
-          filters: *all-tags
+          filters: *test-filters
       - test-extension-harness:
-          filters: *all-tags
+          filters: *test-filters
       - coverage-final:
           requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release]
-          filters: *all-tags
+          filters: *test-filters
       - check-version-tag:
           filters: &version-tag-filters
             tags:
-              only: /\d+\.\d+\.\d+/
+              only: /^\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
       - check-and-publish-worker:
