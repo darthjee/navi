@@ -69,6 +69,19 @@ workflows:
       - release-navi-hey-client:
           requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout]
           filters: *version-tag-filters
+      # One extra-tag job per npm package with a release.yml `tag_prefix`.
+      # Each one always runs after its release job, halts as a no-op when the
+      # package did not publish (released/<package>), and otherwise pushes
+      # the annotated `<tag_prefix><version>` tag on the commit being built.
+      - push-tag-deku-sprout:
+          requires: [release-deku-sprout]
+          filters: *version-tag-filters
+      - push-tag-deku-swarm:
+          requires: [release-deku-swarm]
+          filters: *version-tag-filters
+      - push-tag-navi-hey-client:
+          requires: [release-navi-hey-client]
+          filters: *version-tag-filters
       # One release job per Docker image, after its npm package (release.yml
       # `depends_on`). Each one always runs, releases the image only when
       # its package.json version is missing on Docker Hub, and records the
@@ -140,17 +153,19 @@ commands:
 
   skip-unless-released:
     parameters:
-      image:
+      # `release` (not `name`, a reserved CircleCI parameter): the
+      # release.yml name of an npm package or Docker image.
+      release:
         type: string
     steps:
       - attach_workspace:
           at: .
       - run:
-          name: Halt unless <<parameters.image>> was released
+          name: Halt unless <<parameters.release>> was released
           # Plain sh (not scripts/ci.sh): the darthjee/scripts image has no bash.
           command: |
             set +e
-            sh scripts/ci/image-released.sh <<parameters.image>>
+            sh scripts/ci/released.sh <<parameters.release>>
             status=$?
             set -e
             if [ "$status" = "1" ]; then
@@ -367,6 +382,19 @@ jobs:
       - run:
           name: Release deku-sprout if its version is not on npm
           command: scripts/ci.sh release-npm deku-sprout
+      - persist_to_workspace:
+          root: .
+          paths: [released/deku-sprout]
+
+  push-tag-deku-sprout:
+    executor: node-ci
+    steps:
+      - checkout
+      - skip-unless-released:
+          release: deku-sprout
+      - run:
+          name: Push the deku-sprout release tag
+          command: scripts/ci.sh push-tag deku-sprout
 
   release-deku-swarm:
     executor: node-ci
@@ -375,6 +403,19 @@ jobs:
       - run:
           name: Release deku-swarm if its version is not on npm
           command: scripts/ci.sh release-npm deku-swarm
+      - persist_to_workspace:
+          root: .
+          paths: [released/deku-swarm]
+
+  push-tag-deku-swarm:
+    executor: node-ci
+    steps:
+      - checkout
+      - skip-unless-released:
+          release: deku-swarm
+      - run:
+          name: Push the deku-swarm release tag
+          command: scripts/ci.sh push-tag deku-swarm
 
   release-navi-hey:
     executor: node-ci
@@ -400,6 +441,19 @@ jobs:
       - run:
           name: Release navi-hey-client if its version is not on npm
           command: scripts/ci.sh release-npm navi-hey-client
+      - persist_to_workspace:
+          root: .
+          paths: [released/navi-hey-client]
+
+  push-tag-navi-hey-client:
+    executor: node-ci
+    steps:
+      - checkout
+      - skip-unless-released:
+          release: navi-hey-client
+      - run:
+          name: Push the navi-hey-client release tag
+          command: scripts/ci.sh push-tag navi-hey-client
 
   release-darthjee-navi-hey-client:
     machine: true
@@ -418,7 +472,7 @@ jobs:
     steps:
       - checkout
       - skip-unless-released:
-          image: darthjee/navi-hey-client
+          release: darthjee/navi-hey-client
       - run:
           name: Update client Docker Hub description
           command: sh scripts/update-description-client.sh
@@ -440,7 +494,7 @@ jobs:
     steps:
       - checkout
       - skip-unless-released:
-          image: darthjee/navi-hey
+          release: darthjee/navi-hey
       - run:
           name: Update Docker Hub description
           command: sh scripts/update-description.sh
@@ -450,7 +504,7 @@ jobs:
     steps:
       - checkout
       - skip-unless-released:
-          image: darthjee/navi-hey
+          release: darthjee/navi-hey
       - run:
           name: Trigger Deploy
           command: RENDER_SERVICE_NAME=$DEMO_RENDER_SERVICE_NAME scripts/deploy.sh deploy
@@ -460,7 +514,7 @@ jobs:
     steps:
       - checkout
       - skip-unless-released:
-          image: darthjee/navi-hey
+          release: darthjee/navi-hey
       - run:
           name: Trigger Deploy
           command: RENDER_SERVICE_NAME=$DEMO_APP_RENDER_SERVICE_NAME scripts/deploy.sh deploy
@@ -470,7 +524,7 @@ jobs:
     steps:
       - checkout
       - skip-unless-released:
-          image: darthjee/navi-hey
+          release: darthjee/navi-hey
       - run:
           name: Build and release the navi-hey-test harness image
           command: make release-navi-hey-test TAG=${CIRCLE_TAG}
