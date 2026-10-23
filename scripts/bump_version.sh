@@ -147,6 +147,23 @@ find_stale_packages() {
   done
 }
 
+# Version of <release.yml package> at the last X.Y.Z release tag, or an
+# empty string when there is no such tag.
+version_at_last_release() {
+  local tag
+  tag="$(package_bump_last_tag "" HEAD)"
+  [[ -n "$tag" ]] || return 0
+
+  load_release_info "$1"
+  git show "$tag:$INFO_FOLDER/package.json" 2>/dev/null | package_bump_read_version 2>/dev/null || true
+}
+
+# Tells whether <target>'s working-tree version differs from its version at
+# the last X.Y.Z release.
+bumped_since_release() {
+  [[ "$(current_version "$1")" != "$(version_at_last_release "$(release_package_for "$1")")" ]]
+}
+
 # When "true", bumps only run their checks (missing rows/badges) and write
 # nothing, so every planned bump is checked before any file changes.
 CHECK_ONLY="false"
@@ -344,9 +361,20 @@ case "$TARGET" in
 
     plan_bump app "$REQUESTED_VERSION"
 
+    sprout_bumped="false"
     for stale_target in ${STALE_TARGETS[@]+"${STALE_TARGETS[@]}"}; do
       plan_bump "$stale_target"
+      [[ "$stale_target" == "deku-sprout" ]] && sprout_bumped="true"
     done
+
+    # navi-hey-client depends on deku-sprout, so the release's cascade-bump
+    # check requires a client bump whenever deku-sprout's version changes.
+    if [[ "$sprout_bumped" == "true" ]] || bumped_since_release deku-sprout; then
+      if ! bumped_since_release client; then
+        echo "deku-sprout changed since the last release, also bumping client." >&2
+        plan_bump client
+      fi
+    fi
     ;;
   *)
     plan_bump "$TARGET" "$REQUESTED_VERSION"
