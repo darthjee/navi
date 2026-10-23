@@ -18,7 +18,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Folder Structure](docs/agents/folder-structure.md) | Top-level directory layout and the role of each folder. |
 | [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, YAML structure, initial enqueueing, Engine loop, worker execution, failure handling, web UI routes. |
 | [Worker Subsystem](docs/agents/worker.md) | Class-by-class reference for `deku-swarm` (`worker/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
-| [Logger Subsystem](docs/agents/logger.md) | Class-by-class reference for `deku-sprout` (`logger/`), the shared logging package — `BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger` — its consumers and its release flow. |
+| [Logger Subsystem](docs/agents/logger.md) | Class-by-class reference for `deku-sprout` (`logger/`), the shared logging package — `BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger` — its consumers and how it is published. |
 | [Spec Support](docs/agents/spec-support.md) | The private `navi-spec-support` package (`spec-support/`): the jsdom/React spec bootstrap shared by `frontend/` and `dev/frontend/`, its `exports` contract, how the frontends consume it, and reinstall-after-edit rule. |
 | [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
 | [Dangers](docs/agents/dangers.md) | Async pitfalls, synchronous test dummies, and rules for planning cooldowns, sleeps, and waits. |
@@ -27,6 +27,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Frontend](docs/agents/frontend.md) | The React SPA monitoring dashboard: technology stack, routing, API clients, component hierarchy, build process, and integration with the backend. |
 | [Dev Proxy](docs/agents/dev-proxy.md) | The Tent-powered reverse proxy (`dev/proxy`) used in local development: configuration files, caching behaviour, request flow, and how to extend the rules. |
 | [Client (Node)](docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`): package layout, the `/api/*` surface it wraps, CLI usage, testing, and CI jobs. |
+| [Release Cycle](docs/agents/release.md) | How CI releases every package and image: `X.Y.Z`-only release tags, the history-only `sprout-` / `swarm-` / `node_client-` tags, the `release.yml` dependency tree and its validator, per-package detection (unpublished version), the cascade-bump test, the job graph and how to cut a release with `bump_version.sh`. |
 | [Release Token](docs/agents/release-token.md) | The `GITHUB_TOKEN` fine-grained PAT used by the `push-tag-<package>` CI jobs (`scripts/ci/push-release-tag.sh`) to push the `sprout-` / `swarm-` / `node_client-` tags: required settings, CircleCI storage, rotation and troubleshooting. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |

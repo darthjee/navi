@@ -1,6 +1,6 @@
 # Release Token (`GITHUB_TOKEN`)
 
-`GITHUB_TOKEN` is the GitHub credential CI uses to push release git tags. Its only consumer is `scripts/ci/push-release-tag.sh` (`scripts/ci.sh push-tag <package>`), run by the `push-tag-<package>` jobs. The per-package npm release jobs (`release-deku-sprout`, `release-deku-swarm`, `release-navi-hey`, `release-navi-hey-client`, all running `scripts/ci/release-npm-package.sh`) push no tag and do not need the token; they write `released/<package>` (`true`/`false`) to the CircleCI workspace instead.
+`GITHUB_TOKEN` is the GitHub credential CI uses to push release git tags. Its only consumer is `scripts/ci/push-release-tag.sh` (`scripts/ci.sh push-tag <package>`), run by the `push-tag-<package>` jobs. The per-package npm release jobs (`release-deku-sprout`, `release-deku-swarm`, `release-navi-hey`, `release-navi-hey-client`, all running `scripts/ci/release-npm-package.sh`) push no tag and do not need the token; they write `released/<package>` (`true`/`false`) to the CircleCI workspace instead. See [Release Cycle](release.md) for the overall flow.
 
 ## Who needs it
 

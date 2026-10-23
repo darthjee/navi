@@ -69,7 +69,7 @@ They only import each other, which is what made them extractable without taking 
 
 ## Release flow
 
-`deku-sprout` has its own version, CI jobs and tags, but it is published only by the app `X.Y.Z` release (there is no standalone release track since #964).
+`deku-sprout` has its own version, CI jobs and tags, but it is published only by the app `X.Y.Z` release (there is no standalone release track since #964). This section covers the `deku-sprout` side; [Release Cycle](release.md) describes the whole flow.
 
 | Piece | Where |
 |---|---|
@@ -79,7 +79,7 @@ They only import each other, which is what made them extractable without taking 
 | Tags | CI no longer pushes the old `deku-sprout-X.Y.Z` release marker (the existing ones stay as history). Instead, `push-tag-deku-sprout` (`scripts/ci.sh push-tag deku-sprout`, `scripts/ci/push-release-tag.sh`) runs after `release-deku-sprout` and, only when it actually published, pushes the annotated `sprout-X.Y.Z` tag (`tag_prefix` in `release.yml`) on the commit being built, with `GITHUB_TOKEN` (see [Release Token](release-token.md)); it halts as a no-op otherwise. `deku-swarm` follows the same pattern with `push-tag-deku-swarm` and `swarm-X.Y.Z`. `scripts/bump_version.sh` reads these prefixes from `release.yml` and points the README version links to them. CircleCI ignores every non-`X.Y.Z` tag, so pushing one by hand starts no pipeline and publishes nothing. To publish, bump `logger/package.json` with `scripts/bump_version.sh deku-sprout` and cut an app `X.Y.Z` release. The standalone `deku-sprout-X.Y.Z` track added in #923 was removed in #964, because the CI-pushed marker tag re-triggered it and published the same version twice. |
 | Pinning in `navi-hey` releases | The `release-navi-hey` job (which requires `release-deku-sprout` and `release-deku-swarm`) runs `scripts/ci.sh pin-local-deps` (`scripts/ci/pin-local-deps.sh`) before running `scripts/ci.sh release-npm navi-hey`. It rewrites `"deku-sprout": "file:../logger"` in `source/package.json` to the exact `logger/package.json` version (no `^`/`~`), does the same for `deku-swarm`, and fails the release if any `file:` dependency is left. The release script then waits (`scripts/ci/wait-for-npm.sh`, every 10 s for up to 5 min) until npm serves the pinned `deku-swarm`/`deku-sprout` versions, publishes `navi-hey` when its version is new, and finally waits until npm serves it, so the Docker build that follows never races npm propagation. |
 
-Publishing a new `deku-sprout` version requires an app `X.Y.Z` release: a bumped `logger/package.json` stays unpublished until the next one. `source/` and `dev/app` still pick up `logger/` changes immediately through `file:`, while `clients/node/` moves only when its `^` range or pinned version is bumped. So a new `deku-sprout` version the client needs must first be published by an app `X.Y.Z` release, and only then can a `client-X.Y.Z` release depend on it.
+Publishing a new `deku-sprout` version requires an app `X.Y.Z` release: a bumped `logger/package.json` stays unpublished until the next one. `source/` and `dev/app` still pick up `logger/` changes immediately through `file:`, while `clients/node/` moves only when its `^` range or pinned version is bumped. A `deku-sprout` bump therefore requires `navi-hey` and `navi-hey-client` bumps too (enforced by the cascade-bump test), and the same `X.Y.Z` tag publishes all three in dependency order. See [Release Cycle](release.md) for the whole flow.
 
 ## Design decisions
 
