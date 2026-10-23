@@ -2,7 +2,7 @@
 set -e
 
 PACKAGE_VERSION=$(node -p "require('./source/package.json').version")
-README_VERSION=$(grep -oP '(?<=\*\*Current Version:\*\* \[)[\d.]+' README.md)
+README_VERSION=$(grep -oP '(?<=^\| Navi-Hey \| \[)[\d.]+' README.md)
 
 FAILED=0
 

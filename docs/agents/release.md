@@ -4,7 +4,7 @@ How Navi's packages and Docker images are released by CI (`.circleci/config.yml`
 
 ## Tags
 
-- **`X.Y.Z` is the only release trigger.** It is the `navi-hey` version. `check-version-tag` (`scripts/check_tag_version.sh`) fails the release unless the tag matches both `source/package.json` and the `**Current Version:**` line of `README.md`.
+- **`X.Y.Z` is the only release trigger.** It is the `navi-hey` version. `check-version-tag` (`scripts/check_tag_version.sh`) fails the release unless the tag matches both `source/package.json` and the `Navi-Hey` row of the Versions table in `README.md`.
 - **Branches (PRs and `main`) run tests only.** Every test job uses the same filter (`tags: only: /^\d+\.\d+\.\d+$/`), so tests also run on, and gate, every `X.Y.Z` tag. The release jobs use `branches: ignore: /.*/`, so they run on `X.Y.Z` tags only.
 - **Every other tag starts no pipeline**, not even tests.
 - **Extra tags are history only.** After a package publishes, CI pushes an extra tag for it:
@@ -92,8 +92,8 @@ flowchart TD
 
 Versions are bumped with `scripts/bump_version.sh [--force] [app|all|client|worker|deku-sprout] [version]`, never by hand. The target defaults to `app`; an omitted version auto-increments the target's patch version.
 
-- `app` bumps `source/package.json`, the `**Current Version:**` / `**Next Release:**` lines of `README.md` and the `FROM darthjee/navi-hey:<v>` line of `dockerfiles/demo_navi_hey/Dockerfile`. It refuses (exit non-zero, nothing changed) while `worker/` or `logger/` is stale, i.e. their published files changed since their last release tag but their working-tree version did not; `--force` overrides, and `all` bumps the app plus every stale package.
-- `client`, `worker` and `deku-sprout` bump their `package.json` and their README version lines, whose links use the `release.yml` tag prefixes.
+- `app` bumps `source/package.json`, the `Navi-Hey` row (Current/Next) of the Versions table and the GitHub Release badges of `README.md` and `source/README.md` and the `FROM darthjee/navi-hey:<v>` line of `dockerfiles/demo_navi_hey/Dockerfile`. It refuses (exit non-zero, nothing changed) while `worker/` or `logger/` is stale, i.e. their published files changed since their last release tag but their working-tree version did not; `--force` overrides, and `all` bumps the app plus every stale package, plus `client` when `deku-sprout` changed since the last `X.Y.Z` release while the client did not (the cascade-bump test requires it). Every planned bump is checked first, so a missing README row or badge aborts before any file changes.
+- `client`, `worker` and `deku-sprout` bump their `package.json`, their row of the README Versions table (whose links use the `release.yml` tag prefixes) and their version badges in the package READMEs.
 
 Example: `worker/` and `source/` changed since `1.15.0`. Run `scripts/bump_version.sh all` (bumps `deku-swarm` and `navi-hey` to `1.15.1`), merge, then tag `1.15.1`. On that tag `release-deku-swarm` publishes and `push-tag-deku-swarm` pushes `swarm-<v>`; `release-deku-sprout` no-ops; `release-navi-hey` publishes `1.15.1`; `release-darthjee-navi-hey` pushes the image and its followers act; the client jobs no-op.
 

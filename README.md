@@ -3,6 +3,15 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
+[![GitHub Release](https://img.shields.io/github/v/release/darthjee/navi?logo=github)](https://github.com/darthjee/navi/releases/tag/1.14.1)
+
+[![npm](https://img.shields.io/npm/v/navi-hey.svg?logo=npm&label=navi-hey)](https://www.npmjs.com/package/navi-hey)
+[![npm](https://img.shields.io/npm/v/navi-hey-client.svg?logo=npm&label=navi-hey-client)](https://www.npmjs.com/package/navi-hey-client)
+[![npm](https://img.shields.io/npm/v/deku-swarm.svg?logo=npm&label=deku-swarm)](https://www.npmjs.com/package/deku-swarm)
+[![npm](https://img.shields.io/npm/v/deku-sprout.svg?logo=npm&label=deku-sprout)](https://www.npmjs.com/package/deku-sprout)
+
+[![npm](https://img.shields.io/docker/v/darthjee/navi-hey.svg?logo=docker&label=navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey/general)
+[![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?logo=docker&label=navi-hey-client)](https://hub.docker.com/repository/docker/darthjee/navi-hey-client/general)
 
 ![navi](https://raw.githubusercontent.com/darthjee/navi/master/navi.png)
 
@@ -16,27 +25,15 @@ Only a tag in the `X.Y.Z` format (e.g. `1.14.1`, matching `source/package.json`)
 
 After `deku-sprout`, `deku-swarm` or `navi-hey-client` is actually published to npm, the matching `sprout-x.y.z`, `swarm-x.y.z` or `node_client-x.y.z` tag is pushed, as history only; nothing is pushed when the version was already published. The release fails if a package's published files (`lib/` or `package.json`) changed since its previous release without a version bump; changes to specs, lint config, README or `yarn.lock` alone don't require a bump.
 
-Use `bump_version.sh client [version]` / `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and the badges below. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run.
+Use `bump_version.sh client [version]` / `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and its row in the Versions table below. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run (plus the client whenever `deku-sprout` changed, as the release requires).
 
-### Navi
-**Current Version:** [1.14.1](https://github.com/darthjee/navi/releases/tag/1.14.1)
-
-**Next Release:** [1.14.2](https://github.com/darthjee/navi/compare/1.14.1...main)
-
-### Client
-**Client Current Version:** [0.2.4](https://github.com/darthjee/navi/releases/tag/client-0.2.4)
-
-**Client Next Version:** [0.2.5](https://github.com/darthjee/navi/compare/client-0.2.4...main)
-
-### Worker (Deku Swarm) 
-**Worker Current Version:** [1.12.0](https://github.com/darthjee/navi/releases/tag/worker-1.12.0)
-
-**Worker Next Version:** [1.12.1](https://github.com/darthjee/navi/compare/worker-1.12.0...main)
-
-### Lib (Deku Sprout)
-**Deku Sprout Current Version:** [0.3.0](https://github.com/darthjee/navi/releases/tag/deku-sprout-0.3.0)
-
-**Deku Sprout Next Version:** [0.3.1](https://github.com/darthjee/navi/compare/deku-sprout-0.3.0...main)
+### Versions
+| Package | Current | Next |
+| -------- | ------- | ---- |
+| Navi-Hey | [1.14.1](https://github.com/darthjee/navi/releases/tag/1.14.1) | [1.14.2](https://github.com/darthjee/navi/compare/1.14.1...main) |
+| Client | [0.2.4](https://github.com/darthjee/navi/releases/tag/node_client-0.2.4) | [0.2.5](https://github.com/darthjee/navi/compare/node_client-0.2.4...main) |
+| Worker (Deku Swarm) | [1.12.0](https://github.com/darthjee/navi/releases/tag/swarm-1.12.0) | [1.12.1](https://github.com/darthjee/navi/compare/swarm-1.12.0...main) |
+| Lib (Deku Sprout) | [0.3.0](https://github.com/darthjee/navi/releases/tag/sprout-0.3.0) | [0.3.1](https://github.com/darthjee/navi/compare/sprout-0.3.0...main) |
 
 ---
 

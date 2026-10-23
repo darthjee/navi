@@ -15,6 +15,10 @@ source "$SCRIPT_DIR/lib/package_bump_check.sh"
 source "$SCRIPT_DIR/lib/release_package_info.sh"
 
 README="$ROOT_DIR/README.md"
+APP_README="$ROOT_DIR/source/README.md"
+CLIENT_README="$ROOT_DIR/clients/node/README.md"
+WORKER_README="$ROOT_DIR/worker/README.md"
+LOGGER_README="$ROOT_DIR/logger/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
 WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
@@ -143,121 +147,125 @@ find_stale_packages() {
   done
 }
 
+# Version of <release.yml package> at the last X.Y.Z release tag, or an
+# empty string when there is no such tag.
+version_at_last_release() {
+  local tag
+  tag="$(package_bump_last_tag "" HEAD)"
+  [[ -n "$tag" ]] || return 0
+
+  load_release_info "$1"
+  git show "$tag:$INFO_FOLDER/package.json" 2>/dev/null | package_bump_read_version 2>/dev/null || true
+}
+
+# Tells whether <target>'s working-tree version differs from its version at
+# the last X.Y.Z release.
+bumped_since_release() {
+  [[ "$(current_version "$1")" != "$(version_at_last_release "$(release_package_for "$1")")" ]]
+}
+
+# When "true", bumps only run their checks (missing rows/badges) and write
+# nothing, so every planned bump is checked before any file changes.
+CHECK_ONLY="false"
+
+# Applies the sed <expression> to <file>, unless only checking.
+replace_in_file() {
+  if [[ "$CHECK_ONLY" == "true" ]]; then
+    return 0
+  fi
+
+  sed -i '' "$1" "$2"
+}
+
+# Rewrites the README Versions table row "| <label> | ... |".
+update_readme_row() {
+  local label="$1"
+  local tag="$2$VERSION"
+
+  if ! grep -qF "| $label |" "$README"; then
+    echo "Error: README Versions table has no \"$label\" row" >&2
+    exit 1
+  fi
+
+  replace_in_file \
+    "s#^| $label | .* |\$#| $label | [$VERSION](https://github.com/darthjee/navi/releases/tag/$tag) | [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$tag...main) |#" \
+    "$README"
+}
+
+# Rewrites the GitHub Release badge link to point at the new release tag.
+update_release_badge() {
+  local readme="$1"
+
+  replace_in_file \
+    "s#(https://github.com/darthjee/navi/releases/tag/[0-9.]*)\$#(https://github.com/darthjee/navi/releases/tag/$VERSION)#" \
+    "$readme"
+}
+
+# Rewrites a README badge "badge/<label>-v<version>-" for a package, to
+# <version> (defaults to $VERSION).
+update_package_badge() {
+  local label="$1"
+  local readme="$2"
+  local version="${3:-$VERSION}"
+
+  if ! grep -qF "badge/$label-v" "$readme"; then
+    echo "Error: $readme has no \"$label\" badge" >&2
+    exit 1
+  fi
+
+  replace_in_file \
+    "s#badge/$label-v[0-9.]*-#badge/$label-v$version-#" \
+    "$readme"
+}
+
 bump_app() {
-  sed -i '' \
-    "s|\*\*Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/.*)|**Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$VERSION)|" \
-    "$README"
+  update_readme_row "Navi-Hey" ""
+  update_release_badge "$README"
+  update_release_badge "$APP_README"
+  update_package_badge "navi_hey" "$APP_README"
 
-  sed -i '' \
-    "s|\*\*Next Release:\*\* \[.*\](https://github.com/darthjee/navi/compare/.*)|**Next Release:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$VERSION...main)|" \
-    "$README"
-
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$APP_PACKAGE_JSON"
 
-  sed -i '' \
+  replace_in_file \
     "s|FROM darthjee/navi-hey:.*|FROM darthjee/navi-hey:$VERSION|" \
     "$DEMO_DOCKERFILE"
 }
 
-bump_client() {
-  local prefix
-  prefix="$(tag_prefix_for client)"
+# Version of deku-sprout the client depends on, without its ^/~ range.
+client_deku_sprout_version() {
+  node -p "require('$CLIENT_PACKAGE_JSON').dependencies['deku-sprout'].replace(/^[\\^~]/, '')"
+}
 
-  sed -i '' \
+bump_client() {
+  update_readme_row "Client" "$(tag_prefix_for client)"
+  update_package_badge "navi_hey_client" "$CLIENT_README"
+  update_package_badge "deku_sprout" "$CLIENT_README" "$(client_deku_sprout_version)"
+
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$CLIENT_PACKAGE_JSON"
-
-  if grep -q '\*\*Client Current Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Client Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/[^)]*)|**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Next Release:\*\*/a\\
-\\
-**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)" \
-      "$README"
-  fi
-
-  if grep -q '\*\*Client Next Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Client Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/[^)]*)|**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Client Current Version:\*\*/a\\
-\\
-**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)" \
-      "$README"
-  fi
 }
 
 bump_worker() {
-  local prefix
-  prefix="$(tag_prefix_for worker)"
+  update_readme_row "Worker (Deku Swarm)" "$(tag_prefix_for worker)"
+  update_package_badge "deku_swarm" "$APP_README"
+  update_package_badge "deku_swarm" "$WORKER_README"
 
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$WORKER_PACKAGE_JSON"
-
-  if grep -q '\*\*Worker Current Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Worker Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/[^)]*)|**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Client Next Version:\*\*/a\\
-\\
-**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)" \
-      "$README"
-  fi
-
-  if grep -q '\*\*Worker Next Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Worker Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/[^)]*)|**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Worker Current Version:\*\*/a\\
-\\
-**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)" \
-      "$README"
-  fi
 }
 
 bump_deku_sprout() {
-  local prefix
-  prefix="$(tag_prefix_for deku-sprout)"
+  update_readme_row "Lib (Deku Sprout)" "$(tag_prefix_for deku-sprout)"
+  update_package_badge "deku_sprout" "$APP_README"
+  update_package_badge "deku_sprout" "$LOGGER_README"
 
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$LOGGER_PACKAGE_JSON"
-
-  if grep -q '\*\*Deku Sprout Current Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Deku Sprout Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/[^)]*)|**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Worker Next Version:\*\*/a\\
-\\
-**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)" \
-      "$README"
-  fi
-
-  if grep -q '\*\*Deku Sprout Next Version:\*\*' "$README"; then
-    sed -i '' \
-      "s|\*\*Deku Sprout Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/[^)]*)|**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)|" \
-      "$README"
-  else
-    sed -i '' \
-      "/\*\*Deku Sprout Current Version:\*\*/a\\
-\\
-**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)" \
-      "$README"
-  fi
 }
 
 # Bumps <target> to <version> (or to the next patch of its current version).
@@ -285,7 +293,34 @@ bump_target() {
     deku-sprout) bump_deku_sprout ;;
   esac
 
-  echo "Bumped $target to $VERSION (next release: $NEXT_VERSION)"
+  if [[ "$CHECK_ONLY" != "true" ]]; then
+    echo "Bumped $target to $VERSION (next release: $NEXT_VERSION)"
+  fi
+}
+
+PLANNED_TARGETS=()
+PLANNED_VERSIONS=()
+
+# Queues <target> to be bumped to <version> (empty: next patch).
+plan_bump() {
+  PLANNED_TARGETS+=("$1")
+  PLANNED_VERSIONS+=("${2:-}")
+}
+
+# Checks every planned bump, then applies them, so a missing README row or
+# badge aborts before any file is changed.
+run_planned_bumps() {
+  local i
+
+  CHECK_ONLY="true"
+  for i in "${!PLANNED_TARGETS[@]}"; do
+    bump_target "${PLANNED_TARGETS[$i]}" "${PLANNED_VERSIONS[$i]}"
+  done
+
+  CHECK_ONLY="false"
+  for i in "${!PLANNED_TARGETS[@]}"; do
+    bump_target "${PLANNED_TARGETS[$i]}" "${PLANNED_VERSIONS[$i]}"
+  done
 }
 
 report_stale() {
@@ -315,7 +350,7 @@ case "$TARGET" in
       echo "Warning: --force given, bumping the app anyway." >&2
     fi
 
-    bump_target app "$REQUESTED_VERSION"
+    plan_bump app "$REQUESTED_VERSION"
     ;;
   all)
     if [[ -n "$REQUESTED_VERSION" ]]; then
@@ -324,13 +359,26 @@ case "$TARGET" in
 
     find_stale_packages
 
-    bump_target app "$REQUESTED_VERSION"
+    plan_bump app "$REQUESTED_VERSION"
 
+    sprout_bumped="false"
     for stale_target in ${STALE_TARGETS[@]+"${STALE_TARGETS[@]}"}; do
-      bump_target "$stale_target"
+      plan_bump "$stale_target"
+      [[ "$stale_target" == "deku-sprout" ]] && sprout_bumped="true"
     done
+
+    # navi-hey-client depends on deku-sprout, so the release's cascade-bump
+    # check requires a client bump whenever deku-sprout's version changes.
+    if [[ "$sprout_bumped" == "true" ]] || bumped_since_release deku-sprout; then
+      if ! bumped_since_release client; then
+        echo "deku-sprout changed since the last release, also bumping client." >&2
+        plan_bump client
+      fi
+    fi
     ;;
   *)
-    bump_target "$TARGET" "$REQUESTED_VERSION"
+    plan_bump "$TARGET" "$REQUESTED_VERSION"
     ;;
 esac
+
+run_planned_bumps
