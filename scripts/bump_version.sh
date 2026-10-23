@@ -11,6 +11,8 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # shellcheck source=lib/package_bump_check.sh
 source "$SCRIPT_DIR/lib/package_bump_check.sh"
+# shellcheck source=lib/release_package_info.sh
+source "$SCRIPT_DIR/lib/release_package_info.sh"
 
 README="$ROOT_DIR/README.md"
 APP_README="$ROOT_DIR/source/README.md"
@@ -89,10 +91,36 @@ validate_version() {
   fi
 }
 
-# Packages released alongside the app: "<target> <folder> <tag-prefix>".
+# release.yml package of each non-app target.
+release_package_for() {
+  case "$1" in
+    client) echo "navi-hey-client" ;;
+    worker) echo "deku-swarm" ;;
+    deku-sprout) echo "deku-sprout" ;;
+  esac
+}
+
+# Reads <release.yml package>'s INFO_FOLDER / INFO_TAG_PREFIX from release.yml,
+# installing scripts/release's dependencies first when they are missing.
+load_release_info() {
+  if [[ ! -d "$ROOT_DIR/scripts/release/node_modules" ]]; then
+    bash "$SCRIPT_DIR/ci/install-deps.sh" "$ROOT_DIR/scripts/release" true >&2
+  fi
+
+  read_package_info "$1" "$ROOT_DIR"
+}
+
+# Extra GitHub tag prefix (release.yml `tag_prefix`) of a non-app target.
+tag_prefix_for() {
+  load_release_info "$(release_package_for "$1")"
+  echo "$INFO_TAG_PREFIX"
+}
+
+# Packages released alongside the app: "<target> <release.yml package>".
+# Their folder and tag prefix come from release.yml.
 CHECKED_PACKAGES=(
-  "worker worker worker-"
-  "deku-sprout logger deku-sprout-"
+  "worker deku-swarm"
+  "deku-sprout deku-sprout"
 )
 
 STALE_TARGETS=()
@@ -102,12 +130,15 @@ STALE_MESSAGES=()
 # since their last release tag while their working-tree version did not.
 # Compares the tag against the working tree, so an uncommitted bump counts.
 find_stale_packages() {
-  local entry target folder prefix
+  local entry target package folder prefix
   STALE_TARGETS=()
   STALE_MESSAGES=()
 
   for entry in "${CHECKED_PACKAGES[@]}"; do
-    read -r target folder prefix <<< "$entry"
+    read -r target package <<< "$entry"
+    load_release_info "$package"
+    folder="$INFO_FOLDER"
+    prefix="$INFO_TAG_PREFIX"
 
     if ! package_bump_check "$folder" "$prefix" HEAD > /dev/null 2>&1; then
       STALE_TARGETS+=("$target")
@@ -170,7 +201,7 @@ bump_app() {
 }
 
 bump_client() {
-  update_readme_row "Client" "client-"
+  update_readme_row "Client" "$(tag_prefix_for client)"
   update_package_badge "navi_hey_client" "$CLIENT_README"
 
   sed -i '' \
@@ -179,7 +210,7 @@ bump_client() {
 }
 
 bump_worker() {
-  update_readme_row "Worker (Deku Swarm)" "worker-"
+  update_readme_row "Worker (Deku Swarm)" "$(tag_prefix_for worker)"
   update_package_badge "deku_swarm" "$APP_README"
   update_package_badge "deku_swarm" "$WORKER_README"
 
@@ -189,7 +220,7 @@ bump_worker() {
 }
 
 bump_deku_sprout() {
-  update_readme_row "Lib (Deku Sprout)" "deku-sprout-"
+  update_readme_row "Lib (Deku Sprout)" "$(tag_prefix_for deku-sprout)"
   update_package_badge "deku_sprout" "$APP_README"
   update_package_badge "deku_sprout" "$CLIENT_README"
   update_package_badge "deku_sprout" "$WORKER_README"

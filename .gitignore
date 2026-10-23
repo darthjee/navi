@@ -169,3 +169,6 @@ output/
 .claude/state/
 frontend/report
 dev/frontend/report/
+
+# CircleCI workspace flags written by scripts/ci/release-docker-image.sh
+/released/

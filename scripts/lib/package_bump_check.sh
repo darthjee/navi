@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Shared "published files changed but version not bumped" detection for the
-# local packages released alongside the app (worker/ -> deku-swarm,
-# logger/ -> deku-sprout).
+# npm packages of release.yml (logger/ -> deku-sprout, worker/ -> deku-swarm,
+# source/ -> navi-hey, clients/node/ -> navi-hey-client).
 #
 # Meant to be SOURCED, not executed. Used by:
-#   - scripts/ci/check-and-publish-package.sh (CI: base ref HEAD^, compares
+#   - scripts/ci/release-npm-package.sh (CI: base ref HEAD^, compares
 #     against HEAD)
 #   - scripts/bump_version.sh (local: base ref HEAD, compares against the
 #     working tree, so an uncommitted bump counts as bumped)
@@ -14,7 +14,8 @@
 #       Reads a package.json from stdin and prints its "version".
 #   package_bump_last_tag <tag_prefix> <base_ref>
 #       Prints the last release tag (<tag_prefix>X.Y.Z, falling back to the
-#       app X.Y.Z tag) reachable from <base_ref>, or an empty string.
+#       app X.Y.Z tag) reachable from <base_ref>, or an empty string. With an
+#       empty <tag_prefix>, only X.Y.Z tags are matched.
 #   package_bump_check <folder> <tag_prefix> <base_ref> [<compare_ref>]
 #       Returns 0 when there is no previous tag, nothing changed under
 #       <folder>/lib or <folder>/package.json, or the version was bumped.
@@ -29,6 +30,12 @@ package_bump_read_version() {
 package_bump_last_tag() {
   local tag_prefix="$1"
   local base_ref="$2"
+
+  if [ -z "$tag_prefix" ]; then
+    # --match='*' would match every tag, so stick to the X.Y.Z tags.
+    git describe --tags --abbrev=0 --match='[0-9]*.[0-9]*.[0-9]*' "$base_ref" 2>/dev/null || echo ""
+    return 0
+  fi
 
   git describe --tags --abbrev=0 --match="${tag_prefix}*" --match='[0-9]*.[0-9]*.[0-9]*' "$base_ref" 2>/dev/null || echo ""
 }
