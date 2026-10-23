@@ -62,7 +62,7 @@ yarn report     # JSCPD duplication report
 
 Both are wired into the `test-and-release` workflow and into `coverage-final`'s `requires` list.
 
-CI runs only on branches and on `X.Y.Z` tags; every other tag, including the old `client-X.Y.Z` tags, triggers nothing. The former `client-` release pipeline (`check-client-version-tag`, `scripts/check_client_tag_version.sh` and `npm-publish-client`) has been removed. The `build-and-release-client` and `update-description-client` job definitions remain in `.circleci/config.yml` but are not wired into the workflow. Releasing `navi-hey-client` will move into the single `X.Y.Z` release (#986/#987); until then the package has no CI release path. See [the release spec](specs/release.md).
+CI runs only on branches and on `X.Y.Z` tags; every other tag, including the old `client-X.Y.Z` tags, triggers nothing. The former `client-` release pipeline (`check-client-version-tag`, `scripts/check_client_tag_version.sh` and `npm-publish-client`) has been removed. The `build-and-release-client` and `update-description-client` job definitions remain in `.circleci/config.yml` but are not wired into the workflow. On every `X.Y.Z` tag, the `release-navi-hey-client` job (`scripts/ci.sh release-npm navi-hey-client`, after `release-deku-sprout`) publishes `navi-hey-client` to npm when its `clients/node/package.json` version is not on npm yet, and no-ops otherwise. It pushes no git tag (the `node_client-` tag arrives with #988), and the image jobs stay unwired until #987. See [the release spec](specs/release.md).
 
 ## Versioning
 
