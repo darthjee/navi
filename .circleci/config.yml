@@ -4,55 +4,54 @@ workflows:
   test-and-release:
     jobs:
       - jasmine:
-          filters: &all-tags
+          filters: &test-filters
             tags:
-              only: /.*/
-              ignore: /^(deku-sprout|worker)-.*/
+              only: /^\d+\.\d+\.\d+$/
       - checks:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-dev:
-          filters: *all-tags
+          filters: *test-filters
       - checks-dev:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-dev-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - checks-dev-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - checks-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-frontend:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-client:
-          filters: *all-tags
+          filters: *test-filters
       - checks-client:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-worker:
-          filters: *all-tags
+          filters: *test-filters
       - checks-worker:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-deku-sprout:
-          filters: *all-tags
+          filters: *test-filters
       - checks-deku-sprout:
-          filters: *all-tags
+          filters: *test-filters
       - jasmine-release:
-          filters: *all-tags
+          filters: *test-filters
       - checks-release:
-          filters: *all-tags
+          filters: *test-filters
       - validate-release-yml:
-          filters: *all-tags
+          filters: *test-filters
       - cascade-bump-check:
-          filters: *all-tags
+          filters: *test-filters
       - smoke-extensions:
-          filters: *all-tags
+          filters: *test-filters
       - test-extension-harness:
-          filters: *all-tags
+          filters: *test-filters
       - coverage-final:
           requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release]
-          filters: *all-tags
+          filters: *test-filters
       - check-version-tag:
           filters: &version-tag-filters
             tags:
-              only: /\d+\.\d+\.\d+/
+              only: /^\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
       - check-and-publish-worker:
@@ -62,27 +61,12 @@ workflows:
       - npm-publish:
           requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-and-publish-worker, check-and-publish-deku-sprout, smoke-extensions, test-extension-harness]
           filters: *version-tag-filters
-      - check-client-version-tag:
-          filters: &client-tag-filters
-            tags:
-              only: /client-\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
-      - npm-publish-client:
-          requires: [check-client-version-tag, jasmine-client, checks-client]
-          filters: *client-tag-filters
       - build-and-release:
           requires: [npm-publish]
           filters: *version-tag-filters
       - update-description:
           requires: [build-and-release]
           filters: *version-tag-filters
-      - build-and-release-client:
-          requires: [npm-publish-client]
-          filters: *client-tag-filters
-      - update-description-client:
-          requires: [build-and-release-client]
-          filters: *client-tag-filters
       - build-and-release-demo:
           requires: [build-and-release]
           filters: *version-tag-filters
@@ -378,29 +362,6 @@ jobs:
       - run:
           name: Wait for navi-hey on npm
           command: scripts/ci.sh wait-for-npm navi-hey "$CIRCLE_TAG"
-
-  check-client-version-tag:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
-    steps:
-      - checkout
-      - run:
-          name: Check tag matches clients/node/package.json and README versions
-          command: bash scripts/check_client_tag_version.sh
-
-  npm-publish-client:
-    executor: node-ci
-    steps:
-      - checkout
-      - install-deps:
-          path: clients/node
-          frozen: true
-      - run:
-          name: Publish to npm
-          command: scripts/ci.sh publish clients/node
-      - run:
-          name: Wait for navi-hey-client on npm
-          command: scripts/ci.sh wait-for-npm navi-hey-client "$(echo $CIRCLE_TAG | sed 's/^client-//')"
 
   build-and-release-client:
     machine: true
