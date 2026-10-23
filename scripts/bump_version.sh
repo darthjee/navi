@@ -11,6 +11,8 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # shellcheck source=lib/package_bump_check.sh
 source "$SCRIPT_DIR/lib/package_bump_check.sh"
+# shellcheck source=lib/release_package_info.sh
+source "$SCRIPT_DIR/lib/release_package_info.sh"
 
 README="$ROOT_DIR/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
@@ -85,10 +87,36 @@ validate_version() {
   fi
 }
 
-# Packages released alongside the app: "<target> <folder> <tag-prefix>".
+# release.yml package of each non-app target.
+release_package_for() {
+  case "$1" in
+    client) echo "navi-hey-client" ;;
+    worker) echo "deku-swarm" ;;
+    deku-sprout) echo "deku-sprout" ;;
+  esac
+}
+
+# Reads <release.yml package>'s INFO_FOLDER / INFO_TAG_PREFIX from release.yml,
+# installing scripts/release's dependencies first when they are missing.
+load_release_info() {
+  if [[ ! -d "$ROOT_DIR/scripts/release/node_modules" ]]; then
+    bash "$SCRIPT_DIR/ci/install-deps.sh" "$ROOT_DIR/scripts/release" true >&2
+  fi
+
+  read_package_info "$1" "$ROOT_DIR"
+}
+
+# Extra GitHub tag prefix (release.yml `tag_prefix`) of a non-app target.
+tag_prefix_for() {
+  load_release_info "$(release_package_for "$1")"
+  echo "$INFO_TAG_PREFIX"
+}
+
+# Packages released alongside the app: "<target> <release.yml package>".
+# Their folder and tag prefix come from release.yml.
 CHECKED_PACKAGES=(
-  "worker worker worker-"
-  "deku-sprout logger deku-sprout-"
+  "worker deku-swarm"
+  "deku-sprout deku-sprout"
 )
 
 STALE_TARGETS=()
@@ -98,12 +126,15 @@ STALE_MESSAGES=()
 # since their last release tag while their working-tree version did not.
 # Compares the tag against the working tree, so an uncommitted bump counts.
 find_stale_packages() {
-  local entry target folder prefix
+  local entry target package folder prefix
   STALE_TARGETS=()
   STALE_MESSAGES=()
 
   for entry in "${CHECKED_PACKAGES[@]}"; do
-    read -r target folder prefix <<< "$entry"
+    read -r target package <<< "$entry"
+    load_release_info "$package"
+    folder="$INFO_FOLDER"
+    prefix="$INFO_TAG_PREFIX"
 
     if ! package_bump_check "$folder" "$prefix" HEAD > /dev/null 2>&1; then
       STALE_TARGETS+=("$target")
@@ -131,91 +162,100 @@ bump_app() {
 }
 
 bump_client() {
+  local prefix
+  prefix="$(tag_prefix_for client)"
+
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$CLIENT_PACKAGE_JSON"
 
   if grep -q '\*\*Client Current Version:\*\*' "$README"; then
     sed -i '' \
-      "s|\*\*Client Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/client-.*)|**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/client-$VERSION)|" \
+      "s|\*\*Client Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/[^)]*)|**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)|" \
       "$README"
   else
     sed -i '' \
       "/\*\*Next Release:\*\*/a\\
 \\
-**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/client-$VERSION)" \
+**Client Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)" \
       "$README"
   fi
 
   if grep -q '\*\*Client Next Version:\*\*' "$README"; then
     sed -i '' \
-      "s|\*\*Client Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/client-.*)|**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/client-$VERSION...main)|" \
+      "s|\*\*Client Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/[^)]*)|**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)|" \
       "$README"
   else
     sed -i '' \
       "/\*\*Client Current Version:\*\*/a\\
 \\
-**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/client-$VERSION...main)" \
+**Client Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)" \
       "$README"
   fi
 }
 
 bump_worker() {
+  local prefix
+  prefix="$(tag_prefix_for worker)"
+
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$WORKER_PACKAGE_JSON"
 
   if grep -q '\*\*Worker Current Version:\*\*' "$README"; then
     sed -i '' \
-      "s|\*\*Worker Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/worker-.*)|**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/worker-$VERSION)|" \
+      "s|\*\*Worker Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/[^)]*)|**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)|" \
       "$README"
   else
     sed -i '' \
       "/\*\*Client Next Version:\*\*/a\\
 \\
-**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/worker-$VERSION)" \
+**Worker Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)" \
       "$README"
   fi
 
   if grep -q '\*\*Worker Next Version:\*\*' "$README"; then
     sed -i '' \
-      "s|\*\*Worker Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/worker-.*)|**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/worker-$VERSION...main)|" \
+      "s|\*\*Worker Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/[^)]*)|**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)|" \
       "$README"
   else
     sed -i '' \
       "/\*\*Worker Current Version:\*\*/a\\
 \\
-**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/worker-$VERSION...main)" \
+**Worker Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)" \
       "$README"
   fi
 }
 
 bump_deku_sprout() {
+  local prefix
+  prefix="$(tag_prefix_for deku-sprout)"
+
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$LOGGER_PACKAGE_JSON"
 
   if grep -q '\*\*Deku Sprout Current Version:\*\*' "$README"; then
     sed -i '' \
-      "s|\*\*Deku Sprout Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/deku-sprout-.*)|**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/deku-sprout-$VERSION)|" \
+      "s|\*\*Deku Sprout Current Version:\*\* \[.*\](https://github.com/darthjee/navi/releases/tag/[^)]*)|**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)|" \
       "$README"
   else
     sed -i '' \
       "/\*\*Worker Next Version:\*\*/a\\
 \\
-**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/deku-sprout-$VERSION)" \
+**Deku Sprout Current Version:** [$VERSION](https://github.com/darthjee/navi/releases/tag/$prefix$VERSION)" \
       "$README"
   fi
 
   if grep -q '\*\*Deku Sprout Next Version:\*\*' "$README"; then
     sed -i '' \
-      "s|\*\*Deku Sprout Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/deku-sprout-.*)|**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/deku-sprout-$VERSION...main)|" \
+      "s|\*\*Deku Sprout Next Version:\*\* \[.*\](https://github.com/darthjee/navi/compare/[^)]*)|**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)|" \
       "$README"
   else
     sed -i '' \
       "/\*\*Deku Sprout Current Version:\*\*/a\\
 \\
-**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/deku-sprout-$VERSION...main)" \
+**Deku Sprout Next Version:** [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$prefix$VERSION...main)" \
       "$README"
   fi
 }
