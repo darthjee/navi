@@ -27,7 +27,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Frontend](docs/agents/frontend.md) | The React SPA monitoring dashboard: technology stack, routing, API clients, component hierarchy, build process, and integration with the backend. |
 | [Dev Proxy](docs/agents/dev-proxy.md) | The Tent-powered reverse proxy (`dev/proxy`) used in local development: configuration files, caching behaviour, request flow, and how to extend the rules. |
 | [Client (Node)](docs/agents/client-node.md) | The `navi-hey-client` npm package (`clients/node/`): package layout, the `/api/*` surface it wraps, CLI usage, testing, and CI jobs. |
-| [Release Token](docs/agents/release-token.md) | The `GITHUB_TOKEN` fine-grained PAT reserved for the upcoming CI tag-push job (#988; no job pushes release tags today): required settings, CircleCI storage, rotation and troubleshooting. |
+| [Release Token](docs/agents/release-token.md) | The `GITHUB_TOKEN` fine-grained PAT used by the `push-tag-<package>` CI jobs (`scripts/ci/push-release-tag.sh`) to push the `sprout-` / `swarm-` / `node_client-` tags: required settings, CircleCI storage, rotation and troubleshooting. |
 | [Plans](docs/agents/plans/) | Implementation plans for ongoing or upcoming features. |
 | [Issues](docs/agents/issues/) | Detailed specs for open GitHub issues. |
 | [Specs](docs/agents/specs.md) | Specs of not-yet-implemented work, kept as a guideline while that work is being developed (e.g. the crawler feature). |

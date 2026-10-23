@@ -1,14 +1,16 @@
 # Release Token (`GITHUB_TOKEN`)
 
-`GITHUB_TOKEN` is the GitHub credential CI uses to push release git tags. **It currently has no user.** The per-package npm release jobs (`release-deku-sprout`, `release-deku-swarm`, `release-navi-hey`, `release-navi-hey-client`, all running `scripts/ci/release-npm-package.sh`) no longer push any tag, since #986 moved tag pushing out of the release script. The separate tag-push job (#988) will be its consumer. Until it lands, no `sprout-` / `swarm-` / `node_client-` tags are pushed (accepted gap).
+`GITHUB_TOKEN` is the GitHub credential CI uses to push release git tags. Its only consumer is `scripts/ci/push-release-tag.sh` (`scripts/ci.sh push-tag <package>`), run by the `push-tag-<package>` jobs. The per-package npm release jobs (`release-deku-sprout`, `release-deku-swarm`, `release-navi-hey`, `release-navi-hey-client`, all running `scripts/ci/release-npm-package.sh`) push no tag and do not need the token; they write `released/<package>` (`true`/`false`) to the CircleCI workspace instead.
 
-The settings, storage and rotation below still apply, so the token is ready once #988 lands.
+## Who needs it
 
-## Who will need it
+| CircleCI job | Runs after | Tag pushed |
+|---|---|---|
+| `push-tag-deku-sprout` | `release-deku-sprout` | `sprout-<logger/package.json version>` |
+| `push-tag-deku-swarm` | `release-deku-swarm` | `swarm-<worker/package.json version>` |
+| `push-tag-navi-hey-client` | `release-navi-hey-client` | `node_client-<clients/node/package.json version>` |
 
-| CircleCI job | Tags pushed |
-|---|---|
-| tag-push job (#988, not wired yet) | the `<tag_prefix>X.Y.Z` tag of every package released from `release.yml` |
+The prefix is the package's `tag_prefix` in `release.yml`; `navi-hey` (tagged `X.Y.Z`) and the Docker images get no extra tag. Each job always runs, but halts as a no-op (the `skip-unless-released` command, `scripts/ci/released.sh`) unless its package actually published, and fails when the `released/<package>` file is missing. Otherwise it fails fast without `GITHUB_TOKEN`, skips when the tag already exists locally or on `origin`, and creates an annotated tag on the commit being built (the `X.Y.Z` tagged commit), pushing only that tag. `DRY_RUN=1` prints the tag instead of pushing it. The old `deku-sprout-…`, `worker-…` and `client-…` tags stay as history; nothing creates new ones.
 
 The token must never be echoed, and no release script uses `set -x`.
 
@@ -34,12 +36,12 @@ The old `GH_PUSH_TOKEN` variable is no longer read and can be deleted.
 
 1. Regenerate the token in GitHub (or create a new one with the same settings).
 2. Replace the `GITHUB_TOKEN` value in the CircleCI project environment variables.
-3. Once the tag-push job (#988) exists, re-run the last tag build to confirm the push works.
+3. Re-run a `push-tag-<package>` job of the last tag build that published a package to confirm the push works (it skips when the tag already exists, so a fresh push needs a release that has no tag yet).
 4. Revoke the old token if a new one was created.
 
 ## Troubleshooting
 
-These apply to the tag push once #988 wires it.
+These apply to the `push-tag-<package>` jobs.
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -49,4 +51,4 @@ These apply to the tag push once #988 wires it.
 
 ## Re-running a release
 
-Every `release-<pkg>` job is idempotent: it skips the npm publish when its version is already on npm, so a failed release workflow can simply be re-run.
+Every `release-<pkg>` job is idempotent: it skips the npm publish when its version is already on npm, so a failed release workflow can simply be re-run. Re-running only a failed `push-tag-<package>` job is safe too: it re-reads the workspace flag of its release job and skips a tag that already exists.
