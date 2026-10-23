@@ -4,8 +4,6 @@
 [![GitHub Release](https://img.shields.io/badge/deku_swarm-v1.12.0-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
 [![npm](https://img.shields.io/badge/deku_swarm-v1.12.0-orange?logo=npm)](https://www.npmjs.com/package/deku-swarm)
 
-[![npm](https://img.shields.io/badge/deku_sprout-v0.3.0-orange?logo=npm)](https://www.npmjs.com/package/deku-sprout)
-
 Queue-based worker pool for Node.js, with cooldown-based automatic retry and support for job chaining.
 
 `deku-swarm` is the generic queue-and-pool engine originally built for [Navi](https://github.com/darthjee/navi)'s cache-warming job processing, extracted into a standalone, reusable package. It has no domain knowledge of HTTP requests or caching — you subclass `Job` with your own `perform()` logic, and `deku-swarm` takes care of queuing, worker allocation, cooldown-based retry, and dead-lettering.

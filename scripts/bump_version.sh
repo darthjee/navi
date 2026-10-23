@@ -224,7 +224,6 @@ bump_deku_sprout() {
   update_readme_row "Lib (Deku Sprout)" "$(tag_prefix_for deku-sprout)"
   update_package_badge "deku_sprout" "$APP_README"
   update_package_badge "deku_sprout" "$CLIENT_README"
-  update_package_badge "deku_sprout" "$WORKER_README"
   update_package_badge "deku_sprout" "$LOGGER_README"
 
   sed -i '' \
