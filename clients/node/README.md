@@ -2,7 +2,8 @@
 
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
 [![GitHub Release](https://img.shields.io/badge/navi_hey_client-v0.2.4-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
-[![npm](https://img.shields.io/docker/v/darthjee/navi-hey-client.svg?logo=docker&label=navi-hey)](https://hub.docker.com/repository/docker/darthjee/navi-hey-client/general)
+[![npm](https://img.shields.io/badge/navi_hey_client-v0.2.4-orange?logo=npm)](https://www.npmjs.com/package/navi-hey-client)
+[![Docker](https://img.shields.io/badge/navi_hey_client-v0.2.4-2496ED?logo=docker)](https://hub.docker.com/repository/docker/darthjee/navi-hey-client/general)
 
 [![npm](https://img.shields.io/badge/deku_sprout-v0.3.0-orange?logo=npm)](https://www.npmjs.com/package/deku-sprout)
 
