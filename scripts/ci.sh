@@ -21,6 +21,7 @@ case "$ACTION" in
   release-docker) bash "$DIR/ci/release-docker-image.sh" "$@" ;;
   docker-hub-tag-exists) bash "$DIR/ci/docker-hub-tag-exists.sh" "$@" ;;
   released) bash "$DIR/ci/released.sh" "$@" ;;
+  push-tag) bash "$DIR/ci/push-release-tag.sh" "$@" ;;
   *)
     echo "Unknown action: $ACTION" >&2
     exit 1
