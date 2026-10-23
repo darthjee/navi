@@ -69,20 +69,31 @@ workflows:
       - release-navi-hey-client:
           requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout]
           filters: *version-tag-filters
-      - build-and-release:
+      # One release job per Docker image, after its npm package (release.yml
+      # `depends_on`). Each one always runs, releases the image only when
+      # its package.json version is missing on Docker Hub, and records the
+      # outcome in the workspace (released/<image>). The jobs after an image
+      # always run too, but halt as a no-op when their image did not release.
+      - release-darthjee-navi-hey:
           requires: [release-navi-hey]
           filters: *version-tag-filters
+      - release-darthjee-navi-hey-client:
+          requires: [release-navi-hey-client]
+          filters: *version-tag-filters
       - update-description:
-          requires: [build-and-release]
+          requires: [release-darthjee-navi-hey]
           filters: *version-tag-filters
       - build-and-release-demo:
-          requires: [build-and-release]
+          requires: [release-darthjee-navi-hey]
           filters: *version-tag-filters
       - build-and-release-demo-app:
-          requires: [build-and-release]
+          requires: [release-darthjee-navi-hey]
           filters: *version-tag-filters
       - build-and-release-navi-hey-test:
-          requires: [build-and-release]
+          requires: [release-darthjee-navi-hey]
+          filters: *version-tag-filters
+      - update-description-client:
+          requires: [release-darthjee-navi-hey-client]
           filters: *version-tag-filters
 
 executors:
@@ -126,6 +137,27 @@ commands:
       - run:
           name: Lint and report
           command: scripts/ci.sh lint-and-report <<parameters.path>>
+
+  skip-unless-released:
+    parameters:
+      image:
+        type: string
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Halt unless <<parameters.image>> was released
+          # Plain sh (not scripts/ci.sh): the darthjee/scripts image has no bash.
+          command: |
+            set +e
+            sh scripts/ci/image-released.sh <<parameters.image>>
+            status=$?
+            set -e
+            if [ "$status" = "1" ]; then
+              circleci-agent step halt
+              exit 0
+            fi
+            [ "$status" = "0" ]
 
 jobs:
   jasmine:
@@ -369,36 +401,46 @@ jobs:
           name: Release navi-hey-client if its version is not on npm
           command: scripts/ci.sh release-npm navi-hey-client
 
-  build-and-release-client:
+  release-darthjee-navi-hey-client:
     machine: true
     steps:
       - checkout
       - run:
-          name: Build and release client image
-          command: make release-client TAG=$(echo $CIRCLE_TAG | sed 's/^client-//')
+          name: Release darthjee/navi-hey-client if its version is not on Docker Hub
+          command: scripts/ci.sh release-docker darthjee/navi-hey-client clients/node release-client
+      - persist_to_workspace:
+          root: .
+          paths: [released/darthjee-navi-hey-client]
 
   update-description-client:
     docker:
       - image: darthjee/scripts:0.6.0
     steps:
       - checkout
+      - skip-unless-released:
+          image: darthjee/navi-hey-client
       - run:
           name: Update client Docker Hub description
           command: sh scripts/update-description-client.sh
 
-  build-and-release:
+  release-darthjee-navi-hey:
     machine: true
     steps:
       - checkout
       - run:
-          name: Build and release
-          command: make release TAG=${CIRCLE_TAG:-latest}
+          name: Release darthjee/navi-hey if its version is not on Docker Hub
+          command: scripts/ci.sh release-docker darthjee/navi-hey source release
+      - persist_to_workspace:
+          root: .
+          paths: [released/darthjee-navi-hey]
 
   update-description:
     docker:
       - image: darthjee/scripts:0.6.0
     steps:
       - checkout
+      - skip-unless-released:
+          image: darthjee/navi-hey
       - run:
           name: Update Docker Hub description
           command: sh scripts/update-description.sh
@@ -407,6 +449,8 @@ jobs:
     machine: true
     steps:
       - checkout
+      - skip-unless-released:
+          image: darthjee/navi-hey
       - run:
           name: Trigger Deploy
           command: RENDER_SERVICE_NAME=$DEMO_RENDER_SERVICE_NAME scripts/deploy.sh deploy
@@ -415,6 +459,8 @@ jobs:
     machine: true
     steps:
       - checkout
+      - skip-unless-released:
+          image: darthjee/navi-hey
       - run:
           name: Trigger Deploy
           command: RENDER_SERVICE_NAME=$DEMO_APP_RENDER_SERVICE_NAME scripts/deploy.sh deploy
@@ -423,6 +469,8 @@ jobs:
     machine: true
     steps:
       - checkout
+      - skip-unless-released:
+          image: darthjee/navi-hey
       - run:
           name: Build and release the navi-hey-test harness image
           command: make release-navi-hey-test TAG=${CIRCLE_TAG}
