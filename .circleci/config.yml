@@ -54,15 +54,23 @@ workflows:
               only: /^\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
-      - check-and-publish-worker:
+      # One release job per npm package of release.yml. Their `requires` must
+      # mirror release.yml's `depends_on` (each job also waits for its
+      # dependencies on npm, inside scripts/ci/release-npm-package.sh).
+      - release-deku-sprout:
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness]
           filters: *version-tag-filters
-      - check-and-publish-deku-sprout:
+      - release-deku-swarm:
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness]
           filters: *version-tag-filters
-      - npm-publish:
-          requires: [check-version-tag, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, checks, checks-dev, checks-dev-frontend, checks-frontend, check-and-publish-worker, check-and-publish-deku-sprout, smoke-extensions, test-extension-harness]
+      - release-navi-hey:
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout, release-deku-swarm]
+          filters: *version-tag-filters
+      - release-navi-hey-client:
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout]
           filters: *version-tag-filters
       - build-and-release:
-          requires: [npm-publish]
+          requires: [release-navi-hey]
           filters: *version-tag-filters
       - update-description:
           requires: [build-and-release]
@@ -320,25 +328,23 @@ jobs:
           name: Check tag matches package.json and README versions
           command: bash scripts/check_tag_version.sh
 
-  check-and-publish-worker:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+  release-deku-sprout:
+    executor: node-ci
     steps:
       - checkout
       - run:
-          name: Publish deku-swarm if its version is not on npm
-          command: scripts/ci.sh check-and-publish-worker
+          name: Release deku-sprout if its version is not on npm
+          command: scripts/ci.sh release-npm deku-sprout
 
-  check-and-publish-deku-sprout:
-    docker:
-      - image: darthjee/circleci_node:0.2.1
+  release-deku-swarm:
+    executor: node-ci
     steps:
       - checkout
       - run:
-          name: Publish deku-sprout if its version is not on npm
-          command: scripts/ci.sh check-and-publish-deku-sprout
+          name: Release deku-swarm if its version is not on npm
+          command: scripts/ci.sh release-npm deku-swarm
 
-  npm-publish:
+  release-navi-hey:
     executor: node-ci
     steps:
       - checkout
@@ -352,16 +358,16 @@ jobs:
           name: Pin local dependencies
           command: scripts/ci.sh pin-local-deps
       - run:
-          name: Wait for pinned dependencies on npm
-          command: |
-            scripts/ci.sh wait-for-npm deku-swarm "$(node -p "require('./worker/package.json').version")"
-            scripts/ci.sh wait-for-npm deku-sprout "$(node -p "require('./logger/package.json').version")"
+          name: Release navi-hey if its version is not on npm
+          command: scripts/ci.sh release-npm navi-hey
+
+  release-navi-hey-client:
+    executor: node-ci
+    steps:
+      - checkout
       - run:
-          name: Publish to npm
-          command: scripts/ci.sh publish source
-      - run:
-          name: Wait for navi-hey on npm
-          command: scripts/ci.sh wait-for-npm navi-hey "$CIRCLE_TAG"
+          name: Release navi-hey-client if its version is not on npm
+          command: scripts/ci.sh release-npm navi-hey-client
 
   build-and-release-client:
     machine: true
