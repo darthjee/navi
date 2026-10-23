@@ -18,6 +18,9 @@ case "$ACTION" in
   wait-for-npm) bash "$DIR/ci/wait-for-npm.sh" "$@" ;;
   validate-release-yml) bash "$DIR/ci/validate-release-yml.sh" "$@" ;;
   cascade-bump-check) bash "$DIR/ci/cascade-bump-check.sh" "$@" ;;
+  release-docker) bash "$DIR/ci/release-docker-image.sh" "$@" ;;
+  docker-hub-tag-exists) bash "$DIR/ci/docker-hub-tag-exists.sh" "$@" ;;
+  image-released) bash "$DIR/ci/image-released.sh" "$@" ;;
   *)
     echo "Unknown action: $ACTION" >&2
     exit 1
