@@ -62,7 +62,7 @@ yarn report     # JSCPD duplication report
 
 Both are wired into the `test-and-release` workflow and into `coverage-final`'s `requires` list.
 
-Releasing `navi-hey-client` to npm has its own tag-driven flow, fully independent of the app's `X.Y.Z` release cadence: pushing a `client-X.Y.Z` tag runs `check-client-version-tag` (`scripts/check_client_tag_version.sh`, parallel to `scripts/check_tag_version.sh`), which validates the stripped tag version against both `clients/node/package.json`'s `version` and README's **Client Current Version** line, then `npm-publish-client` (gated on `check-client-version-tag`, `jasmine-client`, and `checks-client`) publishes the package to npm using the existing `NPM_TOKEN`. A plain `X.Y.Z` app tag never touches this flow, and a `client-X.Y.Z` tag never touches `npm-publish`.
+CI runs only on branches and on `X.Y.Z` tags; every other tag, including the old `client-X.Y.Z` tags, triggers nothing. The former `client-` release pipeline (`check-client-version-tag`, `scripts/check_client_tag_version.sh` and `npm-publish-client`) has been removed. The `build-and-release-client` and `update-description-client` job definitions remain in `.circleci/config.yml` but are not wired into the workflow. Releasing `navi-hey-client` will move into the single `X.Y.Z` release (#986/#987); until then the package has no CI release path. See [the release spec](specs/release.md).
 
 ## Versioning
 
