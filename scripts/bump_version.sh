@@ -171,10 +171,12 @@ update_release_badge() {
     "$readme"
 }
 
-# Rewrites a README badge "badge/<label>-v<version>-" for a package.
+# Rewrites a README badge "badge/<label>-v<version>-" for a package, to
+# <version> (defaults to $VERSION).
 update_package_badge() {
   local label="$1"
   local readme="$2"
+  local version="${3:-$VERSION}"
 
   if ! grep -qF "badge/$label-v" "$readme"; then
     echo "Error: $readme has no \"$label\" badge" >&2
@@ -182,7 +184,7 @@ update_package_badge() {
   fi
 
   sed -i '' \
-    "s#badge/$label-v[0-9.]*-#badge/$label-v$VERSION-#" \
+    "s#badge/$label-v[0-9.]*-#badge/$label-v$version-#" \
     "$readme"
 }
 
@@ -201,9 +203,15 @@ bump_app() {
     "$DEMO_DOCKERFILE"
 }
 
+# Version of deku-sprout the client depends on, without its ^/~ range.
+client_deku_sprout_version() {
+  node -p "require('$CLIENT_PACKAGE_JSON').dependencies['deku-sprout'].replace(/^[\\^~]/, '')"
+}
+
 bump_client() {
   update_readme_row "Client" "$(tag_prefix_for client)"
   update_package_badge "navi_hey_client" "$CLIENT_README"
+  update_package_badge "deku_sprout" "$CLIENT_README" "$(client_deku_sprout_version)"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
@@ -223,7 +231,6 @@ bump_worker() {
 bump_deku_sprout() {
   update_readme_row "Lib (Deku Sprout)" "$(tag_prefix_for deku-sprout)"
   update_package_badge "deku_sprout" "$APP_README"
-  update_package_badge "deku_sprout" "$CLIENT_README"
   update_package_badge "deku_sprout" "$LOGGER_README"
 
   sed -i '' \
