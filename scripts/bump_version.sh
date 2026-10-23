@@ -190,6 +190,7 @@ bump_app() {
   update_readme_row "Navi-Hey" ""
   update_release_badge "$README"
   update_release_badge "$APP_README"
+  update_package_badge "navi_hey" "$APP_README"
 
   sed -i '' \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
