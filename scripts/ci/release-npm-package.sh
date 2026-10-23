@@ -10,15 +10,19 @@
 #   2. forgotten-bump check (scripts/lib/package_bump_check.sh);
 #   3. wait until every dependency's current version is visible on npm;
 #   4. publish when the version is not on npm yet, no-op otherwise;
-#   5. after an actual publish, wait until the version is visible on npm.
+#   5. after an actual publish, wait until the version is visible on npm;
+#   6. write `true`/`false` into released/<package with / replaced by ->,
+#      read by the follower jobs (e.g. the push-tag-<package> jobs) through
+#      released.sh.
 #
-# Git tags are no longer pushed here: tag pushing moves to the separate
-# tag-push job (#988).
+# No git tag is pushed here: the separate push-tag-<package> jobs push the
+# `<tag_prefix><version>` tags (scripts/ci/push-release-tag.sh).
 #
 # Env:
 #   SKIP_BUMP_CHECK=true  skip the forgotten-version-bump check
 #   DRY_RUN=1             print what would be waited for/published instead of
-#                         doing it
+#                         doing it (still writes `true` when the version is
+#                         missing on npm)
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,37 +38,13 @@ fi
 # shellcheck source=../lib/package_bump_check.sh
 source "$DIR/../lib/package_bump_check.sh"
 
-# --- release.yml lookup ---
-# Sets INFO_FOLDER, INFO_PLATFORM, INFO_TAG_PREFIX and INFO_DEPENDS_ON for
-# the given package, parsing the helper's KEY=value lines (no eval).
-read_package_info() {
-  local name="$1"
-  local output line key value
-
-  output=$(node "$REPO_ROOT/scripts/release/bin/release-package-info.js" "$name" "$REPO_ROOT")
-
-  INFO_FOLDER=""
-  INFO_PLATFORM=""
-  INFO_TAG_PREFIX=""
-  INFO_DEPENDS_ON=""
-
-  while IFS= read -r line; do
-    key="${line%%=*}"
-    value="${line#*=}"
-
-    case "$key" in
-      FOLDER) INFO_FOLDER="$value" ;;
-      PLATFORM) INFO_PLATFORM="$value" ;;
-      TAG_PREFIX) INFO_TAG_PREFIX="$value" ;;
-      DEPENDS_ON) INFO_DEPENDS_ON="$value" ;;
-    esac
-  done <<< "$output"
-}
+# shellcheck source=../lib/release_package_info.sh
+source "$DIR/../lib/release_package_info.sh"
 
 resolve() {
   bash "$DIR/install-deps.sh" "$REPO_ROOT/scripts/release" true
 
-  read_package_info "$PACKAGE"
+  read_package_info "$PACKAGE" "$REPO_ROOT"
 
   FOLDER="$INFO_FOLDER"
   TAG_PREFIX="$INFO_TAG_PREFIX"
@@ -96,7 +76,7 @@ wait_for_dependencies() {
   local dep dep_version
 
   for dep in $DEPENDS_ON; do
-    read_package_info "$dep"
+    read_package_info "$dep" "$REPO_ROOT"
     dep_version=$(package_bump_read_version < "$REPO_ROOT/$INFO_FOLDER/package.json")
 
     if [ "$DRY_RUN" = "1" ]; then
@@ -159,6 +139,14 @@ wait_for_self() {
   bash "$DIR/wait-for-npm.sh" "$PACKAGE" "$VERSION"
 }
 
+# --- released flag (CircleCI workspace) ---
+write_released() {
+  local released_dir="$REPO_ROOT/released"
+
+  mkdir -p "$released_dir"
+  echo "$1" > "$released_dir/$(echo "$PACKAGE" | tr '/' '-')"
+}
+
 resolve
 check_version_bump
 wait_for_dependencies
@@ -166,4 +154,7 @@ wait_for_dependencies
 if needs_publish; then
   publish
   wait_for_self
+  write_released true
+else
+  write_released false
 fi

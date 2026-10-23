@@ -20,7 +20,7 @@ case "$ACTION" in
   cascade-bump-check) bash "$DIR/ci/cascade-bump-check.sh" "$@" ;;
   release-docker) bash "$DIR/ci/release-docker-image.sh" "$@" ;;
   docker-hub-tag-exists) bash "$DIR/ci/docker-hub-tag-exists.sh" "$@" ;;
-  image-released) bash "$DIR/ci/image-released.sh" "$@" ;;
+  released) bash "$DIR/ci/released.sh" "$@" ;;
   *)
     echo "Unknown action: $ACTION" >&2
     exit 1

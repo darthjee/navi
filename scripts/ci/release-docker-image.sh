@@ -12,7 +12,7 @@
 #   3. when missing, run `make <make target> TAG=<VERSION>` (pushes
 #      :<VERSION> and :latest); when present, do nothing;
 #   4. write `true`/`false` into released/<image with / replaced by ->, read
-#      by the follower jobs through image-released.sh.
+#      by the follower jobs through released.sh.
 #
 # Env:
 #   DRY_RUN=1  print what would be released instead of running make (still
