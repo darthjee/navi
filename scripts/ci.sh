@@ -12,8 +12,7 @@ case "$ACTION" in
   coverage-final) bash "$DIR/ci/coverage-final.sh" "$@" ;;
   install-deps) bash "$DIR/ci/install-deps.sh" "$@" ;;
   lint-and-report) bash "$DIR/ci/lint-and-report.sh" "$@" ;;
-  check-and-publish-worker) bash "$DIR/ci/check-and-publish-worker.sh" "$@" ;;
-  check-and-publish-deku-sprout) bash "$DIR/ci/check-and-publish-deku-sprout.sh" "$@" ;;
+  release-npm) bash "$DIR/ci/release-npm-package.sh" "$@" ;;
   build-frontend) bash "$DIR/ci/build-frontend.sh" "$@" ;;
   pin-local-deps) bash "$DIR/ci/pin-local-deps.sh" "$@" ;;
   wait-for-npm) bash "$DIR/ci/wait-for-npm.sh" "$@" ;;

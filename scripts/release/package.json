@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "version": "0.0.0",
-  "description": "Validator for the root release.yml dependency tree and the cascade-bump check",
+  "description": "Validator for the root release.yml dependency tree, the cascade-bump check and the per-package release info helper",
   "main": "lib/index.js",
   "bin": {
     "validate-release-yml": "bin/validate-release-yml.js",
-    "check-cascade-bumps": "bin/check-cascade-bumps.js"
+    "check-cascade-bumps": "bin/check-cascade-bumps.js",
+    "release-package-info": "bin/release-package-info.js"
   },
   "scripts": {
     "spec": "npx jasmine --config=spec/support/jasmine.json",

@@ -1,11 +1,12 @@
 # navi-release-scripts
 
-Private package (never published) holding two checks built on the root
+Private package (never published) holding tooling built on the root
 [`release.yml`](../../release.yml), the release dependency tree read by the
 release scripts:
 
 - the `release.yml` validator;
-- the cascade-bump check.
+- the cascade-bump check;
+- the per-package release info helper.
 
 ## release.yml validator
 
@@ -88,6 +89,27 @@ cd scripts/release
 yarn install
 node bin/check-cascade-bumps.js ../.. [baseRef]
 ```
+
+## Release info helper
+
+Prints one package's release data from `release.yml` as shell-friendly
+`KEY=value` lines, consumed by `scripts/ci/release-npm-package.sh`:
+
+```bash
+cd scripts/release
+yarn install
+node bin/release-package-info.js navi-hey ../..
+```
+
+```text
+FOLDER=source
+PLATFORM=npm
+TAG_PREFIX=
+DEPENDS_ON=deku-sprout deku-swarm
+```
+
+`TAG_PREFIX` and `DEPENDS_ON` (space-separated) are empty when absent. A
+missing argument or an unknown package prints an error to stderr and exits 1.
 
 ## Development
 

@@ -1,23 +1,16 @@
 # Release Token (`GITHUB_TOKEN`)
 
-The release pipeline publishes `worker/` (`deku-swarm`) and `logger/` (`deku-sprout`) to npm through `scripts/ci/check-and-publish-package.sh`, and then pushes the matching git tag (`worker-X.Y.Z` / `deku-sprout-X.Y.Z`). Pushing that tag needs a GitHub credential, read from the `GITHUB_TOKEN` environment variable.
+`GITHUB_TOKEN` is the GitHub credential CI uses to push release git tags. **It currently has no user.** The per-package npm release jobs (`release-deku-sprout`, `release-deku-swarm`, `release-navi-hey`, `release-navi-hey-client`, all running `scripts/ci/release-npm-package.sh`) no longer push any tag, since #986 moved tag pushing out of the release script. The separate tag-push job (#988) will be its consumer. Until it lands, no `sprout-` / `swarm-` / `node_client-` tags are pushed (accepted gap).
 
-## Who needs it
+The settings, storage and rotation below still apply, so the token is ready once #988 lands.
 
-| CircleCI job | Script | Tag pushed |
-|---|---|---|
-| `check-and-publish-worker` | `scripts/ci.sh check-and-publish-worker` | `worker-X.Y.Z` |
-| `check-and-publish-deku-sprout` | `scripts/ci.sh check-and-publish-deku-sprout` | `deku-sprout-X.Y.Z` |
+## Who will need it
 
-Both run `scripts/ci/check-and-publish-package.sh`, which pushes the tag with:
+| CircleCI job | Tags pushed |
+|---|---|
+| tag-push job (#988, not wired yet) | the `<tag_prefix>X.Y.Z` tag of every package released from `release.yml` |
 
-```bash
-git push "https://x-access-token:${GITHUB_TOKEN}@github.com/darthjee/navi.git" "$TAG"
-```
-
-The script checks `GITHUB_TOKEN` **first**, before the version-bump check and before any `npm publish`, and exits 1 with `GITHUB_TOKEN is required to push release tags` when it is empty. This keeps npm and the git tags from getting out of sync. The check is skipped under `DRY_RUN=1`, and it runs on every non-dry run (even when the tag already exists), so a missing credential is caught on every release. The token is never echoed and the script never uses `set -x`.
-
-`npm-publish` (the `navi-hey` release) requires both `check-and-publish-*` jobs, so a missing or broken token blocks the whole Navi release.
+The token must never be echoed, and no release script uses `set -x`.
 
 ## Creating the token
 
@@ -41,18 +34,19 @@ The old `GH_PUSH_TOKEN` variable is no longer read and can be deleted.
 
 1. Regenerate the token in GitHub (or create a new one with the same settings).
 2. Replace the `GITHUB_TOKEN` value in the CircleCI project environment variables.
-3. Re-run the last tag build to confirm the push works.
+3. Once the tag-push job (#988) exists, re-run the last tag build to confirm the push works.
 4. Revoke the old token if a new one was created.
 
 ## Troubleshooting
 
+These apply to the tag push once #988 wires it.
+
 | Symptom | Cause | Fix |
 |---|---|---|
-| `GITHUB_TOKEN is required to push release tags` | The variable is not set in CircleCI. | Add it (see above). |
 | `remote: Invalid username or token` / `fatal: Authentication failed` (HTTP 401) | Token expired, revoked or mistyped. | Rotate the token. |
 | `403` / `Permission to darthjee/navi.git denied` | Token lacks **Contents: Read and write**. | Edit the token's repository permissions. |
 | `Repository not found` (HTTP 404) | Token is not scoped to `darthjee/navi` (or wrong resource owner). | Add `darthjee/navi` to the token's selected repositories. |
 
-## Recovering a half-done release
+## Re-running a release
 
-If a release failed after the npm publish but before the tag push (e.g. `deku-swarm@1.11.1` on npm without a `worker-1.11.1` tag), fix the token and re-run the release workflow. The npm publish and the tag push are each idempotent: the script skips the publish when the version is already on npm, pushes the missing tag, and `npm-publish` then proceeds.
+Every `release-<pkg>` job is idempotent: it skips the npm publish when its version is already on npm, so a failed release workflow can simply be re-run.

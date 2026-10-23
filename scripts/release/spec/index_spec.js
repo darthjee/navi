@@ -1,4 +1,5 @@
 import { checkCascadeBumps } from '../lib/checkCascadeBumps.js';
+import { describePackage } from '../lib/describePackage.js';
 import { collectVersions, gitRunner, readVersionAt, resolveBaseRef } from '../lib/git.js';
 import * as index from '../lib/index.js';
 import { loadReleaseTree } from '../lib/loadReleaseTree.js';
@@ -8,6 +9,7 @@ import { validateReleaseTree } from '../lib/validateReleaseTree.js';
 describe('index', () => {
   it('re-exports the library functions', () => {
     expect(index.checkCascadeBumps).toBe(checkCascadeBumps);
+    expect(index.describePackage).toBe(describePackage);
     expect(index.collectVersions).toBe(collectVersions);
     expect(index.gitRunner).toBe(gitRunner);
     expect(index.readVersionAt).toBe(readVersionAt);
