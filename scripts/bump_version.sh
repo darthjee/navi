@@ -147,6 +147,19 @@ find_stale_packages() {
   done
 }
 
+# When "true", bumps only run their checks (missing rows/badges) and write
+# nothing, so every planned bump is checked before any file changes.
+CHECK_ONLY="false"
+
+# Applies the sed <expression> to <file>, unless only checking.
+replace_in_file() {
+  if [[ "$CHECK_ONLY" == "true" ]]; then
+    return 0
+  fi
+
+  sed -i '' "$1" "$2"
+}
+
 # Rewrites the README Versions table row "| <label> | ... |".
 update_readme_row() {
   local label="$1"
@@ -157,7 +170,7 @@ update_readme_row() {
     exit 1
   fi
 
-  sed -i '' \
+  replace_in_file \
     "s#^| $label | .* |\$#| $label | [$VERSION](https://github.com/darthjee/navi/releases/tag/$tag) | [$NEXT_VERSION](https://github.com/darthjee/navi/compare/$tag...main) |#" \
     "$README"
 }
@@ -166,7 +179,7 @@ update_readme_row() {
 update_release_badge() {
   local readme="$1"
 
-  sed -i '' \
+  replace_in_file \
     "s#(https://github.com/darthjee/navi/releases/tag/[0-9.]*)\$#(https://github.com/darthjee/navi/releases/tag/$VERSION)#" \
     "$readme"
 }
@@ -183,7 +196,7 @@ update_package_badge() {
     exit 1
   fi
 
-  sed -i '' \
+  replace_in_file \
     "s#badge/$label-v[0-9.]*-#badge/$label-v$version-#" \
     "$readme"
 }
@@ -194,11 +207,11 @@ bump_app() {
   update_release_badge "$APP_README"
   update_package_badge "navi_hey" "$APP_README"
 
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$APP_PACKAGE_JSON"
 
-  sed -i '' \
+  replace_in_file \
     "s|FROM darthjee/navi-hey:.*|FROM darthjee/navi-hey:$VERSION|" \
     "$DEMO_DOCKERFILE"
 }
@@ -213,7 +226,7 @@ bump_client() {
   update_package_badge "navi_hey_client" "$CLIENT_README"
   update_package_badge "deku_sprout" "$CLIENT_README" "$(client_deku_sprout_version)"
 
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$CLIENT_PACKAGE_JSON"
 }
@@ -223,7 +236,7 @@ bump_worker() {
   update_package_badge "deku_swarm" "$APP_README"
   update_package_badge "deku_swarm" "$WORKER_README"
 
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$WORKER_PACKAGE_JSON"
 }
@@ -233,7 +246,7 @@ bump_deku_sprout() {
   update_package_badge "deku_sprout" "$APP_README"
   update_package_badge "deku_sprout" "$LOGGER_README"
 
-  sed -i '' \
+  replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
     "$LOGGER_PACKAGE_JSON"
 }
@@ -263,7 +276,34 @@ bump_target() {
     deku-sprout) bump_deku_sprout ;;
   esac
 
-  echo "Bumped $target to $VERSION (next release: $NEXT_VERSION)"
+  if [[ "$CHECK_ONLY" != "true" ]]; then
+    echo "Bumped $target to $VERSION (next release: $NEXT_VERSION)"
+  fi
+}
+
+PLANNED_TARGETS=()
+PLANNED_VERSIONS=()
+
+# Queues <target> to be bumped to <version> (empty: next patch).
+plan_bump() {
+  PLANNED_TARGETS+=("$1")
+  PLANNED_VERSIONS+=("${2:-}")
+}
+
+# Checks every planned bump, then applies them, so a missing README row or
+# badge aborts before any file is changed.
+run_planned_bumps() {
+  local i
+
+  CHECK_ONLY="true"
+  for i in "${!PLANNED_TARGETS[@]}"; do
+    bump_target "${PLANNED_TARGETS[$i]}" "${PLANNED_VERSIONS[$i]}"
+  done
+
+  CHECK_ONLY="false"
+  for i in "${!PLANNED_TARGETS[@]}"; do
+    bump_target "${PLANNED_TARGETS[$i]}" "${PLANNED_VERSIONS[$i]}"
+  done
 }
 
 report_stale() {
@@ -293,7 +333,7 @@ case "$TARGET" in
       echo "Warning: --force given, bumping the app anyway." >&2
     fi
 
-    bump_target app "$REQUESTED_VERSION"
+    plan_bump app "$REQUESTED_VERSION"
     ;;
   all)
     if [[ -n "$REQUESTED_VERSION" ]]; then
@@ -302,13 +342,15 @@ case "$TARGET" in
 
     find_stale_packages
 
-    bump_target app "$REQUESTED_VERSION"
+    plan_bump app "$REQUESTED_VERSION"
 
     for stale_target in ${STALE_TARGETS[@]+"${STALE_TARGETS[@]}"}; do
-      bump_target "$stale_target"
+      plan_bump "$stale_target"
     done
     ;;
   *)
-    bump_target "$TARGET" "$REQUESTED_VERSION"
+    plan_bump "$TARGET" "$REQUESTED_VERSION"
     ;;
 esac
+
+run_planned_bumps
