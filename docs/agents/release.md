@@ -49,7 +49,7 @@ On an `X.Y.Z` tag, every release job runs; each one releases its package only wh
 - **Released flag.** Each release job (except `release-navi-hey`, which nothing reads from) writes `true`/`false` into the CircleCI workspace file `released/<name with / replaced by ->` (e.g. `released/darthjee-navi-hey`). Follower jobs read it through the `skip-unless-released` command (`scripts/ci/released.sh`, POSIX `sh` since the `darthjee/scripts` image has no bash): `false` halts the job as a no-op, a missing file or unexpected content fails it.
 - `DRY_RUN=1` makes every release script print what it would publish, push or wait for instead of doing it.
 
-`release-navi-hey` additionally builds the frontend (`scripts/ci.sh build-frontend`) and pins its local dependencies (`scripts/ci.sh pin-local-deps`): the `file:../deku-sprout` and `file:../worker` links in `source/package.json` become the exact `deku-sprout/` and `deku-swarm/` versions, and any `file:` dependency left fails the release.
+`release-navi-hey` additionally builds the frontend (`scripts/ci.sh build-frontend`) and pins its local dependencies (`scripts/ci.sh pin-local-deps`): the `file:../deku-sprout` and `file:../deku-swarm` links in `source/package.json` become the exact `deku-sprout/` and `deku-swarm/` versions, and any `file:` dependency left fails the release.
 
 ## Cascade-bump test
 
