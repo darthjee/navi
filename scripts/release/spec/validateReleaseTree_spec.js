@@ -10,7 +10,7 @@ const entry = (folder, platform, dependsOn = [], tagPrefix) => (
 
 const buildTree = () => ({
   packages: {
-    'deku-sprout': entry('logger', 'npm', [], 'sprout-'),
+    'deku-sprout': entry('deku-sprout', 'npm', [], 'sprout-'),
     'deku-swarm': entry('worker', 'npm', [], 'swarm-'),
     'navi-hey': entry('source', 'npm', ['deku-sprout', 'deku-swarm']),
     'darthjee/navi-hey': entry('source', 'docker', ['navi-hey']),
@@ -20,11 +20,11 @@ const buildTree = () => ({
 });
 
 const buildPackageJsons = () => ({
-  logger: { name: 'deku-sprout' },
+  'deku-sprout': { name: 'deku-sprout' },
   worker: { name: 'deku-swarm' },
   source: {
     name: 'navi-hey',
-    dependencies: { 'deku-sprout': 'file:../logger', 'deku-swarm': 'file:../worker', yaml: '^2.8.2' },
+    dependencies: { 'deku-sprout': 'file:../deku-sprout', 'deku-swarm': 'file:../worker', yaml: '^2.8.2' },
   },
   'clients/node': {
     name: 'navi-hey-client',
@@ -77,7 +77,7 @@ describe('validateReleaseTree', () => {
 
   describe('when a dependency is declared as a peer dependency', () => {
     beforeEach(() => {
-      packageJsons.logger.peerDependencies = { 'deku-swarm': '^1.0.0' };
+      packageJsons['deku-sprout'].peerDependencies = { 'deku-swarm': '^1.0.0' };
     });
 
     it('requires it to be listed', () => {
@@ -163,7 +163,7 @@ describe('validateReleaseTree', () => {
 
   describe('when a local package is only a devDependency', () => {
     beforeEach(() => {
-      packageJsons.worker.devDependencies = { 'deku-sprout': 'file:../logger' };
+      packageJsons.worker.devDependencies = { 'deku-sprout': 'file:../deku-sprout' };
     });
 
     it('ignores it', () => {

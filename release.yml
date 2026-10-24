@@ -9,7 +9,7 @@
 # Checked against each package.json by `scripts/ci.sh validate-release-yml`.
 packages:
   deku-sprout:
-    folder: logger
+    folder: deku-sprout
     platform: npm
     depends_on: []
     tag_prefix: sprout-

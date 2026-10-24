@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Shared "published files changed but version not bumped" detection for the
-# npm packages of release.yml (logger/ -> deku-sprout, worker/ -> deku-swarm,
+# npm packages of release.yml (deku-sprout/ -> deku-sprout, worker/ -> deku-swarm,
 # source/ -> navi-hey, clients/node/ -> navi-hey-client).
 #
 # Meant to be SOURCED, not executed. Used by:

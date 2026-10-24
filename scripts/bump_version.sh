@@ -18,11 +18,11 @@ README="$ROOT_DIR/README.md"
 APP_README="$ROOT_DIR/source/README.md"
 CLIENT_README="$ROOT_DIR/clients/node/README.md"
 WORKER_README="$ROOT_DIR/worker/README.md"
-LOGGER_README="$ROOT_DIR/logger/README.md"
+LOGGER_README="$ROOT_DIR/deku-sprout/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
 WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
-LOGGER_PACKAGE_JSON="$ROOT_DIR/logger/package.json"
+LOGGER_PACKAGE_JSON="$ROOT_DIR/deku-sprout/package.json"
 DEMO_DOCKERFILE="$ROOT_DIR/dockerfiles/demo_navi_hey/Dockerfile"
 
 # The bump check uses repo-relative paths.
