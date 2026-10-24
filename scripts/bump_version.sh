@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 [--force] [app|all|client|worker|deku-sprout] [version]" >&2
+  echo "Usage: $0 [--force] [app|all|client|deku-swarm|deku-sprout] [version]" >&2
   exit 1
 }
 
@@ -17,18 +17,18 @@ source "$SCRIPT_DIR/lib/release_package_info.sh"
 README="$ROOT_DIR/README.md"
 APP_README="$ROOT_DIR/source/README.md"
 CLIENT_README="$ROOT_DIR/clients/node/README.md"
-WORKER_README="$ROOT_DIR/worker/README.md"
+DEKU_SWARM_README="$ROOT_DIR/deku-swarm/README.md"
 LOGGER_README="$ROOT_DIR/deku-sprout/README.md"
 APP_PACKAGE_JSON="$ROOT_DIR/source/package.json"
 CLIENT_PACKAGE_JSON="$ROOT_DIR/clients/node/package.json"
-WORKER_PACKAGE_JSON="$ROOT_DIR/worker/package.json"
+DEKU_SWARM_PACKAGE_JSON="$ROOT_DIR/deku-swarm/package.json"
 LOGGER_PACKAGE_JSON="$ROOT_DIR/deku-sprout/package.json"
 DEMO_DOCKERFILE="$ROOT_DIR/dockerfiles/demo_navi_hey/Dockerfile"
 
 # The bump check uses repo-relative paths.
 cd "$ROOT_DIR"
 
-TARGETS_REGEX='^(app|all|client|worker|deku-sprout)$'
+TARGETS_REGEX='^(app|all|client|deku-swarm|deku-sprout)$'
 
 FORCE="false"
 POSITIONAL=()
@@ -63,7 +63,7 @@ package_json_for() {
   case "$1" in
     app) echo "$APP_PACKAGE_JSON" ;;
     client) echo "$CLIENT_PACKAGE_JSON" ;;
-    worker) echo "$WORKER_PACKAGE_JSON" ;;
+    deku-swarm) echo "$DEKU_SWARM_PACKAGE_JSON" ;;
     deku-sprout) echo "$LOGGER_PACKAGE_JSON" ;;
   esac
 }
@@ -95,7 +95,7 @@ validate_version() {
 release_package_for() {
   case "$1" in
     client) echo "navi-hey-client" ;;
-    worker) echo "deku-swarm" ;;
+    deku-swarm) echo "deku-swarm" ;;
     deku-sprout) echo "deku-sprout" ;;
   esac
 }
@@ -119,7 +119,7 @@ tag_prefix_for() {
 # Packages released alongside the app: "<target> <release.yml package>".
 # Their folder and tag prefix come from release.yml.
 CHECKED_PACKAGES=(
-  "worker deku-swarm"
+  "deku-swarm deku-swarm"
   "deku-sprout deku-sprout"
 )
 
@@ -248,14 +248,14 @@ bump_client() {
     "$CLIENT_PACKAGE_JSON"
 }
 
-bump_worker() {
-  update_readme_row "Worker (Deku Swarm)" "$(tag_prefix_for worker)"
+bump_deku_swarm() {
+  update_readme_row "Worker (Deku Swarm)" "$(tag_prefix_for deku-swarm)"
   update_package_badge "deku_swarm" "$APP_README"
-  update_package_badge "deku_swarm" "$WORKER_README"
+  update_package_badge "deku_swarm" "$DEKU_SWARM_README"
 
   replace_in_file \
     "s|\"version\": \".*\"|\"version\": \"$VERSION\"|" \
-    "$WORKER_PACKAGE_JSON"
+    "$DEKU_SWARM_PACKAGE_JSON"
 }
 
 bump_deku_sprout() {
@@ -289,7 +289,7 @@ bump_target() {
   case "$target" in
     app) bump_app ;;
     client) bump_client ;;
-    worker) bump_worker ;;
+    deku-swarm) bump_deku_swarm ;;
     deku-sprout) bump_deku_sprout ;;
   esac
 
