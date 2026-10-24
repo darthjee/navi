@@ -26,7 +26,7 @@ ENV HOME_DIR=/home/node
 # Backend toolchain: source/ devDependencies (jasmine, c8, eslint, ...).
 FROM base AS backend_builder
 ENV HOME_DIR=/home/node
-COPY --chown=node:node ./worker/ /home/node/worker/
+COPY --chown=node:node ./deku-swarm/ /home/node/deku-swarm/
 COPY --chown=node:node ./deku-sprout/ /home/node/deku-sprout/
 COPY --chown=node:node ./source/package.json ./source/yarn.lock /home/node/app/
 COPY --from=scripts /home/scripts/builder/yarn_builder.sh /usr/local/sbin/yarn_builder.sh
