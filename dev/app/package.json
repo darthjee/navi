@@ -15,7 +15,7 @@
     "report": "jscpd app.js lib spec --reporters console,html --output ./report/jscpd"
   },
   "dependencies": {
-    "deku-sprout": "file:../logger",
+    "deku-sprout": "file:../deku-sprout",
     "express": "^4.18.0",
     "js-yaml": "^4.1.0",
     "morgan": "^1.10.1",
