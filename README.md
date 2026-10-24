@@ -20,12 +20,12 @@ Cache Warmer Tool
 ## Versions
 Only a tag in the `X.Y.Z` format (e.g. `1.14.1`, matching `source/package.json`) triggers a release; any other tag — including the old `client-`, `worker-` and `deku-sprout-` tags — triggers nothing, not even tests. On an `X.Y.Z` release, each artifact publishes only when the version in its folder's `package.json` isn't on its platform yet — there is no separate release track per package:
 
-- npm: `navi-hey` (`source/`), `navi-hey-client` (`clients/node/`), `deku-swarm` (`worker/`) and `deku-sprout` (`deku-sprout/`);
+- npm: `navi-hey` (`source/`), `navi-hey-client` (`clients/node/`), `deku-swarm` (`deku-swarm/`) and `deku-sprout` (`deku-sprout/`);
 - Docker Hub: `darthjee/navi-hey` (`source/`) and `darthjee/navi-hey-client` (`clients/node/`).
 
 After `deku-sprout`, `deku-swarm` or `navi-hey-client` is actually published to npm, the matching `sprout-x.y.z`, `swarm-x.y.z` or `node_client-x.y.z` tag is pushed, as history only; nothing is pushed when the version was already published. The release fails if a package's published files (`lib/` or `package.json`) changed since its previous release without a version bump; changes to specs, lint config, README or `yarn.lock` alone don't require a bump.
 
-Use `bump_version.sh client [version]` / `bump_version.sh worker [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and its row in the Versions table below. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run (plus the client whenever `deku-sprout` changed, as the release requires).
+Use `bump_version.sh client [version]` / `bump_version.sh deku-swarm [version]` / `bump_version.sh deku-sprout [version]` to bump a package's version and its row in the Versions table below. `bump_version.sh [version]` (the app) runs the same check as the release and refuses, changing nothing, while a package is stale — bumps already in the working tree count, and `git fetch --tags` helps if release tags are missing locally. Pass `--force` to bump the app anyway, or use `bump_version.sh all [version]` to bump the app and patch-bump every stale package in one run (plus the client whenever `deku-sprout` changed, as the release requires).
 
 ### Versions
 | Package | Current | Next |

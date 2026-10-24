@@ -1,6 +1,6 @@
 # Option E — Development image (`navi:dev`)
 
-> `navi:dev` is Navi's own local development image, built from `dockerfiles/dev_navi_hey/Dockerfile` via `make build-dev`. Unlike the production `darthjee/navi-hey` image, it bundles **no application code** — the Dockerfile only installs dependencies. Running it always requires a local checkout of this repo: `docker-compose.yml`'s `base` service mounts `./source`, `./worker`, and `./docker_volumes/config` into it at runtime.
+> `navi:dev` is Navi's own local development image, built from `dockerfiles/dev_navi_hey/Dockerfile` via `make build-dev`. Unlike the production `darthjee/navi-hey` image, it bundles **no application code** — the Dockerfile only installs dependencies. Running it always requires a local checkout of this repo: `docker-compose.yml`'s `base` service mounts `./source`, `./deku-swarm`, and `./docker_volumes/config` into it at runtime.
 
 Use this option when you want to try Navi out or develop against it locally, without going through a production build. It is not one of the CI/production integration modes (Options A–D) covered in [How to Use Navi](../how_to_use_navi.md) — it's a local trial/dev path.
 
@@ -21,7 +21,7 @@ make build-dev
 
 docker run --rm -p 3000:3000 \
   -v $(pwd)/source:/home/node/app \
-  -v $(pwd)/worker:/home/node/worker \
+  -v $(pwd)/deku-swarm:/home/node/deku-swarm \
   -v $(pwd)/docker_volumes/config:/home/node/app/config \
   -v $(pwd)/docker_volumes/node_modules:/home/node/app/node_modules \
   navi:dev \

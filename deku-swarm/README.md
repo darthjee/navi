@@ -159,4 +159,4 @@ Drives the main loop: promotes cooling-down jobs, allocates ready jobs to idle w
 
 ## Source & Documentation
 
-GitHub repository: [darthjee/navi](https://github.com/darthjee/navi) — `deku-swarm` lives under [`worker/`](https://github.com/darthjee/navi/tree/main/worker).
+GitHub repository: [darthjee/navi](https://github.com/darthjee/navi) — `deku-swarm` lives under [`deku-swarm/`](https://github.com/darthjee/navi/tree/main/deku-swarm).
