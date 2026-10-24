@@ -34,7 +34,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^1.13.0",
-    "deku-sprout": "file:../logger",
+    "deku-sprout": "file:../deku-sprout",
     "deku-swarm": "file:../worker",
     "express": "5.2.1",
     "node-html-parser": "7.1.0",
