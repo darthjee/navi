@@ -12,7 +12,7 @@ How Navi's packages and Docker images are released by CI (`.circleci/config.yml`
   | Package | Extra tag |
   |---|---|
   | `deku-sprout` | `sprout-<deku-sprout/package.json version>` |
-  | `deku-swarm` | `swarm-<worker/package.json version>` |
+  | `deku-swarm` | `swarm-<deku-swarm/package.json version>` |
   | `navi-hey-client` | `node_client-<clients/node/package.json version>` |
 
   `navi-hey` gets no extra tag (its tag is the `X.Y.Z` tag itself), nor do the Docker images. The legacy `worker-X.Y.Z`, `deku-sprout-X.Y.Z` and `client-X.Y.Z` tags stay in the repository as history; nothing creates new ones and CI ignores them.
@@ -24,7 +24,7 @@ A release that only touches another package still needs a `navi-hey` bump to get
 | Release | Folder | Platform | Depends on | Extra tag |
 |---|---|---|---|---|
 | `deku-sprout` | `deku-sprout/` | npm | - | `sprout-` |
-| `deku-swarm` | `worker/` | npm | - | `swarm-` |
+| `deku-swarm` | `deku-swarm/` | npm | - | `swarm-` |
 | `navi-hey` | `source/` | npm | `deku-sprout`, `deku-swarm` | - |
 | `darthjee/navi-hey` | `source/` | Docker Hub | `navi-hey` | - |
 | `navi-hey-client` | `clients/node/` | npm | `deku-sprout` | `node_client-` |
@@ -49,7 +49,7 @@ On an `X.Y.Z` tag, every release job runs; each one releases its package only wh
 - **Released flag.** Each release job (except `release-navi-hey`, which nothing reads from) writes `true`/`false` into the CircleCI workspace file `released/<name with / replaced by ->` (e.g. `released/darthjee-navi-hey`). Follower jobs read it through the `skip-unless-released` command (`scripts/ci/released.sh`, POSIX `sh` since the `darthjee/scripts` image has no bash): `false` halts the job as a no-op, a missing file or unexpected content fails it.
 - `DRY_RUN=1` makes every release script print what it would publish, push or wait for instead of doing it.
 
-`release-navi-hey` additionally builds the frontend (`scripts/ci.sh build-frontend`) and pins its local dependencies (`scripts/ci.sh pin-local-deps`): the `file:../deku-sprout` and `file:../worker` links in `source/package.json` become the exact `deku-sprout/` and `worker/` versions, and any `file:` dependency left fails the release.
+`release-navi-hey` additionally builds the frontend (`scripts/ci.sh build-frontend`) and pins its local dependencies (`scripts/ci.sh pin-local-deps`): the `file:../deku-sprout` and `file:../worker` links in `source/package.json` become the exact `deku-sprout/` and `deku-swarm/` versions, and any `file:` dependency left fails the release.
 
 ## Cascade-bump test
 
@@ -90,11 +90,11 @@ flowchart TD
 
 ## Cutting a release
 
-Versions are bumped with `scripts/bump_version.sh [--force] [app|all|client|worker|deku-sprout] [version]`, never by hand. The target defaults to `app`; an omitted version auto-increments the target's patch version.
+Versions are bumped with `scripts/bump_version.sh [--force] [app|all|client|deku-swarm|deku-sprout] [version]`, never by hand. The target defaults to `app`; an omitted version auto-increments the target's patch version.
 
-- `app` bumps `source/package.json`, the `Navi-Hey` row (Current/Next) of the Versions table and the GitHub Release badges of `README.md` and `source/README.md` and the `FROM darthjee/navi-hey:<v>` line of `dockerfiles/demo_navi_hey/Dockerfile`. It refuses (exit non-zero, nothing changed) while `worker/` or `deku-sprout/` is stale, i.e. their published files changed since their last release tag but their working-tree version did not; `--force` overrides, and `all` bumps the app plus every stale package, plus `client` when `deku-sprout` changed since the last `X.Y.Z` release while the client did not (the cascade-bump test requires it). Every planned bump is checked first, so a missing README row or badge aborts before any file changes.
-- `client`, `worker` and `deku-sprout` bump their `package.json`, their row of the README Versions table (whose links use the `release.yml` tag prefixes) and their version badges in the package READMEs.
+- `app` bumps `source/package.json`, the `Navi-Hey` row (Current/Next) of the Versions table and the GitHub Release badges of `README.md` and `source/README.md` and the `FROM darthjee/navi-hey:<v>` line of `dockerfiles/demo_navi_hey/Dockerfile`. It refuses (exit non-zero, nothing changed) while `deku-swarm/` or `deku-sprout/` is stale, i.e. their published files changed since their last release tag but their working-tree version did not; `--force` overrides, and `all` bumps the app plus every stale package, plus `client` when `deku-sprout` changed since the last `X.Y.Z` release while the client did not (the cascade-bump test requires it). Every planned bump is checked first, so a missing README row or badge aborts before any file changes.
+- `client`, `deku-swarm` and `deku-sprout` bump their `package.json`, their row of the README Versions table (whose links use the `release.yml` tag prefixes) and their version badges in the package READMEs.
 
-Example: `worker/` and `source/` changed since `1.15.0`. Run `scripts/bump_version.sh all` (bumps `deku-swarm` and `navi-hey` to `1.15.1`), merge, then tag `1.15.1`. On that tag `release-deku-swarm` publishes and `push-tag-deku-swarm` pushes `swarm-<v>`; `release-deku-sprout` no-ops; `release-navi-hey` publishes `1.15.1`; `release-darthjee-navi-hey` pushes the image and its followers act; the client jobs no-op.
+Example: `deku-swarm/` and `source/` changed since `1.15.0`. Run `scripts/bump_version.sh all` (bumps `deku-swarm` and `navi-hey` to `1.15.1`), merge, then tag `1.15.1`. On that tag `release-deku-swarm` publishes and `push-tag-deku-swarm` pushes `swarm-<v>`; `release-deku-sprout` no-ops; `release-navi-hey` publishes `1.15.1`; `release-darthjee-navi-hey` pushes the image and its followers act; the client jobs no-op.
 
 A logger-only change instead needs `deku-sprout`, `navi-hey-client` (`client`) and `app` bumps (the cascade-bump test enforces both dependents); the tag then releases all three packages and both images.

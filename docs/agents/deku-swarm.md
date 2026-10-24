@@ -2,13 +2,13 @@
 
 ## Overview
 
-The worker subsystem is the queue-and-pool machinery that turns enqueued `Job`s into executed work: a fixed-size pool of `Worker`s pulled from `WorkersRegistry`, a set of typed job queues managed by `JobRegistry`, and an `Engine` loop that ties the two together via `WorkersAllocator`. It ships as a standalone, generic npm package — `deku-swarm` (`worker/`) — with no domain knowledge of HTTP, caching, or resources; `source/` consumes it as a regular dependency (`"deku-swarm": "file:../worker"` in `source/package.json`, `import { ... } from 'deku-swarm'` everywhere it's used). When `navi-hey` is released, `scripts/ci/pin-local-deps.sh` (the `release-navi-hey` job's "Pin local dependencies" step) rewrites that `file:` link to the exact version in `worker/package.json` before publishing. For a narrative, step-by-step account of the same loop from Navi's side, see [Engine and Workers](flow/engine-and-workers.md). This document instead gives a class-by-class architectural reference for the package, plus a map of what stayed in Navi and how the two sides connect.
+The worker subsystem is the queue-and-pool machinery that turns enqueued `Job`s into executed work: a fixed-size pool of `Worker`s pulled from `WorkersRegistry`, a set of typed job queues managed by `JobRegistry`, and an `Engine` loop that ties the two together via `WorkersAllocator`. It ships as a standalone, generic npm package — `deku-swarm` (`deku-swarm/`) — with no domain knowledge of HTTP, caching, or resources; `source/` consumes it as a regular dependency (`"deku-swarm": "file:../worker"` in `source/package.json`, `import { ... } from 'deku-swarm'` everywhere it's used). When `navi-hey` is released, `scripts/ci/pin-local-deps.sh` (the `release-navi-hey` job's "Pin local dependencies" step) rewrites that `file:` link to the exact version in `deku-swarm/package.json` before publishing. For a narrative, step-by-step account of the same loop from Navi's side, see [Engine and Workers](flow/engine-and-workers.md). This document instead gives a class-by-class architectural reference for the package, plus a map of what stayed in Navi and how the two sides connect.
 
-> [`worker/lib/README.md`](../../worker/lib/README.md) is a one-line index of `worker/lib/`'s immediate subfolders; this page is the class-by-class reference.
+> [`deku-swarm/lib/README.md`](../../deku-swarm/lib/README.md) is a one-line index of `deku-swarm/lib/`'s immediate subfolders; this page is the class-by-class reference.
 
 ## Core classes
 
-### `Worker` (`worker/lib/background/Worker.js`)
+### `Worker` (`deku-swarm/lib/background/Worker.js`)
 
 Executes one job at a time. `assign(job)` stores the job on the instance; `perform()` runs it under a try/catch/finally:
 
@@ -19,15 +19,15 @@ Executes one job at a time. `assign(job)` stores the job on the instance; `perfo
 
 Calling `perform()` with no assigned job throws synchronously. `jobRegistry`, `workersRegistry`, and `loggerFactory` are all injected at construction time and held in private fields — `Worker` never reaches for a static singleton or a concrete logging implementation itself, which is what keeps the package generic. Navi wires its own `LogContext` in as the logger factory (see "How Navi wires it up" below); a consumer with no logging needs at all can pass any function returning an object with those four methods.
 
-### `WorkerFactory` (`worker/lib/background/WorkerFactory.js`)
+### `WorkerFactory` (`deku-swarm/lib/background/WorkerFactory.js`)
 
-Extends the generic `Factory` base class (`worker/lib/Factory.js` — an implementation detail, not documented further here). Configured with a `klass` (default `Worker`), an `attributesGenerator` (default `IdGenerator`, producing a unique `id` per build), and the same `jobRegistry`/`workersRegistry`/`loggerFactory` triple `Worker` itself needs. `build()` calls `super.build({ jobRegistry, workersRegistry, loggerFactory })`, so every `Worker` it produces is pre-wired with everything the factory itself was constructed with.
+Extends the generic `Factory` base class (`deku-swarm/lib/Factory.js` — an implementation detail, not documented further here). Configured with a `klass` (default `Worker`), an `attributesGenerator` (default `IdGenerator`, producing a unique `id` per build), and the same `jobRegistry`/`workersRegistry`/`loggerFactory` triple `Worker` itself needs. `build()` calls `super.build({ jobRegistry, workersRegistry, loggerFactory })`, so every `Worker` it produces is pre-wired with everything the factory itself was constructed with.
 
-### `WorkersRegistry` (`worker/lib/background/WorkersRegistry.js`)
+### `WorkersRegistry` (`deku-swarm/lib/background/WorkersRegistry.js`)
 
 Static singleton facade. `build(options)` constructs and stores a `WorkersRegistryInstance`, throwing if already built; `reset()` clears it (test teardown). Every other static method (`initWorkers`, `setBusy`, `setIdle`, `hasBusyWorker`, `hasIdleWorker`, `getIdleWorker`, `stats`) delegates to the stored instance, throwing if `build()` hasn't been called yet.
 
-### `WorkersRegistryInstance` (`worker/lib/background/WorkersRegistryInstance.js`)
+### `WorkersRegistryInstance` (`deku-swarm/lib/background/WorkersRegistryInstance.js`)
 
 Owns the actual worker pool via three `IdentifyableCollection`s: `#workers` (all of them), `#busy`, `#idle`. Constructed with a `quantity` and an optional injected `factory` (defaults to a fresh `WorkerFactory({ jobRegistry, workersRegistry })` — note the default factory does *not* set up a `loggerFactory`; callers that need worker-level logging must inject their own `WorkerFactory` with one, as Navi does).
 
@@ -37,7 +37,7 @@ Owns the actual worker pool via three `IdentifyableCollection`s: `#workers` (all
 - `hasBusyWorker()` / `hasIdleWorker()` — delegate to `hasAny()` on the respective collection; these back the Engine loop's continuation and allocation checks.
 - `stats()` — returns `{ idle, busy }` counts, consumed by the web UI's stats endpoint.
 
-### `Job` (`worker/lib/background/Job.js`, abstract base)
+### `Job` (`deku-swarm/lib/background/Job.js`, abstract base)
 
 Constructed with just an `id`; tracks two private fields: `#attempts` (starts at 0) and `#readyBy` (starts at 0, an absolute epoch-ms timestamp).
 
@@ -49,17 +49,17 @@ Constructed with just an `id`; tracks two private fields: `#attempts` (starts at
 - `_fail(error)` *(protected)* — increments `#attempts`, stores `this.lastError = error`, then re-throws. Subclasses call this from their own `perform()` error paths before the error propagates up to `Worker#perform()`.
 - `get _attempts()` *(protected)* — read access to the attempt counter, used by tests and subclasses.
 
-### `JobFactory` (`worker/lib/background/JobFactory.js`)
+### `JobFactory` (`deku-swarm/lib/background/JobFactory.js`)
 
 Also extends `Factory`. Unlike `WorkerFactory`, it is both an instance class and a static registry: `JobFactory.build(name, attributes)` constructs a `JobFactory` and stores it in an internal `Map` under `name` (via `JobFactory.registry(name, factory)`); `JobFactory.get(name)` retrieves it; `JobFactory.reset()` clears the map (test isolation).
 
 As an instance, a `JobFactory` is configured with `klass` (default: the generic `Job` base class — Navi's registrations always pass an explicit `klass`, since the abstract base can't be instantiated meaningfully on its own), `attributesGenerator` (default `IdGenerator`), and `attributes` — a fixed object merged into every build. Its overridden `build(params)` calls `super.build({ ...this.#attributes, ...params })`, so constructor-time attributes (e.g. an injected `clients` map) are always present alongside whatever params the caller supplies per job.
 
-### `JobRegistry` (`worker/lib/background/JobRegistry.js`)
+### `JobRegistry` (`deku-swarm/lib/background/JobRegistry.js`)
 
 Static singleton facade over `JobRegistryInstance`, following the exact same `build`/`reset`/throw-if-unbuilt pattern as `WorkersRegistry`. Every instance method below is exposed as a same-named static method.
 
-### `JobRegistryInstance` (`worker/lib/background/JobRegistryInstance.js`)
+### `JobRegistryInstance` (`deku-swarm/lib/background/JobRegistryInstance.js`)
 
 The actual job-queue state, held across six internal collections:
 
@@ -89,7 +89,7 @@ Constructed with an optional `cooldown` (default `5000` ms) and `maxRetries` (de
 
 ## Engine and allocation
 
-### `Engine` (`worker/lib/services/Engine.js`)
+### `Engine` (`deku-swarm/lib/services/Engine.js`)
 
 Owns the main loop. Constructed with `jobRegistry`/`workersRegistry` (injected — see below), an `allocator` (default `new WorkersAllocator({ jobRegistry, workersRegistry })`), `sleepMs` (default `500`; negative disables sleeping, used in tests), `keepAlive` (default `false` — Navi passes `true` when the web UI is present, so the loop never exits on its own), `idleTimeoutMs` (default `0`, disabling idle tracking), and an `onIdleTimeout` callback.
 
@@ -104,11 +104,11 @@ Owns the main loop. Constructed with `jobRegistry`/`workersRegistry` (injected �
 
 `jobRegistry`/`workersRegistry` are plain injected references — `Engine` accepts either the static facade classes (`JobRegistry`/`WorkersRegistry`) or any instance exposing the same method names, since it only ever calls methods on whatever it was handed. Navi passes the static facades themselves (see "How Navi wires it up" below).
 
-### `WorkersAllocator` (`worker/lib/services/WorkersAllocator.js`)
+### `WorkersAllocator` (`deku-swarm/lib/services/WorkersAllocator.js`)
 
 Constructed with `{ jobRegistry, workersRegistry }` — same injection contract as `Engine`, no static calls of its own. `allocate()` loops `_allocateNext()` while `_canAllocate()` (`workersRegistry.hasIdleWorker() && jobRegistry.hasReadyJob()`). `_allocateNext()` picks one job via `jobRegistry.pick()`, returning immediately if none is available; then asks `workersRegistry.getIdleWorker()` — if that returns `null` (a race between the `_canAllocate()` check and this call, or simply pool exhaustion mid-loop), the job is pushed back via `jobRegistry.requeue(job)` rather than lost. Otherwise `_allocateWorkerToJob(worker, job)` calls `worker.assign(job)` then `worker.perform()` — fire-and-forget; the allocator does not await job completion, since `Worker#perform()` reports back to the registries itself.
 
-## Collections (`worker/lib/collections/`)
+## Collections (`deku-swarm/lib/collections/`)
 
 All three extend the abstract `Collection` base class, which supplies `hasAny()` (`size() > 0`) and a default `findById()` in terms of `list()`.
 
@@ -116,7 +116,7 @@ All three extend the abstract `Collection` base class, which supplies `hasAny()`
 - **`Queue`** — plain FIFO array. `push()` appends, `pick()` shifts the first item, `size()`, `list()` returns a shallow copy preserving order. Backs `JobRegistryInstance`'s `#enqueued` and `#retryQueue`.
 - **`SortedCollection`** — maintains elements ordered by a required `sortBy` function, using a deferred/lazy-flush strategy: new items land in an unsorted buffer (`push()` is O(1)); any read operation first sorts the buffer (O(m log m)) and merges it into the already-sorted array via a two-pointer merge (O(n + m)). Range queries (`after`, `from`, `before`, `upTo`) use binary search (`SortedArraySearcher`) against the flushed sorted array — O(log n) plus the slice. Backs `JobRegistryInstance`'s `#failed`, sorted by `job.readyBy`; `promoteReadyJobs()` uses `upTo(now)`/`after(now)` to split ready-vs-cooling jobs without a full scan.
 
-## Public API (`worker/lib/index.js`)
+## Public API (`deku-swarm/lib/index.js`)
 
 `deku-swarm` re-exports exactly these classes: `Worker`, `WorkerFactory`, `WorkersRegistry`, `Job`, `JobFactory`, `JobRegistry`, `Engine`, `WorkersAllocator`, `IdentifyableCollection`, `Queue`, `SortedCollection`. `Factory`, `Collection`, `SortedArrayMerger`, `SortedArraySearcher`, `IdGenerator`, and `UUidGenerator` are internal implementation details, not part of the public surface.
 
@@ -166,7 +166,7 @@ These are concrete `Job` implementations that live in `source/lib/jobs/`, import
 
 ## Engine auxiliary services (Navi-specific)
 
-`Engine` now exposes a generic `on(eventName, handler)` / `emit(eventName, ...args)` listener API of its own (`worker/lib/services/Engine.js`), including a `'finish'` event fired at the end of a run. `EngineController`, `LogBufferCollection`/`LogRegistry`, and `ApplicationInstance` subscribe to it directly; `RunReporter` subscribes to `'finish'` to run `FailureChecker` and `RunSummary` at the right point in the lifecycle. `EngineStopService` reaches into `Application` directly rather than through the listener API, but takes it as an injectable `statusProvider` default parameter rather than a hardcoded static reference:
+`Engine` now exposes a generic `on(eventName, handler)` / `emit(eventName, ...args)` listener API of its own (`deku-swarm/lib/services/Engine.js`), including a `'finish'` event fired at the end of a run. `EngineController`, `LogBufferCollection`/`LogRegistry`, and `ApplicationInstance` subscribe to it directly; `RunReporter` subscribes to `'finish'` to run `FailureChecker` and `RunSummary` at the right point in the lifecycle. `EngineStopService` reaches into `Application` directly rather than through the listener API, but takes it as an injectable `statusProvider` default parameter rather than a hardcoded static reference:
 
 | Service | File | Responsibility | Extraction note |
 |---|---|---|---|
@@ -186,4 +186,4 @@ These are concrete `Job` implementations that live in `source/lib/jobs/`, import
 ## Out of scope
 
 - The web server, monitoring UI, frontend, and HTTP routes — see [Web Server](web-server.md) and [Frontend](frontend.md) instead.
-- The generic `Factory` base class (`worker/lib/Factory.js`) — an implementation detail underlying `WorkerFactory` and `JobFactory`, not documented separately here.
+- The generic `Factory` base class (`deku-swarm/lib/Factory.js`) — an implementation detail underlying `WorkerFactory` and `JobFactory`, not documented separately here.

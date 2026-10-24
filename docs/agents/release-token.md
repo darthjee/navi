@@ -7,7 +7,7 @@
 | CircleCI job | Runs after | Tag pushed |
 |---|---|---|
 | `push-tag-deku-sprout` | `release-deku-sprout` | `sprout-<deku-sprout/package.json version>` |
-| `push-tag-deku-swarm` | `release-deku-swarm` | `swarm-<worker/package.json version>` |
+| `push-tag-deku-swarm` | `release-deku-swarm` | `swarm-<deku-swarm/package.json version>` |
 | `push-tag-navi-hey-client` | `release-navi-hey-client` | `node_client-<clients/node/package.json version>` |
 
 The prefix is the package's `tag_prefix` in `release.yml`; `navi-hey` (tagged `X.Y.Z`) and the Docker images get no extra tag. Each job always runs, but halts as a no-op (the `skip-unless-released` command, `scripts/ci/released.sh`) unless its package actually published, and fails when the `released/<package>` file is missing. Otherwise it fails fast without `GITHUB_TOKEN`, skips when the tag already exists locally or on `origin`, and creates an annotated tag on the commit being built (the `X.Y.Z` tagged commit), pushing only that tag. `DRY_RUN=1` prints the tag instead of pushing it. The old `deku-sprout-…`, `worker-…` and `client-…` tags stay as history; nothing creates new ones.

@@ -24,7 +24,7 @@ Delegate implementation, exploration, and planning work to the right agent. Neve
 | `frontend` | `frontend/` — the React + Vite monitoring dashboard SPA |
 | `dev` | `dev/` — dev backend, dev frontend, and the two Tent reverse proxies used to exercise Navi locally |
 | `navi-client` | `clients/node/` — the Node.js client package (`navi-hey-client`) wrapping Navi's `/api/*` HTTP namespace |
-| `worker` | `worker/` — the `deku-swarm` npm package: a generic queue-and-pool worker system |
+| `deku-swarm` | `deku-swarm/` — the `deku-swarm` npm package: a generic queue-and-pool worker system |
 | `deku-sprout` | `deku-sprout/` — the `deku-sprout` npm package: the shared logging classes (`BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger`) |
 | `spec-support` | `spec-support/` — the private `navi-spec-support` package: the jsdom/React spec bootstrap shared by `frontend/` and `dev/frontend/` |
 | `docker` | `dockerfiles/` and root `docker-compose.yml` — Dockerfiles for every service image (dev app, dev frontend, dev proxies, production build) |
@@ -50,7 +50,7 @@ When a task spans multiple agents:
 | [Architecture](../../docs/agents/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
 | [Folder Structure](../../docs/agents/folder-structure.md) | Top-level directory layout and the role of each folder. |
 | [Runtime Flow](../../docs/agents/flow.md) | CLI entrypoint, config loading, YAML structure, initial enqueueing, Engine loop, worker execution, failure handling, web UI routes. |
-| [Worker Subsystem](../../docs/agents/worker.md) | Class-by-class reference for `deku-swarm` (`worker/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
+| [Worker Subsystem](../../docs/agents/deku-swarm.md) | Class-by-class reference for `deku-swarm` (`deku-swarm/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
 | [Logger Subsystem](../../docs/agents/deku-sprout.md) | Class-by-class reference for `deku-sprout` (`deku-sprout/`), the shared logging package — `BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger` — its consumers and its release flow. |
 | [Contributing](../../docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
 | [Dangers](../../docs/agents/dangers.md) | Async pitfalls, synchronous test dummies, and rules for planning cooldowns, sleeps, and waits. |

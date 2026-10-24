@@ -6,7 +6,7 @@
 navi/
 ├── source/           # Navi cache-warmer Node.js application
 ├── frontend/         # Navi web UI (React + Vite)
-├── worker/           # deku-swarm: generic queue-and-pool worker package, consumed by source/
+├── deku-swarm/           # deku-swarm: generic queue-and-pool worker package, consumed by source/
 ├── deku-sprout/      # deku-sprout: shared logging package, consumed by source/, dev/app and clients/node/ (see docs/agents/deku-sprout.md)
 ├── clients/
 │   └── node/         # navi-hey-client: Node.js client for Navi's /api/* namespace
@@ -87,7 +87,7 @@ Subfolders:
   - `models/request/tokens/` — `TokenResolver`, `UrlTokenResolver`
 - `models/response/` — response-parsing models: `ParametersMapper`, `PathResolver`, `PathSegmentTraverser`, `ResponseParser`, `ResponseWrapper`
 
-`Job`/`Worker`, the registries (`JobRegistry`/`WorkersRegistry`), their factories, `Engine`, `WorkersAllocator`, the collection primitives, and the generic `Factory`/`IdGenerator` utilities all live in the separate `worker/` package (`deku-swarm`), not under `source/lib/`. See [Worker Subsystem](../worker.md) for their class-by-class reference; `source/` only consumes them via `import { ... } from 'deku-swarm'`.
+`Job`/`Worker`, the registries (`JobRegistry`/`WorkersRegistry`), their factories, `Engine`, `WorkersAllocator`, the collection primitives, and the generic `Factory`/`IdGenerator` utilities all live in the separate `deku-swarm/` package (`deku-swarm`), not under `source/lib/`. See [Worker Subsystem](../deku-swarm.md) for their class-by-class reference; `source/` only consumes them via `import { ... } from 'deku-swarm'`.
 
 ### `enqueuers/`
 
@@ -123,7 +123,7 @@ Shared low-level utilities with no domain knowledge:
 
 - **`common/utils/`** — shared utilities consumed by both `source/` and `dev/app/`: `EnvResolver`, `env_resolver/EnvStringResolver`, `logging/*` (including `LogContext` — Navi-specific logging, wired into `deku-swarm`'s `Worker` via an injected `loggerFactory`; the buffer trio `BufferedLogger`/`LogBuffer`/`LogBufferCollection` sits under `logging/buffer/`).
 - **`common/server/`** — shared server base classes consumed by both `source/` and `dev/app/`: `RequestHandler` (abstract base).
-- **`utils/generators/`** — `IncrementalIdGenerator` (`IdGenerator`/`UUidGenerator` moved to `worker/lib/generators/`, part of `deku-swarm`).
+- **`utils/generators/`** — `IncrementalIdGenerator` (`IdGenerator`/`UUidGenerator` moved to `deku-swarm/lib/generators/`, part of `deku-swarm`).
 - **`utils/`** (flat) — `HtmlParser` (CSS selector extraction from HTML), `ResourceRequestCollector` (finds parameter-free requests for initial enqueueing), `ResourceEnqueuer` (calls `deku-swarm`'s `JobRegistry.enqueue()` from outside the package).
 
 ### `services/`
@@ -131,10 +131,10 @@ Shared low-level utilities with no domain knowledge:
 Business logic and I/O layer:
 
 - **`Application`** — static singleton façade; `loadConfig()` bootstraps registries and factories; `run()` starts engine and web server concurrently. Lifecycle methods (`pause`, `stop`, `continue`, `start`, `restart`) delegate to `ApplicationInstance`.
-- **`ApplicationInstance`** — orchestrates boot: registers job factories, builds `JobRegistry`/`WorkersRegistry`/`Engine` (all from `deku-swarm`, see [Worker Subsystem](../worker.md)), wires Navi's `LogContext` in as `Worker`'s `loggerFactory`.
+- **`ApplicationInstance`** — orchestrates boot: registers job factories, builds `JobRegistry`/`WorkersRegistry`/`Engine` (all from `deku-swarm`, see [Worker Subsystem](../deku-swarm.md)), wires Navi's `LogContext` in as `Worker`'s `loggerFactory`.
 - **`Client`** — Axios-based HTTP executor; `perform()` for URL-template requests, `performUrl()` for absolute URLs; supports per-client headers with env var interpolation.
 - **`ConfigLoader`** / **`ConfigParser`** / **`ArgumentsParser`** — config file I/O and CLI argument parsing.
-- `Engine`, `WorkersAllocator`, and the generic `Factory` object-builder are no longer under `source/lib/services/`/`source/lib/factory/` — they moved to `worker/` (`deku-swarm`); see [Worker Subsystem](../worker.md).
+- `Engine`, `WorkersAllocator`, and the generic `Factory` object-builder are no longer under `source/lib/services/`/`source/lib/factory/` — they moved to `deku-swarm/` (`deku-swarm`); see [Worker Subsystem](../deku-swarm.md).
 
 ### `serializers/`
 
