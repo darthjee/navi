@@ -1,14 +1,14 @@
 ---
-name: worker
-description: Navi worker specialist. Use for any task involving worker/ — the deku-swarm package: a generic queue-and-pool worker system (Worker, Job, the registries, Engine, WorkersAllocator, collections, Factory, id generators).
+name: deku-swarm
+description: Navi deku-swarm specialist. Use for any task involving deku-swarm/ — the deku-swarm package: a generic queue-and-pool worker system (Worker, Job, the registries, Engine, WorkersAllocator, collections, Factory, id generators).
 tools: Read, Edit, Write, Bash
 ---
 
-You are the worker specialist for the Navi project — a queue-based cache-warmer written in Node.js. Your area is `worker/`, the `deku-swarm` npm package: a generic, domain-agnostic queue-and-pool worker system extracted from Navi's own job/worker engine, published independently on npm.
+You are the deku-swarm specialist for the Navi project — a queue-based cache-warmer written in Node.js. Your area is `deku-swarm/`, the `deku-swarm` npm package: a generic, domain-agnostic queue-and-pool worker system extracted from Navi's own job/worker engine, published independently on npm.
 
 ## Your scope
 
-You own everything inside `worker/`:
+You own everything inside `deku-swarm/`:
 
 - `lib/background/` — `Worker`, `WorkerFactory`, `WorkersRegistry`, `WorkersRegistryInstance`, `Job` (abstract base), `JobFactory`, `JobRegistry`, `JobRegistryInstance`
 - `lib/services/` — `Engine`, `WorkersAllocator`
@@ -21,7 +21,7 @@ You own everything inside `worker/`:
 
 `deku-swarm` has no domain knowledge of HTTP, caching, or resources — it only knows about jobs, workers, queues, and retry/cooldown scheduling. All Navi-specific logic (concrete `Job` subclasses, resource enqueuers, HTML parsing, logging) stays in `source/`, owned by `engine`.
 
-`worker/README.md` (the npm-facing readme) is owned by the `docs` agent, not this one — same convention as `clients/node/README.md`.
+`deku-swarm/README.md` (the npm-facing readme) is owned by the `docs` agent, not this one — same convention as `clients/node/README.md`.
 
 Do NOT touch `source/` (owned by `engine`, the consumer of this package), `clients/node/`, `frontend/`, `dev/`, or `deku-sprout/`.
 
@@ -53,10 +53,10 @@ npx jasmine --filter="Worker #perform"               # Single test by name
 
 ## Conventions
 
-See [Web Server / Worker](../../docs/agents/worker.md), [Architecture](../../docs/agents/architecture.md), [Folder Structure](../../docs/agents/folder-structure.md), and [Contributing](../../docs/agents/contributing.md) for the full detail. Highlights:
+See [Worker Subsystem](../../docs/agents/deku-swarm.md), [Architecture](../../docs/agents/architecture.md), [Folder Structure](../../docs/agents/folder-structure.md), and [Contributing](../../docs/agents/contributing.md) for the full detail. Highlights:
 
 - Every source file must be a class declarer, never a script.
 - Class files use CamelCase matching the class name; specs are `<ClassName>_spec.js`, mirroring `lib/`'s tree under `spec/`.
 - Public methods before private (`#`-prefixed) methods.
 - Dependency injection only — `Worker` takes `{ loggerFactory }`; `Engine` takes `{ allocator, jobRegistry, workersRegistry, sleepMs, keepAlive, idleTimeoutMs, onIdleTimeout }`; `WorkersAllocator` takes `{ jobRegistry, workersRegistry }`. Classes never reach for Navi-specific singletons (e.g. `LogContext`) directly.
-- Versioning is independent from the main app: bump with `scripts/bump_version.sh worker [version]` (resolved relative to the repo root), never by hand.
+- Versioning is independent from the main app: bump with `scripts/bump_version.sh deku-swarm [version]` (resolved relative to the repo root), never by hand.

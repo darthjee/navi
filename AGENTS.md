@@ -17,7 +17,7 @@ All project documentation lives under [`docs/agents/`](docs/agents/):
 | [Architecture](docs/agents/architecture.md) | Source layout, module system, code style, registries pattern, tooling, and implementation guidelines. |
 | [Folder Structure](docs/agents/folder-structure.md) | Top-level directory layout and the role of each folder. |
 | [Runtime Flow](docs/agents/flow.md) | CLI entrypoint, config loading, YAML structure, initial enqueueing, Engine loop, worker execution, failure handling, web UI routes. |
-| [Worker Subsystem](docs/agents/worker.md) | Class-by-class reference for `deku-swarm` (`worker/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
+| [Worker Subsystem](docs/agents/deku-swarm.md) | Class-by-class reference for `deku-swarm` (`deku-swarm/`), the standalone queue/job/engine package — `Worker`, `Job`, the registries, `Engine`, `WorkersAllocator`, collections — and how `source/` consumes it as a dependency. |
 | [Logger Subsystem](docs/agents/deku-sprout.md) | Class-by-class reference for `deku-sprout` (`deku-sprout/`), the shared logging package — `BaseLogger`, `ConsoleLogger`, `LoggerGroup`, `Logger` — its consumers and how it is published. |
 | [Spec Support](docs/agents/spec-support.md) | The private `navi-spec-support` package (`spec-support/`): the jsdom/React spec bootstrap shared by `frontend/` and `dev/frontend/`, its `exports` contract, how the frontends consume it, and reinstall-after-edit rule. |
 | [Contributing](docs/agents/contributing.md) | Explanation on how to contribute, commit and open PRs |
@@ -67,7 +67,7 @@ children in one line each and links to the fuller `docs/agents/` page:
 | Tree | Index | Full reference |
 |------|-------|----------------|
 | `source/lib/` | [`source/lib/README.md`](source/lib/README.md) | [`docs/agents/architecture/source-layout.md`](docs/agents/architecture/source-layout.md) |
-| `worker/lib/` | [`worker/lib/README.md`](worker/lib/README.md) | [`docs/agents/worker.md`](docs/agents/worker.md) |
+| `deku-swarm/lib/` | [`deku-swarm/lib/README.md`](deku-swarm/lib/README.md) | [`docs/agents/deku-swarm.md`](docs/agents/deku-swarm.md) |
 | `frontend/src/` | [`frontend/src/README.md`](frontend/src/README.md) | [`docs/agents/frontend.md`](docs/agents/frontend.md) |
 
 These indexes stay terse — new narrative goes in the `docs/agents/` page, not the README.

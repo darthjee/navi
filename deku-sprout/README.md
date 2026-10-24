@@ -6,7 +6,7 @@
 
 Small, level-filtered logging library for Node.js, with multi-destination broadcasting and a static default logger.
 
-`deku-sprout` is the shared logging package for [Navi](https://github.com/darthjee/navi) and its clients. It was extracted from the logging code that used to be duplicated between Navi's application and its Node client (`navi-hey-client`), and it follows the same standalone-package model as [`deku-swarm`](https://github.com/darthjee/navi/tree/main/worker). It has no Navi-specific knowledge: you get a level threshold, structured attributes, a console logger, and a way to fan one log call out to several destinations.
+`deku-sprout` is the shared logging package for [Navi](https://github.com/darthjee/navi) and its clients. It was extracted from the logging code that used to be duplicated between Navi's application and its Node client (`navi-hey-client`), and it follows the same standalone-package model as [`deku-swarm`](https://github.com/darthjee/navi/tree/main/deku-swarm). It has no Navi-specific knowledge: you get a level threshold, structured attributes, a console logger, and a way to fan one log call out to several destinations.
 
 ---
 

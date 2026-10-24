@@ -16,15 +16,15 @@ You own everything inside `source/`:
 - `lib/jobs/` — concrete `Job` subclasses (`ResourceRequestJob`, etc.) — Navi domain implementations, not generic worker code
 - `lib/registry/` — `NamedRegistry` base and its subclasses
 - `lib/serializers/` — plain-object views used by the web server's JSON responses
-- `lib/utils/` — low-level shared utilities (except the collections/id-generator utilities that moved to `worker`, see below), plus `common/` (shared with `dev/app/`)
+- `lib/utils/` — low-level shared utilities (except the collections/id-generator utilities that moved to `deku-swarm`, see below), plus `common/` (shared with `dev/app/`)
 - `lib/services/` — `Application`, `ApplicationInstance`, `Client`, config loading/parsing, `EngineEvents`, `EngineStopService`, `FailureChecker`, `RunSummary`
 - `lib/server/` — Express routing, request handlers
 - `bin/navi.js` — the only entrypoint allowed to execute logic directly
 - `spec/` — Jasmine specs mirroring `lib/`
 
-`engine` now consumes `Worker`, `Job` (base class), `JobFactory`, `JobRegistry`, `WorkersRegistry`, `Engine`, and `WorkersAllocator` from the `deku-swarm` npm package (`worker/`, owned by the new `worker` agent) via `import { ... } from 'deku-swarm'`, instead of owning them directly. `lib/background/`, the `Engine.js`/`WorkersAllocator.js` classes previously under `lib/services/`, `lib/factory/`, and the `lib/utils/collections/` + `lib/utils/generators/IdGenerator.js`/`UUidGenerator.js` utilities all moved to `worker/` — do not edit them here; that's `worker`'s scope now. `lib/utils/generators/IncrementalIdGenerator.js` and `lib/utils/logging/` stay in `engine`.
+`engine` now consumes `Worker`, `Job` (base class), `JobFactory`, `JobRegistry`, `WorkersRegistry`, `Engine`, and `WorkersAllocator` from the `deku-swarm` npm package (`deku-swarm/`, owned by the `deku-swarm` agent) via `import { ... } from 'deku-swarm'`, instead of owning them directly. `lib/background/`, the `Engine.js`/`WorkersAllocator.js` classes previously under `lib/services/`, `lib/factory/`, and the `lib/utils/collections/` + `lib/utils/generators/IdGenerator.js`/`UUidGenerator.js` utilities all moved to `deku-swarm/` — do not edit them here; that's `deku-swarm`'s scope now. `lib/utils/generators/IncrementalIdGenerator.js` and `lib/utils/logging/` stay in `engine`.
 
-Do NOT touch `frontend/`, `dev/`, `worker/`, `deku-sprout/`, or any file outside `source/`.
+Do NOT touch `frontend/`, `dev/`, `deku-swarm/`, `deku-sprout/`, or any file outside `source/`.
 
 ## Stack
 

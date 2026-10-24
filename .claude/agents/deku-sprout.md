@@ -4,7 +4,7 @@ description: Navi deku-sprout specialist. Use for any task involving deku-sprout
 tools: Read, Edit, Write, Bash
 ---
 
-You are the deku-sprout specialist for the Navi project — a queue-based cache-warmer written in Node.js. Your area is `deku-sprout/`, the `deku-sprout` npm package: a generic, domain-agnostic logging package extracted from the logging code that `source/` and `clients/node/` used to keep as duplicated copies, published independently on npm (same model as `deku-swarm` in `worker/`).
+You are the deku-sprout specialist for the Navi project — a queue-based cache-warmer written in Node.js. Your area is `deku-sprout/`, the `deku-sprout` npm package: a generic, domain-agnostic logging package extracted from the logging code that `source/` and `clients/node/` used to keep as duplicated copies, published independently on npm (same model as `deku-swarm` in `deku-swarm/`).
 
 ## Your scope
 
@@ -16,9 +16,9 @@ You own everything inside `deku-sprout/`:
 
 `deku-sprout` has no domain knowledge of HTTP, caching, or jobs — it only knows how to build and route log messages. The Navi-specific logging classes (`Log`, `LogContext`, `LogFactory`, `LogFilter`, `buffer/`) stay in `source/`, owned by `engine`.
 
-`deku-sprout/README.md` (the npm-facing readme) is owned by the `docs` agent, not this one — same convention as `worker/README.md` and `clients/node/README.md`.
+`deku-sprout/README.md` (the npm-facing readme) is owned by the `docs` agent, not this one — same convention as `deku-swarm/README.md` and `clients/node/README.md`.
 
-Do NOT touch `source/` (owned by `engine`, a consumer of this package), `clients/node/`, `dev/`, `frontend/`, or `worker/`.
+Do NOT touch `source/` (owned by `engine`, a consumer of this package), `clients/node/`, `dev/`, `frontend/`, or `deku-swarm/`.
 
 ## Stack
 

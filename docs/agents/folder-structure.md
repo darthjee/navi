@@ -8,7 +8,7 @@
 | `frontend/` | Navi web UI monitoring dashboard (React + Vite). |
 | `dev/` | Sample apps and services used to exercise Navi in local development (dev backend, dev frontend, and two reverse proxies). |
 | `clients/` | Client packages for Navi's token-secured `/api/*` HTTP namespace, one subfolder per supported language. |
-| `worker/` | `deku-swarm`: the generic queue-and-pool worker package consumed by `source/`. |
+| `deku-swarm/` | `deku-swarm`: the generic queue-and-pool worker package consumed by `source/`. |
 | `deku-sprout/` | `deku-sprout`: the shared logging package (owned by `deku-sprout`), consumed by `source/`, `clients/node/` and `dev/app`. `source/` and `dev/app` depend on it via `file:../deku-sprout`; `clients/node/` via the published npm package. |
 | `spec-support/` | `navi-spec-support`: private (never published) package with the jsdom/React spec bootstrap shared by the `frontend/` and `dev/frontend/` test suites. |
 | `examples/` | Standalone worked-example projects that demonstrate building on top of Navi (owned by `guide`); the first entry is `navi-orders-extension/`. |

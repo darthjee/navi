@@ -46,6 +46,6 @@ source/spec/
     utils/
 ```
 
-`background/`, `factory/`, and `utils/collections/` moved to `worker/spec/` (mirroring `worker/lib/`) as part of the `deku-swarm` extraction — see [Worker Subsystem](../worker.md).
+`background/`, `factory/`, and `utils/collections/` moved to `deku-swarm/spec/` (mirroring `deku-swarm/lib/`) as part of the `deku-swarm` extraction — see [Worker Subsystem](../deku-swarm.md).
 
 The naming convention for spec files is `<ClassName>_spec.js`, mirroring the source file's location under `source/lib/`.

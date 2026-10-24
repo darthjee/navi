@@ -11,7 +11,7 @@ const entry = (folder, platform, dependsOn = [], tagPrefix) => (
 const buildTree = () => ({
   packages: {
     'deku-sprout': entry('deku-sprout', 'npm', [], 'sprout-'),
-    'deku-swarm': entry('worker', 'npm', [], 'swarm-'),
+    'deku-swarm': entry('deku-swarm', 'npm', [], 'swarm-'),
     'navi-hey': entry('source', 'npm', ['deku-sprout', 'deku-swarm']),
     'darthjee/navi-hey': entry('source', 'docker', ['navi-hey']),
     'navi-hey-client': entry('clients/node', 'npm', ['deku-sprout'], 'node_client-'),
@@ -21,10 +21,10 @@ const buildTree = () => ({
 
 const buildPackageJsons = () => ({
   'deku-sprout': { name: 'deku-sprout' },
-  worker: { name: 'deku-swarm' },
+  'deku-swarm': { name: 'deku-swarm' },
   source: {
     name: 'navi-hey',
-    dependencies: { 'deku-sprout': 'file:../deku-sprout', 'deku-swarm': 'file:../worker', yaml: '^2.8.2' },
+    dependencies: { 'deku-sprout': 'file:../deku-sprout', 'deku-swarm': 'file:../deku-swarm', yaml: '^2.8.2' },
   },
   'clients/node': {
     name: 'navi-hey-client',
@@ -101,7 +101,7 @@ describe('validateReleaseTree', () => {
 
   describe('when an npm name does not match its key', () => {
     beforeEach(() => {
-      packageJsons.worker.name = 'other-name';
+      packageJsons['deku-swarm'].name = 'other-name';
     });
 
     it('reports the mismatch', () => {
@@ -137,13 +137,13 @@ describe('validateReleaseTree', () => {
 
   describe('when a docker entry has no npm sibling', () => {
     beforeEach(() => {
-      tree.packages['darthjee/other'] = entry('worker2', 'docker', ['deku-swarm']);
-      packageJsons.worker2 = { name: 'whatever' };
+      tree.packages['darthjee/other'] = entry('deku-swarm2', 'docker', ['deku-swarm']);
+      packageJsons['deku-swarm2'] = { name: 'whatever' };
     });
 
     it('reports the missing sibling', () => {
       expect(validate()).toEqual([
-        "darthjee/other: no npm entry lives in folder 'worker2'",
+        "darthjee/other: no npm entry lives in folder 'deku-swarm2'",
       ]);
     });
   });
@@ -163,7 +163,7 @@ describe('validateReleaseTree', () => {
 
   describe('when a local package is only a devDependency', () => {
     beforeEach(() => {
-      packageJsons.worker.devDependencies = { 'deku-sprout': 'file:../deku-sprout' };
+      packageJsons['deku-swarm'].devDependencies = { 'deku-sprout': 'file:../deku-sprout' };
     });
 
     it('ignores it', () => {
@@ -173,7 +173,7 @@ describe('validateReleaseTree', () => {
 
   describe('when several problems exist', () => {
     beforeEach(() => {
-      packageJsons.worker.name = 'other-name';
+      packageJsons['deku-swarm'].name = 'other-name';
       tree.packages['navi-hey'].dependsOn = [];
     });
 

@@ -7,7 +7,7 @@ const entry = (folder, platform, dependsOn = [], tagPrefix) => (
 const buildTree = () => ({
   packages: {
     'deku-sprout': entry('logger', 'npm', [], 'sprout-'),
-    'deku-swarm': entry('worker', 'npm', [], 'swarm-'),
+    'deku-swarm': entry('deku-swarm', 'npm', [], 'swarm-'),
     'navi-hey': entry('source', 'npm', ['deku-sprout', 'deku-swarm']),
     'darthjee/navi-hey': entry('source', 'docker', ['navi-hey']),
     'navi-hey-client': entry('clients/node', 'npm', ['deku-sprout'], 'node_client-'),

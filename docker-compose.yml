@@ -4,7 +4,7 @@ services:
     env_file: .env
     volumes:
       - ./source:/home/node/app
-      - ./worker:/home/node/worker
+      - ./deku-swarm:/home/node/deku-swarm
       - ./deku-sprout:/home/node/deku-sprout
       - ./docker_volumes/config:/home/node/app/config
       - ./docker_volumes/node_modules:/home/node/app/node_modules
@@ -39,7 +39,7 @@ services:
       NAVI_EXTENSIONS_ENABLED: "true"
     volumes:
       - ./source:/home/node/app
-      - ./worker:/home/node/worker
+      - ./deku-swarm:/home/node/deku-swarm
       - ./deku-sprout:/home/node/deku-sprout
       - ./examples/navi-orders-extension/config:/home/node/app/config:ro
       - ./docker_volumes/node_modules:/home/node/app/node_modules
