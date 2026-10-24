@@ -25,9 +25,9 @@ workflows:
           filters: *test-filters
       - checks-client:
           filters: *test-filters
-      - jasmine-worker:
+      - jasmine-deku-swarm:
           filters: *test-filters
-      - checks-worker:
+      - checks-deku-swarm:
           filters: *test-filters
       - jasmine-deku-sprout:
           filters: *test-filters
@@ -46,7 +46,7 @@ workflows:
       - test-extension-harness:
           filters: *test-filters
       - coverage-final:
-          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release]
+          requires: [jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-deku-swarm, jasmine-deku-sprout, jasmine-release]
           filters: *test-filters
       - check-version-tag:
           filters: &version-tag-filters
@@ -58,16 +58,16 @@ workflows:
       # mirror release.yml's `depends_on` (each job also waits for its
       # dependencies on npm, inside scripts/ci/release-npm-package.sh).
       - release-deku-sprout:
-          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness]
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-deku-swarm, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-deku-swarm, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness]
           filters: *version-tag-filters
       - release-deku-swarm:
-          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness]
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-deku-swarm, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-deku-swarm, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness]
           filters: *version-tag-filters
       - release-navi-hey:
-          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout, release-deku-swarm]
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-deku-swarm, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-deku-swarm, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout, release-deku-swarm]
           filters: *version-tag-filters
       - release-navi-hey-client:
-          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-worker, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-worker, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout]
+          requires: [check-version-tag, validate-release-yml, cascade-bump-check, jasmine, jasmine-dev, jasmine-dev-frontend, jasmine-frontend, jasmine-client, jasmine-deku-swarm, jasmine-deku-sprout, jasmine-release, checks, checks-dev, checks-dev-frontend, checks-frontend, checks-client, checks-deku-swarm, checks-deku-sprout, checks-release, smoke-extensions, test-extension-harness, release-deku-sprout]
           filters: *version-tag-filters
       # One extra-tag job per npm package with a release.yml `tag_prefix`.
       # Each one always runs after its release job, halts as a no-op when the
@@ -272,23 +272,23 @@ jobs:
       - lint-and-report:
           path: clients/node
 
-  jasmine-worker:
+  jasmine-deku-swarm:
     executor: node-ci
     steps:
       - checkout
       - install-deps:
-          path: worker
+          path: deku-swarm
       - run-tests:
-          path: worker
+          path: deku-swarm
 
-  checks-worker:
+  checks-deku-swarm:
     executor: node-ci
     steps:
       - checkout
       - install-deps:
-          path: worker
+          path: deku-swarm
       - lint-and-report:
-          path: worker
+          path: deku-swarm
 
   jasmine-deku-sprout:
     executor: node-ci

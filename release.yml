@@ -14,7 +14,7 @@ packages:
     depends_on: []
     tag_prefix: sprout-
   deku-swarm:
-    folder: worker
+    folder: deku-swarm
     platform: npm
     depends_on: []
     tag_prefix: swarm-
