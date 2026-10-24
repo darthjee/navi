@@ -27,7 +27,7 @@ ENV HOME_DIR=/home/node
 FROM base AS backend_builder
 ENV HOME_DIR=/home/node
 COPY --chown=node:node ./worker/ /home/node/worker/
-COPY --chown=node:node ./logger/ /home/node/logger/
+COPY --chown=node:node ./deku-sprout/ /home/node/deku-sprout/
 COPY --chown=node:node ./source/package.json ./source/yarn.lock /home/node/app/
 COPY --from=scripts /home/scripts/builder/yarn_builder.sh /usr/local/sbin/yarn_builder.sh
 RUN /bin/bash /usr/local/sbin/yarn_builder.sh \
