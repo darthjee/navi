@@ -295,18 +295,18 @@ jobs:
     steps:
       - checkout
       - install-deps:
-          path: logger
+          path: deku-sprout
       - run-tests:
-          path: logger
+          path: deku-sprout
 
   checks-deku-sprout:
     executor: node-ci
     steps:
       - checkout
       - install-deps:
-          path: logger
+          path: deku-sprout
       - lint-and-report:
-          path: logger
+          path: deku-sprout
 
   jasmine-release:
     executor: node-ci

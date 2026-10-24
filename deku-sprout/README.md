@@ -95,4 +95,4 @@ Static facade over a default `LoggerGroup` singleton. The first call creates the
 
 ## Source & Documentation
 
-GitHub repository: [darthjee/navi](https://github.com/darthjee/navi). `deku-sprout` lives under [`logger/`](https://github.com/darthjee/navi/tree/main/logger).
+GitHub repository: [darthjee/navi](https://github.com/darthjee/navi). `deku-sprout` lives under [`deku-sprout/`](https://github.com/darthjee/navi/tree/main/deku-sprout).

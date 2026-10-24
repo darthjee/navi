@@ -7,7 +7,7 @@ navi/
 ├── source/           # Navi cache-warmer Node.js application
 ├── frontend/         # Navi web UI (React + Vite)
 ├── worker/           # deku-swarm: generic queue-and-pool worker package, consumed by source/
-├── logger/           # deku-sprout: shared logging package, consumed by source/, dev/app and clients/node/ (see docs/agents/logger.md)
+├── deku-sprout/      # deku-sprout: shared logging package, consumed by source/, dev/app and clients/node/ (see docs/agents/deku-sprout.md)
 ├── clients/
 │   └── node/         # navi-hey-client: Node.js client for Navi's /api/* namespace
 ├── dev/

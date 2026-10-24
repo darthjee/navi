@@ -6,7 +6,7 @@
 
 | CircleCI job | Runs after | Tag pushed |
 |---|---|---|
-| `push-tag-deku-sprout` | `release-deku-sprout` | `sprout-<logger/package.json version>` |
+| `push-tag-deku-sprout` | `release-deku-sprout` | `sprout-<deku-sprout/package.json version>` |
 | `push-tag-deku-swarm` | `release-deku-swarm` | `swarm-<worker/package.json version>` |
 | `push-tag-navi-hey-client` | `release-navi-hey-client` | `node_client-<clients/node/package.json version>` |
 

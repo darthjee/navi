@@ -23,7 +23,7 @@ You own everything inside `worker/`:
 
 `worker/README.md` (the npm-facing readme) is owned by the `docs` agent, not this one — same convention as `clients/node/README.md`.
 
-Do NOT touch `source/` (owned by `engine`, the consumer of this package), `clients/node/`, `frontend/`, `dev/`, or `logger/`.
+Do NOT touch `source/` (owned by `engine`, the consumer of this package), `clients/node/`, `frontend/`, `dev/`, or `deku-sprout/`.
 
 ## Stack
 

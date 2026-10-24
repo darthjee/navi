@@ -67,18 +67,18 @@ describe('git helpers', () => {
 
   describe('readVersionAt', () => {
     describe('when the package.json exists at the ref', () => {
-      const runGit = fakeGit({ 'show base:logger/package.json': '{"version":"0.3.0"}' });
+      const runGit = fakeGit({ 'show base:deku-sprout/package.json': '{"version":"0.3.0"}' });
 
       it('returns its version', () => {
-        expect(readVersionAt(runGit, 'base', 'logger')).toEqual('0.3.0');
+        expect(readVersionAt(runGit, 'base', 'deku-sprout')).toEqual('0.3.0');
       });
     });
 
     describe('when the package.json is missing at the ref', () => {
-      const runGit = fakeGit({ 'show base:logger/package.json': failure });
+      const runGit = fakeGit({ 'show base:deku-sprout/package.json': failure });
 
       it('returns undefined', () => {
-        expect(readVersionAt(runGit, 'base', 'logger')).toBeUndefined();
+        expect(readVersionAt(runGit, 'base', 'deku-sprout')).toBeUndefined();
       });
     });
   });
@@ -86,13 +86,13 @@ describe('git helpers', () => {
   describe('collectVersions', () => {
     const tree = {
       packages: {
-        'deku-sprout': { folder: 'logger', platform: 'npm', dependsOn: [] },
+        'deku-sprout': { folder: 'deku-sprout', platform: 'npm', dependsOn: [] },
         'navi-hey': { folder: 'source', platform: 'npm', dependsOn: ['deku-sprout'] },
         'darthjee/navi-hey': { folder: 'source', platform: 'docker', dependsOn: ['navi-hey'] },
       },
     };
     const runGit = fakeGit({
-      'show base:logger/package.json': '{"version":"0.3.0"}',
+      'show base:deku-sprout/package.json': '{"version":"0.3.0"}',
       'show base:source/package.json': failure,
     });
 

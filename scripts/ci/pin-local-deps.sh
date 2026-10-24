@@ -4,7 +4,7 @@ set -e
 PACKAGE_JSON=source/package.json
 
 WORKER_VERSION=$(node -p "require('./worker/package.json').version")
-DEKU_SPROUT_VERSION=$(node -p "require('./logger/package.json').version")
+DEKU_SPROUT_VERSION=$(node -p "require('./deku-sprout/package.json').version")
 
 sed -i "s/\"deku-swarm\": \"file:[^\"]*\"/\"deku-swarm\": \"$WORKER_VERSION\"/" "$PACKAGE_JSON"
 echo "Pinned deku-swarm to $WORKER_VERSION"

@@ -13,7 +13,7 @@ FROM darthjee/node:0.2.1 as builder
 
 COPY --chown=node:node dev/app/ /home/node/app/
 COPY --chown=node:node source/lib/common/ /home/node/app/lib/common/
-COPY --chown=node:node ./logger/ /home/node/logger/
+COPY --chown=node:node ./deku-sprout/ /home/node/deku-sprout/
 
 RUN rm -rf spec eslint.config.mjs
 
