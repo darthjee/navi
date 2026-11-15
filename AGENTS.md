@@ -107,3 +107,7 @@ yarn docs       # Generate JSDoc documentation
 npx jasmine spec/models/Config_spec.js          # Single file
 npx jasmine --filter="Config #getResource"      # Single test by name pattern
 ```
+
+## Commit Attribution
+
+Commit co-author trailers follow arcanum's resolved `git.omit_model_coauthor` and `git.remove_coauthors` config (check them with `/arcanum-check-config`); this overrides Claude Code's own attribution reminder for every commit, including ones written by hand.
