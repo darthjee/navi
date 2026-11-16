@@ -17,6 +17,10 @@ import { WorkersRegistry } from '../background/WorkersRegistry.js';
  * When `idleTimeoutMs` is set, the loop also tracks how long it has been idle
  * (no jobs queued and no busy workers) and invokes `onIdleTimeout` once that
  * threshold is crossed; the idle window resets as soon as activity resumes.
+ *
+ * `status` and `snapshot()` expose the lifecycle state, timestamps and the
+ * last crash. When the loop throws, a `'crash'` event is emitted (via `on()`)
+ * with the original error and `start()` rejects with that same error.
  */
 class Engine {
   #sleepMs;
@@ -37,6 +41,11 @@ class Engine {
   #running = false;
   #drainPromise = null;
   #resolveDrain = null;
+  #startedAt = null;
+  #stoppedAt = null;
+  #lastTickAt = null;
+  #lastError = null;
+  #crashed = false;
 
   /**
    * Creates an instance of Engine.
@@ -168,8 +177,12 @@ class Engine {
    */
   async start() {
     this.#running = true;
+    this.#startedAt = Date.now();
+    this.#stoppedAt = null;
+    this.#crashed = false;
     try {
       while (!this.#stopped && this.#shouldContinue()) {
+        this.#lastTickAt = Date.now();
         if (!this.#draining) {
           this.#jobRegistry.promoteReadyJobs();
 
@@ -183,10 +196,75 @@ class Engine {
         // wait before next iteration so the block runs ~once per second
         await this.#sleep();
       }
+    } catch (error) {
+      this.#recordCrash(error);
+      throw error;
     } finally {
       this.#running = false;
+      this.#stoppedAt = Date.now();
       this.#resolveDrain?.(!this.#workersRegistry.hasBusyWorker());
       this.#resolveDrain = null;
+    }
+  }
+
+  /**
+   * Current lifecycle status of the engine.
+   *
+   * One of `'idle'` (never started), `'running'`, `'paused'`, `'draining'`,
+   * `'stopping'` (stop requested, loop not yet exited), `'stopped'` or
+   * `'crashed'` (the last run threw). While the loop runs, precedence is
+   * stopping > draining > paused > running.
+   * @returns {string} The status.
+   */
+  get status() {
+    if (this.#running) return this.#runningStatus();
+    if (this.#startedAt === null) return 'idle';
+    return this.#crashed ? 'crashed' : 'stopped';
+  }
+
+  /**
+   * Returns a fresh plain-object snapshot of the engine state.
+   * Timestamps are epoch milliseconds (`Date.now()`); `stoppedAt` is `null`
+   * while running or never run, and `lastError` is `null` until a crash.
+   * @returns {{status: string, startedAt: (number|null), stoppedAt: (number|null), lastTickAt: (number|null), lastError: ({name: string, message: string, at: number}|null)}} The snapshot.
+   */
+  snapshot() {
+    return {
+      status: this.status,
+      startedAt: this.#startedAt,
+      stoppedAt: this.#stoppedAt,
+      lastTickAt: this.#lastTickAt,
+      lastError: this.#lastError ? { ...this.#lastError } : null
+    };
+  }
+
+  /**
+   * Status while the loop is running.
+   * @returns {string} The running-state status.
+   */
+  #runningStatus() {
+    if (this.#stopped) return 'stopping';
+    if (this.#draining) return 'draining';
+    return this.#paused ? 'paused' : 'running';
+  }
+
+  /**
+   * Records a loop crash and emits `'crash'` without letting a throwing
+   * listener replace the original error.
+   * @param {Error} error - The error that crashed the loop.
+   * @returns {void}
+   */
+  #recordCrash(error) {
+    this.#crashed = true;
+    this.#lastError = {
+      name: error?.name ?? 'Error',
+      message: error?.message ?? String(error),
+      at: Date.now()
+    };
+    try {
+      this.#emitter.emit('crash', error);
+    } catch {
+      // a throwing listener must not replace the rethrown error
     }
   }
 
