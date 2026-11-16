@@ -9,11 +9,11 @@ class IdentifyableCollection extends Collection {
   #size = null;
 
   /**
-   * @param {object} items - Optional initial items, keyed by id.
+   * @param {object|Map} items - Optional initial items, keyed by id (plain object or Map).
    */
   constructor(items = {}) {
     super();
-    this.#items = items;
+    this.#items = items instanceof Map ? new Map(items) : new Map(Object.entries(items));
   }
 
   /**
@@ -23,7 +23,7 @@ class IdentifyableCollection extends Collection {
    */
   push(item) {
     this.#size = null;
-    this.#items[item.id] = item;
+    this.#items.set(item.id, item);
   }
 
   /**
@@ -33,7 +33,7 @@ class IdentifyableCollection extends Collection {
    */
   remove(id) {
     this.#size = null;
-    delete this.#items[id];
+    this.#items.delete(id);
   }
 
   /**
@@ -42,7 +42,7 @@ class IdentifyableCollection extends Collection {
    * @returns {object | undefined} - The item if found, otherwise undefined.
    */
   get(id) {
-    return this.#items[id];
+    return this.#items.get(id);
   }
 
   /**
@@ -51,7 +51,7 @@ class IdentifyableCollection extends Collection {
    * @returns {boolean} - True if the item exists, false otherwise.
    */
   has(id) {
-    return this.#items[id] !== undefined;
+    return this.#items.has(id);
   }
 
   /**
@@ -77,7 +77,22 @@ class IdentifyableCollection extends Collection {
    * @returns {object[]} - An array of all items in the collection.
    */
   list() {
-    return Object.values(this.#items);
+    return [...this.#items.values()];
+  }
+
+  /**
+   * Retrieves the ids of the oldest entries, in insertion order.
+   * Intended for internal use by eviction logic (e.g. pruning).
+   * @param {number} count - How many ids to return.
+   * @returns {Array} The oldest ids, oldest first.
+   */
+  oldestIds(count) {
+    const ids = [];
+    for (const id of this.#items.keys()) {
+      if (ids.length >= count) break;
+      ids.push(id);
+    }
+    return ids;
   }
 
   /**
@@ -86,7 +101,7 @@ class IdentifyableCollection extends Collection {
    */
   size() {
     if (this.#size === null) {
-      this.#size = this.list().length;
+      this.#size = this.#items.size;
     }
     return this.#size;
   }
