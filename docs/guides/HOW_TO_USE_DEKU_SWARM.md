@@ -11,7 +11,7 @@
 - [Installation](./deku-swarm/installation.md) — installing `deku-swarm` from npm, ES Module requirements, and Node.js version constraints.
 - [Defining Jobs](./deku-swarm/defining-jobs.md) — subclassing `Job` and implementing `perform()`, retry/cooldown behavior.
 - [Setup](./deku-swarm/setup.md) — registering job factories and building the registries at application startup.
-- [Running the Engine](./deku-swarm/running-the-engine.md) — starting, stopping, pausing, and resuming the main processing loop.
+- [Running the Engine](./deku-swarm/running-the-engine.md) — starting, stopping (including graceful shutdown), pausing, and resuming the main processing loop.
 - [Job Lifecycle](./deku-swarm/job-lifecycle.md) — how a job moves between statuses, from enqueued through to finished or dead.
 - [Collections](./deku-swarm/collections.md) — the queue/collection building blocks used internally, and when to reach for them yourself.
 - [Reference](./deku-swarm/reference.md) — the full public API surface, with option and method tables.

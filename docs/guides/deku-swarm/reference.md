@@ -105,8 +105,9 @@ Drives the main loop. See [Running the Engine](./running-the-engine.md) for the 
 
 | Method | Description |
 |--------|-------------|
-| `async start()` | Runs the loop until it should stop (see `keepAlive`) or `stop()` is called. Each iteration: promotes ready jobs, allocates (if not paused and jobs are ready), checks the idle timeout, then sleeps `sleepMs`. |
-| `stop()` | Requests the loop exit after the current iteration completes. |
+| `async start()` | Runs the loop until it should stop (see `keepAlive`), `stop()` is called, or a `shutdown()` drain ends. Each iteration: promotes ready jobs, allocates (if not paused and jobs are ready), checks the idle timeout, then sleeps `sleepMs`. |
+| `stop()` | Requests the loop exit after the current iteration completes. Immediate and non-draining. |
+| `async shutdown({ timeoutMs })` | Returns `Promise<boolean>`. Stops promotion, allocation and idle tracking, then waits until no worker is busy (`true`) or `timeoutMs` elapses (`false`). `start()` resolves in both cases. In-flight jobs are never cancelled and queued jobs are kept. `timeoutMs` omitted or `0` resolves immediately with the current pool state; repeated calls share one promise. See [Graceful shutdown](./running-the-engine.md#graceful-shutdown). |
 | `pause()` / `resume()` | Suspend/resume job allocation without exiting the loop. |
 | `wake()` | Ends the current sleep immediately in any mode (running, paused, draining); if called mid-tick, the next sleep returns immediately once. No-op when the loop is not running; never throws or starts the loop. See [Waking the loop early](./running-the-engine.md#waking-the-loop-early). |
 | `get status` | One of `'idle'`, `'running'`, `'paused'`, `'draining'`, `'stopping'`, `'stopped'`, `'crashed'`. While running, precedence is `stopping` > `draining` > `paused` > `running`; after exit it is `crashed` if the last run threw, else `stopped`. |
