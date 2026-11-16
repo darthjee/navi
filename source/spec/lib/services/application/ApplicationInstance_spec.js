@@ -150,6 +150,50 @@ describe('ApplicationInstance', () => {
     });
   });
 
+  describe('#loadConfig onWorkerIdle wiring', () => {
+    let registriesBuilder;
+    let onWorkerIdle;
+
+    beforeEach(() => {
+      registriesBuilder = jasmine.createSpyObj('RegistriesBuilder', ['build']);
+      const configurator = {
+        load: () => ({ config: { workersConfig: { sleep: 1 }, failureConfig: { threshold: 30 } } }),
+      };
+      instance = new ApplicationInstance({
+        registriesBuilder,
+        configurator,
+        reporter: jasmine.createSpyObj('RunReporter', ['report']),
+      });
+      instance.setStatus('running');
+      instance.loadConfig('path');
+      onWorkerIdle = registriesBuilder.build.calls.mostRecent().args[0].onWorkerIdle;
+    });
+
+    it('passes an onWorkerIdle callback to the registries builder', () => {
+      expect(onWorkerIdle).toEqual(jasmine.any(Function));
+    });
+
+    it('does not throw before run()', () => {
+      expect(() => onWorkerIdle()).not.toThrow();
+    });
+
+    it('wakes the engine after run()', async () => {
+      const engine = buildFakeEngine({ wake: jasmine.createSpy('wake') });
+      spyOn(LogRegistry, 'clearBuffers');
+      spyOn(EmissionRegistry, 'clear');
+      spyOn(ExtractionRegistry, 'clear');
+      spyOn(EngineController.prototype, 'buildEngine').and.returnValue(engine);
+      spyOn(ServerController.prototype, 'buildWebServer').and.returnValue(null);
+      spyOn(ServerController.prototype, 'buildSampler').and.returnValue(null);
+      spyOn(instance, 'enqueueFirstJobs').and.stub();
+
+      await instance.run();
+      onWorkerIdle();
+
+      expect(engine.wake).toHaveBeenCalled();
+    });
+  });
+
   describe('delegation to EngineController', () => {
     beforeEach(async () => {
       instance = buildInstanceWithConfig({ workersConfig: { sleep: 1 }, failureConfig: {} });

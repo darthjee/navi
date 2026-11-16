@@ -46,6 +46,7 @@ class ApplicationInstance {
 
   /**
    * Loads the configuration from the specified file path.
+   * Workers built from it wake the engine (once it exists) whenever they become idle.
    * @param {string} configPath - The path to the configuration file.
    * @param {string} [menuPath] - The path to the menu configuration file.
    * @throws {ConfigurationFileNotProvided} If the configuration file path is not provided.
@@ -55,7 +56,10 @@ class ApplicationInstance {
    */
   loadConfig(configPath, menuPath) {
     this.#configStore = this.#configurator.load(configPath, menuPath);
-    this.#registriesBuilder.build({ config: this.config });
+    this.#registriesBuilder.build({
+      config: this.config,
+      onWorkerIdle: () => this.#engineController?.engine?.wake(),
+    });
   }
 
   /**
