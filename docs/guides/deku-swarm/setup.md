@@ -86,7 +86,7 @@ WorkersRegistry.build({ quantity: 5, factory: workerFactory });
 WorkersRegistry.initWorkers();
 ```
 
-`new WorkerFactory({ klass, attributesGenerator, jobRegistry, workersRegistry, loggerFactory })`:
+`new WorkerFactory({ klass, attributesGenerator, jobRegistry, workersRegistry, loggerFactory, onWorkerIdle })`:
 
 | Option | Description |
 |--------|-------------|
@@ -94,6 +94,7 @@ WorkersRegistry.initWorkers();
 | `attributesGenerator` | Same role as on `JobFactory`: generates a unique `id` per worker by default. |
 | `jobRegistry` / `workersRegistry` | Injected into every built worker, so it can report job outcomes and idle status back. |
 | `loggerFactory` | A `({ workerId, jobId }) => logger` function; the returned logger must expose `debug`/`info`/`warn`/`error`. |
+| `onWorkerIdle` | Optional `() => void` passed to every built worker and called (with no arguments) right after the worker is marked idle. Defaults to a no-op. Typically used to call `engine.wake()` — see [Waking the loop early](./running-the-engine.md#waking-the-loop-early). |
 
 `jobRegistry`/`workersRegistry` here (and everywhere else `deku-swarm` accepts them — including `Engine`, covered in [Running the Engine](./running-the-engine.md)) don't have to be the static facade classes. Any object exposing the same method names works, so you can pass plain instances instead of singletons if your application prefers explicit dependency injection over global state.
 

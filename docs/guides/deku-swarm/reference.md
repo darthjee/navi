@@ -60,7 +60,7 @@ Pulls one assigned `Job` at a time and runs it, reporting the outcome back to th
 
 | Member | Description |
 |--------|-------------|
-| `constructor({ id, jobRegistry, workersRegistry, loggerFactory })` | `loggerFactory` is a `({ workerId, jobId }) => logger` function; the returned logger must expose `debug`/`info`/`warn`/`error`. |
+| `constructor({ id, jobRegistry, workersRegistry, loggerFactory, onWorkerIdle })` | `loggerFactory` is a `({ workerId, jobId }) => logger` function; the returned logger must expose `debug`/`info`/`warn`/`error`. `onWorkerIdle` is an optional `() => void` (default no-op) called with no arguments after `setIdle`, on both success and failure; if it throws, the error is logged once at `warn` and `perform()` still resolves. |
 | `assign(job)` | Assigns a `Job` to this worker. |
 | `async perform()` | Runs the assigned job (throws synchronously if none is assigned). On success calls `jobRegistry.finish(job)`; on error, logs it via `logContext.error` and calls `jobRegistry.fail(job)`. In both cases, clears the assignment and calls `workersRegistry.setIdle(this.id)`. |
 
@@ -70,7 +70,7 @@ Builds `Worker` instances, pre-wired with the given registries/logger factory.
 
 | Member | Description |
 |--------|-------------|
-| `new WorkerFactory({ klass, attributesGenerator, jobRegistry, workersRegistry, loggerFactory })` | `klass` defaults to the base `Worker` class; `attributesGenerator` defaults to a fresh `IdGenerator`. Every built `Worker` receives the given `jobRegistry`/`workersRegistry`/`loggerFactory`. |
+| `new WorkerFactory({ klass, attributesGenerator, jobRegistry, workersRegistry, loggerFactory, onWorkerIdle })` | `klass` defaults to the base `Worker` class; `attributesGenerator` defaults to a fresh `IdGenerator`. Every built `Worker` receives the given `jobRegistry`/`workersRegistry`/`loggerFactory`/`onWorkerIdle` (no-op default when omitted). |
 | `build()` | Builds and returns a new `Worker` instance. |
 
 ## `WorkersRegistry`
@@ -108,6 +108,7 @@ Drives the main loop. See [Running the Engine](./running-the-engine.md) for the 
 | `async start()` | Runs the loop until it should stop (see `keepAlive`) or `stop()` is called. Each iteration: promotes ready jobs, allocates (if not paused and jobs are ready), checks the idle timeout, then sleeps `sleepMs`. |
 | `stop()` | Requests the loop exit after the current iteration completes. |
 | `pause()` / `resume()` | Suspend/resume job allocation without exiting the loop. |
+| `wake()` | Ends the current sleep immediately in any mode (running, paused, draining); if called mid-tick, the next sleep returns immediately once. No-op when the loop is not running; never throws or starts the loop. See [Waking the loop early](./running-the-engine.md#waking-the-loop-early). |
 | `get status` | One of `'idle'`, `'running'`, `'paused'`, `'draining'`, `'stopping'`, `'stopped'`, `'crashed'`. While running, precedence is `stopping` > `draining` > `paused` > `running`; after exit it is `crashed` if the last run threw, else `stopped`. |
 | `snapshot()` | Fresh plain object per call: `{ status, startedAt, stoppedAt, lastTickAt, lastError }`. Timestamps are epoch ms (`number`) or `null` (`stoppedAt` is `null` while running or never run); `lastError` is `{ name, message, at }` or `null`, and survives a restart until a new crash overwrites it. |
 
