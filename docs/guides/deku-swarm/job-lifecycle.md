@@ -52,6 +52,57 @@ enqueued ──pick()──> processing ──finish()──> finished
 | `JobRegistry.hasReadyJob()` | `true` if `enqueued` or `retryQueue` is non-empty (excludes `failed`, which is still cooling down). Drives whether the engine allocates on a given tick. |
 | `JobRegistry.jobsByStatus(status)` | Returns all jobs currently in the given status (`'enqueued'`, `'processing'`, `'failed'`, `'retryQueue'`, `'finished'`, `'dead'`). Useful for building a job list view. |
 | `JobRegistry.jobById(id)` | Searches every status and returns `{ job, status }` for the matching job, or `null` if no job has that id. Useful for a job detail view. |
-| `JobRegistry.stats()` | Returns `{ enqueued, processing, failed, retryQueue, finished, dead, total }` — per-status counts, plus `total` (`dead + finished`). |
+| `JobRegistry.prune(options)` | Manually evicts terminal jobs (`finished` / `dead`) from memory — see [Pruning terminal jobs](#pruning-terminal-jobs). Returns `{ finished, dead }` with the number of jobs removed from each. |
+| `JobRegistry.stats()` | Returns `{ enqueued, processing, failed, retryQueue, finished, dead, total, pruned }` — per-status counts, `total` (`dead + finished`), and cumulative `pruned: { finished, dead }` eviction counters. |
+
+## Pruning terminal jobs
+
+`finished` and `dead` are terminal collections: nothing removes jobs from them on its own, so in a long-lived process (for example an `Engine` running with `keepAlive`) they grow without bound. Pruning bounds that memory. Only `finished` and `dead` are ever pruned — `enqueued`, `processing`, `failed` and `retryQueue` are never touched.
+
+### `endedAt`
+
+Each job exposes a read-only `job.endedAt` — the epoch ms at which it entered `finished` or `dead`, or `null` while it hasn't ended. `JobRegistry.retryJob(id)` on a dead job resets it to `null`, since the job is no longer terminal.
+
+### Automatic retention
+
+Pass `retention` to `JobRegistry.build()` (or `ensureBuild()`) to cap how many jobs each terminal collection keeps. The cap is enforced whenever a job is pushed by `finish()` / `fail()`, evicting the oldest jobs (insertion order) first.
+
+```javascript
+JobRegistry.build({
+  retention: { finished: 1000, dead: 500 },
+});
+```
+
+- Values must be non-negative integers; an invalid value throws an `Error` at construction.
+- A status you omit is unbounded.
+- `0` evicts a job as soon as it arrives.
+
+### Manual pruning
+
+`JobRegistry.prune({ statuses, keep, olderThan })` evicts on demand:
+
+| Option | Description |
+|--------|-------------|
+| `statuses` | Which collections to prune. Defaults to `['finished', 'dead']`. Unknown or non-terminal statuses throw an `Error`. |
+| `keep` | Non-negative integer. Keeps the N most recent jobs of each selected status and removes the rest. |
+| `olderThan` | Non-negative milliseconds. Removes jobs whose `endedAt < Date.now() - olderThan`. Jobs with `endedAt === null` are never removed by `olderThan`. |
+
+When both `keep` and `olderThan` are given, the rules combine as a union: a job is removed if either rule selects it. With neither, every job of the selected statuses is removed (so a bare `prune()` empties `finished` and `dead`). Invalid input (a negative or non-integer `keep`, a negative `olderThan`) throws an `Error`.
+
+It returns the removed counts, with `0` for statuses that weren't selected:
+
+```javascript
+// Periodically drop terminal jobs that ended more than an hour ago
+setInterval(() => {
+  const { finished, dead } = JobRegistry.prune({ olderThan: 3_600_000 });
+  console.log(`pruned ${finished} finished and ${dead} dead jobs`);
+}, 600_000);
+```
+
+### Effect on stats and lookups
+
+- `stats().finished`, `stats().dead` and `stats().total` are in-memory counts, so they drop when jobs are pruned.
+- `stats().pruned` (`{ finished, dead }`) counts evictions cumulatively, from both `retention` and `prune()`; `clearQueues()` resets it.
+- A pruned job is gone: `jobById(id)` and `retryJob(id)` return `null` for it.
 
 [← Back to How to Use deku-swarm](../HOW_TO_USE_DEKU_SWARM.md)
