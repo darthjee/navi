@@ -6,6 +6,7 @@ class Worker {
   #jobRegistry;
   #workersRegistry;
   #loggerFactory;
+  #onWorkerIdle;
 
   /**
    * Creates a new Worker instance.
@@ -14,12 +15,14 @@ class Worker {
    * @param {JobRegistry} params.jobRegistry - The job registry to report job outcomes to.
    * @param {WorkersRegistry} params.workersRegistry - The workers registry to report idle status to.
    * @param {Function} params.loggerFactory - Function that, given `{ workerId, jobId }`, returns a logger-like object exposing `debug/info/warn/error`.
+   * @param {Function} [params.onWorkerIdle] - Optional payload-less hook called after the worker is marked idle. Errors it throws are caught and logged at `warn`. Defaults to a no-op.
    */
-  constructor({ id, jobRegistry, workersRegistry, loggerFactory }) {
+  constructor({ id, jobRegistry, workersRegistry, loggerFactory, onWorkerIdle = () => {} }) {
     this.id = id;
     this.#jobRegistry = jobRegistry;
     this.#workersRegistry = workersRegistry;
     this.#loggerFactory = loggerFactory;
+    this.#onWorkerIdle = onWorkerIdle;
   }
 
   /**
@@ -53,6 +56,15 @@ class Worker {
     } finally {
       this.job = undefined;
       this.#workersRegistry.setIdle(this.id);
+      this.#notifyIdle(logContext);
+    }
+  }
+
+  #notifyIdle(logContext) {
+    try {
+      this.#onWorkerIdle();
+    } catch (error) {
+      logContext.warn(`onWorkerIdle hook failed for worker ${this.id}: ${error}`);
     }
   }
 }
