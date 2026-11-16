@@ -106,6 +106,14 @@ Drives the main loop. See [Running the Engine](./running-the-engine.md) for the 
 | `async start()` | Runs the loop until it should stop (see `keepAlive`) or `stop()` is called. Each iteration: promotes ready jobs, allocates (if not paused and jobs are ready), checks the idle timeout, then sleeps `sleepMs`. |
 | `stop()` | Requests the loop exit after the current iteration completes. |
 | `pause()` / `resume()` | Suspend/resume job allocation without exiting the loop. |
+| `get status` | One of `'idle'`, `'running'`, `'paused'`, `'draining'`, `'stopping'`, `'stopped'`, `'crashed'`. While running, precedence is `stopping` > `draining` > `paused` > `running`; after exit it is `crashed` if the last run threw, else `stopped`. |
+| `snapshot()` | Fresh plain object per call: `{ status, startedAt, stoppedAt, lastTickAt, lastError }`. Timestamps are epoch ms (`number`) or `null` (`stoppedAt` is `null` while running or never run); `lastError` is `{ name, message, at }` or `null`, and survives a restart until a new crash overwrites it. |
+
+| Event | Description |
+|-------|-------------|
+| `'crash'` | Emitted via `engine.on('crash', (error) => ...)` with the original `Error` when the loop throws. `start()` still rejects with the same error; a throwing listener never replaces the rejection reason. |
+
+See [Observing engine status](./running-the-engine.md#observing-engine-status).
 
 ## `WorkersAllocator`
 

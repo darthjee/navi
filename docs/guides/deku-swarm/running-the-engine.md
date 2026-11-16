@@ -64,4 +64,56 @@ await runPromise;
 
 Each iteration, the engine decides whether to keep going based on a simple rule: in `keepAlive` mode it always continues; otherwise it continues exactly as long as there's a job somewhere in the system or a worker still busy. This is why, in one-shot mode, `start()` resolves as soon as the last job settles and the last worker goes idle — there's nothing left that could still produce more work — while in `keepAlive` mode the same condition has no effect on the loop, since only `stop()` can end it.
 
+## Observing engine status
+
+The engine exposes its state so you can report it (for example from a health endpoint) without reaching into its internals.
+
+`engine.status` is a getter returning one of:
+
+| Status | When it applies |
+|--------|-----------------|
+| `'idle'` | `start()` was never called. |
+| `'running'` | The loop is running normally. |
+| `'paused'` | The loop is running but `pause()` was called (no new jobs are allocated). |
+| `'draining'` | `shutdown()` is in progress. |
+| `'stopping'` | `stop()` was called and the loop has not yet exited. |
+| `'stopped'` | The loop exited and the last run did not throw. |
+| `'crashed'` | The loop exited because the last run threw. |
+
+While the loop is running, precedence is `stopping` (after `stop()`) > `draining` (during `shutdown()`) > `paused` > `running`.
+
+`engine.snapshot()` returns a fresh plain, serializable object on every call:
+
+```js
+app.get('/health', (req, res) => {
+  res.json(engine.snapshot());
+});
+
+// {
+//   status: 'running',
+//   startedAt: 1700000000000,   // epoch ms, or null if never started
+//   stoppedAt: null,            // null while running or never run
+//   lastTickAt: 1700000005000,  // epoch ms of the last loop tick, or null
+//   lastError: null             // or { name, message, at }
+// }
+```
+
+When the loop throws, the engine records the error in `lastError` (`{ name, message, at }`, with `at` in epoch ms), moves to `'crashed'`, and emits a `'crash'` event with the original `Error`:
+
+```js
+engine.on('crash', (error) => {
+  console.error('engine crashed', error);
+});
+
+try {
+  await engine.start();
+} catch (error) {
+  // start() still rejects with the same error that 'crash' listeners received
+}
+```
+
+A listener that throws never replaces the rejection reason of `start()`.
+
+Calling `start()` again moves the engine back to `'running'`, refreshes `startedAt` and clears `stoppedAt`. `lastError` is kept across the restart until a new crash overwrites it.
+
 [← Back to How to Use deku-swarm](../HOW_TO_USE_DEKU_SWARM.md)
