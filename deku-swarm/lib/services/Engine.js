@@ -18,6 +18,11 @@ import { WorkersRegistry } from '../background/WorkersRegistry.js';
  * (no jobs queued and no busy workers) and invokes `onIdleTimeout` once that
  * threshold is crossed; the idle window resets as soon as activity resumes.
  *
+ * `wake()` ends the current sleep early (or, mid-tick, makes the next sleep
+ * return immediately once), so a host can react as soon as a worker finishes.
+ * Wire it through a late-bound closure passed as the workers' `onWorkerIdle`:
+ * `onWorkerIdle: () => engine?.wake()`.
+ *
  * `status` and `snapshot()` expose the lifecycle state, timestamps and the
  * last crash. When the loop throws, a `'crash'` event is emitted (via `on()`)
  * with the original error and `start()` rejects with that same error.
@@ -46,6 +51,9 @@ class Engine {
   #lastTickAt = null;
   #lastError = null;
   #crashed = false;
+  #wakeSleep = null;
+  #sleepTimer = null;
+  #wakePending = false;
 
   /**
    * Creates an instance of Engine.
@@ -165,6 +173,23 @@ class Engine {
   }
 
   /**
+   * Wakes the loop so the next tick runs right away.
+   * When the loop is sleeping, the sleep ends immediately. When it is
+   * mid-tick, a latch makes the next sleep return immediately once. It is a
+   * no-op when the loop is not running, never throws and never starts the loop.
+   * @returns {void}
+   */
+  wake() {
+    if (!this.#running) return;
+
+    if (this.#wakeSleep) {
+      this.#wakeSleep();
+    } else {
+      this.#wakePending = true;
+    }
+  }
+
+  /**
    * Starts the engine by processing jobs.
    *
    * This method continuously checks for available jobs and idle workers, and assigns
@@ -177,6 +202,7 @@ class Engine {
    */
   async start() {
     this.#running = true;
+    this.#wakePending = false;
     this.#startedAt = Date.now();
     this.#stoppedAt = null;
     this.#crashed = false;
@@ -201,6 +227,7 @@ class Engine {
       throw error;
     } finally {
       this.#running = false;
+      this.#clearSleep();
       this.#stoppedAt = Date.now();
       this.#resolveDrain?.(!this.#workersRegistry.hasBusyWorker());
       this.#resolveDrain = null;
@@ -326,13 +353,33 @@ class Engine {
   }
 
   /**
-   * Waits for the given number of milliseconds.
+   * Waits for the configured sleep time, or until `wake()` is called.
    * @returns {Promise<void>}
    */
   #sleep() {
-    const ms = this.#sleepMs;
-    if (ms < 0) return Promise.resolve();
-    return new Promise(resolve => setTimeout(resolve, ms));
+    if (this.#sleepMs < 0) return Promise.resolve();
+    if (this.#wakePending) {
+      this.#wakePending = false;
+      return Promise.resolve();
+    }
+    return new Promise(resolve => {
+      const finish = () => {
+        this.#clearSleep();
+        resolve();
+      };
+      this.#wakeSleep = finish;
+      this.#sleepTimer = setTimeout(finish, this.#sleepMs);
+    });
+  }
+
+  /**
+   * Clears the pending sleep timer and resolver, if any.
+   * @returns {void}
+   */
+  #clearSleep() {
+    clearTimeout(this.#sleepTimer);
+    this.#sleepTimer = null;
+    this.#wakeSleep = null;
   }
 }
 
