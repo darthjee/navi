@@ -14,7 +14,10 @@ Jasmine specs under `deku-swarm/spec/`, mirroring the `lib/` tree.
 - is idempotent when called twice (same result, single drain);
 - resolves without throwing when called before `start()`;
 - exits the loop and resolves `start()` while `#enqueued` / `#retryQueue` / `#failed` still hold jobs;
-- resolves `start()` on timeout even with a job still in `perform()`.
+- resolves `start()` on timeout even with a job still in `perform()`;
+- resolves immediately with `!hasBusyWorker()` after `stop()`, without restarting the loop;
+- resolves a pending `shutdown()` with the pool state when `stop()` is called during a drain;
+- resolves with the current pool state when `timeoutMs` is omitted or `0`.
 
 ## `Worker` (#1010, only if the [hook](idle-hook.md) ships)
 

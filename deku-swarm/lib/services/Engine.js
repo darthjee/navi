@@ -11,6 +11,9 @@ import { WorkersRegistry } from '../background/WorkersRegistry.js';
  * In keepAlive mode (web UI present), the loop continues indefinitely until
  * `stop()` is explicitly called.
  *
+ * `shutdown({ timeoutMs })` drains gracefully: allocation stops and the loop
+ * waits for busy workers up to the timeout; `stop()` remains a hard exit.
+ *
  * When `idleTimeoutMs` is set, the loop also tracks how long it has been idle
  * (no jobs queued and no busy workers) and invokes `onIdleTimeout` once that
  * threshold is crossed; the idle window resets as soon as activity resumes.
@@ -27,6 +30,13 @@ class Engine {
   #jobRegistry;
   #workersRegistry;
   #emitter = new EventEmitter();
+  #draining = false;
+  #drainStartedAt = null;
+  #drainTimeoutMs = 0;
+  #drainTimedOut = false;
+  #running = false;
+  #drainPromise = null;
+  #resolveDrain = null;
 
   /**
    * Creates an instance of Engine.
@@ -52,11 +62,55 @@ class Engine {
 
   /**
    * Stops the engine by setting the stop flag.
-   * The current iteration will complete before the loop exits.
+   * The current iteration will complete before the loop exits. This is a hard
+   * exit: it ends the loop even during a `shutdown()` drain.
    * @returns {void}
    */
   stop() {
     this.#stopped = true;
+  }
+
+  /**
+   * Gracefully drains the engine: stops accepting new allocations and waits
+   * for in-flight work to finish, up to `timeoutMs`.
+   *
+   * Resolves with `true` when the drain completed with no busy worker, or
+   * `false` when the timeout elapsed (or work was still in flight) first.
+   * A second call while draining joins the first and does not reset the timeout.
+   * When the loop is not running, or `timeoutMs` is `0`/omitted, it resolves
+   * immediately with `!hasBusyWorker()` (a `0` timeout also makes the loop
+   * exit at the next tick). It never throws and never starts the loop.
+   *
+   * The timeout is tick-granular: it is checked once per loop iteration, so
+   * the overshoot is at most one `sleepMs`. On timeout, `start()` may resolve
+   * with `perform()` still in flight.
+   *
+   * `stop()` remains a hard exit and is never overridden by a drain.
+   * @param {object} [param0] - Shutdown options.
+   * @param {number} [param0.timeoutMs=0] - Maximum milliseconds to wait for busy workers.
+   * @returns {Promise<boolean>} True if drained cleanly, false on timeout.
+   */
+  shutdown({ timeoutMs = 0 } = {}) {
+    if (this.#drainPromise) return this.#drainPromise;
+
+    const idle = !this.#workersRegistry.hasBusyWorker();
+
+    if (!this.#running || this.#stopped) return Promise.resolve(idle);
+
+    this.#draining = true;
+    this.#drainStartedAt = Date.now();
+
+    if (!timeoutMs || timeoutMs <= 0) {
+      this.#drainTimeoutMs = 0;
+      this.#drainPromise = Promise.resolve(idle);
+      return this.#drainPromise;
+    }
+
+    this.#drainTimeoutMs = timeoutMs;
+    this.#drainPromise = new Promise(resolve => {
+      this.#resolveDrain = resolve;
+    });
+    return this.#drainPromise;
   }
 
   /**
@@ -107,21 +161,32 @@ class Engine {
    * This method continuously checks for available jobs and idle workers, and assigns
    * jobs to workers until there are no more jobs and no more busy workers,
    * or until `stop()` has been called. In keepAlive mode, the loop continues even
-   * when the queue is empty, waiting for new work.
+   * when the queue is empty, waiting for new work. After `shutdown()` is
+   * called, allocation stops and the loop exits once workers are idle or the
+   * drain timeout elapses.
    * @returns {Promise<void>}
    */
   async start() {
-    while (!this.#stopped && this.#shouldContinue()) {
-      this.#jobRegistry.promoteReadyJobs();
+    this.#running = true;
+    try {
+      while (!this.#stopped && this.#shouldContinue()) {
+        if (!this.#draining) {
+          this.#jobRegistry.promoteReadyJobs();
 
-      if (!this.#paused && this.#jobRegistry.hasReadyJob()) {
-        this.allocator.allocate();
+          if (!this.#paused && this.#jobRegistry.hasReadyJob()) {
+            this.allocator.allocate();
+          }
+
+          this.#checkIdleTimeout();
+        }
+
+        // wait before next iteration so the block runs ~once per second
+        await this.#sleep();
       }
-
-      this.#checkIdleTimeout();
-
-      // wait before next iteration so the block runs ~once per second
-      await this.#sleep();
+    } finally {
+      this.#running = false;
+      this.#resolveDrain?.(!this.#workersRegistry.hasBusyWorker());
+      this.#resolveDrain = null;
     }
   }
 
@@ -132,7 +197,19 @@ class Engine {
    * @returns {boolean} True if the loop should continue.
    */
   #shouldContinue() {
+    if (this.#draining) {
+      this.#updateDrainTimeout();
+      return this.#workersRegistry.hasBusyWorker() && !this.#drainTimedOut;
+    }
     return this.#keepAlive || this.#continueAllocating();
+  }
+
+  /**
+   * Updates the drain timeout flag based on elapsed time since the drain began.
+   * @returns {void}
+   */
+  #updateDrainTimeout() {
+    this.#drainTimedOut = Date.now() - this.#drainStartedAt >= this.#drainTimeoutMs;
   }
 
   /**
