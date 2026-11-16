@@ -18,10 +18,11 @@ class WorkerFactory extends Factory {
    * @param {object} [options.jobRegistry] - The job registry to inject into each Worker.
    * @param {object} [options.workersRegistry] - The workers registry to inject into each Worker.
    * @param {Function} [options.loggerFactory] - The logger factory to inject into each Worker.
+   * @param {Function} [options.onWorkerIdle] - Optional hook forwarded to each Worker, called after it becomes idle.
    */
-  constructor({ klass = Worker, attributesGenerator = new IdGenerator(), jobRegistry, workersRegistry, loggerFactory } = {}) {
+  constructor({ klass = Worker, attributesGenerator = new IdGenerator(), jobRegistry, workersRegistry, loggerFactory, onWorkerIdle } = {}) {
     super({ klass, attributesGenerator });
-    this.#registries = { jobRegistry, workersRegistry, loggerFactory };
+    this.#registries = { jobRegistry, workersRegistry, loggerFactory, onWorkerIdle };
   }
 
   /**

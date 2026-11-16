@@ -30,6 +30,30 @@ Omitting `jobRegistry` / `workersRegistry` (as above) wires the `JobRegistry` / 
 | `async start()` | Runs the loop until it decides to stop (see below) or `stop()` is called. Resolves once the loop actually exits. |
 | `stop()` | Requests the loop exit after the current iteration completes — it doesn't interrupt an iteration already in progress. |
 | `pause()` / `resume()` | Suspend or resume job allocation without exiting the loop. While paused, the engine keeps ticking (still promoting ready jobs, still tracking idle timeout) but stops handing new jobs to workers. |
+| `wake()` | Ends the current sleep right away so the next tick runs immediately. A no-op when the loop is not running. See [Waking the loop early](#waking-the-loop-early). |
+
+## Waking the loop early
+
+After each tick the engine sleeps `sleepMs`, so a job freed by a finished worker can wait up to that long before the next allocation. To avoid the wait, have the worker call `engine.wake()` as soon as it goes idle. `WorkerFactory` accepts an `onWorkerIdle` hook (no arguments, called right after the worker is marked idle), and since the engine is usually built after the factory, wire it through a late-bound closure:
+
+```js
+let engine;
+
+const workerFactory = new WorkerFactory({
+  jobRegistry: JobRegistry,
+  workersRegistry: WorkersRegistry,
+  onWorkerIdle: () => engine?.wake(),
+});
+
+WorkersRegistry.build({ quantity: 5, factory: workerFactory });
+WorkersRegistry.initWorkers();
+
+engine = new Engine({ sleepMs: 500 });
+```
+
+`wake()` ends the current sleep immediately in every mode (running, paused, draining), so the next tick runs right away. If it is called while a tick is in progress, the next sleep returns immediately once. Calling it when the loop is not running does nothing, and it never starts the loop. This speeds up both allocation and a `shutdown()` drain. An error thrown by `onWorkerIdle` is caught and logged at `warn`; it never affects the job result.
+
+Nothing is subscribed automatically: without this wiring the engine keeps plain `sleepMs` polling.
 
 ## One-shot vs. `keepAlive` mode
 

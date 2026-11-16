@@ -54,6 +54,58 @@ describe('Worker', () => {
     });
   });
 
+  describe('onWorkerIdle', () => {
+    let onWorkerIdle;
+    let setIdleSpy;
+
+    beforeEach(() => {
+      setIdleSpy = spyOn(WorkersRegistry, 'setIdle').and.callThrough();
+      onWorkerIdle = jasmine.createSpy('onWorkerIdle').and.callFake(() => {
+        expect(setIdleSpy).toHaveBeenCalledWith(1);
+      });
+      worker = new Worker({ id: 1, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory, onWorkerIdle });
+    });
+
+    it('is called once, after setIdle, with no arguments when the job succeeds', async () => {
+      worker.assign(new TestJob({ id: 'job-1' }));
+      await worker.perform();
+      expect(onWorkerIdle).toHaveBeenCalledOnceWith();
+    });
+
+    it('is called once, after setIdle, with no arguments when the job fails', async () => {
+      worker.assign(new TestJob({ id: 'job-1', error: new Error('boom') }));
+      await worker.perform();
+      expect(onWorkerIdle).toHaveBeenCalledOnceWith();
+    });
+
+    it('does not throw when no hook is given', async () => {
+      worker = new Worker({ id: 1, jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory });
+      worker.assign(new TestJob({ id: 'job-1' }));
+      await expectAsync(worker.perform()).toBeResolved();
+    });
+
+    describe('when the hook throws', () => {
+      beforeEach(() => {
+        onWorkerIdle.and.throwError('hook boom');
+        worker.assign(new TestJob({ id: 'job-1' }));
+      });
+
+      it('still resolves', async () => {
+        await expectAsync(worker.perform()).toBeResolved();
+      });
+
+      it('has already set the worker idle', async () => {
+        await worker.perform();
+        expect(setIdleSpy).toHaveBeenCalledWith(1);
+      });
+
+      it('logs a warning once', async () => {
+        await worker.perform();
+        expect(logContext.warn).toHaveBeenCalledOnceWith(jasmine.stringContaining('hook boom'));
+      });
+    });
+  });
+
   describe('#assign', () => {
     it('assigns a job to the worker', () => {
       job = new TestJob({ id: 'job-1' });
