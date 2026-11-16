@@ -22,9 +22,10 @@ class RegistriesBuilder {
    * Registers all job factories and builds the parser, job, and workers registries.
    * @param {object} params - Construction parameters.
    * @param {Config} params.config - The loaded application configuration.
+   * @param {Function} [params.onWorkerIdle] - Called with no arguments whenever a worker becomes idle after a job (wired to Engine#wake()).
    * @returns {void}
    */
-  build({ config }) {
+  build({ config, onWorkerIdle }) {
     const { maxRetries, retryCooldown: cooldown } = config.workersConfig;
 
     JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: config.namespaceMap, maxRetries, cooldown } });
@@ -46,7 +47,7 @@ class RegistriesBuilder {
     const loggerFactory = ({ workerId, jobId }) => new LogContext({ workerId, jobId });
 
     WorkersRegistry.ensureBuild({
-      factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory }),
+      factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory, onWorkerIdle }),
       ...config.workersConfig,
     });
     WorkersRegistry.initWorkers();

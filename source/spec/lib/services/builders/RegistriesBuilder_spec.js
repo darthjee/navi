@@ -1,9 +1,10 @@
-import { JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
+import { Job, JobFactory, JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { EmitJob } from '../../../../lib/jobs/EmitJob.js';
 import { Config } from '../../../../lib/models/configs/Config.js';
 import { RegistriesBuilder } from '../../../../lib/services/builders/RegistriesBuilder.js';
 import { ResourceRequestEmitFactory } from '../../../support/factories/ResourceRequestEmitFactory.js';
 import { FixturesUtils } from '../../../support/utils/FixturesUtils.js';
+import { LoggerUtils } from '../../../support/utils/LoggerUtils.js';
 import { RegistryCleanupUtils } from '../../../support/utils/RegistryCleanupUtils.js';
 
 describe('RegistriesBuilder', () => {
@@ -71,6 +72,48 @@ describe('RegistriesBuilder', () => {
 
         expect(job.maxRetries).toBe(EmitJob.DEFAULT_MAX_RETRIES);
         expect(job.cooldown).toBe(EmitJob.DEFAULT_COOLDOWN);
+      });
+    });
+
+    describe('onWorkerIdle', () => {
+      const buildJob = (perform) => {
+        const job = new Job({ id: 'job-1', maxRetries: 1, cooldown: 0 });
+        job.perform = perform;
+        return job;
+      };
+
+      beforeEach(() => {
+        LoggerUtils.stubLoggerMethods();
+      });
+
+      it('calls the hook after a successful job', async () => {
+        const onWorkerIdle = jasmine.createSpy('onWorkerIdle');
+        builder.build({ config, onWorkerIdle });
+        const worker = WorkersRegistry.getIdleWorker();
+        worker.assign(buildJob(() => Promise.resolve()));
+
+        await worker.perform();
+
+        expect(onWorkerIdle).toHaveBeenCalledTimes(1);
+      });
+
+      it('calls the hook after a failing job', async () => {
+        const onWorkerIdle = jasmine.createSpy('onWorkerIdle');
+        builder.build({ config, onWorkerIdle });
+        const worker = WorkersRegistry.getIdleWorker();
+        worker.assign(buildJob(() => Promise.reject(new Error('boom'))));
+
+        await worker.perform();
+
+        expect(onWorkerIdle).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not throw when the hook is omitted', async () => {
+        builder.build({ config });
+        const worker = WorkersRegistry.getIdleWorker();
+        worker.assign(buildJob(() => Promise.resolve()));
+
+        await expectAsync(worker.perform()).toBeResolved();
       });
     });
   });
