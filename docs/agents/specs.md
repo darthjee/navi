@@ -29,4 +29,3 @@ place. This hub itself is permanent.
 | Spec | Description |
 |---|---|
 | [Crawler](specs/crawler.md) | Information crawling & data emission (incomplete design). |
-| [Engine Graceful Shutdown](specs/engine-shutdown.md) | `deku-swarm` `Engine.shutdown({ timeoutMs })`: awaitable drain of in-flight jobs (Epic #1004). |

@@ -16,12 +16,13 @@ Executes one job at a time. `assign(job)` stores the job on the instance; `perfo
 2. Awaits `job.perform(logger)`.
 3. On success, reports `jobRegistry.finish(job)`; on error, logs it and reports `jobRegistry.fail(job)`.
 4. In `finally`, clears `this.job` and calls `workersRegistry.setIdle(this.id)` unconditionally — a worker always returns to idle, whether the job succeeded or failed.
+5. Calls the optional `onWorkerIdle` hook (a payload-less function, default no-op) right after `setIdle`. A throw from the hook is caught and logged at `warn`; it never affects the worker or the job outcome.
 
 Calling `perform()` with no assigned job throws synchronously. `jobRegistry`, `workersRegistry`, and `loggerFactory` are all injected at construction time and held in private fields — `Worker` never reaches for a static singleton or a concrete logging implementation itself, which is what keeps the package generic. Navi wires its own `LogContext` in as the logger factory (see "How Navi wires it up" below); a consumer with no logging needs at all can pass any function returning an object with those four methods.
 
 ### `WorkerFactory` (`deku-swarm/lib/background/WorkerFactory.js`)
 
-Extends the generic `Factory` base class (`deku-swarm/lib/Factory.js` — an implementation detail, not documented further here). Configured with a `klass` (default `Worker`), an `attributesGenerator` (default `IdGenerator`, producing a unique `id` per build), and the same `jobRegistry`/`workersRegistry`/`loggerFactory` triple `Worker` itself needs. `build()` calls `super.build({ jobRegistry, workersRegistry, loggerFactory })`, so every `Worker` it produces is pre-wired with everything the factory itself was constructed with.
+Extends the generic `Factory` base class (`deku-swarm/lib/Factory.js` — an implementation detail, not documented further here). Configured with a `klass` (default `Worker`), an `attributesGenerator` (default `IdGenerator`, producing a unique `id` per build), and the same `jobRegistry`/`workersRegistry`/`loggerFactory` triple `Worker` itself needs. `build()` calls `super.build({ jobRegistry, workersRegistry, loggerFactory })`, so every `Worker` it produces is pre-wired with everything the factory itself was constructed with. It also accepts the optional `onWorkerIdle` hook and forwards it to every `Worker` it builds (see `Engine#wake()` below for the intended use).
 
 ### `WorkersRegistry` (`deku-swarm/lib/background/WorkersRegistry.js`)
 
@@ -93,16 +94,40 @@ Constructed with an optional `cooldown` (default `5000` ms) and `maxRetries` (de
 
 Owns the main loop. Constructed with `jobRegistry`/`workersRegistry` (injected — see below), an `allocator` (default `new WorkersAllocator({ jobRegistry, workersRegistry })`), `sleepMs` (default `500`; negative disables sleeping, used in tests), `keepAlive` (default `false` — Navi passes `true` when the web UI is present, so the loop never exits on its own), `idleTimeoutMs` (default `0`, disabling idle tracking), and an `onIdleTimeout` callback.
 
-`start()` loops while not stopped and `#shouldContinue()`:
+`start()` loops while not stopped and `#shouldContinue()`. Each tick, when not draining:
 
 1. `jobRegistry.promoteReadyJobs()`.
 2. If not paused and `jobRegistry.hasReadyJob()`, call `this.allocator.allocate()`.
 3. `#checkIdleTimeout()`.
-4. `await #sleep()`.
 
-`#shouldContinue()` is `keepAlive || (jobRegistry.hasJob() || workersRegistry.hasBusyWorker())` — in one-shot (non-`keepAlive`) mode the loop naturally exits once every job has finished or died and every worker is idle. `stop()` sets a flag checked at the top of the next iteration (the current iteration always completes first); `pause()`/`resume()` toggle a flag that skips allocation without exiting the loop, so promotion and idle-timeout tracking keep running while paused. `#checkIdleTimeout()` tracks how long `#continueAllocating()` (jobs-or-busy-workers) has been false, firing `onIdleTimeout` (without awaiting it) at most once per idle window — any activity resets the window and re-arms the timeout.
+and then, in every case, `await #sleep()`. `#sleep()` is wakeable: it ends after `sleepMs`, or earlier when `wake()` is called (mid-tick, a latch makes the next sleep return immediately once). `wake()` is a no-op when the loop is not running. Wiring the workers' `onWorkerIdle` hook to `() => engine?.wake()` (a late-bound closure) lets the loop react as soon as a worker finishes.
+
+`#shouldContinue()` has two branches. Normally it is `keepAlive || (jobRegistry.hasJob() || workersRegistry.hasBusyWorker())` — in one-shot (non-`keepAlive`) mode the loop naturally exits once every job has finished or died and every worker is idle. While draining (`#draining`), it is `workersRegistry.hasBusyWorker() && !#drainTimedOut`, with the timeout evaluated once per tick. `stop()` sets a flag checked at the top of the next iteration (the current iteration always completes first, and it is a hard exit, also during a drain); `pause()`/`resume()` toggle a flag that skips allocation without exiting the loop, so promotion and idle-timeout tracking keep running while paused. `#checkIdleTimeout()` tracks how long `#continueAllocating()` (jobs-or-busy-workers) has been false, firing `onIdleTimeout` (without awaiting it) at most once per idle window — any activity resets the window and re-arms the timeout.
+
+`shutdown({ timeoutMs = 0 })` drains gracefully and returns `Promise<boolean>`: `true` when no worker is busy any more, `false` when the timeout elapsed with work still in flight. It sets `#draining`, after which the loop keeps ticking but skips promotion, allocation and idle-timeout tracking. A second call while draining returns the same `#drainPromise` and does not reset the timeout. It resolves immediately with `!hasBusyWorker()` when the loop is not running, when `stop()` was called, or when `timeoutMs <= 0` (in the last case the loop then exits at its next tick). Otherwise the pending promise is resolved by the `finally` block of `start()` with `!hasBusyWorker()`, which also covers a loop crash and a `stop()` during the drain. It never throws and never starts the loop. Caveats:
+
+- `start()` resolves on both outcomes; after a `false` result it resolves with `perform()` calls still running, so "loop ended" does not mean "all jobs finished".
+- Running `perform()` calls are never cancelled; jobs in `#enqueued`, `#retryQueue` and `#failed` are untouched and not lost.
+- Promotion is frozen: a `failed` job whose cooldown elapses during the drain stays in `#failed` until a later run. This is intended, not a lost-retry bug.
+- The timeout is tick-granular and can overshoot by up to one `sleepMs`.
+
+For the full behaviour and edge-case list, see the user guide's [Graceful shutdown](../guides/deku-swarm/running-the-engine.md#graceful-shutdown) section.
+
+`Engine` also exposes `status` (`'idle'`, `'running'`, `'paused'`, `'draining'`, `'stopping'`, `'stopped'` or `'crashed'`; while running the precedence is stopping > draining > paused > running) and `snapshot()` (status, `startedAt`, `stoppedAt`, `lastTickAt` and `lastError`). When the loop throws, it emits `'crash'` through `on()` and `start()` rejects with the original error.
 
 `jobRegistry`/`workersRegistry` are plain injected references — `Engine` accepts either the static facade classes (`JobRegistry`/`WorkersRegistry`) or any instance exposing the same method names, since it only ever calls methods on whatever it was handed. Navi passes the static facades themselves (see "How Navi wires it up" below).
+
+### Graceful shutdown: design decisions
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Where it lives | `Engine` only, no `WorkersRegistry.whenIdle()` | `keepAlive` and `#shouldContinue()` live in `Engine`; a registry primitive could not end the loop. |
+| Return value | Boolean | Answers the caller's only real question: did it drain? `stats()` remains available for diagnostics. |
+| `keepAlive` mutability | Stays immutable; `shutdown()` does not touch it | Clearing it would not end the loop when jobs are queued (`hasJob()` stays true). An explicit `#draining` branch is required anyway. |
+| Loop exit during drain | Explicit `#draining` branch in `#shouldContinue()` | Keeps all exit logic inside the loop; queued jobs cannot block the shutdown. |
+| `start()` on timeout | Resolves, even with jobs still in flight | The caller asked for a bounded wait; the `false` return value signals leftover work. |
+| Retry promotion during drain | Frozen with allocation | Keeps the pool fully static; cooling-down jobs stay in `#failed` until a later run. |
+| Timeout with work in flight | Jobs keep running; no cancellation | Cooperative cancellation would need a signature change to `Job.perform()`. |
 
 ### `WorkersAllocator` (`deku-swarm/lib/services/WorkersAllocator.js`)
 
@@ -186,4 +211,9 @@ These are concrete `Job` implementations that live in `source/lib/jobs/`, import
 ## Out of scope
 
 - The web server, monitoring UI, frontend, and HTTP routes — see [Web Server](web-server.md) and [Frontend](frontend.md) instead.
+- Graceful-shutdown extensions deferred from Epic #1004:
+  - flush mode (keep allocating until every queue is empty, then exit), a possible future `shutdown({ flush: true })`;
+  - `drain` / `drained` events — `Engine` never self-emits, hosts can emit around `await shutdown()`;
+  - switching Navi's `EngineController` to `shutdown()` — adoption belongs to consumers or a separate issue;
+  - cooperative cancellation of `Job.perform()` — it would need a signature change.
 - The generic `Factory` base class (`deku-swarm/lib/Factory.js`) — an implementation detail underlying `WorkerFactory` and `JobFactory`, not documented separately here.
