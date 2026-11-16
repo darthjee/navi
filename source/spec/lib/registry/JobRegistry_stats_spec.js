@@ -13,6 +13,7 @@ describe('JobRegistry', () => {
     finished: 0,
     dead: 0,
     total: 0,
+    pruned: { finished: 0, dead: 0 },
   };
 
   const expectedTotals = { finished: 1, dead: 1 };
