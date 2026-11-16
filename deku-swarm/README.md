@@ -91,7 +91,7 @@ Build instances of `Job`/`Worker` subclasses with generated unique IDs.
 | `JobFactory.build(name, options)` | Creates a `JobFactory` and registers it under `name` for lookup by `JobRegistry.enqueue(name, params)`. |
 | `JobFactory.get(name)` | Retrieves a previously registered factory. |
 | `JobFactory.reset()` | Clears all registered factories. Intended for test teardown. |
-| `new WorkerFactory({ klass, attributesGenerator, jobRegistry, workersRegistry, loggerFactory })` | `klass` defaults to the base `Worker` class. Injects the given registries/logger factory into every built worker. |
+| `new WorkerFactory({ klass, attributesGenerator, jobRegistry, workersRegistry, loggerFactory, onWorkerIdle })` | `klass` defaults to the base `Worker` class. Injects the given registries/logger factory into every built worker. `onWorkerIdle` is an optional `() => void` hook called after a worker goes idle (e.g. to call `engine.wake()`). |
 
 ### `JobRegistry`
 
@@ -99,7 +99,7 @@ Static singleton facade managing the job queues: enqueued, processing, failed (c
 
 | Method | Description |
 |--------|-------------|
-| `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior. Throws if already built. |
+| `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior; `options.retention` (`{ finished?, dead? }`) caps how many terminal jobs are kept. Throws if already built. |
 | `JobRegistry.ensureBuild(options)` | Builds the singleton only if not already built; a pure no-op (options ignored) once built. Returns the instance. |
 | `JobRegistry.reset()` | Destroys the singleton. Use in test teardown. |
 | `JobRegistry.enqueue(factoryKey, params)` | Builds a job via the named `JobFactory` and pushes it onto the enqueued queue. |
@@ -111,7 +111,8 @@ Static singleton facade managing the job queues: enqueued, processing, failed (c
 | `JobRegistry.clearQueues()` | Clears enqueued/retry/failed/finished/dead, leaving processing untouched. |
 | `JobRegistry.hasJob()` / `JobRegistry.hasReadyJob()` | Whether any jobs exist at all / are immediately pickable. |
 | `JobRegistry.jobsByStatus(status)` / `JobRegistry.jobById(id)` | Introspection helpers, e.g. for a monitoring UI. |
-| `JobRegistry.stats()` | `{ enqueued, processing, failed, retryQueue, finished, dead, total }` counts. |
+| `JobRegistry.prune({ statuses, keep, olderThan })` | Evicts terminal (`finished` / `dead`) jobs; returns `{ finished, dead }` removed counts. |
+| `JobRegistry.stats()` | `{ enqueued, processing, failed, retryQueue, finished, dead, total, pruned }` counts. |
 
 ### `WorkersRegistry`
 
@@ -147,9 +148,14 @@ Drives the main loop: promotes cooling-down jobs, allocates ready jobs to idle w
 
 | Method | Description |
 |--------|-------------|
-| `async start()` | Runs the loop until it should stop (see `keepAlive` above) or `stop()` is called. |
-| `stop()` | Requests the loop to exit after the current iteration. |
+| `async start()` | Runs the loop until it should stop (see `keepAlive` above), `stop()` is called, or a `shutdown()` drain ends. |
+| `stop()` | Requests the loop to exit after the current iteration. Immediate: it does not drain or wait for busy workers. |
+| `async shutdown({ timeoutMs })` | Graceful drain: stops promoting and allocating, then resolves `true` once no worker is busy, or `false` if `timeoutMs` elapsed first. After a `false` result `start()` can resolve with jobs still in flight. In-flight jobs are never cancelled and queued jobs are kept. See [Graceful shutdown](https://github.com/darthjee/navi/blob/main/docs/guides/deku-swarm/running-the-engine.md#graceful-shutdown). |
 | `pause()` / `resume()` | Suspend/resume job allocation without exiting the loop. |
+| `wake()` | Ends the current sleep early so the next tick runs immediately. Pair it with `WorkerFactory`'s `onWorkerIdle` (e.g. `onWorkerIdle: () => engine?.wake()`). |
+| `get status` | One of `'idle'`, `'running'`, `'paused'`, `'draining'`, `'stopping'`, `'stopped'`, `'crashed'`. |
+| `snapshot()` | Plain serializable `{ status, startedAt, stoppedAt, lastTickAt, lastError }`. |
+| `on(eventName, handler)` | Subscribes to engine events. `'crash'` is emitted with the original `Error` when the loop throws (`start()` still rejects). |
 
 ### Collections
 
