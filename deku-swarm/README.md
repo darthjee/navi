@@ -1,8 +1,8 @@
 # deku-swarm
 
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
-[![GitHub Release](https://img.shields.io/badge/deku_swarm-v1.14.0-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
-[![npm](https://img.shields.io/badge/deku_swarm-v1.14.0-orange?logo=npm)](https://www.npmjs.com/package/deku-swarm)
+[![GitHub Release](https://img.shields.io/badge/deku_swarm-v1.15.0-blue?logo=github)](https://circleci.com/gh/darthjee/navi)
+[![npm](https://img.shields.io/badge/deku_swarm-v1.15.0-orange?logo=npm)](https://www.npmjs.com/package/deku-swarm)
 
 Queue-based worker pool for Node.js, with cooldown-based automatic retry and support for job chaining.
 

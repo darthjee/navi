@@ -173,4 +173,27 @@ describe('Job', () => {
       expect(job._attempts).toEqual(2);
     });
   });
+
+  describe('#endedAt', () => {
+    it('defaults to null', () => {
+      expect(job.endedAt).toBeNull();
+    });
+
+    it('is set by markEnded', () => {
+      job.markEnded(1234);
+      expect(job.endedAt).toEqual(1234);
+    });
+
+    it('defaults to the current time', () => {
+      spyOn(Date, 'now').and.returnValue(99);
+      job.markEnded();
+      expect(job.endedAt).toEqual(99);
+    });
+
+    it('is reset by clearEnded', () => {
+      job.markEnded(1234);
+      job.clearEnded();
+      expect(job.endedAt).toBeNull();
+    });
+  });
 });

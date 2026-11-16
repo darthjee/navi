@@ -8,6 +8,7 @@ class Job {
   #readyBy;
   #maxRetries;
   #cooldown;
+  #endedAt = null;
 
   /**
    * Creates a new Job instance.
@@ -76,6 +77,31 @@ class Job {
    */
   get cooldown() {
     return this.#cooldown;
+  }
+
+  /**
+   * Returns the timestamp at which the job reached a terminal state.
+   * @returns {number|null} The ended timestamp in milliseconds, or null when not ended.
+   */
+  get endedAt() {
+    return this.#endedAt;
+  }
+
+  /**
+   * Marks the job as ended (finished or dead).
+   * @param {number} [now] - The timestamp in milliseconds.
+   * @returns {void}
+   */
+  markEnded(now = Date.now()) {
+    this.#endedAt = now;
+  }
+
+  /**
+   * Clears the ended timestamp (e.g. when the job is re-enqueued).
+   * @returns {void}
+   */
+  clearEnded() {
+    this.#endedAt = null;
   }
 
   /**

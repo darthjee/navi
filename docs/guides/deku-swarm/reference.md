@@ -16,6 +16,7 @@ Abstract base class for every unit of work. See [Defining Jobs](./defining-jobs.
 | `get maxRetries()` | Maximum retry count for this job. Returns the constructor's `maxRetries` if given, else `3`; override the getter in a subclass to customize per job class (the override always wins over the constructor param). |
 | `get cooldown()` | This job's own cooldown override in ms, or `undefined` if not passed to the constructor. Used by `JobRegistry.fail(job)` in place of the registry's configured global when set. |
 | `exhausted(maxRetries = this.maxRetries)` | Whether the job has used up its retry attempts. |
+| `get endedAt` | Read-only. Epoch ms at which the job entered `finished` or `dead`, or `null` if it hasn't ended. Reset to `null` by `JobRegistry.retryJob(id)` on a dead job. Used by pruning (`olderThan`). |
 
 ## `JobFactory`
 
@@ -35,7 +36,7 @@ Static singleton facade managing the job queues (`enqueued`, `processing`, `fail
 
 | Method | Description |
 |--------|-------------|
-| `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior. Throws if already built. |
+| `JobRegistry.build(options)` | Builds the singleton. `options.cooldown` (ms, default `5000`) and `options.maxRetries` (default `3`) control retry behavior. `options.retention` (`{ finished?: number, dead?: number }`, non-negative integers) caps how many jobs the `finished` / `dead` collections keep, evicting the oldest on push; an omitted status is unbounded, `0` evicts on arrival, and invalid values throw. Throws if already built. |
 | `JobRegistry.ensureBuild(options)` | Builds the singleton only if not already built; a pure no-op (options ignored) once built; returns the instance. |
 | `JobRegistry.reset()` | Destroys the singleton. Use in test teardown. |
 | `JobRegistry.enqueue(factoryKey, params = {})` | Builds a job via the named `JobFactory` and pushes it onto `enqueued`. |
@@ -50,7 +51,8 @@ Static singleton facade managing the job queues (`enqueued`, `processing`, `fail
 | `JobRegistry.hasReadyJob()` | Whether any jobs are immediately pickable (`enqueued` or `retryQueue` non-empty). |
 | `JobRegistry.jobsByStatus(status)` | All jobs in the given status collection (`'enqueued'`, `'processing'`, `'failed'`, `'retryQueue'`, `'finished'`, `'dead'`), or `[]` for an unknown status. |
 | `JobRegistry.jobById(id)` | Searches every status and returns `{ job, status }`, or `null` if not found. |
-| `JobRegistry.stats()` | `{ enqueued, processing, failed, retryQueue, finished, dead, total }` — per-status counts, plus `total` (`dead + finished`). |
+| `JobRegistry.prune({ statuses, keep, olderThan } = {})` | Evicts terminal jobs. `statuses` defaults to `['finished', 'dead']` (unknown/non-terminal throw); `keep` (non-negative integer) keeps the N most recent; `olderThan` (non-negative ms) removes jobs with `endedAt < Date.now() - olderThan` (jobs with `endedAt === null` are never removed by it). Rules combine as a union; with neither, all jobs of the selected statuses are removed. Returns `{ finished, dead }` removed counts (`0` for unselected statuses). Pruned jobs return `null` from `jobById` / `retryJob`. See [Job Lifecycle](./job-lifecycle.md#pruning-terminal-jobs). |
+| `JobRegistry.stats()` | `{ enqueued, processing, failed, retryQueue, finished, dead, total, pruned }` — per-status in-memory counts, `total` (`dead + finished`), and cumulative `pruned: { finished, dead }` evictions (reset by `clearQueues()`). |
 
 ## `Worker`
 

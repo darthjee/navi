@@ -55,4 +55,27 @@ describe('IdentifyableCollection', () => {
   it('returns null when findById does not find a match', () => {
     expect(collection.findById('missing')).toBeNull();
   });
+
+  it('keeps insertion order for integer-like ids', () => {
+    collection.push({ id: 10 });
+    collection.push({ id: 2 });
+
+    expect(collection.list().map(i => i.id)).toEqual([10, 2]);
+  });
+
+  it('accepts a plain object as initial items', () => {
+    const item = { id: 'a' };
+    const built = new IdentifyableCollection({ a: item });
+
+    expect(built.get('a')).toBe(item);
+    expect(built.size()).toEqual(1);
+  });
+
+  it('accepts a Map as initial items', () => {
+    const item = { id: 'a' };
+    const built = new IdentifyableCollection(new Map([['a', item]]));
+
+    expect(built.get('a')).toBe(item);
+    expect(built.has('a')).toBeTrue();
+  });
 });

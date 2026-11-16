@@ -12,7 +12,8 @@ class JobRegistry {
 
   /**
    * Creates and stores the singleton instance.
-   * @param {object} [options={}] - Forwarded to `JobRegistryInstance` constructor.
+   * @param {object} [options={}] - Forwarded to `JobRegistryInstance` constructor
+   *   (including `retention: { finished, dead }` limits for terminal jobs).
    * @returns {JobRegistryInstance} The created instance.
    * @throws {Error} If `build()` has already been called without a preceding `reset()`.
    */
@@ -154,10 +155,19 @@ class JobRegistry {
 
   /**
    * Returns counts of jobs in each state.
-   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number, total: number }} Job counts per state, plus total (dead + finished).
+   * @returns {{ enqueued: number, processing: number, failed: number, retryQueue: number, finished: number, dead: number, total: number, pruned: { finished: number, dead: number } }} Job counts per state, plus total (dead + finished) and pruned counters.
    */
   static stats() {
     return JobRegistry.#getInstance().stats();
+  }
+
+  /**
+   * Removes finished and/or dead jobs. See `JobRegistryInstance#prune`.
+   * @param {object} [options] - Prune options (`statuses`, `keep`, `olderThan`).
+   * @returns {{ finished: number, dead: number }} Number of jobs removed per status.
+   */
+  static prune(options) {
+    return JobRegistry.#getInstance().prune(options);
   }
 
   /**
