@@ -81,21 +81,6 @@ class IdentifyableCollection extends Collection {
   }
 
   /**
-   * Retrieves the ids of the oldest entries, in insertion order.
-   * Intended for internal use by eviction logic (e.g. pruning).
-   * @param {number} count - How many ids to return.
-   * @returns {Array} The oldest ids, oldest first.
-   */
-  oldestIds(count) {
-    const ids = [];
-    for (const id of this.#items.keys()) {
-      if (ids.length >= count) break;
-      ids.push(id);
-    }
-    return ids;
-  }
-
-  /**
    * Retrieves the number of items in the collection.
    * @returns {number} - The number of items in the collection.
    */
