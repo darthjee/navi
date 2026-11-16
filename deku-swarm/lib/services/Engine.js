@@ -27,6 +27,13 @@ class Engine {
   #jobRegistry;
   #workersRegistry;
   #emitter = new EventEmitter();
+  #draining = false;
+  #drainStartedAt = null;
+  #drainTimeoutMs = 0;
+  #drainTimedOut = false;
+  #running = false;
+  #drainPromise = null;
+  #resolveDrain = null;
 
   /**
    * Creates an instance of Engine.
@@ -57,6 +64,49 @@ class Engine {
    */
   stop() {
     this.#stopped = true;
+  }
+
+  /**
+   * Gracefully drains the engine: stops accepting new allocations and waits
+   * for in-flight work to finish, up to `timeoutMs`.
+   *
+   * Resolves with `true` when the drain completed with no busy worker, or
+   * `false` when the timeout elapsed (or work was still in flight) first.
+   * A second call while draining joins the first and does not reset the timeout.
+   * When the loop is not running, or `timeoutMs` is `0`/omitted, it resolves
+   * immediately with `!hasBusyWorker()` (a `0` timeout also makes the loop
+   * exit at the next tick). It never throws and never starts the loop.
+   *
+   * The timeout is tick-granular: it is checked once per loop iteration, so
+   * the overshoot is at most one `sleepMs`. On timeout, `start()` may resolve
+   * with `perform()` still in flight.
+   *
+   * `stop()` remains a hard exit and is never overridden by a drain.
+   * @param {object} [param0] - Shutdown options.
+   * @param {number} [param0.timeoutMs=0] - Maximum milliseconds to wait for busy workers.
+   * @returns {Promise<boolean>} True if drained cleanly, false on timeout.
+   */
+  shutdown({ timeoutMs = 0 } = {}) {
+    if (this.#drainPromise) return this.#drainPromise;
+
+    const idle = !this.#workersRegistry.hasBusyWorker();
+
+    if (!this.#running || this.#stopped) return Promise.resolve(idle);
+
+    this.#draining = true;
+    this.#drainStartedAt = Date.now();
+
+    if (!timeoutMs || timeoutMs <= 0) {
+      this.#drainTimeoutMs = 0;
+      this.#drainPromise = Promise.resolve(idle);
+      return this.#drainPromise;
+    }
+
+    this.#drainTimeoutMs = timeoutMs;
+    this.#drainPromise = new Promise(resolve => {
+      this.#resolveDrain = resolve;
+    });
+    return this.#drainPromise;
   }
 
   /**
