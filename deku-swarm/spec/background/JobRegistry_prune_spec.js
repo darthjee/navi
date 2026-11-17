@@ -201,4 +201,55 @@ describe('JobRegistry pruning', () => {
       expect(() => JobRegistry.build({ retention: { dead: 1.5 } })).toThrowError(/retention.dead/);
     });
   });
+
+  describe('count-only eviction', () => {
+    it('retention never copies the collection', () => {
+      JobRegistry.build({ retention: { finished: 2, dead: 2 } });
+      const listSpy = spyOn(IdentifyableCollection.prototype, 'list').and.callThrough();
+
+      ['a', 'b', 'c', 'd'].forEach(finishJob);
+      ['e', 'f', 'g', 'h'].forEach(killJob);
+
+      expect(listSpy).not.toHaveBeenCalled();
+      expect(ids('finished')).toEqual(['c', 'd']);
+      expect(ids('dead')).toEqual(['g', 'h']);
+    });
+
+    it('prune({ keep }) uses removeOldest', () => {
+      ['a', 'b', 'c'].forEach(finishJob);
+      const spy = spyOn(IdentifyableCollection.prototype, 'removeOldest').and.callThrough();
+
+      JobRegistry.prune({ keep: 1 });
+
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('prune({ keep, olderThan }) does not use removeOldest', () => {
+      ['a', 'b', 'c'].forEach(finishJob);
+      const spy = spyOn(IdentifyableCollection.prototype, 'removeOldest').and.callThrough();
+
+      const result = JobRegistry.prune({ keep: 1, olderThan: 1000000 });
+
+      expect(spy).not.toHaveBeenCalled();
+      expect(result).toEqual({ finished: 2, dead: 0 });
+      expect(ids('finished')).toEqual(['c']);
+    });
+
+    it('prune({ keep }) with keep >= size removes nothing', () => {
+      ['a', 'b'].forEach(finishJob);
+      ['c'].forEach(killJob);
+
+      expect(JobRegistry.prune({ keep: 5 })).toEqual({ finished: 0, dead: 0 });
+      expect(JobRegistry.stats().pruned).toEqual({ finished: 0, dead: 0 });
+    });
+
+    it('bulk prune({ keep }) counts removals and keeps the most recent', () => {
+      const names = Array.from({ length: 50 }, (_, i) => `j${i}`);
+      names.forEach(finishJob);
+
+      expect(JobRegistry.prune({ keep: 3 })).toEqual({ finished: 47, dead: 0 });
+      expect(JobRegistry.stats().pruned.finished).toEqual(47);
+      expect(ids('finished')).toEqual(['j47', 'j48', 'j49']);
+    });
+  });
 });
