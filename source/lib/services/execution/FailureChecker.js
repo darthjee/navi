@@ -38,17 +38,18 @@ class FailureChecker {
   }
 
   /**
-   * Loads dead and total job counts from the registry into instance attributes.
+   * Loads lifetime dead and total job counts (resident plus pruned, since the
+   * last clearQueues()) from the registry into instance attributes.
    * @returns {void}
    */
   #loadStats() {
-    const { dead, total } = JobRegistry.stats();
-    this.#dead = dead;
-    this.#total = total;
+    const { dead, total, pruned } = JobRegistry.stats();
+    this.#dead = dead + pruned.dead;
+    this.#total = total + pruned.finished + pruned.dead;
   }
 
   /**
-   * Calculates the percentage of dead jobs relative to total jobs.
+   * Calculates the lifetime percentage of dead jobs relative to total jobs.
    * The result is memoized after the first call.
    * @returns {number} The dead-job ratio as a percentage (0–100).
    */

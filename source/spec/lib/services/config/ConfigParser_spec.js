@@ -21,6 +21,12 @@ const buildDefaultResources = () => {
 
 describe('ConfigParser', () => {
   describe('.fromObject', () => {
+    describe('when workers.retention is configured', () => {
+      it('parses it into workersConfig.retention', () => {
+        expect(parseFixture('sample_config_with_retention.yml').workersConfig.retention).toEqual({ finished: 100, dead: 50 });
+      });
+    });
+
     describe('resource and client mapping', () => {
       it('returns mapped resources by name for a valid config', () => {
         expect(parseFixture('sample_config.yml').resources).toEqual(buildDefaultResources());

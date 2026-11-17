@@ -5,7 +5,7 @@ import { StatsHandler } from '../../../../lib/server/handlers/StatsHandler.js';
 
 describe("describe('StatsHandler'", () => {
   let res;
-  const jobStats = { enqueued: 1, processing: 0, failed: 0, finished: 5, dead: 0 };
+  const jobStats = { enqueued: 1, processing: 0, failed: 0, finished: 5, dead: 0, pruned: { finished: 7, dead: 2 } };
   const workerStats = { idle: 3, busy: 1 };
 
   beforeEach(() => {
@@ -38,6 +38,12 @@ describe("describe('StatsHandler'", () => {
         workers:   workerStats,
         emissions: { extracted: 0, emitted: 0, failed: 0, dead: 0 },
       });
+    });
+
+    it('includes pruned counts in jobs', () => {
+      new StatsHandler({}, res).handle();
+
+      expect(res.json.calls.mostRecent().args[0].jobs.pruned).toEqual({ finished: 7, dead: 2 });
     });
 
     it('reflects recorded emission counts', () => {

@@ -16,6 +16,9 @@ workers:
   retry_cooldown: 2000 # ms before a failed job is retried (default: 2000)
   sleep: 500           # ms the engine waits between allocation ticks (default: 500)
   max-retries: 3       # max number of retries before a job is marked dead (default: 3)
+  retention:           # optional: cap how many finished/dead jobs are kept (default: unbounded)
+    finished: 1000     # keep at most 1000 finished jobs (omit / null = unbounded)
+    dead: 500          # keep at most 500 dead jobs (omit / null = unbounded)
 
 log:
   size: 100            # max number of log entries kept in memory (default: 100)
@@ -112,8 +115,10 @@ resources:
 | `workers.retry_cooldown` | Milliseconds a failed job waits before being re-queued for retry. Defaults to `2000`. |
 | `workers.sleep` | Milliseconds the engine waits between allocation ticks. Defaults to `500`. |
 | `workers.max-retries` | Maximum number of times a job is retried before being moved to the dead queue. Defaults to `3`. |
+| `workers.retention.finished` | Optional. Maximum number of finished jobs kept in memory; the oldest are evicted beyond it. Independent of `workers.retention.dead`. Omitted, empty or `null` means unbounded (the default). Must be a non-negative integer (`0` evicts a job as soon as it finishes). Evicted jobs disappear from job lists, return `404` on `GET /job/:id.json` and can no longer be retried — history is traded for memory. Moderate caps are recommended (eviction has a cost, see #1022). Recommended on long-lived servers (`web:` set), where it also bounds memory growth from crawls fanned out by remote content. |
+| `workers.retention.dead` | Optional. Same as `workers.retention.finished`, but for dead jobs. Independent of the `finished` cap. Unknown keys under `workers.retention` and invalid values are rejected at boot (a `workers.retention` key that was previously ignored is now validated). Evicted counts are exposed as `jobs.pruned` in `GET /stats.json` (cumulative, reset when the engine stops). |
 | `log.size` | Maximum number of log entries kept in the in-memory log buffer. Defaults to `100`. |
-| `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. |
+| `failure.threshold` | Optional. Percentage (0–100) of dead jobs that triggers a non-zero exit code. When absent, Navi always exits successfully. The ratio counts pruned jobs too (lifetime counts), so `workers.retention` never changes the verdict. |
 
 ### `web`
 

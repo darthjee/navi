@@ -35,6 +35,9 @@ workers:
   retry_cooldown: 2000 # ms before a failed job is retried (default: 2000)
   sleep: 500           # ms between allocation ticks (default: 500)
   max-retries: 3       # retries before a job is marked dead (default: 3)
+  retention:           # optional: caps on resident finished/dead jobs (default: unbounded)
+    finished: 1000
+    dead: 500
 
 log:
   size: 100            # max log entries in memory (default: 100)
@@ -96,6 +99,9 @@ resources:
 >
 > **Header names are always lowercase.**
 > Node.js normalizes HTTP response header names to lowercase before they reach Navi. Always use lowercase when referencing headers (e.g. `headers['x-total-pages']`, not `headers['X-Total-Pages']`).
+>
+> **Job retention (`workers.retention`).**
+> `workers.retention: { finished?, dead? }` is optional; the two caps are independent. Omitted, empty or `null` means unbounded; otherwise each must be a non-negative integer (`0` evicts on arrival). `WorkersConfig#retention` normalizes the block and rejects unknown keys and invalid values at boot (a `workers.retention` key that was previously ignored is now validated). `RegistriesBuilder` forwards the normalized caps to `JobRegistry`, and passes the explicit `quantity` to `WorkersRegistry`. The production image exposes the caps as `RETENTION_FINISHED` / `RETENTION_DEAD` (default empty = unbounded). Trade-off: evicted jobs lose their history (they vanish from job lists, return 404 and can't be retried) in exchange for bounded memory; evictions are counted as `jobs.pruned` in `GET /stats.json` and in the failure ratio (see [Failure Handling](failure-handling.md)).
 >
 > **Disabling a resource request without deleting it.**
 > Any individual resource-request entry (an item under `resources.<name>`) can be marked `disabled: true` (or `enabled: false`) to keep its YAML definition in place while excluding it from every enqueue path: `enqueueFirstJobs()` at startup, manual/API trigger by name, and as the target of another (enabled) resource's `actions`/`paginated_actions`. `disabled: true` always wins over any `enabled` value.

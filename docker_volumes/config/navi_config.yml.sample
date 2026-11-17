@@ -4,6 +4,9 @@ workers:
   quantity: 5
   retry_cooldown: 1000
   max-retries: 10
+  retention:
+    finished: 20
+    dead: 20
 clients:
   default:
     base_url: http://remote_host:80

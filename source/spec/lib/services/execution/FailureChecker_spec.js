@@ -43,6 +43,34 @@ describe('FailureChecker', () => {
       });
     });
 
+    describe('with pruned counts', () => {
+      const stubStats = (stats) => spyOn(JobRegistry, 'stats').and.returnValue(stats);
+
+      it('uses lifetime ratio and exits when over threshold', () => {
+        stubStats({ total: 20, dead: 10, pruned: { finished: 940, dead: 40 } });
+        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 3 }) }).check();
+        expect(process.exit).toHaveBeenCalledWith(1);
+      });
+
+      it('does not exit when under threshold', () => {
+        stubStats({ total: 20, dead: 10, pruned: { finished: 940, dead: 40 } });
+        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 6 }) }).check();
+        expect(process.exit).not.toHaveBeenCalled();
+      });
+
+      it('matches the unpruned result when nothing was pruned', () => {
+        stubStats({ total: 2, dead: 1, pruned: { finished: 0, dead: 0 } });
+        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 10 }) }).check();
+        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining('50.00%'));
+      });
+
+      it('does not exit when the lifetime total is zero', () => {
+        stubStats({ total: 0, dead: 0, pruned: { finished: 0, dead: 0 } });
+        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 0 }) }).check();
+        expect(process.exit).not.toHaveBeenCalled();
+      });
+    });
+
     describe('when failureConfig is present', () => {
       let failureConfig;
 

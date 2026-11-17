@@ -1,0 +1,13 @@
+workers:
+  quantity: 5
+  retention:
+    finished: $NAVI_TEST_RETENTION_FINISHED
+    dead: $NAVI_TEST_RETENTION_DEAD
+clients:
+  default:
+    base_url: https://example.com
+    timeout: 5000
+resources:
+  categories:
+    - url: /categories.json
+      status: 200

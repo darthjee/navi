@@ -11,5 +11,8 @@ workers:
   retry_cooldown: $RETRY_COOLDOWN
   sleep: $WORKERS_SLEEP
   max-retries: $MAX_RETRIES
+  retention:
+    finished: $RETENTION_FINISHED
+    dead: $RETENTION_DEAD
 resources: {}
 clients: {}

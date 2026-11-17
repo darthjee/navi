@@ -41,6 +41,54 @@ describe('RegistriesBuilder', () => {
       expect(WorkersRegistry.stats().idle).toEqual(5);
     });
 
+    describe('retention forwarding', () => {
+      it('passes retention to JobRegistry.ensureBuild when set', () => {
+        config.workersConfig.retention = { finished: 2 };
+        spyOn(JobRegistry, 'ensureBuild').and.callThrough();
+
+        builder.build({ config });
+
+        expect(JobRegistry.ensureBuild).toHaveBeenCalledWith({
+          cooldown: config.workersConfig.retryCooldown,
+          maxRetries: config.workersConfig.maxRetries,
+          retention: { finished: 2 },
+        });
+      });
+
+      it('passes no retention key when omitted', () => {
+        config.workersConfig.retention = undefined;
+        spyOn(JobRegistry, 'ensureBuild').and.callThrough();
+
+        builder.build({ config });
+
+        expect(JobRegistry.ensureBuild).toHaveBeenCalledWith({
+          cooldown: config.workersConfig.retryCooldown,
+          maxRetries: config.workersConfig.maxRetries,
+        });
+      });
+
+      it('builds the real JobRegistry with a valid retention', () => {
+        config.workersConfig.retention = { finished: 2 };
+
+        expect(() => builder.build({ config })).not.toThrow();
+      });
+
+      it('throws on an invalid retention key', () => {
+        config.workersConfig.retention = { finshed: 2 };
+
+        expect(() => builder.build({ config })).toThrowError(/Invalid retention key/);
+      });
+
+      it('passes exactly factory and quantity to WorkersRegistry.ensureBuild', () => {
+        spyOn(WorkersRegistry, 'ensureBuild').and.callThrough();
+
+        builder.build({ config });
+
+        const args = WorkersRegistry.ensureBuild.calls.mostRecent().args[0];
+        expect(Object.keys(args).sort()).toEqual(['factory', 'quantity']);
+      });
+    });
+
     describe('global maxRetries/cooldown injection', () => {
       beforeEach(() => {
         builder.build({ config });
