@@ -37,6 +37,25 @@ class IdentifyableCollection extends Collection {
   }
 
   /**
+   * Removes the oldest `n` items (insertion order) from the collection.
+   * @param {number} n - The maximum number of items to remove.
+   * @returns {number} - The number of items actually removed.
+   */
+  removeOldest(n) {
+    if (!(n > 0) || this.#items.size === 0) return 0;
+
+    const ids = [];
+    for (const id of this.#items.keys()) {
+      if (ids.length >= n) break;
+      ids.push(id);
+    }
+
+    ids.forEach((id) => this.#items.delete(id));
+    this.#size = null;
+    return ids.length;
+  }
+
+  /**
    * Retrieves an item from the collection by id.
    * @param {string} id - The id of the item to retrieve.
    * @returns {object | undefined} - The item if found, otherwise undefined.

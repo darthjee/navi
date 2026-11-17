@@ -78,4 +78,53 @@ describe('IdentifyableCollection', () => {
     expect(built.get('a')).toBe(item);
     expect(built.has('a')).toBeTrue();
   });
+
+  describe('#removeOldest', () => {
+    beforeEach(() => {
+      ['a', 'b', 'c', 'd'].forEach(id => collection.push({ id }));
+    });
+
+    it('returns 0 and changes nothing when n is 0', () => {
+      expect(collection.removeOldest(0)).toEqual(0);
+      expect(collection.list().map(i => i.id)).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('returns 0 and changes nothing when n is negative', () => {
+      expect(collection.removeOldest(-3)).toEqual(0);
+      expect(collection.list().map(i => i.id)).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('removes the first n in insertion order', () => {
+      expect(collection.removeOldest(2)).toEqual(2);
+      expect(collection.list().map(i => i.id)).toEqual(['c', 'd']);
+    });
+
+    it('removes everything and returns the original size when n >= size', () => {
+      expect(collection.removeOldest(10)).toEqual(4);
+      expect(collection.list()).toEqual([]);
+    });
+
+    it('returns 0 on an empty collection', () => {
+      expect(new IdentifyableCollection().removeOldest(3)).toEqual(0);
+    });
+
+    it('refreshes the size cache', () => {
+      expect(collection.size()).toEqual(4);
+      collection.removeOldest(3);
+      expect(collection.size()).toEqual(1);
+    });
+
+    it('makes removed ids unavailable', () => {
+      collection.removeOldest(1);
+      expect(collection.has('a')).toBeFalse();
+      expect(collection.get('a')).toBeUndefined();
+    });
+
+    it('keeps original position when an existing id is re-pushed', () => {
+      collection.push({ id: 'a', again: true });
+      collection.removeOldest(1);
+      expect(collection.has('a')).toBeFalse();
+      expect(collection.list().map(i => i.id)).toEqual(['b', 'c', 'd']);
+    });
+  });
 });
