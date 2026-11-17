@@ -203,7 +203,12 @@ describe('JobRegistry pruning', () => {
   });
 
   describe('count-only eviction', () => {
+    beforeEach(() => {
+      JobRegistry.build();
+    });
+
     it('retention never copies the collection', () => {
+      JobRegistry.reset();
       JobRegistry.build({ retention: { finished: 2, dead: 2 } });
       const listSpy = spyOn(IdentifyableCollection.prototype, 'list').and.callThrough();
 
