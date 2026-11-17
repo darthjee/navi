@@ -32,7 +32,7 @@ Use `bump_version.sh client [version]` / `bump_version.sh deku-swarm [version]` 
 | -------- | ------- | ---- |
 | Navi-Hey | [1.14.3](https://github.com/darthjee/navi/releases/tag/1.14.3) | [1.14.4](https://github.com/darthjee/navi/compare/1.14.3...main) |
 | Client | [0.2.4](https://github.com/darthjee/navi/releases/tag/node_client-0.2.4) | [0.2.5](https://github.com/darthjee/navi/compare/node_client-0.2.4...main) |
-| Worker (Deku Swarm) | [1.13.0](https://github.com/darthjee/navi/releases/tag/swarm-1.13.0) | [1.13.1](https://github.com/darthjee/navi/compare/swarm-1.13.0...main) |
+| Worker (Deku Swarm) | [1.14.0](https://github.com/darthjee/navi/releases/tag/swarm-1.14.0) | [1.14.1](https://github.com/darthjee/navi/compare/swarm-1.14.0...main) |
 | Lib (Deku Sprout) | [0.3.0](https://github.com/darthjee/navi/releases/tag/sprout-0.3.0) | [0.3.1](https://github.com/darthjee/navi/compare/sprout-0.3.0...main) |
 
 ---
