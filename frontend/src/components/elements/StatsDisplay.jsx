@@ -5,6 +5,8 @@ function StatsDisplay({ stats }) {
   const workers = stats.workers;
   const jobs = stats.jobs;
   const emissions = stats.emissions;
+  const pruned = jobs.pruned;
+  const showPruned = Boolean(pruned) && (pruned.finished || 0) + (pruned.dead || 0) > 0;
 
   return (
     <div className="d-flex align-items-center flex-wrap gap-2 mb-3">
@@ -22,6 +24,16 @@ function StatsDisplay({ stats }) {
         <JobStatItem label="Finished" value={jobs.finished} variant="success" status="finished" />
         <JobStatItem label="Dead" value={jobs.dead} variant="dark" status="dead" />
       </div>
+      {showPruned && (
+        <>
+          <div className="vr mx-1" />
+          <span className="fw-semibold small">Pruned</span>
+          <div className="d-flex gap-2">
+            <StatItem label="Finished" value={pruned.finished} variant="light" />
+            <StatItem label="Dead" value={pruned.dead} variant="light" />
+          </div>
+        </>
+      )}
       <div className="vr mx-1" />
       <span className="fw-semibold small">Emissions</span>
       <div className="d-flex gap-2">

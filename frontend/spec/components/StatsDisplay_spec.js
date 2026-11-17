@@ -91,6 +91,65 @@ describe('StatsDisplay', () => {
     });
   });
 
+  describe('the Pruned group', () => {
+    const withPruned = (pruned) => ({ ...stats, jobs: { ...stats.jobs, pruned } });
+    const prunedCards = (container) => Array.from(container.querySelectorAll('.card'))
+      .filter((c) => c.textContent.includes('940') || c.textContent.includes('40'));
+
+    describe('with pruned counts', () => {
+      beforeEach(async () => {
+        await renderStatsDisplay(state.root, { stats: withPruned({ finished: 940, dead: 40 }) });
+      });
+
+      it('renders the heading and counts', () => {
+        const text = state.container.textContent;
+        expect(text).toContain('Pruned');
+        expect(text).toContain('940');
+        expect(text).toContain('40');
+      });
+
+      it('renders cards with light variant and no links', () => {
+        const cards = prunedCards(state.container);
+        expect(cards.length).toBe(2);
+        cards.forEach((card) => {
+          expect(card.className).toContain('text-bg-light');
+          expect(card.closest('a')).toBeNull();
+        });
+      });
+    });
+
+    describe('with all-zero pruned counts', () => {
+      beforeEach(async () => {
+        await renderStatsDisplay(state.root, { stats: withPruned({ finished: 0, dead: 0 }) });
+      });
+
+      it('does not render the group', () => {
+        expect(state.container.textContent).not.toContain('Pruned');
+      });
+    });
+
+    describe('with only finished pruned', () => {
+      beforeEach(async () => {
+        await renderStatsDisplay(state.root, { stats: withPruned({ finished: 5, dead: 0 }) });
+      });
+
+      it('renders the group', () => {
+        expect(state.container.textContent).toContain('Pruned');
+        expect(state.container.querySelectorAll('.text-bg-light').length).toBe(2);
+      });
+    });
+
+    describe('without pruned', () => {
+      beforeEach(async () => {
+        await renderStatsDisplay(state.root, { stats });
+      });
+
+      it('does not render the group', () => {
+        expect(state.container.textContent).not.toContain('Pruned');
+      });
+    });
+  });
+
   describe('with zero emission counts', () => {
     beforeEach(async () => {
       await renderStatsDisplay(state.root, {
