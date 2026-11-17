@@ -1,10 +1,10 @@
 import { JobFactory, JobRegistry } from 'deku-swarm';
 import { ResourceRequestJob } from '../../../../lib/jobs/ResourceRequestJob.js';
 import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
-import { JobRegistryUtils } from '../../../support/utils/JobRegistryUtils.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../../lib/services/execution/FailureChecker.js';
 import { RunReporter } from '../../../../lib/services/execution/RunReporter.js';
+import { JobRegistryUtils } from '../../../support/utils/JobRegistryUtils.js';
 
 describe('RunReporter', () => {
   let reporter;
