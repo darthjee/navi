@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import CollapsibleSection from '../CollapsibleSection.jsx';
+import EndedAtRow from '../EndedAtRow.jsx';
 import JobStatusBadge from '../JobStatusBadge.jsx';
 import LastErrorSection from '../LastErrorSection.jsx';
 import ReadyInRow from '../ReadyInRow.jsx';
@@ -44,6 +45,7 @@ class JobDetailsHelper {
                 </CollapsibleSection>
               </dd>
 
+              <EndedAtRow job={job} />
               <RemainingAttempts job={job} />
               <ReadyInRow job={job} />
               <LastErrorSection job={job} />
