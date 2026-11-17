@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/badge/navi_hey-v1.14.6-orange?logo=npm)](https://www.npmjs.com/package/navi-hey)
 [![Docker](https://img.shields.io/badge/navi_hey-v1.14.6-2496ED?logo=docker)](https://hub.docker.com/repository/docker/darthjee/navi-hey/general)
 
-[![npm](https://img.shields.io/badge/deku_swarm-v1.16.0-orange?logo=npm)](https://www.npmjs.com/package/deku-swarm)
+[![npm](https://img.shields.io/badge/deku_swarm-v1.13.0-orange?logo=npm)](https://www.npmjs.com/package/deku-swarm)
 [![npm](https://img.shields.io/badge/deku_sprout-v0.3.0-orange?logo=npm)](https://www.npmjs.com/package/deku-sprout)
 
 Cache Warmer Tool
