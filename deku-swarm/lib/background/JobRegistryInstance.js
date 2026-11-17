@@ -269,6 +269,7 @@ class JobRegistryInstance {
   /**
    * Evicts jobs of a terminal status: the oldest ones over `keep` plus those that
    * ended at least `olderThan` ms ago (union); with neither, evicts all.
+   * The count-only case (`keep` alone) uses `removeOldest` and never copies the collection.
    * @param {string} status - 'finished' or 'dead'.
    * @param {object} criteria - Eviction criteria.
    * @param {number} [criteria.keep] - Max jobs to keep.
@@ -277,6 +278,12 @@ class JobRegistryInstance {
    */
   #evict(status, { keep, olderThan }) {
     const collection = this.#collectionByStatus(status);
+    if (keep !== undefined && olderThan === undefined) {
+      const removed = collection.removeOldest(collection.size() - keep);
+      this.#pruned[status] += removed;
+      return removed;
+    }
+
     const jobs = collection.list();
     const unbounded = keep === undefined && olderThan === undefined;
     const doomed = new Set();
