@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import formatTimestamp from '../../utils/formatTimestamp.js';
 import JobStatusBadge from './JobStatusBadge.jsx';
+import formatTimestamp from '../../utils/formatTimestamp.js';
 
 function JobRow({ job }) {
   return (
