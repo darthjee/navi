@@ -26,7 +26,7 @@ class RegistriesBuilder {
    * @returns {void}
    */
   build({ config, onWorkerIdle }) {
-    const { maxRetries, retryCooldown: cooldown } = config.workersConfig;
+    const { maxRetries, retryCooldown: cooldown, quantity, retention } =config.workersConfig;
 
     JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: config.namespaceMap, maxRetries, cooldown } });
     JobFactory.build('Action', { klass: ActionProcessingJob, attributes: { maxRetries, cooldown } });
@@ -42,13 +42,13 @@ class RegistriesBuilder {
     JobFactory.build('Extraction', { klass: ExtractionJob, attributes: { parserRegistry, jobRegistry: JobRegistry, maxRetries, cooldown } });
     JobFactory.build('Emit', { klass: EmitJob, attributes: { clients: config.namespaceMap } });
 
-    JobRegistry.ensureBuild({ cooldown: config.workersConfig.retryCooldown, maxRetries: config.workersConfig.maxRetries });
+    JobRegistry.ensureBuild({ cooldown, maxRetries, ...(retention ? { retention } : {}) });
 
     const loggerFactory = ({ workerId, jobId }) => new LogContext({ workerId, jobId });
 
     WorkersRegistry.ensureBuild({
       factory: new WorkerFactory({ jobRegistry: JobRegistry, workersRegistry: WorkersRegistry, loggerFactory, onWorkerIdle }),
-      ...config.workersConfig,
+      quantity,
     });
     WorkersRegistry.initWorkers();
   }
