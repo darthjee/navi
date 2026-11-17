@@ -3,7 +3,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/d931f6260973439f850c20869eeb5d83)](https://app.codacy.com/gh/darthjee/navi/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 [![Build Status](https://circleci.com/gh/darthjee/navi.svg?style=shield)](https://circleci.com/gh/darthjee/navi)
-[![GitHub Release](https://img.shields.io/github/v/release/darthjee/navi?logo=github)](https://github.com/darthjee/navi/releases/tag/1.14.3)
+[![GitHub Release](https://img.shields.io/github/v/release/darthjee/navi?logo=github)](https://github.com/darthjee/navi/releases/tag/1.14.4)
 
 [![npm](https://img.shields.io/npm/v/navi-hey.svg?logo=npm&label=navi-hey)](https://www.npmjs.com/package/navi-hey)
 [![npm](https://img.shields.io/npm/v/navi-hey-client.svg?logo=npm&label=navi-hey-client)](https://www.npmjs.com/package/navi-hey-client)
@@ -30,7 +30,7 @@ Use `bump_version.sh client [version]` / `bump_version.sh deku-swarm [version]` 
 ### Versions
 | Package | Current | Next |
 | -------- | ------- | ---- |
-| Navi-Hey | [1.14.3](https://github.com/darthjee/navi/releases/tag/1.14.3) | [1.14.4](https://github.com/darthjee/navi/compare/1.14.3...main) |
+| Navi-Hey | [1.14.4](https://github.com/darthjee/navi/releases/tag/1.14.4) | [1.14.5](https://github.com/darthjee/navi/compare/1.14.4...main) |
 | Client | [0.2.4](https://github.com/darthjee/navi/releases/tag/node_client-0.2.4) | [0.2.5](https://github.com/darthjee/navi/compare/node_client-0.2.4...main) |
 | Worker (Deku Swarm) | [1.14.0](https://github.com/darthjee/navi/releases/tag/swarm-1.14.0) | [1.14.1](https://github.com/darthjee/navi/compare/swarm-1.14.0...main) |
 | Lib (Deku Sprout) | [0.3.0](https://github.com/darthjee/navi/releases/tag/sprout-0.3.0) | [0.3.1](https://github.com/darthjee/navi/compare/sprout-0.3.0...main) |
