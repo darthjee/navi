@@ -1,5 +1,5 @@
-import { Serializer } from './Serializer.js';
 import { EndedAtSerializer } from './EndedAtSerializer.js';
+import { Serializer } from './Serializer.js';
 
 const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
 const STATUSES_WITH_READY_IN_MS = new Set(['failed']);

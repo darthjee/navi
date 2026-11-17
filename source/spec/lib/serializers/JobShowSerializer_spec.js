@@ -21,6 +21,7 @@ describe('JobShowSerializer', () => {
           attempts: 0,
           jobClass: 'ResourceRequestJob',
           arguments: { url: '/items.json' },
+          endedAt: null,
           remainingAttempts: 3,
         });
       });
@@ -60,6 +61,7 @@ describe('JobShowSerializer', () => {
           attempts: 1,
           jobClass: 'ResourceRequestJob',
           arguments: { url: '/items.json' },
+          endedAt: null,
           remainingAttempts: 2,
         });
       });
@@ -99,6 +101,7 @@ describe('JobShowSerializer', () => {
           attempts: 1,
           jobClass: 'AssetDownloadJob',
           arguments: { url: 'https://cdn.example.com/app.css', clientName: 'cdn' },
+          endedAt: null,
           remainingAttempts: 2,
           readyInMs: 0,
         });
@@ -182,6 +185,7 @@ describe('JobShowSerializer', () => {
           attempts: 2,
           jobClass: 'ResourceRequestJob',
           arguments: { url: '/done.json' },
+          endedAt: null,
         });
       });
 

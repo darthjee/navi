@@ -1,5 +1,5 @@
-import { Serializer } from './Serializer.js';
 import { EndedAtSerializer } from './EndedAtSerializer.js';
+import { Serializer } from './Serializer.js';
 
 /**
  * Serializes one or more job instances into index-view plain data objects.

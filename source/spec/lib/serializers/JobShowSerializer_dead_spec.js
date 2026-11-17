@@ -1,3 +1,4 @@
+import { Job } from 'deku-swarm';
 import { JobShowSerializer } from '../../../lib/serializers/JobShowSerializer.js';
 
 describe('JobShowSerializer', () => {
@@ -21,6 +22,7 @@ describe('JobShowSerializer', () => {
           attempts: 3,
           jobClass: 'ActionProcessingJob',
           arguments: { item: { id: 7 } },
+          endedAt: null,
         });
       });
 
@@ -110,6 +112,49 @@ describe('JobShowSerializer', () => {
         expect(results.length).toBe(2);
         expect(results[0].jobClass).toBe('HtmlParseJob');
         expect(results[1].jobClass).toBe('AssetDownloadJob');
+      });
+    });
+  });
+
+  describe('endedAt', () => {
+    const endedAtMs = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+
+    describe('when the job was marked as ended', () => {
+      const job = new Job({ id: 'ended-1' });
+
+      beforeEach(() => {
+        job.markEnded(endedAtMs);
+      });
+
+      it('returns the ISO string', () => {
+        expect(JobShowSerializer.serialize(job, { status: 'dead' }).endedAt).toEqual('2026-01-02T03:04:05.006Z');
+      });
+    });
+
+    describe('when the job never ended', () => {
+      it('returns null', () => {
+        expect(JobShowSerializer.serialize(new Job({ id: 'n-1' }), { status: 'enqueued' }).endedAt).toBeNull();
+      });
+    });
+
+    describe('when the job ended and was cleared for retry', () => {
+      const job = new Job({ id: 'cleared-1' });
+
+      beforeEach(() => {
+        job.markEnded(endedAtMs);
+        job.clearEnded();
+      });
+
+      it('returns null', () => {
+        expect(JobShowSerializer.serialize(job, { status: 'enqueued' }).endedAt).toBeNull();
+      });
+    });
+
+    describe('when endedAt is undefined', () => {
+      const job = { id: 'u-1', _attempts: 0, constructor: { name: 'JobA' }, endedAt: undefined };
+
+      it('returns null', () => {
+        expect(JobShowSerializer.serialize(job, { status: 'enqueued' }).endedAt).toBeNull();
       });
     });
   });
