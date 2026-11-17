@@ -76,6 +76,7 @@ JobRegistry.build({
 - Values must be non-negative integers; an invalid value throws an `Error` at construction.
 - A status you omit is unbounded.
 - `0` evicts a job as soon as it arrives.
+- Enforcement removes only the excess oldest jobs, so its per-job cost does not grow with the cap.
 
 ### Manual pruning
 

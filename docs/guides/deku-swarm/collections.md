@@ -44,6 +44,7 @@ collection.has('w1');    // => false
 |--------|-------------|
 | `push(item)` | Adds an item, keyed by `item.id`. |
 | `remove(id)` | Removes the item with the given id, if present. |
+| `removeOldest(n)` | Removes up to `n` of the oldest items (insertion order) without copying the collection; returns how many were removed. |
 | `get(id)` | Returns the item with the given id, or `undefined`. |
 | `has(id)` | Whether an item with the given id exists. |
 | `findById(id)` | Same lookup as `get`, but returns `null` instead of `undefined` when missing. |
