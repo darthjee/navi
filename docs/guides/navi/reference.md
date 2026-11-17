@@ -26,6 +26,8 @@ For the full field-by-field breakdown of every YAML config key, see
 | `RETRY_COOLDOWN` | `2000` | `workers.retry_cooldown` |
 | `WORKERS_SLEEP` | `500` | `workers.sleep` |
 | `MAX_RETRIES` | `3` | `workers.max-retries` |
+| `RETENTION_FINISHED` | empty (unbounded) | `workers.retention.finished` — max finished jobs kept; empty = unbounded. |
+| `RETENTION_DEAD` | empty (unbounded) | `workers.retention.dead` — max dead jobs kept; empty = unbounded. |
 
 For example, to change the exposed port:
 
@@ -63,7 +65,7 @@ When enabled, the web UI is accessible at `http://localhost:<port>` and includes
 
 | Screen | URL | Description |
 |--------|-----|-------------|
-| Dashboard | `/#/` | Real-time job queue stats (counts per status). |
+| Dashboard | `/#/` | Real-time job queue stats (counts per status), plus Pruned counters (finished/dead jobs evicted by `workers.retention`). |
 | Jobs list | `/#/jobs` | Table of all jobs across every status, with links to individual job pages. |
 | Job detail | `/#/job/:id` | Full details for a specific job (ID, status, attempt count). |
 | Memory status | `/#/memory/status` | Real-time RSS usage against the configured maximum, plus a historical usage graph. |

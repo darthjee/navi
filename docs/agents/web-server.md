@@ -68,13 +68,13 @@ routes — stock routes always win on collision. See [Route extensions](#route-e
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/settings.json` | Returns `{ "enable_shutdown": true }` when shutdown is enabled; 403 when disabled. |
-| `GET` | `/stats.json` | Aggregated worker and job-queue counts, plus crawler `emissions` counters. |
+| `GET` | `/stats.json` | Aggregated worker and job-queue counts (including `jobs.pruned: { finished, dead }`, cumulative evictions by `workers.retention`, reset on engine stop), plus crawler `emissions` counters. |
 | `GET` | `/emissions.json` | Crawler emission tracking: aggregate counters plus a paginated ring buffer of per-emission records. |
 | `GET` | `/extractions.json` | Crawler extraction tracking: `counts.extracted` plus a paginated ring buffer of per-extraction records. |
 | `GET` | `/links.json` | Configured `web.links` plus one link per client (`base_url` and `linkText`/client name). |
 | `GET` | `/menu.json` | Internal navigation menu entries from the menu config file (`{ route, text }` list) plus an always-present `hidden` array of non-default routes flagged `hidden: true`; defaults to Logs + Memory. |
 | `GET` | `/jobs/:status.json` | Array of jobs in the given status (`enqueued`, `processing`, `failed`, `retryQueue`, `finished`, `dead`). |
-| `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found. |
+| `GET` | `/job/:id.json` | Full detail for a single job; 404 if not found (including jobs evicted by `workers.retention`; the retry route likewise 404s on evicted ids). |
 | `GET` | `/engine/status` | Returns `{ status }` with the current engine status. |
 | `GET` | `/memory/status.json` | Current process RSS against the resolved `web.memory` maximum, plus a derived `status`. |
 | `GET` | `/memory/history.json` | Paginated, oldest-first buffer of recent RSS memory readings (cursor pagination via last_id, same as /logs.json). |

@@ -90,6 +90,8 @@ This brings up the monitoring web UI immediately at `http://localhost:3000`, and
 | `RETRY_COOLDOWN` | `2000` | `workers.retry_cooldown` |
 | `WORKERS_SLEEP` | `500` | `workers.sleep` |
 | `MAX_RETRIES` | `3` | `workers.max-retries` |
+| `RETENTION_FINISHED` | empty (unbounded) | `workers.retention.finished` |
+| `RETENTION_DEAD` | empty (unbounded) | `workers.retention.dead` |
 
 A few loader/CLI controls (not packed-config fields) round out the surface:
 
