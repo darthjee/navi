@@ -17,6 +17,7 @@ describe('RunReporter', () => {
         failed: 1,
         retryQueue: 1,
         dead: 2,
+        pruned: { finished: 0, dead: 0 },
       });
       spyOn(LogRegistry, 'info').and.stub();
       spyOn(FailureChecker.prototype, 'check').and.stub();
@@ -35,6 +36,7 @@ describe('RunReporter', () => {
         failed: 2,
         retryQueue: 3,
         dead: 1,
+        pruned: { finished: 0, dead: 0 },
       });
       spyOn(LogRegistry, 'info').and.stub();
       spyOn(FailureChecker.prototype, 'check').and.stub();
@@ -47,13 +49,49 @@ describe('RunReporter', () => {
     });
 
     it('runs the failure check', () => {
-      spyOn(JobRegistry, 'stats').and.returnValue({ total: 0, failed: 0, retryQueue: 0, dead: 0 });
+      spyOn(JobRegistry, 'stats').and.returnValue({ total: 0, failed: 0, retryQueue: 0, dead: 0, pruned: { finished: 0, dead: 0 } });
       spyOn(LogRegistry, 'info').and.stub();
       spyOn(FailureChecker.prototype, 'check').and.stub();
 
       reporter.report({ failureConfig: { threshold: 10 } });
 
       expect(FailureChecker.prototype.check).toHaveBeenCalled();
+    });
+
+    describe('with pruned jobs', () => {
+      const prunedStats = {
+        total: 20, failed: 0, retryQueue: 0, dead: 10,
+        pruned: { finished: 940, dead: 40 },
+      };
+
+      beforeEach(() => {
+        spyOn(JobRegistry, 'stats').and.returnValue(prunedStats);
+        spyOn(LogRegistry, 'info').and.stub();
+        spyOn(LogRegistry, 'error').and.stub();
+        spyOn(process, 'exit').and.stub();
+      });
+
+      it('reports lifetime totals', () => {
+        reporter.report({ failureConfig: { threshold: 3 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(
+          'Total: 1000\nFailed: 50 (5%)\nThreshold: 3%\nResult: Failure'
+        );
+      });
+
+      it('fails consistently with the failure checker when over threshold', () => {
+        reporter.report({ failureConfig: { threshold: 3 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Failure'));
+        expect(process.exit).toHaveBeenCalledWith(1);
+      });
+
+      it('succeeds consistently with the failure checker when under threshold', () => {
+        reporter.report({ failureConfig: { threshold: 6 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Success'));
+        expect(process.exit).not.toHaveBeenCalled();
+      });
     });
   });
 });

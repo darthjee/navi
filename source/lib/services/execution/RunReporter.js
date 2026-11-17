@@ -5,7 +5,8 @@ import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
  * RunReporter builds and logs the final run summary, then evaluates the
- * configured failure threshold.
+ * configured failure threshold. Counts are lifetime (resident + pruned,
+ * since the last clearQueues()).
  * @author darthjee
  */
 class RunReporter {
@@ -18,8 +19,8 @@ class RunReporter {
   report({ failureConfig } = {}) {
     const stats = JobRegistry.stats();
     const summary = new RunSummary({
-      totalJobs: stats.total,
-      failedJobs: stats.failed + stats.retryQueue + stats.dead,
+      totalJobs: stats.total + stats.pruned.finished + stats.pruned.dead,
+      failedJobs: stats.failed + stats.retryQueue + stats.dead + stats.pruned.dead,
       threshold: failureConfig?.threshold,
     });
 
