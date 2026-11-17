@@ -113,6 +113,61 @@ describe('ConfigLoader', () => {
       });
     });
 
+    describe('when workers.retention uses env vars', () => {
+      const load = () => ConfigLoader.fromFile(FixturesUtils.getFixturePath('config/sample_config_with_retention_env_vars.yml'));
+
+      beforeEach(() => {
+        spyOn(Logger, 'warn').and.stub();
+      });
+
+      afterEach(() => {
+        delete process.env.NAVI_TEST_RETENTION_FINISHED;
+        delete process.env.NAVI_TEST_RETENTION_DEAD;
+      });
+
+      describe('when the vars are numeric strings', () => {
+        it('resolves them to numbers', () => {
+          process.env.NAVI_TEST_RETENTION_FINISHED = '100';
+          process.env.NAVI_TEST_RETENTION_DEAD = '50';
+
+          const { retention } = load().workersConfig;
+
+          expect(retention).toEqual({ finished: 100, dead: 50 });
+          expect(typeof retention.finished).toBe('number');
+          expect(typeof retention.dead).toBe('number');
+        });
+      });
+
+      describe('when the vars are empty', () => {
+        beforeEach(() => {
+          process.env.NAVI_TEST_RETENTION_FINISHED = '';
+          process.env.NAVI_TEST_RETENTION_DEAD = '';
+        });
+
+        it('leaves retention undefined', () => {
+          expect(load().workersConfig.retention).toBeUndefined();
+        });
+
+        it('does not warn about undefined variables', () => {
+          load();
+
+          expect(Logger.warn).not.toHaveBeenCalledWith(jasmine.stringContaining('Environment variable not defined'));
+        });
+      });
+
+      describe('when the vars are unset', () => {
+        it('leaves retention undefined', () => {
+          expect(load().workersConfig.retention).toBeUndefined();
+        });
+
+        it('logs the warning', () => {
+          load();
+
+          expect(Logger.warn).toHaveBeenCalledWith('Environment variable not defined: NAVI_TEST_RETENTION_FINISHED');
+        });
+      });
+    });
+
     describe('when the config is split across multiple included files', () => {
       it('groups resources/clients by namespace across the whole include chain', () => {
         const configFilePath = FixturesUtils.getFixturePath('config/split_config/config.yml');

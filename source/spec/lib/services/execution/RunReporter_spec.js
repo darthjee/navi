@@ -1,4 +1,7 @@
-import { JobRegistry } from 'deku-swarm';
+import { JobFactory, JobRegistry } from 'deku-swarm';
+import { ResourceRequestJob } from '../../../../lib/jobs/ResourceRequestJob.js';
+import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
+import { JobRegistryUtils } from '../../../support/utils/JobRegistryUtils.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../../lib/services/execution/FailureChecker.js';
 import { RunReporter } from '../../../../lib/services/execution/RunReporter.js';
@@ -56,6 +59,52 @@ describe('RunReporter', () => {
       reporter.report({ failureConfig: { threshold: 10 } });
 
       expect(FailureChecker.prototype.check).toHaveBeenCalled();
+    });
+
+    describe('with the real JobRegistry and retention', () => {
+      beforeEach(() => {
+        JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: new ClientRegistry() } });
+        JobRegistry.build({ cooldown: -1, retention: { finished: 2, dead: 2 } });
+        spyOn(LogRegistry, 'info').and.stub();
+        spyOn(LogRegistry, 'error').and.stub();
+        spyOn(process, 'exit').and.stub();
+
+        for (let i = 0; i < 20; i++) {
+          JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: i } });
+          const job = JobRegistry.pick();
+          if (i % 4 === 0) {
+            JobRegistryUtils.exhaust(job);
+            JobRegistry.fail(job);
+          } else {
+            JobRegistry.finish(job);
+          }
+        }
+      });
+
+      afterEach(() => {
+        JobRegistry.reset();
+        JobFactory.reset();
+      });
+
+      it('reports lifetime counts', () => {
+        reporter.report({ failureConfig: { threshold: 50 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Total: 20\nFailed: 5 (25%)'));
+      });
+
+      it('fails consistently when over threshold', () => {
+        reporter.report({ failureConfig: { threshold: 10 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Failure'));
+        expect(process.exit).toHaveBeenCalledWith(1);
+      });
+
+      it('succeeds consistently when under threshold', () => {
+        reporter.report({ failureConfig: { threshold: 30 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Success'));
+        expect(process.exit).not.toHaveBeenCalled();
+      });
     });
 
     describe('with pruned jobs', () => {

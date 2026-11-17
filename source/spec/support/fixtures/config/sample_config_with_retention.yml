@@ -1,0 +1,13 @@
+workers:
+  quantity: 5
+  retention:
+    finished: 100
+    dead: 50
+clients:
+  default:
+    base_url: https://example.com
+    timeout: 5000
+resources:
+  categories:
+    - url: /categories.json
+      status: 200
