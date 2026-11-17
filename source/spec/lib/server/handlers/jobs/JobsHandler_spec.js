@@ -1,4 +1,4 @@
-import { JobRegistry } from 'deku-swarm';
+import { Job, JobRegistry } from 'deku-swarm';
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { JobsHandler } from '../../../../../lib/server/handlers/jobs/JobsHandler.js';
 
@@ -45,8 +45,8 @@ describe("describe('JobsHandler'", () => {
     it('responds with the serialized job list', () => {
       new JobsHandler({ params: { status: 'enqueued' }, query: {} }, res).handle();
       expect(res.json).toHaveBeenCalledWith([
-        { id: 'abc', status: 'enqueued', attempts: 0, jobClass: 'ResourceRequestJob', url: '/items.json' },
-        { id: 'def', status: 'enqueued', attempts: 1, jobClass: 'ActionProcessingJob' },
+        { id: 'abc', status: 'enqueued', attempts: 0, jobClass: 'ResourceRequestJob', endedAt: null, url: '/items.json' },
+        { id: 'def', status: 'enqueued', attempts: 1, jobClass: 'ActionProcessingJob', endedAt: null },
       ]);
     });
 
@@ -57,8 +57,22 @@ describe("describe('JobsHandler'", () => {
           res
         ).handle();
         expect(res.json).toHaveBeenCalledWith([
-          { id: 'abc', status: 'enqueued', attempts: 0, jobClass: 'ResourceRequestJob', url: '/items.json' },
+          { id: 'abc', status: 'enqueued', attempts: 0, jobClass: 'ResourceRequestJob', endedAt: null, url: '/items.json' },
         ]);
+      });
+    });
+
+    describe('when a job was finished through the registry', () => {
+      beforeEach(() => {
+        JobRegistry.jobsByStatus.and.callThrough();
+        const job = new Job({ id: 'fin-1' });
+        JobRegistry.finish(job);
+      });
+
+      it('exposes endedAt as an ISO string', () => {
+        new JobsHandler({ params: { status: 'finished' }, query: {} }, res).handle();
+        const [payload] = res.json.calls.mostRecent().args[0];
+        expect(payload.endedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
       });
     });
 

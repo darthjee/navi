@@ -476,6 +476,8 @@ of `GET /menu.json`.
 | `status` | string | Current status name. |
 | `attempts` | number | Number of retry attempts made. |
 | `jobClass` | string | Constructor name (e.g. `ResourceRequestJob`). |
+| `endedAt` | string \| null | ISO 8601 time the job reached a terminal state (finished/dead); `null` otherwise. |
+| `url` | string (optional) | Present for `ResourceRequestJob` or jobs with an `originUrl` argument. |
 
 **`JobShowSerializer`** (detail view):
 
@@ -486,6 +488,7 @@ of `GET /menu.json`.
 | `attempts` | number | all | Retry attempts. |
 | `jobClass` | string | all | Constructor name. |
 | `arguments` | object | all | Job-specific parameters. |
+| `endedAt` | string \| null | all | ISO 8601 end time; `null` unless the job has ended (cleared again when a dead job is retried). |
 | `remainingAttempts` | number | `enqueued`, `processing`, `failed` | `maxRetries − attempts`. |
 | `readyInMs` | number | `failed` | Milliseconds until eligible for retry. |
 | `lastError` | string | `failed`, `dead` | Exception message from the last failure (when present). |

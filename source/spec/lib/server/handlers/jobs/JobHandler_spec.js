@@ -1,4 +1,4 @@
-import { JobRegistry } from 'deku-swarm';
+import { Job, JobRegistry } from 'deku-swarm';
 import { RequestHandler } from '../../../../../lib/common/server/RequestHandler.js';
 import { NotFoundError } from '../../../../../lib/exceptions/http/NotFoundError.js';
 import { JobHandler } from '../../../../../lib/server/handlers/jobs/JobHandler.js';
@@ -46,7 +46,20 @@ describe("describe('JobHandler'", () => {
           status: 'processing',
           attempts: 1,
           jobClass: 'ResourceRequestJob',
+          endedAt: null,
         }));
+      });
+    });
+
+    describe('when the job was finished through the registry', () => {
+      beforeEach(() => {
+        JobRegistry.finish(new Job({ id: 'fin-1' }));
+      });
+
+      it('exposes endedAt as an ISO string', () => {
+        new JobHandler({ params: { id: 'fin-1' } }, res).handle();
+        expect(res.json.calls.mostRecent().args[0].endedAt)
+          .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
       });
     });
 

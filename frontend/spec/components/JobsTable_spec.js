@@ -25,6 +25,7 @@ describe('JobsTable', () => {
       expect(html).toContain('Attempts');
       expect(html).toContain('Class');
       expect(html).toContain('URL');
+      expect(html).toContain('Ended at');
     });
 
     it('renders a row for each job', () => {

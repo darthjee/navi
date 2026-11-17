@@ -18,6 +18,7 @@ describe('JobSerializer', () => {
           status: 'enqueued',
           attempts: 2,
           jobClass: 'ResourceRequestJob',
+          endedAt: null,
           url: '/items.json',
         });
       });
@@ -27,9 +28,14 @@ describe('JobSerializer', () => {
         const jobB = { id: 'b2', _attempts: 1, constructor: { name: 'JobB' } };
 
         expect(JobSerializer.serialize([jobA, jobB], { status: 'processing' })).toEqual([
-          { id: 'a1', status: 'processing', attempts: 0, jobClass: 'JobA' },
-          { id: 'b2', status: 'processing', attempts: 1, jobClass: 'JobB' },
+          { id: 'a1', status: 'processing', attempts: 0, jobClass: 'JobA', endedAt: null },
+          { id: 'b2', status: 'processing', attempts: 1, jobClass: 'JobB', endedAt: null },
         ]);
+      });
+
+      it('carries endedAt through the index view', () => {
+        const ended = { id: 'e1', _attempts: 0, constructor: { name: 'JobA' }, endedAt: Date.UTC(2026, 0, 2, 3, 4, 5, 6) };
+        expect(JobSerializer.serialize(ended, { status: 'finished' }).endedAt).toEqual('2026-01-02T03:04:05.006Z');
       });
 
       it('returns an empty array when given an empty array', () => {
@@ -46,6 +52,7 @@ describe('JobSerializer', () => {
           status,
           attempts: 0,
           jobClass: 'AssetDownloadJob',
+          endedAt: null,
         });
       });
     });
@@ -71,6 +78,12 @@ describe('JobSerializer', () => {
           remainingAttempts: 0,
         }));
         expect(result.readyInMs).toBeGreaterThanOrEqual(0);
+      });
+
+      it('carries endedAt through the show view', () => {
+        const ended = { ...job, endedAt: Date.UTC(2026, 0, 2, 3, 4, 5, 6) };
+        expect(JobSerializer.serialize(ended, { status: 'dead', view: 'show' }).endedAt)
+          .toEqual('2026-01-02T03:04:05.006Z');
       });
     });
   });

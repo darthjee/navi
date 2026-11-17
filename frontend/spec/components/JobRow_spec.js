@@ -14,6 +14,7 @@ describe('JobRow', () => {
     attempts: 2,
     jobClass: 'ResourceRequestJob',
     url: 'https://example.com',
+    endedAt: null,
   };
 
   it('renders a table row', () => {
@@ -49,6 +50,20 @@ describe('JobRow', () => {
 
     it('renders an em dash', () => {
       expect(render(jobWithoutUrl)).toContain('—');
+    });
+  });
+
+  describe('when endedAt is set', () => {
+    it('renders the formatted timestamp', () => {
+      const html = render({ ...job, endedAt: '2026-01-02T03:04:05.000Z' });
+      expect(html).toContain('2026');
+    });
+  });
+
+  describe('when endedAt is null', () => {
+    it('renders an em dash in the ended at cell', () => {
+      const html = render(job);
+      expect(html.match(/—/g).length).toBe(1);
     });
   });
 });

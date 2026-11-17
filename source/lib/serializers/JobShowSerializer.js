@@ -1,3 +1,4 @@
+import { EndedAtSerializer } from './EndedAtSerializer.js';
 import { Serializer } from './Serializer.js';
 
 const STATUSES_WITH_REMAINING_ATTEMPTS = new Set(['enqueued', 'processing', 'failed']);
@@ -12,6 +13,7 @@ class JobShowSerializer extends Serializer {
   /**
    * Serializes a single job instance into a full details object for the show view.
    * Fields are included conditionally based on the job's status and recorded error.
+   * `endedAt` is always present (ISO string or `null`).
    *
    * @param {object} job - A job instance.
    * @param {object} options - Serialization options.
@@ -25,6 +27,7 @@ class JobShowSerializer extends Serializer {
       attempts: job._attempts,
       jobClass: job.constructor.name,
       arguments: job.arguments,
+      endedAt: EndedAtSerializer.serialize(job),
     };
 
     if (STATUSES_WITH_REMAINING_ATTEMPTS.has(status)) {
