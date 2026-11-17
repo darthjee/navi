@@ -10,6 +10,7 @@ class JobsTableHelper {
           <th>Attempts</th>
           <th>Class</th>
           <th>URL</th>
+          <th>Ended at</th>
         </tr>
       </thead>
     );

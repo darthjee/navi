@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import formatTimestamp from '../../utils/formatTimestamp.js';
 import JobStatusBadge from './JobStatusBadge.jsx';
 
 function JobRow({ job }) {
@@ -13,6 +14,7 @@ function JobRow({ job }) {
       <td>{job.attempts}</td>
       <td>{job.jobClass}</td>
       <td>{job.url ?? '—'}</td>
+      <td>{formatTimestamp(job.endedAt)}</td>
     </tr>
   );
 }
