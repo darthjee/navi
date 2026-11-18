@@ -20,7 +20,7 @@ For the full field-by-field breakdown of every YAML config key, see
 | `LOGS_PAGE_SIZE` | `20` | `web.logs_page_size` |
 | `ENABLE_SHUTDOWN` | `false` | `web.enable_shutdown` |
 | `AUTOSTART` | `true` | `web.autostart` |
-| `IDLE_TIMEOUT` | `0` (disabled) | `web.idle_timeout` — `0` disables auto-shutdown, so the web UI stays up indefinitely. |
+| `IDLE_TIMEOUT` | `0` (disabled) | `web.idle_timeout` — `0` disables auto-shutdown, so the web UI stays up indefinitely. The final run summary and `failure.threshold` check still apply on auto-shutdown. |
 | `API_TOKEN` | empty (disabled) | `web.api.token` — empty disables the token-secured `/api/*` namespace (every request rejected). |
 | `WORKERS` | `1` | `workers.quantity` |
 | `RETRY_COOLDOWN` | `2000` | `workers.retry_cooldown` |
