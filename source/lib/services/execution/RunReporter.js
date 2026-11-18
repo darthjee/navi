@@ -1,5 +1,6 @@
 import { JobRegistry } from 'deku-swarm';
 import { FailureChecker } from './FailureChecker.js';
+import { LifetimeJobStats } from './LifetimeJobStats.js';
 import { RunSummary } from './RunSummary.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 
@@ -17,10 +18,10 @@ class RunReporter {
    * @returns {void}
    */
   report({ failureConfig } = {}) {
-    const stats = JobRegistry.stats();
+    const stats = LifetimeJobStats.fromStats(JobRegistry.stats());
     const summary = new RunSummary({
-      totalJobs: stats.total + stats.pruned.finished + stats.pruned.dead,
-      failedJobs: stats.failed + stats.retryQueue + stats.dead + stats.pruned.dead,
+      totalJobs: stats.total,
+      failedJobs: stats.unresolved + stats.dead,
       threshold: failureConfig?.threshold,
     });
 
