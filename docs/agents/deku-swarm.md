@@ -196,7 +196,8 @@ These are concrete `Job` implementations that live in `source/lib/jobs/`, import
 | Service | File | Responsibility | Extraction note |
 |---|---|---|---|
 | `EngineStopService` | `source/lib/services/engine/EngineStopService.js` | Shared logic for `PATCH /engine/stop` and `POST /api/engine/stop`: throws `ConflictError` unless `statusProvider.isRunning()`, otherwise calls `statusProvider.stop()` (`statusProvider` defaults to `Application`). | Done — reaches its status provider through constructor-style injection (`stop(statusProvider = Application)`) rather than a hardcoded static reference. |
-| `FailureChecker` | `source/lib/services/execution/FailureChecker.js` | Post-run check: reads `JobRegistry.stats()`, computes the dead/total ratio, and calls `process.exit(1)` if it exceeds the configured `failureConfig.threshold`. No-op if `failureConfig` is `null` or `total === 0`. | Done — reached indirectly via `RunReporter`'s `'finish'` subscription on `Engine`. |
+| `FailureChecker` | `source/lib/services/execution/FailureChecker.js` | Post-run check: reads lifetime counts via `LifetimeJobStats`, computes the dead/total ratio, and calls `process.exit(1)` if it exceeds the configured `failureConfig.threshold`. No-op if `failureConfig` is `null` or `total === 0`. | Done — reached indirectly via `RunReporter`'s `'finish'` subscription on `Engine`. |
+| `LifetimeJobStats` | `source/lib/services/execution/LifetimeJobStats.js` | Converts `JobRegistry.stats()` into lifetime `total`/`dead`/`unresolved` counts (resident + pruned since the last `clearQueues()`). Shared by `FailureChecker` and `RunReporter`. | Done — value object, no registry access of its own. |
 | `RunSummary` | `source/lib/services/execution/RunSummary.js` | Computes and formats the final run report (`percentage()`, `result()` — `'Success'`/`'Failure'` against an optional threshold, `report()` — multi-line summary string). | Done — wrapped by `RunReporter`, reached the same way as `FailureChecker`. |
 
 ## What stays in Navi
@@ -205,7 +206,7 @@ These are concrete `Job` implementations that live in `source/lib/jobs/`, import
 - `ResourceEnqueuer` — the dedicated Navi class that calls `JobRegistry.enqueue()` from outside the package
 - `LogContext` (`source/lib/utils/logging/LogContext.js`) — Navi-specific logging, wired into `Worker` via the injected `loggerFactory` rather than imported by the package directly
 - `IncrementalIdGenerator` (`source/lib/utils/generators/IncrementalIdGenerator.js`) — used by `source/lib/common/utils/logging/LogFactory.js`, outside the worker subsystem; not part of `deku-swarm`
-- `EngineStopService`, `FailureChecker`, `RunSummary` — see "Engine auxiliary services" above
+- `EngineStopService`, `FailureChecker`, `LifetimeJobStats`, `RunSummary` — see "Engine auxiliary services" above
 - `ApplicationInstance` — orchestrates boot, registers the five job factories, builds `JobRegistry`/`WorkersRegistry`/`Engine` from `deku-swarm`
 
 ## Out of scope

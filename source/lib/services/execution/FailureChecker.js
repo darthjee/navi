@@ -1,4 +1,5 @@
 import { JobRegistry } from 'deku-swarm';
+import { LifetimeJobStats } from './LifetimeJobStats.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
@@ -43,9 +44,9 @@ class FailureChecker {
    * @returns {void}
    */
   #loadStats() {
-    const { dead, total, pruned } = JobRegistry.stats();
-    this.#dead = dead + pruned.dead;
-    this.#total = total + pruned.finished + pruned.dead;
+    const stats = LifetimeJobStats.fromStats(JobRegistry.stats());
+    this.#dead = stats.dead;
+    this.#total = stats.total;
   }
 
   /**
