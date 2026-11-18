@@ -137,9 +137,7 @@ class EngineController {
    * @returns {Promise<void>}
    */
   async stop() {
-    this.#state.set('stopping');
-    this.engine.pause();
-    await this.#waitForWorkersIdle();
+    await this.#drain();
     JobRegistry.clearQueues();
     this.#state.set('stopped');
     this.engine.emit('stop');
@@ -203,13 +201,17 @@ class EngineController {
 
   /**
    * Shuts down the web server and stops the engine loop.
-   * If running, pauses first and waits for workers to idle.
+   * If running, pauses first and waits for workers to idle, then emits `stop`
+   * WITHOUT clearing the job queues, so the final run summary (reported on the
+   * engine's `finish` event) still sees the lifetime job counts.
    * @returns {Promise<void>}
    */
   async shutdown() {
     this.serverController?.shutdown();
     if (this.#state.isRunning()) {
-      await this.stop();
+      await this.#drain();
+      this.#state.set('stopped');
+      this.engine.emit('stop');
     }
     this.engine.stop();
   }
@@ -223,6 +225,17 @@ class EngineController {
     this.#state.set('stopped');
     this.engine.emit('stop');
     this.engine.emit('finish');
+  }
+
+  /**
+   * Moves to `stopping`, pauses the engine and waits for workers to become idle.
+   * Does not touch the job queues.
+   * @returns {Promise<void>}
+   */
+  async #drain() {
+    this.#state.set('stopping');
+    this.engine.pause();
+    await this.#waitForWorkersIdle();
   }
 
   /**

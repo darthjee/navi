@@ -1,3 +1,4 @@
+import { JobRegistry, WorkersRegistry } from 'deku-swarm';
 import { EngineController } from '../../../../lib/services/engine/EngineController.js';
 import { FakeEngine } from '../../../support/dummies/services/FakeEngine.js';
 import { EngineControllerSpecUtils } from '../../../support/utils/EngineControllerSpecUtils.js';
@@ -55,6 +56,11 @@ describe('EngineController', () => {
   });
 
   describe('#stop', () => {
+    it('clears the job queues', async () => {
+      await ctx.controller.stop();
+      expect(JobRegistry.clearQueues).toHaveBeenCalled();
+    });
+
     it('stops without recreating the engine', async () => {
       const originalEngine = ctx.controller.engine;
       spyOn(ctx.controller.engine, 'pause');
@@ -113,6 +119,84 @@ describe('EngineController', () => {
       });
 
       itStopsTheEngine();
+    });
+  });
+
+  describe('#restart and #reload', () => {
+    beforeEach(() => {
+      spyOn(ctx.controller, 'resumeProcessing').and.resolveTo();
+    });
+
+    it('#restart clears the job queues', async () => {
+      await ctx.controller.restart();
+      expect(JobRegistry.clearQueues).toHaveBeenCalled();
+    });
+
+    it('#reload clears the job queues', async () => {
+      await ctx.controller.reload();
+      expect(JobRegistry.clearQueues).toHaveBeenCalled();
+    });
+  });
+
+  describe('#shutdown queue retention', () => {
+    beforeEach(() => {
+      spyOn(ctx.controller.engine, 'stop');
+      spyOn(ctx.controller.engine, 'pause');
+      spyOn(ctx.controller.engine, 'emit');
+    });
+
+    describe('when running', () => {
+      it('does not clear the job queues', async () => {
+        await ctx.controller.shutdown();
+        expect(JobRegistry.clearQueues).not.toHaveBeenCalled();
+      });
+
+      it('pauses the engine', async () => {
+        await ctx.controller.shutdown();
+        expect(ctx.controller.engine.pause).toHaveBeenCalled();
+      });
+
+      it('ends in the stopped state', async () => {
+        await ctx.controller.shutdown();
+        expect(ctx.state.get()).toBe('stopped');
+      });
+
+      it('emits stop and stops the engine', async () => {
+        await ctx.controller.shutdown();
+        expect(ctx.controller.engine.emit).toHaveBeenCalledWith('stop');
+        expect(ctx.controller.engine.stop).toHaveBeenCalled();
+      });
+
+      it('never clears queues when called twice', async () => {
+        await ctx.controller.shutdown();
+        await ctx.controller.shutdown();
+        expect(JobRegistry.clearQueues).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when paused', () => {
+      beforeEach(() => {
+        ctx.state.set('paused');
+      });
+
+      it('does not drain or clear, and stops the engine', async () => {
+        await ctx.controller.shutdown();
+        expect(ctx.controller.engine.pause).not.toHaveBeenCalled();
+        expect(JobRegistry.clearQueues).not.toHaveBeenCalled();
+        expect(ctx.controller.engine.stop).toHaveBeenCalled();
+      });
+    });
+
+    describe('when a stop is in flight', () => {
+      it('skips its own drain while the in-flight stop still clears', async () => {
+        WorkersRegistry.hasBusyWorker.and.returnValues(true, false);
+        const stopping = ctx.controller.stop();
+        await ctx.controller.shutdown();
+        await stopping;
+
+        expect(ctx.controller.engine.pause).toHaveBeenCalledTimes(1);
+        expect(JobRegistry.clearQueues).toHaveBeenCalledTimes(1);
+      });
     });
   });
 

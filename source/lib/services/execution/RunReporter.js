@@ -26,7 +26,7 @@ class RunReporter {
     });
 
     LogRegistry.info(summary.report());
-    new FailureChecker({ failureConfig }).check();
+    new FailureChecker({ failureConfig, stats }).check();
   }
 }
 
