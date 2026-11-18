@@ -61,6 +61,30 @@ describe('RunReporter', () => {
       expect(FailureChecker.prototype.check).toHaveBeenCalled();
     });
 
+    describe('single stats read', () => {
+      beforeEach(() => {
+        spyOn(JobRegistry, 'stats').and.returnValue({
+          total: 10, failed: 0, retryQueue: 0, dead: 5, pruned: { finished: 0, dead: 0 },
+        });
+        spyOn(LogRegistry, 'info').and.stub();
+        spyOn(LogRegistry, 'error').and.stub();
+        spyOn(process, 'exit').and.stub();
+      });
+
+      it('reads JobRegistry.stats exactly once', () => {
+        reporter.report({ failureConfig: { threshold: 10 } });
+
+        expect(JobRegistry.stats).toHaveBeenCalledTimes(1);
+      });
+
+      it('exits and reports Failure from the same stats', () => {
+        reporter.report({ failureConfig: { threshold: 10 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Failure'));
+        expect(process.exit).toHaveBeenCalledWith(1);
+      });
+    });
+
     describe('with the real JobRegistry and retention', () => {
       beforeEach(() => {
         JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients: new ClientRegistry() } });

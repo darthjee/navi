@@ -1,5 +1,3 @@
-import { JobRegistry } from 'deku-swarm';
-import { LifetimeJobStats } from './LifetimeJobStats.js';
 import { LogRegistry } from '../../registry/LogRegistry.js';
 
 /**
@@ -9,17 +7,18 @@ import { LogRegistry } from '../../registry/LogRegistry.js';
  */
 class FailureChecker {
   #failureConfig;
-  #dead;
-  #total;
+  #stats;
   #cachedRatio;
 
   /**
    * Creates a new FailureChecker instance.
    * @param {object} params - Construction parameters.
    * @param {FailureConfig|null} params.failureConfig - The failure threshold configuration, or null to skip checking.
+   * @param {LifetimeJobStats} params.stats - Lifetime job stats to evaluate.
    */
-  constructor({ failureConfig }) {
+  constructor({ failureConfig, stats }) {
     this.#failureConfig = failureConfig;
+    this.#stats = stats;
   }
 
   /**
@@ -30,23 +29,11 @@ class FailureChecker {
   check() {
     if (!this.#failureConfig) return;
 
-    this.#loadStats();
-    if (this.#total === 0) return;
+    if (this.#stats.total === 0) return;
 
     if (this.#isOverThreshold()) {
       this.#fail();
     }
-  }
-
-  /**
-   * Loads lifetime dead and total job counts (resident plus pruned, since the
-   * last clearQueues()) from the registry into instance attributes.
-   * @returns {void}
-   */
-  #loadStats() {
-    const stats = LifetimeJobStats.fromStats(JobRegistry.stats());
-    this.#dead = stats.dead;
-    this.#total = stats.total;
   }
 
   /**
@@ -55,7 +42,7 @@ class FailureChecker {
    * @returns {number} The dead-job ratio as a percentage (0–100).
    */
   #ratio() {
-    this.#cachedRatio ??= (this.#dead / this.#total) * 100;
+    this.#cachedRatio ??= (this.#stats.dead / this.#stats.total) * 100;
     return this.#cachedRatio;
   }
 

@@ -1,135 +1,54 @@
-import { JobFactory, JobRegistry, IdentifyableCollection, Queue } from 'deku-swarm';
-import { ResourceRequestJob } from '../../../../lib/jobs/ResourceRequestJob.js';
+import { JobRegistry } from 'deku-swarm';
 import { FailureConfig } from '../../../../lib/models/configs/FailureConfig.js';
-import { ClientRegistry } from '../../../../lib/registry/ClientRegistry.js';
 import { LogRegistry } from '../../../../lib/registry/LogRegistry.js';
 import { FailureChecker } from '../../../../lib/services/execution/FailureChecker.js';
-import { JobRegistryUtils } from '../../../support/utils/JobRegistryUtils.js';
+import { LifetimeJobStats } from '../../../../lib/services/execution/LifetimeJobStats.js';
 
 describe('FailureChecker', () => {
-  let clients;
-  let deadCollection;
-  let finishedCollection;
+  const buildStats = ({ total, dead }) => new LifetimeJobStats({ total, dead, unresolved: 0 });
 
   beforeEach(() => {
-    clients = new ClientRegistry();
-    JobFactory.build('ResourceRequestJob', { klass: ResourceRequestJob, attributes: { clients } });
-
-    deadCollection = new IdentifyableCollection();
-    finishedCollection = new IdentifyableCollection();
-
-    JobRegistry.build({
-      queue: new Queue(),
-      dead: deadCollection,
-      finished: finishedCollection,
-      cooldown: -1,
-    });
-
     spyOn(process, 'exit').and.stub();
     spyOn(LogRegistry, 'error').and.stub();
-  });
-
-  afterEach(() => {
-    JobRegistry.reset();
-    JobFactory.reset();
   });
 
   describe('#check', () => {
     describe('when failureConfig is null', () => {
       it('does not call process.exit', () => {
-        const checker = new FailureChecker({ failureConfig: null });
-        checker.check();
-        expect(process.exit).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('with pruned counts', () => {
-      const stubStats = (stats) => spyOn(JobRegistry, 'stats').and.returnValue(stats);
-
-      it('uses lifetime ratio and exits when over threshold', () => {
-        stubStats({ total: 20, dead: 10, pruned: { finished: 940, dead: 40 } });
-        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 3 }) }).check();
-        expect(process.exit).toHaveBeenCalledWith(1);
-      });
-
-      it('does not exit when under threshold', () => {
-        stubStats({ total: 20, dead: 10, pruned: { finished: 940, dead: 40 } });
-        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 6 }) }).check();
-        expect(process.exit).not.toHaveBeenCalled();
-      });
-
-      it('matches the unpruned result when nothing was pruned', () => {
-        stubStats({ total: 2, dead: 1, pruned: { finished: 0, dead: 0 } });
-        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 10 }) }).check();
-        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining('50.00%'));
-      });
-
-      it('does not exit when the lifetime total is zero', () => {
-        stubStats({ total: 0, dead: 0, pruned: { finished: 0, dead: 0 } });
-        new FailureChecker({ failureConfig: new FailureConfig({ threshold: 0 }) }).check();
+        new FailureChecker({ failureConfig: null, stats: buildStats({ total: 10, dead: 10 }) }).check();
         expect(process.exit).not.toHaveBeenCalled();
       });
     });
 
     describe('when failureConfig is present', () => {
-      let failureConfig;
+      const check = (threshold, stats) => {
+        new FailureChecker({ failureConfig: new FailureConfig({ threshold }), stats }).check();
+      };
 
-      beforeEach(() => {
-        failureConfig = new FailureConfig({ threshold: 10.0 });
+      it('exits when the dead ratio is over the threshold', () => {
+        check(10, buildStats({ total: 2, dead: 1 }));
+        expect(process.exit).toHaveBeenCalledWith(1);
       });
 
-      describe('when total is zero (no jobs ran)', () => {
-        it('does not call process.exit', () => {
-          const checker = new FailureChecker({ failureConfig });
-          checker.check();
-          expect(process.exit).not.toHaveBeenCalled();
-        });
+      it('logs the ratio when over the threshold', () => {
+        check(10, buildStats({ total: 2, dead: 1 }));
+        expect(LogRegistry.error).toHaveBeenCalledWith(jasmine.stringContaining('50.00%'));
       });
 
-      describe('when dead ratio exceeds threshold', () => {
-        beforeEach(() => {
-          // Enqueue 2 jobs: mark one dead, one finished → ratio = 50% > 10%
-          JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 1 } });
-          JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: 2 } });
-
-          const job1 = JobRegistry.pick();
-          JobRegistryUtils.exhaust(job1);
-          JobRegistry.fail(job1);
-
-          const job2 = JobRegistry.pick();
-          JobRegistry.finish(job2);
-        });
-
-        it('calls process.exit(1)', () => {
-          const checker = new FailureChecker({ failureConfig });
-          checker.check();
-          expect(process.exit).toHaveBeenCalledWith(1);
-        });
-
-        it('logs an error message', () => {
-          const checker = new FailureChecker({ failureConfig });
-          checker.check();
-          expect(LogRegistry.error).toHaveBeenCalledWith(
-            jasmine.stringContaining('Failure threshold exceeded')
-          );
-        });
+      it('does not exit when within the threshold', () => {
+        check(10, buildStats({ total: 10, dead: 0 }));
+        expect(process.exit).not.toHaveBeenCalled();
       });
 
-      describe('when dead ratio is within threshold', () => {
-        beforeEach(() => {
-          // 10 finished, 0 dead → ratio = 0% ≤ 10%
-          for (let i = 0; i < 10; i++) {
-            JobRegistry.enqueue('ResourceRequestJob', { parameters: { value: i } });
-            const job = JobRegistry.pick();
-            JobRegistry.finish(job);
-          }
-        });
+      it('does not exit when the total is zero', () => {
+        check(0, buildStats({ total: 0, dead: 0 }));
+        expect(process.exit).not.toHaveBeenCalled();
+      });
 
-        it('does not call process.exit', () => {
-          const checker = new FailureChecker({ failureConfig });
-          checker.check();
-          expect(process.exit).not.toHaveBeenCalled();
-        });
+      it('does not read JobRegistry', () => {
+        spyOn(JobRegistry, 'stats');
+        check(10, buildStats({ total: 2, dead: 1 }));
+        expect(JobRegistry.stats).not.toHaveBeenCalled();
       });
     });
   });
