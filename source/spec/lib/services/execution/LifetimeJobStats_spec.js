@@ -49,7 +49,7 @@ describe('LifetimeJobStats', () => {
 
     it('uses lifetime counts including pruned', () => {
       const stats = LifetimeJobStats.fromStats(buildStats({
-        total: 10, dead: 4, pruned: { finished: 10, dead: 6 },
+        total: 10, dead: 4, pruned: { finished: 4, dead: 6 },
       }));
 
       expect(stats.percentage).toEqual(50);

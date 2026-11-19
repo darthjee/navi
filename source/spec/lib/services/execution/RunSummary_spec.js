@@ -1,5 +1,5 @@
-import { RunSummary } from '../../../../lib/services/execution/RunSummary.js';
 import { LifetimeJobStats } from '../../../../lib/services/execution/LifetimeJobStats.js';
+import { RunSummary } from '../../../../lib/services/execution/RunSummary.js';
 
 describe('RunSummary', () => {
   const build = ({ total, dead, unresolved = 0, threshold }) => new RunSummary({
