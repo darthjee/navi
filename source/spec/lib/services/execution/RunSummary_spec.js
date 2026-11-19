@@ -2,8 +2,8 @@ import { LifetimeJobStats } from '../../../../lib/services/execution/LifetimeJob
 import { RunSummary } from '../../../../lib/services/execution/RunSummary.js';
 
 describe('RunSummary', () => {
-  const build = ({ total, dead, unresolved = 0, threshold }) => new RunSummary({
-    stats: new LifetimeJobStats({ total, dead, unresolved }),
+  const build = ({ total, dead, unresolved = 0, pending = 0, threshold }) => new RunSummary({
+    stats: new LifetimeJobStats({ total, dead, unresolved, pending }),
     threshold,
   });
 
@@ -19,6 +19,10 @@ describe('RunSummary', () => {
     it('never exceeds 100% with unresolved jobs', () => {
       expect(build({ total: 5, dead: 5, unresolved: 20 }).percentage()).toBe(100);
     });
+
+    it('is not affected by pending jobs', () => {
+      expect(build({ total: 10, dead: 4, pending: 50, threshold: 30 }).percentage()).toBe(40);
+    });
   });
 
   describe('#result', () => {
@@ -32,6 +36,10 @@ describe('RunSummary', () => {
 
     it('returns success when threshold is not configured', () => {
       expect(build({ total: 10, dead: 10 }).result()).toBe('Success');
+    });
+
+    it('is not affected by pending jobs', () => {
+      expect(build({ total: 10, dead: 3, pending: 50, threshold: 30 }).result()).toBe('Success');
     });
   });
 
@@ -59,6 +67,28 @@ describe('RunSummary', () => {
     it('handles zero total with unresolved jobs', () => {
       expect(build({ total: 0, dead: 0, unresolved: 7, threshold: 30 }).report()).toBe(
         'Total: 0\nFailed: 0 (0%)\nUnresolved: 7\nThreshold: 30%\nResult: Success'
+      );
+    });
+
+    it('omits the Pending line when there are none', () => {
+      expect(build({ total: 10, dead: 2 }).report()).not.toContain('Pending');
+    });
+
+    it('prints Pending after Failed when there are pending jobs', () => {
+      expect(build({ total: 10, dead: 4, pending: 5, threshold: 30 }).report()).toBe(
+        'Total: 10\nFailed: 4 (40%)\nPending: 5\nThreshold: 30%\nResult: Failure'
+      );
+    });
+
+    it('prints Unresolved before Pending', () => {
+      expect(build({ total: 10, dead: 4, unresolved: 3, pending: 5, threshold: 30 }).report()).toBe(
+        'Total: 10\nFailed: 4 (40%)\nUnresolved: 3\nPending: 5\nThreshold: 30%\nResult: Failure'
+      );
+    });
+
+    it('handles zero total with pending jobs', () => {
+      expect(build({ total: 0, dead: 0, pending: 7, threshold: 30 }).report()).toBe(
+        'Total: 0\nFailed: 0 (0%)\nPending: 7\nThreshold: 30%\nResult: Success'
       );
     });
   });

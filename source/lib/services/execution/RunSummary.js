@@ -34,7 +34,8 @@ class RunSummary {
   }
 
   /**
-   * Returns the multi-line summary message.
+   * Returns the multi-line summary message, with optional Unresolved and
+   * Pending lines when there are in-flight or not-yet-completed jobs.
    * @returns {string} Formatted run summary.
    */
   report() {
@@ -42,6 +43,7 @@ class RunSummary {
       `Total: ${this.#stats.total}`,
       `Failed: ${this.#stats.dead} (${this.#format(this.percentage())}%)`,
       ...this.#unresolvedLines(),
+      ...this.#pendingLines(),
       `Threshold: ${this.#formatThreshold()}`,
       `Result: ${this.result()}`,
     ].join('\n');
@@ -52,6 +54,14 @@ class RunSummary {
    */
   #unresolvedLines() {
     if (this.#stats.unresolved > 0) return [`Unresolved: ${this.#stats.unresolved}`];
+    return [];
+  }
+
+  /**
+   * @returns {string[]} The Pending line, only when there are pending jobs.
+   */
+  #pendingLines() {
+    if (this.#stats.pending > 0) return [`Pending: ${this.#stats.pending}`];
     return [];
   }
 
