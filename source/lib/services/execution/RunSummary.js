@@ -3,29 +3,25 @@
  * @author darthjee
  */
 class RunSummary {
-  #totalJobs;
-  #failedJobs;
+  #stats;
   #threshold;
 
   /**
    * @param {object} params - Construction parameters.
-   * @param {number} params.totalJobs - Total processed jobs.
-   * @param {number} params.failedJobs - Total failed jobs (failed + retry + dead).
+   * @param {LifetimeJobStats} params.stats - Lifetime job stats for the run.
    * @param {number|null} [params.threshold=null] - Failure threshold percentage.
    */
-  constructor({ totalJobs, failedJobs, threshold = null }) {
-    this.#totalJobs = totalJobs;
-    this.#failedJobs = failedJobs;
+  constructor({ stats, threshold = null }) {
+    this.#stats = stats;
     this.#threshold = threshold;
   }
 
   /**
-   * Returns the failure percentage for this run.
+   * Returns the failure percentage for this run (dead over total, in-flight excluded).
    * @returns {number} Failure percentage (0–100).
    */
   percentage() {
-    if (this.#totalJobs === 0) return 0;
-    return (this.#failedJobs / this.#totalJobs) * 100;
+    return this.#stats.percentage;
   }
 
   /**
@@ -43,11 +39,20 @@ class RunSummary {
    */
   report() {
     return [
-      `Total: ${this.#totalJobs}`,
-      `Failed: ${this.#failedJobs} (${this.#format(this.percentage())}%)`,
+      `Total: ${this.#stats.total}`,
+      `Failed: ${this.#stats.dead} (${this.#format(this.percentage())}%)`,
+      ...this.#unresolvedLines(),
       `Threshold: ${this.#formatThreshold()}`,
       `Result: ${this.result()}`,
     ].join('\n');
+  }
+
+  /**
+   * @returns {string[]} The Unresolved line, only when there are in-flight jobs.
+   */
+  #unresolvedLines() {
+    if (this.#stats.unresolved > 0) return [`Unresolved: ${this.#stats.unresolved}`];
+    return [];
   }
 
   /**
