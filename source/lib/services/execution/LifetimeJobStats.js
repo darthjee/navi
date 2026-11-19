@@ -7,6 +7,7 @@ class LifetimeJobStats {
   #total;
   #dead;
   #unresolved;
+  #pending;
 
   /**
    * Creates a new LifetimeJobStats instance.
@@ -14,11 +15,13 @@ class LifetimeJobStats {
    * @param {number} params.total - Lifetime count of finished and dead jobs.
    * @param {number} params.dead - Lifetime count of dead jobs.
    * @param {number} params.unresolved - Count of in-flight jobs (failed + retryQueue).
+   * @param {number} [params.pending] - Count of not-yet-attempted/completed jobs (enqueued + processing).
    */
-  constructor({ total, dead, unresolved }) {
+  constructor({ total, dead, unresolved, pending = 0 }) {
     this.#total = total;
     this.#dead = dead;
     this.#unresolved = unresolved;
+    this.#pending = pending;
   }
 
   /**
@@ -31,6 +34,7 @@ class LifetimeJobStats {
       total: stats.total + stats.pruned.finished + stats.pruned.dead,
       dead: stats.dead + stats.pruned.dead,
       unresolved: stats.failed + stats.retryQueue,
+      pending: stats.enqueued + stats.processing,
     });
   }
 
@@ -57,6 +61,15 @@ class LifetimeJobStats {
    */
   get unresolved() {
     return this.#unresolved;
+  }
+
+  /**
+   * Count of jobs not yet attempted or completed (enqueued + processing). It is
+   * reported separately and is never part of `total` or of the failure ratio.
+   * @returns {number} The pending count.
+   */
+  get pending() {
+    return this.#pending;
   }
 
   /**

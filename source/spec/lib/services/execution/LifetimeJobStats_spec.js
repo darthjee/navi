@@ -2,7 +2,7 @@ import { LifetimeJobStats } from '../../../../lib/services/execution/LifetimeJob
 
 describe('LifetimeJobStats', () => {
   const buildStats = (overrides = {}) => ({
-    total: 10, dead: 4, failed: 0, retryQueue: 0,
+    total: 10, dead: 4, failed: 0, retryQueue: 0, enqueued: 0, processing: 0,
     pruned: { finished: 0, dead: 0 },
     ...overrides,
   });
@@ -35,6 +35,24 @@ describe('LifetimeJobStats', () => {
       const stats = LifetimeJobStats.fromStats(buildStats({ failed: 2, retryQueue: 3 }));
 
       expect(stats.total).toEqual(10);
+    });
+  });
+
+  describe('pending', () => {
+    it('sets pending to enqueued + processing', () => {
+      const stats = LifetimeJobStats.fromStats(buildStats({ enqueued: 3, processing: 2 }));
+
+      expect(stats.pending).toEqual(5);
+    });
+
+    it('does not affect total, dead or percentage', () => {
+      const stats = LifetimeJobStats.fromStats(buildStats({ enqueued: 3, processing: 2 }));
+
+      expect([stats.total, stats.dead, stats.percentage]).toEqual([10, 4, 40]);
+    });
+
+    it('defaults to 0 in the constructor', () => {
+      expect(new LifetimeJobStats({ total: 1, dead: 0, unresolved: 0 }).pending).toEqual(0);
     });
   });
 
