@@ -38,6 +38,30 @@ describe('LifetimeJobStats', () => {
     });
   });
 
+  describe('#percentage', () => {
+    it('returns dead over total as a percentage', () => {
+      expect(LifetimeJobStats.fromStats(buildStats()).percentage).toEqual(40);
+    });
+
+    it('returns 0 when total is 0', () => {
+      expect(LifetimeJobStats.fromStats(buildStats({ total: 0, dead: 0 })).percentage).toEqual(0);
+    });
+
+    it('uses lifetime counts including pruned', () => {
+      const stats = LifetimeJobStats.fromStats(buildStats({
+        total: 10, dead: 4, pruned: { finished: 10, dead: 6 },
+      }));
+
+      expect(stats.percentage).toEqual(50);
+    });
+
+    it('is not affected by unresolved', () => {
+      const stats = LifetimeJobStats.fromStats(buildStats({ failed: 5, retryQueue: 5 }));
+
+      expect(stats.percentage).toEqual(40);
+    });
+  });
+
   describe('constructor', () => {
     it('exposes the given values as read-only', () => {
       const stats = new LifetimeJobStats({ total: 1, dead: 2, unresolved: 3 });
