@@ -51,12 +51,22 @@ class LifetimeJobStats {
   }
 
   /**
-   * Count of in-flight jobs (failed + retryQueue). It is not part of `total`;
-   * whether it belongs in the failure ratio is tracked in #1029.
+   * Count of in-flight jobs (failed + retryQueue). It is reported separately
+   * and is never part of `total` or of the failure ratio.
    * @returns {number} The unresolved count.
    */
   get unresolved() {
     return this.#unresolved;
+  }
+
+  /**
+   * Failure ratio as a percentage: dead / total * 100, or 0 when total is 0.
+   * @returns {number} The failure percentage.
+   */
+  get percentage() {
+    if (this.#total === 0) return 0;
+
+    return (this.#dead / this.#total) * 100;
   }
 }
 
