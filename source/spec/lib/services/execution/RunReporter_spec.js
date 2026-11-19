@@ -19,6 +19,8 @@ describe('RunReporter', () => {
         total: 10,
         failed: 1,
         retryQueue: 1,
+        enqueued: 0,
+        processing: 0,
         dead: 2,
         pruned: { finished: 0, dead: 0 },
       });
@@ -38,6 +40,8 @@ describe('RunReporter', () => {
         total: 20,
         failed: 2,
         retryQueue: 3,
+        enqueued: 0,
+        processing: 0,
         dead: 1,
         pruned: { finished: 0, dead: 0 },
       });
@@ -52,7 +56,7 @@ describe('RunReporter', () => {
     });
 
     it('runs the failure check', () => {
-      spyOn(JobRegistry, 'stats').and.returnValue({ total: 0, failed: 0, retryQueue: 0, dead: 0, pruned: { finished: 0, dead: 0 } });
+      spyOn(JobRegistry, 'stats').and.returnValue({ total: 0, failed: 0, retryQueue: 0, enqueued: 0, processing: 0, dead: 0, pruned: { finished: 0, dead: 0 } });
       spyOn(LogRegistry, 'info').and.stub();
       spyOn(FailureChecker.prototype, 'check').and.stub();
 
@@ -70,7 +74,7 @@ describe('RunReporter', () => {
 
       it('excludes in-flight jobs from the ratio and does not exit', () => {
         spyOn(JobRegistry, 'stats').and.returnValue({
-          total: 10, failed: 5, retryQueue: 5, dead: 1, pruned: { finished: 0, dead: 0 },
+          total: 10, failed: 5, retryQueue: 5, enqueued: 0, processing: 0, dead: 1, pruned: { finished: 0, dead: 0 },
         });
 
         reporter.report({ failureConfig: { threshold: 20 } });
@@ -81,7 +85,7 @@ describe('RunReporter', () => {
 
       it('reports failure in both when dead jobs exceed the threshold', () => {
         spyOn(JobRegistry, 'stats').and.returnValue({
-          total: 10, failed: 5, retryQueue: 5, dead: 5, pruned: { finished: 0, dead: 0 },
+          total: 10, failed: 5, retryQueue: 5, enqueued: 0, processing: 0, dead: 5, pruned: { finished: 0, dead: 0 },
         });
 
         reporter.report({ failureConfig: { threshold: 20 } });
@@ -91,10 +95,36 @@ describe('RunReporter', () => {
       });
     });
 
+    describe('with pending jobs', () => {
+      beforeEach(() => {
+        spyOn(JobRegistry, 'stats').and.returnValue({
+          total: 10, failed: 0, retryQueue: 0, enqueued: 3, processing: 2, dead: 1,
+          pruned: { finished: 0, dead: 0 },
+        });
+        spyOn(LogRegistry, 'info').and.stub();
+        spyOn(LogRegistry, 'error').and.stub();
+        spyOn(process, 'exit').and.stub();
+      });
+
+      it('reports enqueued + processing as Pending', () => {
+        reporter.report({ failureConfig: { threshold: 20 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(
+          'Total: 10\nFailed: 1 (10%)\nPending: 5\nThreshold: 20%\nResult: Success'
+        );
+      });
+
+      it('does not make the failure check exit', () => {
+        reporter.report({ failureConfig: { threshold: 20 } });
+
+        expect(process.exit).not.toHaveBeenCalled();
+      });
+    });
+
     describe('single stats read', () => {
       beforeEach(() => {
         spyOn(JobRegistry, 'stats').and.returnValue({
-          total: 10, failed: 0, retryQueue: 0, dead: 5, pruned: { finished: 0, dead: 0 },
+          total: 10, failed: 0, retryQueue: 0, enqueued: 0, processing: 0, dead: 5, pruned: { finished: 0, dead: 0 },
         });
         spyOn(LogRegistry, 'info').and.stub();
         spyOn(LogRegistry, 'error').and.stub();
@@ -163,7 +193,7 @@ describe('RunReporter', () => {
 
     describe('with pruned jobs', () => {
       const prunedStats = {
-        total: 20, failed: 0, retryQueue: 0, dead: 10,
+        total: 20, failed: 0, retryQueue: 0, enqueued: 0, processing: 0, dead: 10,
         pruned: { finished: 940, dead: 40 },
       };
 
