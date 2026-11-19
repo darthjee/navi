@@ -17,4 +17,4 @@ After `Application.run()` finishes, if the config has a `failure:` key:
 
 - `ratio = (dead / (dead + finished)) * 100`, where `dead` and `finished` are **lifetime** counts: resident jobs plus jobs evicted by `workers.retention` (pruned). "Lifetime" means since the last engine stop / `clearQueues()`, which resets the pruned counters.
 - If `ratio > threshold`, `process.exit(1)` is called so CI pipelines detect partial failure.
-- Retention therefore never changes the verdict. Both `RunSummary` and `FailureChecker` read the ratio from `LifetimeJobStats.percentage` (lifetime `dead / total`). In-flight jobs (`failed + retryQueue`) are excluded from the ratio and shown on an `Unresolved: N` summary line when N > 0.
+- Retention therefore never changes the verdict. Both `RunSummary` and `FailureChecker` read the ratio from `LifetimeJobStats.percentage` (lifetime `dead / total`). In-flight jobs (`failed + retryQueue`) are excluded from the ratio and shown on an `Unresolved: N` summary line when N > 0. Not-yet-attempted or not-yet-completed jobs (`enqueued + processing`) are likewise shown on a `Pending: N` line when N > 0, also outside the ratio and the exit decision.
