@@ -28,12 +28,12 @@ describe('RunReporter', () => {
       reporter.report({ failureConfig: { threshold: 30 } });
 
       expect(LogRegistry.info).toHaveBeenCalledWith(
-        'Total: 10\nFailed: 4 (40%)\nThreshold: 30%\nResult: Failure'
+        'Total: 10\nFailed: 2 (20%)\nUnresolved: 2\nThreshold: 30%\nResult: Success'
       );
       expect(LogRegistry.info).toHaveBeenCalledBefore(FailureChecker.prototype.check);
     });
 
-    it('derives totalJobs/failedJobs from JobRegistry.stats() and passes the threshold along', () => {
+    it('derives the lifetime stats from JobRegistry.stats() and passes the threshold along', () => {
       spyOn(JobRegistry, 'stats').and.returnValue({
         total: 20,
         failed: 2,
@@ -47,7 +47,7 @@ describe('RunReporter', () => {
       reporter.report({ failureConfig: { threshold: 50 } });
 
       expect(LogRegistry.info).toHaveBeenCalledWith(
-        'Total: 20\nFailed: 6 (30%)\nThreshold: 50%\nResult: Success'
+        'Total: 20\nFailed: 1 (5%)\nUnresolved: 5\nThreshold: 50%\nResult: Success'
       );
     });
 
@@ -59,6 +59,36 @@ describe('RunReporter', () => {
       reporter.report({ failureConfig: { threshold: 10 } });
 
       expect(FailureChecker.prototype.check).toHaveBeenCalled();
+    });
+
+    describe('with in-flight jobs', () => {
+      beforeEach(() => {
+        spyOn(LogRegistry, 'info').and.stub();
+        spyOn(LogRegistry, 'error').and.stub();
+        spyOn(process, 'exit').and.stub();
+      });
+
+      it('excludes in-flight jobs from the ratio and does not exit', () => {
+        spyOn(JobRegistry, 'stats').and.returnValue({
+          total: 10, failed: 5, retryQueue: 5, dead: 1, pruned: { finished: 0, dead: 0 },
+        });
+
+        reporter.report({ failureConfig: { threshold: 20 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Success'));
+        expect(process.exit).not.toHaveBeenCalled();
+      });
+
+      it('reports failure in both when dead jobs exceed the threshold', () => {
+        spyOn(JobRegistry, 'stats').and.returnValue({
+          total: 10, failed: 5, retryQueue: 5, dead: 5, pruned: { finished: 0, dead: 0 },
+        });
+
+        reporter.report({ failureConfig: { threshold: 20 } });
+
+        expect(LogRegistry.info).toHaveBeenCalledWith(jasmine.stringContaining('Result: Failure'));
+        expect(process.exit).toHaveBeenCalledWith(1);
+      });
     });
 
     describe('single stats read', () => {

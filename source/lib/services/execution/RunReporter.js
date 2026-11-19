@@ -19,11 +19,7 @@ class RunReporter {
    */
   report({ failureConfig } = {}) {
     const stats = LifetimeJobStats.fromStats(JobRegistry.stats());
-    const summary = new RunSummary({
-      totalJobs: stats.total,
-      failedJobs: stats.unresolved + stats.dead,
-      threshold: failureConfig?.threshold,
-    });
+    const summary = new RunSummary({ stats, threshold: failureConfig?.threshold });
 
     LogRegistry.info(summary.report());
     new FailureChecker({ failureConfig, stats }).check();

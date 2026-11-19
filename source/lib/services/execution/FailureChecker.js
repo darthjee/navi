@@ -8,7 +8,6 @@ import { LogRegistry } from '../../registry/LogRegistry.js';
 class FailureChecker {
   #failureConfig;
   #stats;
-  #cachedRatio;
 
   /**
    * Creates a new FailureChecker instance.
@@ -37,21 +36,11 @@ class FailureChecker {
   }
 
   /**
-   * Calculates the lifetime percentage of dead jobs relative to total jobs.
-   * The result is memoized after the first call.
-   * @returns {number} The dead-job ratio as a percentage (0–100).
-   */
-  #ratio() {
-    this.#cachedRatio ??= (this.#stats.dead / this.#stats.total) * 100;
-    return this.#cachedRatio;
-  }
-
-  /**
    * Returns true when the dead-job ratio exceeds the configured threshold.
    * @returns {boolean} True if the ratio is above the configured threshold.
    */
   #isOverThreshold() {
-    return this.#ratio() > this.#failureConfig.threshold;
+    return this.#stats.percentage > this.#failureConfig.threshold;
   }
 
   /**
@@ -59,7 +48,7 @@ class FailureChecker {
    * @returns {void}
    */
   #fail() {
-    LogRegistry.error(`Failure threshold exceeded: ${this.#ratio().toFixed(2)}% of jobs are dead (threshold: ${this.#failureConfig.threshold}%)`);
+    LogRegistry.error(`Failure threshold exceeded: ${this.#stats.percentage.toFixed(2)}% of jobs are dead (threshold: ${this.#failureConfig.threshold}%)`);
     process.exit(1);
   }
 }
